@@ -1,0 +1,158 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B2DF3389-5C95-4CAF-BA30-3A4D0AAC9CE3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ICD.Connect.Conferencing.Cisco</RootNamespace>
+    <AssemblyName>ICD.Connect.Conferencing.Cisco</AssemblyName>
+    <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92500};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <OSVersion>5.0</OSVersion>
+    <DeployDirSuffix>SmartDeviceProject1</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows CE</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+    <DocumentationFile>
+    </DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowedReferenceRelatedFileExtensions>.allowedReferenceRelatedFileExtensions</AllowedReferenceRelatedFileExtensions>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <FileAlignment>512</FileAlignment>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <GenerateSerializationAssemblies>off</GenerateSerializationAssemblies>
+    <DocumentationFile>bin\Release\ICD.Connect.Conferencing.Cisco.xml</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="SimplSharpSQLHelperInterface, Version=1.0.92.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\ProgramData\Crestron\SDK\SimplSharpSQLHelperInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CiscoCodecSettings.cs" />
+    <Compile Include="Components\AbstractCiscoComponent.cs" />
+    <Compile Include="CiscoCodec.cs" />
+    <Compile Include="Components\Cameras\AbstractCamera.cs" />
+    <Compile Include="Components\Cameras\CameraPreset.cs" />
+    <Compile Include="Components\Cameras\FarCamera.cs" />
+    <Compile Include="Components\Cameras\NearCamera.cs" />
+    <Compile Include="Components\Cameras\NearCamerasComponent.cs" />
+    <Compile Include="Components\CiscoComponentFactory.cs" />
+    <Compile Include="Components\Diagnostics\DiagnosticsComponent.cs" />
+    <Compile Include="Components\Diagnostics\DiagnosticsMessage.cs" />
+    <Compile Include="Components\Directory\DirectoryBrowser.cs" />
+    <Compile Include="Components\Directory\DirectorySearch.cs" />
+    <Compile Include="Components\Directory\Tree\Folder.cs" />
+    <Compile Include="Components\Directory\Tree\FolderEventArgs.cs" />
+    <Compile Include="Components\Directory\Tree\AbstractFolder.cs" />
+    <Compile Include="Components\Directory\Tree\CiscoContact.cs" />
+    <Compile Include="Components\Directory\Tree\CiscoContactMethod.cs" />
+    <Compile Include="Components\Directory\DirectoryComponent.cs" />
+    <Compile Include="Components\Directory\Tree\IFolder.cs" />
+    <Compile Include="Components\Directory\Tree\INode.cs" />
+    <Compile Include="Components\Directory\Tree\RootFolder.cs" />
+    <Compile Include="Components\Peripherals\PeripheralsComponent.cs" />
+    <Compile Include="Components\Presentation\LayoutEventArgs.cs" />
+    <Compile Include="Components\Presentation\PresentationModeEventArgs.cs" />
+    <Compile Include="Components\Presentation\PresentationItem.cs" />
+    <Compile Include="Components\Presentation\PresentationComponent.cs" />
+    <Compile Include="Components\Video\Connectors\VideoInputConnector.cs" />
+    <Compile Include="Components\Video\Connectors\VideoOutputConnector.cs" />
+    <Compile Include="Components\Video\MonitorsEventArgs.cs" />
+    <Compile Include="Components\Video\VideoConnectionStateEventArgs.cs" />
+    <Compile Include="Components\Video\Connectors\AbstractVideoConnector.cs" />
+    <Compile Include="Components\Video\VideoSource.cs" />
+    <Compile Include="Components\System\GatekeeperStatusArgs.cs" />
+    <Compile Include="Components\System\RegistrationEventArgs.cs" />
+    <Compile Include="Components\System\SystemComponent.cs" />
+    <Compile Include="Components\Video\SelfViewMonitorRoleEventArgs.cs" />
+    <Compile Include="Components\Video\PipPositionEventArgs.cs" />
+    <Compile Include="Components\Video\VideoComponent.cs" />
+    <Compile Include="Components\Dialing\CallComponent.cs" />
+    <Compile Include="Components\Dialing\DialingComponent.cs" />
+    <None Include="ObfuscationSettings.cs" />
+    <Compile Include="Controls\CiscoCodecRoutingControl.cs" />
+    <Compile Include="Controls\CiscoDialingDeviceControl.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Properties\ControlSystem.cfg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ICD.Connect.API\ICD.Connect.API_SimplSharp.csproj">
+      <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
+      <Name>ICD.Connect.API</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ICD.Common\ICD.Common_SimplSharp.csproj">
+      <Project>{CB4055C6-D59E-479E-9C56-2C92335A7D9A}</Project>
+      <Name>ICD.SimplSharp.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ICD.Connect.Conferencing\ICD.Connect.Conferencing_SimplSharp.csproj">
+      <Project>{1CCA89DA-1F1C-4997-A94F-ABCE878BD6DE}</Project>
+      <Name>RSD.SimplSharp.Conferencing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ICD.Connect.Devices\ICD.Connect.Devices_SimplSharp.csproj">
+      <Project>{FD46A717-5836-4B73-ADD0-2706639DA8ED}</Project>
+      <Name>ICD.Connect.Devices</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ICD.Connect.Protocol\ICD.Connect.Protocol_SimplSharp.csproj">
+      <Project>{2E4E01B8-D4EA-4FB1-9FCE-0A0DC8D83C8A}</Project>
+      <Name>ICD.Connect.Protocol</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ICD.Connect.Routing\ICD.Connect.Routing_SimplSharp.csproj">
+      <Project>{B0C0CA1C-FA55-4BEA-8A8B-EDB2141C523E}</Project>
+      <Name>ICD.Connect.Routing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ICD.Connect.Settings\ICD.Connect.Settings_SimplSharp.csproj">
+      <Project>{5B84EB3C-1C3A-4C4D-98C2-69F67CF51D5A}</Project>
+      <Name>ICD.Connect.Settings</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if /I "$(ConfigurationName)" == "Release" Eazfuscator.NET.exe "$(TargetPath)" --msbuild-project-path "$(ProjectPath)" --msbuild-project-configuration "$(ConfigurationName)" --msbuild-project-platform "$(PlatformName)" --msbuild-solution-path "$(SolutionPath)" -n --newline-flush -v 5.2 --configuration-file="$(ProjectDir)ObfuscationSettings.cs"
+rem S# Pro preparation will execute after these operations</PostBuildEvent>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="PlatformVerificationTask">
+  </Target>
+</Project>
