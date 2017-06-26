@@ -111,6 +111,7 @@
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Controls\CiscoCodecRoutingControl.cs" />
     <Compile Include="Controls\CiscoDialingDeviceControl.cs" />
+    <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
