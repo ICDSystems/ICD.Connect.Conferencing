@@ -35,6 +35,11 @@ namespace ICD.Connect.Conferencing.Cisco
 		public override string FactoryName { get { return FACTORY_NAME; } }
 
 		/// <summary>
+		/// Gets the type of the originator for this settings instance.
+		/// </summary>
+		public override Type OriginatorType { get { return typeof(CiscoCodec); } }
+
+		/// <summary>
 		/// Constructor.
 		/// </summary>
 		public CiscoCodecSettings()
@@ -54,19 +59,6 @@ namespace ICD.Connect.Conferencing.Cisco
 				writer.WriteElementString(PORT_ELEMENT, IcdXmlConvert.ToString((int)Port));
 
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
-		}
-
-		/// <summary>
-		/// Creates a new originator instance from the settings.
-		/// </summary>
-		/// <param name="factory"></param>
-		/// <returns></returns>
-		public override IOriginator ToOriginator(IDeviceFactory factory)
-		{
-			CiscoCodec output = new CiscoCodec();
-			output.ApplySettings(this, factory);
-
-			return output;
 		}
 
 		/// <summary>
