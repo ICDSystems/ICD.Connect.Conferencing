@@ -14,7 +14,6 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cisco.Components;
 using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices;
-using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
