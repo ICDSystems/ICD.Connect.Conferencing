@@ -465,7 +465,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			m_ActiveConference.AddSource(source);
-			m_RecentSources.Enqueue(source);
+
+			m_RecentSourcesSection.Enter();
+
+			try
+			{
+				if (!m_RecentSources.Contains(source))
+					m_RecentSources.Enqueue(source);
+			}
+			finally
+			{
+				m_RecentSourcesSection.Leave();
+			}
+
 			Subscribe(source);
 
 			UpdateIsInCall();
