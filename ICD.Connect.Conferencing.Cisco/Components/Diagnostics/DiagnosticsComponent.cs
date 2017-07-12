@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Connect.API.Commands;
 using ICD.Common.Services.Logging;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.API.Commands;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
 {
