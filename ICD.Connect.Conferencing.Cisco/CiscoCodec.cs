@@ -507,18 +507,11 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			CallParserCallbacks(xml, resultId, args.Path.Skip(1));
 
-			// Check for errors
-			IcdXmlAttribute statusAttr;
-
-			try
-			{
-				statusAttr = XmlUtils.GetAttribute(xml, "status");
-			}
-			catch (InvalidOperationException)
-			{
+			if (!XmlUtils.HasAttribute(xml, "status"))
 				return;
-			}
 
+			// Check for errors
+			IcdXmlAttribute statusAttr = XmlUtils.GetAttribute(xml, "status");
 			if (statusAttr.Value == "Error")
 				ParseError(xml);
 		}
