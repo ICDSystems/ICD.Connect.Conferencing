@@ -322,7 +322,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 			{
 				int temp;
 				int? input = GetInputs(output, eConnectionType.Video).Select(c => c.Address)
-				                                                     .TryFirstOrDefault(out temp)
+				                                                     .TryFirst(out temp)
 					             ? temp
 					             : (int?)null;
 
