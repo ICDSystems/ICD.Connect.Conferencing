@@ -9,6 +9,7 @@ using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.Controls;
 using ICD.Connect.Routing.EventArguments;
+using ICD.Connect.Routing.Utils;
 
 namespace ICD.Connect.Conferencing.Cisco.Controls
 {
@@ -19,7 +20,9 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 	{
 		public override event EventHandler<TransmissionStateEventArgs> OnActiveTransmissionStateChanged;
 		public override event EventHandler<SourceDetectionStateChangeEventArgs> OnSourceDetectionStateChange;
-		public override event EventHandler OnActiveInputsChanged;
+		public override event EventHandler<ActiveInputStateChangeEventArgs> OnActiveInputsChanged;
+
+		private readonly SwitcherCache m_Cache;
 
 		#region Properties
 
@@ -40,6 +43,11 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		public CiscoCodecRoutingControl(CiscoCodec parent, int id)
 			: base(parent, id)
 		{
+			m_Cache = new SwitcherCache();
+			m_Cache.OnActiveInputsChanged += CacheOnActiveInputsChanged;
+			m_Cache.OnSourceDetectionStateChange += CacheOnSourceDetectionStateChange;
+			m_Cache.OnActiveTransmissionStateChanged += CacheOnActiveTransmissionStateChanged;
+
 			SubscribeComponents();
 		}
 
@@ -310,7 +318,35 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// <param name="eventArgs"></param>
 		private void PresentationOnPresentationsChanged(object sender, EventArgs eventArgs)
 		{
-			OnActiveInputsChanged.Raise(this);
+			foreach (int output in GetOutputs().Select(c => c.Address))
+			{
+				int temp;
+				int? input = GetInputs(output, eConnectionType.Video).Select(c => c.Address)
+				                                                     .TryFirstOrDefault(out temp)
+					             ? temp
+					             : (int?)null;
+
+				m_Cache.SetInputForOutput(output, input, eConnectionType.Video);
+			}
+		}
+
+		#endregion
+
+		#region Cache Callbacks
+
+		private void CacheOnActiveTransmissionStateChanged(object sender, TransmissionStateEventArgs args)
+		{
+			OnActiveTransmissionStateChanged.Raise(this, new TransmissionStateEventArgs(args.Output, args.Type, args.State));
+		}
+
+		private void CacheOnSourceDetectionStateChange(object sender, SourceDetectionStateChangeEventArgs args)
+		{
+			OnSourceDetectionStateChange.Raise(this, new SourceDetectionStateChangeEventArgs(args.Input, args.Type, args.State));
+		}
+
+		private void CacheOnActiveInputsChanged(object sender, ActiveInputStateChangeEventArgs args)
+		{
+			OnActiveInputsChanged.Raise(this, new ActiveInputStateChangeEventArgs(args.Input, args.Type, args.Active));
 		}
 
 		#endregion
