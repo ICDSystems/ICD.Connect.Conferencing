@@ -1,6 +1,8 @@
 ﻿using System;
 using ICD.Common.EventArguments;
 using ICD.Common.Properties;
+using ICD.Common.Services;
+using ICD.Common.Services.Logging;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
@@ -14,6 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video.Connectors
 	{
 		[UsedImplicitly] Unknown,
 		[UsedImplicitly] Camera,
+		[UsedImplicitly] Composite,
 		[UsedImplicitly] Vga,
 		[UsedImplicitly] Hdmi,
 		[UsedImplicitly] Dvi,
@@ -129,16 +132,32 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video.Connectors
 				Connected = connected == "True";
 
 			string signalState = XmlUtils.TryReadChildElementContentAsString(xml, "SignalState");
-			if (signalState != null)
-				SignalState = EnumUtils.Parse<eSignalState>(signalState, true);
+			eSignalState signalStateEnum;
+
+			if (EnumUtils.TryParse(signalState, true, out signalStateEnum))
+				SignalState = signalStateEnum;
+			else if (!string.IsNullOrEmpty(signalState))
+			{
+				ServiceProvider.GetService<ILoggerService>()
+				               .AddEntry(eSeverity.Warning, "{0} - Unknown signal state {1}", GetType().Name, signalState);
+				SignalState = eSignalState.Unknown;
+			}
 
 			string sourceId = XmlUtils.TryReadChildElementContentAsString(xml, "SourceId");
 			if (sourceId != null)
 				SourceId = int.Parse(sourceId);
 
 			string type = XmlUtils.TryReadChildElementContentAsString(xml, "Type");
-			if (type != null)
-				ConnectorType = EnumUtils.Parse<eConnectorType>(type, true);
+			eConnectorType connectorType;
+
+			if (EnumUtils.TryParse(type, true, out connectorType))
+				ConnectorType = connectorType;
+			else if (!string.IsNullOrEmpty(type))
+			{
+				ServiceProvider.GetService<ILoggerService>()
+							   .AddEntry(eSeverity.Warning, "{0} - Unknown connector type {1}", GetType().Name, connectorType);
+				ConnectorType = eConnectorType.Unknown;
+			}
 		}
 
 		/// <summary>
