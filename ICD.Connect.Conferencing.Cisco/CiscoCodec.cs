@@ -628,6 +628,8 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// <param name="args"></param>
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs args)
 		{
+			m_SerialBuffer.Clear();
+
 			IsConnected = args.Data;
 
 			if (IsConnected)
@@ -687,7 +689,14 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 
 			// Recurse through the elements
-			XmlUtils.Recurse(xml, eventArgs => XmlCallback(resultId, eventArgs));
+			try
+			{
+				XmlUtils.Recurse(xml, eventArgs => XmlCallback(resultId, eventArgs));
+			}
+			catch (IcdXmlException e)
+			{
+				Log(eSeverity.Error, "Failed to parse XML - {0} - {1}", e.Message, xml);
+			}
 		}
 
 		#endregion
