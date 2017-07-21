@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
@@ -17,8 +17,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// </summary>
 		public event EventHandler OnContentsChanged;
 
-		private readonly IcdHashSet<IFolder> m_CachedFolders;
-		private readonly IcdHashSet<CiscoContact> m_CachedContacts;
+		private readonly List<IFolder> m_CachedFolders;
+		private readonly List<CiscoContact> m_CachedContacts;
 
 		private readonly SafeCriticalSection m_FoldersSection;
 		private readonly SafeCriticalSection m_ContactsSection;
@@ -71,8 +71,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		{
 			FolderId = folderId;
 
-			m_CachedFolders = new IcdHashSet<IFolder>();
-			m_CachedContacts = new IcdHashSet<CiscoContact>();
+			m_CachedFolders = new List<IFolder>();
+			m_CachedContacts = new List<CiscoContact>();
 
 			m_FoldersSection = new SafeCriticalSection();
 			m_ContactsSection = new SafeCriticalSection();
@@ -110,7 +110,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <returns></returns>
 		public IFolder[] GetFolders()
 		{
-			return m_FoldersSection.Execute(() => m_CachedFolders.OrderBy(f => f.Name).ToArray());
+			return m_FoldersSection.Execute(() => m_CachedFolders.ToArray());
 		}
 
 		/// <summary>
@@ -120,7 +120,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <returns></returns>
 		public IFolder GetFolder(int index)
 		{
-			return GetFolders()[index];
+			return m_FoldersSection.Execute(() => m_CachedFolders[index]);
 		}
 
 		/// <summary>
@@ -129,7 +129,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <returns></returns>
 		public CiscoContact[] GetContacts()
 		{
-			return m_ContactsSection.Execute(() => m_CachedContacts.OrderBy(c => c.LastName).ThenBy(c => c.FirstName).ToArray());
+			return m_ContactsSection.Execute(() => m_CachedContacts.ToArray());
 		}
 
 		/// <summary>
@@ -139,7 +139,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <returns></returns>
 		public CiscoContact GetContact(int index)
 		{
-			return GetContacts()[index];
+			return m_ContactsSection.Execute(() => m_CachedContacts[index]);
 		}
 
 		/// <summary>
@@ -149,7 +149,20 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <returns></returns>
 		public INode GetChild(int index)
 		{
-			return GetChildren()[index];
+			m_ContactsSection.Enter();
+			m_FoldersSection.Enter();
+
+			try
+			{
+				if (index <= m_CachedFolders.Count)
+					return m_CachedFolders[index];
+				return m_CachedContacts[index - m_CachedFolders.Count];
+			}
+			finally
+			{
+				m_ContactsSection.Leave();
+				m_FoldersSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -158,7 +171,20 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <returns></returns>
 		public INode[] GetChildren()
 		{
-			return GetFolders().Cast<INode>().Concat(GetContacts()).ToArray();
+			m_ContactsSection.Enter();
+			m_FoldersSection.Enter();
+
+			try
+			{
+				return m_CachedFolders.Cast<INode>()
+				                      .Concat(m_CachedContacts.Cast<INode>())
+				                      .ToArray();
+			}
+			finally
+			{
+				m_ContactsSection.Leave();
+				m_FoldersSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -183,7 +209,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <param name="folder"></param>
 		public bool AddFolder(IFolder folder)
 		{
-			return AddFolders(new[] {folder});
+			return AddFolder(folder, true);
 		}
 
 		/// <summary>
@@ -201,7 +227,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <param name="contact"></param>
 		public bool AddContact(CiscoContact contact)
 		{
-			return AddContacts(new[] {contact});
+			return AddContact(contact, true);
 		}
 
 		/// <summary>
@@ -253,52 +279,121 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 
 		#region Private Methods
 
+		/// <summary>
+		/// Caches the folders.
+		/// </summary>
+		/// <param name="folders"></param>
+		/// <param name="raise"></param>
 		private bool AddFolders(IEnumerable<IFolder> folders, bool raise)
 		{
-			bool output;
+			bool output = false;
+
+			foreach (IFolder folder in folders)
+				output |= AddFolder(folder, false);
+
+			if (raise && output)
+				OnContentsChanged.Raise(this);
+
+			return output;
+		}
+
+		private bool AddFolder(IFolder folder, bool raise)
+		{
+			if (folder.PhonebookType != PhonebookType)
+				return false;
 
 			m_FoldersSection.Enter();
 
 			try
 			{
-				int count = m_CachedFolders.Count;
-				m_CachedFolders.AddRange(folders.Where(f => f.PhonebookType == PhonebookType));
-				output = m_CachedFolders.Count != count;
+				if (m_CachedFolders.Contains(folder))
+					return false;
+
+				m_CachedFolders.AddSorted(folder, new FolderComparer());
 			}
 			finally
 			{
 				m_FoldersSection.Leave();
 			}
 
-			if (output && raise)
+			if (raise)
+				OnContentsChanged.Raise(this);
+			return true;
+		}
+
+		/// <summary>
+		/// Caches the contacts.
+		/// </summary>
+		/// <param name="contacts"></param>
+		/// <param name="raise"></param>
+		private bool AddContacts(IEnumerable<CiscoContact> contacts, bool raise)
+		{
+			bool output = false;
+
+			foreach (CiscoContact contact in contacts)
+				output |= AddContact(contact, false);
+
+			if (raise && output)
 				OnContentsChanged.Raise(this);
 
 			return output;
 		}
 
-		private bool AddContacts(IEnumerable<CiscoContact> contacts, bool raise)
+		private bool AddContact(CiscoContact contact, bool raise)
 		{
-			bool output;
+			if (contact.PhonebookType != PhonebookType)
+				return false;
 
 			m_ContactsSection.Enter();
 
 			try
 			{
-				int count = m_CachedContacts.Count;
-				m_CachedContacts.AddRange(contacts.Where(c => c.PhonebookType == PhonebookType));
-				output = m_CachedContacts.Count != count;
+				if (m_CachedContacts.Contains(contact))
+					return false;
+
+				m_CachedContacts.AddSorted(contact, new ContactComparer());
 			}
 			finally
 			{
 				m_ContactsSection.Leave();
 			}
 
-			if (output && raise)
+			if (raise)
 				OnContentsChanged.Raise(this);
-
-			return output;
+			return true;
 		}
 
 		#endregion
+	}
+
+	internal sealed class FolderComparer : IComparer<IFolder>
+	{
+		public int Compare(IFolder x, IFolder y)
+		{
+			if (x == null)
+				throw new ArgumentNullException("x");
+
+			if (y == null)
+				throw new ArgumentNullException("y");
+
+			return string.Compare(x.Name, y.Name, StringComparison.Ordinal);
+		}
+	}
+
+	internal sealed class ContactComparer : IComparer<CiscoContact>
+	{
+		public int Compare(CiscoContact x, CiscoContact y)
+		{
+			if (x == null)
+				throw new ArgumentNullException("x");
+
+			if (y == null)
+				throw new ArgumentNullException("y");
+
+			int surname = string.Compare(x.LastName, y.LastName, StringComparison.Ordinal);
+			return surname != 0
+				? surname
+				: string.Compare(x.FirstName, y.FirstName, StringComparison.Ordinal);
+		}
 	}
 }
