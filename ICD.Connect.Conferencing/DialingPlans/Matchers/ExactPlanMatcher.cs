@@ -29,7 +29,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <returns></returns>
 		public override bool Matches(string number)
 		{
-			return string.Equals(m_Number, number, StringComparison.InvariantCultureIgnoreCase);
+			return string.Equals(m_Number, number, StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }
