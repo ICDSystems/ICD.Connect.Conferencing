@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if SIMPLSHARP
+using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp.CrestronData;
 using Crestron.SimplSharp.SQLite;
@@ -267,3 +268,4 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		#endregion
 	}
 }
+#endif
