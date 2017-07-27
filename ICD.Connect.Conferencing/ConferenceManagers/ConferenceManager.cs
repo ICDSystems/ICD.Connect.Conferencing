@@ -118,6 +118,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public bool IsInCall { get; private set; }
 
+		/// <summary>
+		/// Gets the number of registered dialling providers.
+		/// </summary>
+		public int DialingProvidersCount
+		{
+			get
+			{
+				m_SourceTypeToProviderSection.Enter();
+
+				try
+				{
+					return m_SourceTypeToProvider.Values
+					                             .Distinct()
+					                             .Count();
+				}
+				finally
+				{
+					m_SourceTypeToProviderSection.Leave();
+				}
+			}
+		}
+
 		#endregion
 
 		/// <summary>

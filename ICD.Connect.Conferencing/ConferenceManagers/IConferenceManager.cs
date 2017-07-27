@@ -108,6 +108,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		bool IsInCall { get; }
 
+		/// <summary>
+		/// Gets the number of registered dialling providers.
+		/// </summary>
+		int DialingProvidersCount { get; }
+
 		#endregion
 
 		#region Methods
