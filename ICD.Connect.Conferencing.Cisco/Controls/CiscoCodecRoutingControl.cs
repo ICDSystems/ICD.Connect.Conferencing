@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Components.Presentation;
 using ICD.Connect.Conferencing.Cisco.Components.Video;
@@ -119,6 +120,16 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// </summary>
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
+			if (EnumUtils.HasMultipleFlags(type))
+			{
+				return EnumUtils.GetFlagsExceptNone(type)
+				                .Select(f => GetInputActiveState(input, f))
+				                .Unanimous(false);
+			}
+
+			if (type != eConnectionType.Video)
+				return false;
+
 			return Parent.Components
 			             .GetComponent<PresentationComponent>()
 			             .GetPresentations()
@@ -140,13 +151,27 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		}
 
 		/// <summary>
+		/// Gets the input connector info at the given address.
+		/// </summary>
+		/// <param name="address"></param>
+		/// <returns></returns>
+		public override ConnectorInfo GetInput(int address)
+		{
+			if (!VideoComponent.ContainsVideoInputConnector(address))
+				throw new KeyNotFoundException(string.Format("{0} has no input at address {1}", Parent, address));
+
+			VideoInputConnector connector = VideoComponent.GetVideoInputConnector(address);
+			return new ConnectorInfo(address, connector.ConnectionType);
+		}
+
+		/// <summary>
 		/// Returns the inputs.
 		/// </summary>
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
-			return VideoComponent.GetVideoInputConnectors()
-			                     .Select(c => new ConnectorInfo(c.ConnectorId, c.ConnectionType));
+			return VideoComponent.GetVideoInputConnectorIds()
+			                     .Select(id => GetInput(id));
 		}
 
 		/// <summary>
@@ -157,9 +182,32 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs(int output, eConnectionType type)
 		{
-			if (!type.HasFlag(eConnectionType.Video) || !IsPresentationOutput(output))
+			if (EnumUtils.HasMultipleFlags(type))
+			{
+				return EnumUtils.GetFlagsExceptNone(type)
+				                .SelectMany(f => GetInputs(output, f))
+				                .Distinct();
+			}
+
+			if (type != eConnectionType.Video || !IsPresentationOutput(output))
 				return Enumerable.Empty<ConnectorInfo>();
-			return PresentationComponent.GetPresentations().Select(p => GetInput(p.VideoInputConnector));
+
+			return PresentationComponent.GetPresentations()
+			                            .Select(p => GetInput(p.VideoInputConnector));
+		}
+
+		/// <summary>
+		/// Gets the output connector info at the given address.
+		/// </summary>
+		/// <param name="address"></param>
+		/// <returns></returns>
+		public override ConnectorInfo GetOutput(int address)
+		{
+			if (!VideoComponent.ContainsVideoOutputConnector(address))
+				throw new KeyNotFoundException(string.Format("{0} has no output at address {1}", Parent, address));
+
+			VideoOutputConnector connector = VideoComponent.GetVideoOutputConnector(address);
+			return new ConnectorInfo(address, connector.ConnectionType);
 		}
 
 		/// <summary>
@@ -168,8 +216,8 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetOutputs()
 		{
-			return VideoComponent.GetVideoOutputConnectors()
-			                     .Select(c => new ConnectorInfo(c.ConnectorId, c.ConnectionType));
+			return VideoComponent.GetVideoOutputConnectorIds()
+			                     .Select(id => GetOutput(id));
 		}
 
 		#endregion
@@ -286,10 +334,8 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// </summary>
 		private void SubscribeComponents()
 		{
-			VideoComponent.OnVideoInputConnectorConnectionStateChanged += VideoInputOnVideoInputConnectorsChanged;
-
-			PresentationComponent presentation = Parent.Components.GetComponent<PresentationComponent>();
-			presentation.OnPresentationsChanged += PresentationOnPresentationsChanged;
+			VideoComponent.OnVideoInputConnectorConnectionStateChanged += VideoComponentOnVideoInputConnectorStateChanged;
+			PresentationComponent.OnPresentationsChanged += PresentationOnPresentationsChanged;
 		}
 
 		/// <summary>
@@ -297,7 +343,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="eventArgs"></param>
-		private void VideoInputOnVideoInputConnectorsChanged(object sender, VideoConnectionStateEventArgs eventArgs)
+		private void VideoComponentOnVideoInputConnectorStateChanged(object sender, VideoConnectionStateEventArgs eventArgs)
 		{
 			VideoInputConnector connector = sender as VideoInputConnector;
 			if (connector == null)

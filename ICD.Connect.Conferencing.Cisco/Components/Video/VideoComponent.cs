@@ -409,6 +409,15 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		}
 
 		/// <summary>
+		/// Gets the video input connector ids.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<int> GetVideoInputConnectorIds()
+		{
+			return m_VideoInputConnectors.Keys.ToArray();
+		}
+
+		/// <summary>
 		/// Gets the input input video connectors.
 		/// </summary>
 		/// <returns></returns>
@@ -439,6 +448,15 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 				throw new KeyNotFoundException(string.Format("{0} contains no {1} with id {2}", GetType().Name,
 				                                             typeof(VideoOutputConnector).Name, id));
 			return m_VideoOutputConnectors[id];
+		}
+
+		/// <summary>
+		/// Gets the video output connector ids.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<int> GetVideoOutputConnectorIds()
+		{
+			return m_VideoOutputConnectors.Keys.ToArray();
 		}
 
 		/// <summary>
