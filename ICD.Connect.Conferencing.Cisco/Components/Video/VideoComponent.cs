@@ -641,6 +641,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 			int id = connector.ConnectorId;
 			bool state = boolEventArgs.Data;
 
+			Codec.Log(eSeverity.Informational, "Video input connector {0} detection state changed to {1}", id, state);
+
 			OnVideoInputConnectorConnectionStateChanged.Raise(this, new VideoConnectionStateEventArgs(id, state));
 		}
 
