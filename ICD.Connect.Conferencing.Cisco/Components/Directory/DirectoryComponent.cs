@@ -9,6 +9,10 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+#if SIMPLSHARP
+#else
+using System.Threading.Tasks;
+#endif
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 {
@@ -195,7 +199,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="xml"></param>
 		private void ParseSearchResultAsync(CiscoCodec codec, string resultid, string xml)
 		{
-			m_ParseAsyncHandle = CrestronUtils.SafeInvoke(() => ParseSearchResult(resultid, xml));
+			m_ParseAsyncHandle =
+#if SIMPLSHARP
+                CrestronUtils.SafeInvoke(() => ParseSearchResult(resultid, xml));
+#else
+				Task.Run(() => ParseSearchResult(resultid, xml));
+#endif
+
 		}
 
 		/// <summary>
@@ -285,4 +295,4 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 
 		#endregion
 	}
-}
+}	
