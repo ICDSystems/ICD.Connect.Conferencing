@@ -23,6 +23,7 @@
   <ItemGroup>
     <None Remove=".gitignore" />
     <None Remove="ICD.Connect.Conferencing.Cisco_SimplSharp.suo" />
+    <None Remove="ICD.Connect.Conferencing.projectinfo" />
     <None Remove="ICD.SimplSharp.projectinfo" />
   </ItemGroup>
 
