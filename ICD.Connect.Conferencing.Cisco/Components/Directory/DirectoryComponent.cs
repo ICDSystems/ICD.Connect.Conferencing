@@ -199,13 +199,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="xml"></param>
 		private void ParseSearchResultAsync(CiscoCodec codec, string resultid, string xml)
 		{
-			m_ParseAsyncHandle =
-#if SIMPLSHARP
-                CrestronUtils.SafeInvoke(() => ParseSearchResult(resultid, xml));
-#else
-				Task.Run(() => ParseSearchResult(resultid, xml));
-#endif
-
+			m_ParseAsyncHandle = ThreadingUtils.SafeInvoke(() => ParseSearchResult(resultid, xml));
 		}
 
 		/// <summary>
