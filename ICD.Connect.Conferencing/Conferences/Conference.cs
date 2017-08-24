@@ -73,7 +73,14 @@ namespace ICD.Connect.Conferencing.Conferences
 			{
 				try
 				{
-					return m_Sources.Where(s => s.Start != null).Min(s => ((DateTime)s.Start));
+					DateTime start;
+					if (m_Sources.Select(s => s.Start)
+					             .OfType<DateTime>()
+					             .Order()
+					             .TryFirst(out start))
+						return start;
+
+					return null;
 				}
 				catch (InvalidOperationException)
 				{
