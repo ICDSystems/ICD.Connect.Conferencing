@@ -44,6 +44,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		int SourcesCount { get; }
 
+		/// <summary>
+		/// Gets the number of online sources in the conference.
+		/// </summary>
+		int OnlineSourcesCount { get; }
+
 		#endregion
 
 		#region Methods
