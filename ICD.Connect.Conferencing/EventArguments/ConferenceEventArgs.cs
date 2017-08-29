@@ -1,4 +1,4 @@
-﻿using ICD.Common.EventArguments;
+﻿using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
 
 namespace ICD.Connect.Conferencing.EventArguments

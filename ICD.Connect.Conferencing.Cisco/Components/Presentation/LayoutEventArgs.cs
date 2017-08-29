@@ -1,4 +1,4 @@
-﻿using ICD.Common.EventArguments;
+﻿using ICD.Common.Utils.EventArguments;
 using ICD.Common.Properties;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
