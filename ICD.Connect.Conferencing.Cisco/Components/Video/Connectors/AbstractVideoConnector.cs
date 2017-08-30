@@ -92,6 +92,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video.Connectors
 					case eConnectorType.Unknown:
 						return eConnectionType.None;
 
+					case eConnectorType.Composite:
 					case eConnectorType.Camera:
 					case eConnectorType.Vga:
 						return eConnectionType.Video;
