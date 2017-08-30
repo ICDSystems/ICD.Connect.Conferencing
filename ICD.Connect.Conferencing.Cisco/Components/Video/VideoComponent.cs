@@ -7,6 +7,7 @@ using ICD.Common.Services.Logging;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components.Video.Connectors;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Video
@@ -662,6 +663,29 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 			Codec.Log(eSeverity.Informational, "Video input connector {0} detection state changed to {1}", id, state);
 
 			OnVideoInputConnectorConnectionStateChanged.Raise(this, new VideoConnectionStateEventArgs(id, state));
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("Input Count", VideoInputConnectorCount);
+			addRow("Output Count", VideoOutputConnectorCount);
+			addRow("SelfView Enabled", SelfViewEnabled);
+			addRow("SelfView Fullscreen", SelfViewFullScreenEnabled);
+			addRow("SelfView Position", SelfViewPosition);
+			addRow("SelfView Monitor", SelfViewMonitor);
+			addRow("Active Speaker Position", ActiveSpeakerPosition);
+			addRow("Main Video Source", MainVideoSource);
+			addRow("Monitors", Monitors);
 		}
 
 		#endregion
