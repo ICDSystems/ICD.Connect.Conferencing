@@ -13,7 +13,7 @@ using ICD.Connect.Devices.Controls;
 namespace ICD.Connect.Conferencing.Controls
 {
 	public abstract class AbstractDialingDeviceControl<T> : AbstractDeviceControl<T>, IDialingDeviceControl
-		where T : IDevice
+		where T : IDeviceBase
 	{
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 
