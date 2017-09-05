@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Services.Logging;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
@@ -41,6 +42,8 @@ namespace ICD.Connect.Conferencing.Controls
 
 				m_AutoAnswer = value;
 
+				Logger.AddEntry(eSeverity.Informational, "{0} AutoAnswer set to {1}", this, m_AutoAnswer);
+
 				OnAutoAnswerChanged.Raise(this, new BoolEventArgs(m_AutoAnswer));
 			}
 		}
@@ -59,6 +62,8 @@ namespace ICD.Connect.Conferencing.Controls
 
 				m_PrivacyMuted = value;
 
+				Logger.AddEntry(eSeverity.Informational, "{0} PrivacyMuted set to {1}", this, m_PrivacyMuted);
+
 				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMuted));
 			}
 		}
@@ -76,6 +81,8 @@ namespace ICD.Connect.Conferencing.Controls
 					return;
 
 				m_DoNotDisturb = value;
+
+				Logger.AddEntry(eSeverity.Informational, "{0} DoNotDisturb set to {1}", this, m_DoNotDisturb);
 
 				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_DoNotDisturb));
 			}
