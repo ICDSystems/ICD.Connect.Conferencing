@@ -18,6 +18,21 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		public event EventHandler<StringEventArgs> OnNumberChanged;
 		public event EventHandler OnSourceTypeChanged;
 
+		[PublicAPI]
+		public event EventHandler OnAnswerCallback;
+
+		[PublicAPI]
+		public event EventHandler OnHoldCallback;
+
+		[PublicAPI]
+		public event EventHandler OnResumeCallback;
+
+		[PublicAPI]
+		public event EventHandler OnHangupCallback;
+
+		[PublicAPI]
+		public event EventHandler<StringEventArgs> OnSendDtmfCallback;
+
 		private string m_Name;
 		private string m_Number;
 		private eConferenceSourceStatus m_Status;
@@ -152,21 +167,6 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		ICamera IConferenceSource.Camera { get { return null; } }
 
-		[PublicAPI]
-		public Action AnswerCallback { get; set; }
-
-		[PublicAPI]
-		public Action HoldCallback { get; set; }
-
-		[PublicAPI]
-		public Action ResumeCallback { get; set; }
-
-		[PublicAPI]
-		public Action HangupCallback { get; set; }
-
-		[PublicAPI]
-		public Action<string> SendDtmfCallback { get; set; }
-
 		#endregion
 
 		#region Methods
@@ -186,10 +186,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		public void Answer()
 		{
-			if (AnswerCallback == null)
-				throw new InvalidOperationException("No AnswerCallback assigned");
-
-			AnswerCallback();
+			OnAnswerCallback.Raise(this);
 		}
 
 		/// <summary>
@@ -197,10 +194,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		public void Hold()
 		{
-			if (HoldCallback == null)
-				throw new InvalidOperationException("No HoldCallback assigned");
-
-			HoldCallback();
+			OnHoldCallback.Raise(this);
 		}
 
 		/// <summary>
@@ -208,10 +202,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		public void Resume()
 		{
-			if (ResumeCallback == null)
-				throw new InvalidOperationException("No ResumeCallback assigned");
-
-			ResumeCallback();
+			OnResumeCallback.Raise(this);
 		}
 
 		/// <summary>
@@ -219,10 +210,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		public void Hangup()
 		{
-			if (HangupCallback == null)
-				throw new InvalidOperationException("No HangupCallback assigned");
-
-			HangupCallback();
+			OnHangupCallback.Raise(this);
 		}
 
 		/// <summary>
@@ -231,10 +219,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <param name="data"></param>
 		public void SendDtmf(string data)
 		{
-			if (SendDtmfCallback == null)
-				throw new InvalidOperationException("No SendDtmfCallback assigned");
-
-			SendDtmfCallback(data);
+			OnSendDtmfCallback.Raise(this, new StringEventArgs(data));
 		}
 
 		#endregion
