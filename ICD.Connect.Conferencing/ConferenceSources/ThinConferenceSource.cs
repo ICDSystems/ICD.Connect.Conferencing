@@ -177,8 +177,12 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return string.Format("{0}(Name={1}, Number={2})", GetType().Name, StringUtils.ToRepresentation(Name),
-			                     StringUtils.ToRepresentation(Number));
+			ReprBuilder builder = new ReprBuilder(this);
+
+			builder.AppendProperty("Name", Name);
+			builder.AppendProperty("Number", Number);
+
+			return builder.ToString();
 		}
 
 		/// <summary>

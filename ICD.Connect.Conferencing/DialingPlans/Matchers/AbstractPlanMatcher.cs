@@ -64,7 +64,12 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return string.Format("{0}(Name={1}, SourceType={2})", GetType().Name, Name, SourceType);
+			ReprBuilder builder = new ReprBuilder(this);
+
+			builder.AppendProperty("Name", Name);
+			builder.AppendProperty("SourceType", SourceType);
+
+			return builder.ToString();
 		}
 
 		/// <summary>
