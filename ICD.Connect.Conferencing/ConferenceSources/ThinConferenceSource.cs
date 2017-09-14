@@ -39,6 +39,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		private eConferenceSourceAnswerState m_AnswerState;
 		private DateTime? m_Start;
 		private DateTime? m_End;
+		private eConferenceSourceDirection m_Direction;
 
 		#region Properties
 
@@ -55,7 +56,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 				m_Name = value;
 
-				Log(eSeverity.Informational, "Name set to {1}", this, m_Name);
+				Log(eSeverity.Informational, "Name set to {0}", m_Name);
 
 				OnNameChanged.Raise(this, new StringEventArgs(m_Name));
 			}
@@ -74,7 +75,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				
 				m_Number = value;
 
-				Log(eSeverity.Informational, "Number set to {1}", this, m_Number);
+				Log(eSeverity.Informational, "Number set to {0}", m_Number);
 
 				OnNumberChanged.Raise(this, new StringEventArgs(m_Number));
 			}
@@ -93,7 +94,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 				m_Status = value;
 
-				Log(eSeverity.Informational, "Status set to {1}", this, m_Status);
+				Log(eSeverity.Informational, "Status set to {0}", m_Status);
 
 				OnStatusChanged.Raise(this, new ConferenceSourceStatusEventArgs(m_Status));
 			}
@@ -102,7 +103,19 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <summary>
 		/// Source direction (Incoming, Outgoing, etc)
 		/// </summary>
-		public eConferenceSourceDirection Direction { get; set; }
+		public eConferenceSourceDirection Direction
+		{
+			get { return m_Direction; }
+			set
+			{
+				if (value == m_Direction)
+					return;
+
+				m_Direction = value;
+
+				Log(eSeverity.Informational, "Direction set to {0}", m_Status);
+			}
+		}
 
 		/// <summary>
 		/// Source Answer State (Ignored, Answered, etc)
@@ -117,7 +130,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 				m_AnswerState = value;
 
-				Log(eSeverity.Informational, "AnswerState set to {1}", this, m_AnswerState);
+				Log(eSeverity.Informational, "AnswerState set to {0}", m_AnswerState);
 
 				OnAnswerStateChanged.Raise(this, new ConferenceSourceAnswerStateEventArgs(m_AnswerState));
 			}
@@ -153,7 +166,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 				m_End = value;
 
-				Log(eSeverity.Informational, "Start set to {0}",  m_Start);
+				Log(eSeverity.Informational, "End set to {0}", m_End);
 			}
 		}
 
