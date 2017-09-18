@@ -185,7 +185,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.System
 
 				m_Gateway = value;
 
-				Codec.Log(eSeverity.Informational, "Codec gateway is {0}", m_Address);
+				Codec.Log(eSeverity.Informational, "Codec gateway is {0}", m_Gateway);
 				OnGatewayChanged.Raise(this, new StringEventArgs(m_Gateway));
 			}
 		}
@@ -204,7 +204,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.System
 
 				m_SubnetMask = value;
 
-				Codec.Log(eSeverity.Informational, "Codec subnet mask is {0}", m_Address);
+				Codec.Log(eSeverity.Informational, "Codec subnet mask is {0}", m_SubnetMask);
 				OnSubnetMaskChanged.Raise(this, new StringEventArgs(m_SubnetMask));
 			}
 		}
