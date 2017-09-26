@@ -44,7 +44,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private IConference m_ActiveConference;
 		private IDialingDeviceControl m_DefaultDialingControl;
 
-		private bool m_PrivacyMuted;
 		private eInCall m_IsInCall;
 
 		#region Properties
@@ -88,19 +87,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the current microphone mute state.
 		/// </summary>
-		public bool PrivacyMuted
-		{
-			get { return m_PrivacyMuted; }
-			private set
-			{
-				if (value == m_PrivacyMuted)
-					return;
-
-				m_PrivacyMuted = value;
-
-				OnPrivacyMuteStatusChange.Raise(this, new BoolEventArgs(m_PrivacyMuted));
-			}
-		}
+		public bool PrivacyMuted { get; private set; }
 
 		/// <summary>
 		/// Gets the DoNotDisturb state.
@@ -194,8 +181,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="state"></param>
 		public void EnableDoNotDisturb(bool state)
 		{
-			foreach (IDialingDeviceControl provider in GetDialingProviders())
-				provider.SetDoNotDisturb(state);
+			if (state == DoNotDisturb)
+				return;
+
+			DoNotDisturb = state;
+
+			UpdateProviders();
 		}
 
 		/// <summary>
@@ -204,8 +195,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="state"></param>
 		public void EnableAutoAnswer(bool state)
 		{
-			foreach (IDialingDeviceControl provider in GetDialingProviders())
-				provider.SetAutoAnswer(state);
+			if (state == AutoAnswer)
+				return;
+
+			AutoAnswer = state;
+
+			UpdateProviders();
 		}
 
 		/// <summary>
@@ -214,8 +209,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="state"></param>
 		public void EnablePrivacyMute(bool state)
 		{
-			foreach (IDialingDeviceControl provider in GetDialingProviders())
-				provider.SetPrivacyMute(state);
+			if (state == PrivacyMuted)
+				return;
+
+			PrivacyMuted = state;
+
+			UpdateProviders();
+
+			OnPrivacyMuteStatusChange.Raise(this, new BoolEventArgs(PrivacyMuted));
 		}
 
 		/// <summary>
@@ -345,10 +346,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Updates the dialing providers to match the state of the conference manager.
 		/// </summary>
-		/// <param name="except">Avoid updating the given provider to avoid feedback loop.</param>
-		private void UpdateProviders(IDialingDeviceControl except)
+		private void UpdateProviders()
 		{
-			foreach (IDialingDeviceControl provider in GetDialingProviders().Where(p => p != except))
+			foreach (IDialingDeviceControl provider in GetDialingProviders())
 				UpdateProvider(provider);
 		}
 
@@ -439,8 +439,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="boolEventArgs"></param>
 		private void ProviderOnPrivacyMuteChanged(object sender, BoolEventArgs boolEventArgs)
 		{
-			PrivacyMuted = GetDialingProviders().Any(p => p.PrivacyMuted);
-			UpdateProviders(sender as IDialingDeviceControl);
+			UpdateProvider(sender as IDialingDeviceControl);
 		}
 
 		/// <summary>
@@ -450,8 +449,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="boolEventArgs"></param>
 		private void ProviderOnDoNotDisturbChanged(object sender, BoolEventArgs boolEventArgs)
 		{
-			DoNotDisturb = GetDialingProviders().Any(p => p.DoNotDisturb);
-			UpdateProviders(sender as IDialingDeviceControl);
+			UpdateProvider(sender as IDialingDeviceControl);
 		}
 
 		/// <summary>
@@ -461,8 +459,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="boolEventArgs"></param>
 		private void ProviderOnAutoAnswerChanged(object sender, BoolEventArgs boolEventArgs)
 		{
-			AutoAnswer = GetDialingProviders().Any(p => p.AutoAnswer);
-			UpdateProviders(sender as IDialingDeviceControl);
+			UpdateProvider(sender as IDialingDeviceControl);
 		}
 
 		/// <summary>
