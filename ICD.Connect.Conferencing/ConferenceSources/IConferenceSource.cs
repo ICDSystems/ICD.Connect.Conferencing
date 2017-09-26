@@ -7,13 +7,6 @@ using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.ConferenceSources
 {
-	public enum eConferenceSourceType
-	{
-		Unknown,
-		Audio,
-		Video
-	}
-
 	public enum eConferenceSourceDirection
 	{
 		Undefined,
@@ -61,7 +54,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <summary>
 		/// Raised when the source type changes.
 		/// </summary>
-		event EventHandler OnSourceTypeChanged;
+		event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
 
 		#region Properties
 

@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		public event EventHandler<ConferenceSourceStatusEventArgs> OnStatusChanged;
 		public event EventHandler<StringEventArgs> OnNameChanged;
 		public event EventHandler<StringEventArgs> OnNumberChanged;
-		public event EventHandler OnSourceTypeChanged;
+		public event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
 
 		[PublicAPI]
 		public event EventHandler OnAnswerCallback;

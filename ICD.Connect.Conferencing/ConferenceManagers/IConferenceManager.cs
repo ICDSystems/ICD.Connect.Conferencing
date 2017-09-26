@@ -35,11 +35,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
 
 		/// <summary>
-		/// Raised when a source is added or removed to the active conference.
-		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnActiveConferenceSourcesChanged;
-
-		/// <summary>
 		/// Called when the active conference status changes.
 		/// </summary>
 		event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
@@ -55,14 +50,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 
 		/// <summary>
-		/// Raises true when a call begins and false when all calls have ended.
+		/// Raises when the in call state changes.
 		/// </summary>
-		event EventHandler<BoolEventArgs> OnInCallChanged;
-
-		/// <summary>
-		/// Raises true when a video call begins and false when all video calls have ended.
-		/// </summary>
-		event EventHandler<BoolEventArgs> OnInVideoCallChanged;
+		event EventHandler<InCallEventArgs> OnInCallChanged;
 
 		#endregion
 
@@ -99,14 +89,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		bool DoNotDisturb { get; }
 
 		/// <summary>
-		/// Returns true if actively in a video call.
+		/// Returns the current call state.
 		/// </summary>
-		bool IsInVideoCall { get; }
-
-		/// <summary>
-		/// Returns true if actively in a call.
-		/// </summary>
-		bool IsInCall { get; }
+		eInCall IsInCall { get; }
 
 		/// <summary>
 		/// Gets the number of registered dialling providers.
@@ -239,23 +224,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Dials the given contact method.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="contactMethod"></param>
-		/// <param name="mode"></param>
-		public static void Dial(this IConferenceManager extends, IContactMethod contactMethod, eConferenceSourceType mode)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			if (contactMethod == null)
-				throw new ArgumentNullException("contactMethod");
-
-			extends.Dial(contactMethod.Number, mode);
-		}
-
-		/// <summary>
 		/// Dials the given contact. Call type is taken from the dialling plan.
 		/// </summary>
 		/// <param name="extends"></param>
@@ -270,39 +238,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			IContactMethod contactMethod = extends.DialingPlan.GetContactMethod(contact);
 			extends.Dial(contactMethod);
-		}
-
-		/// <summary>
-		/// Dials the given contact, attempting to find a contact method that matches the mode.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="contact"></param>
-		/// <param name="mode"></param>
-		public static void Dial(this IConferenceManager extends, IContact contact, eConferenceSourceType mode)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			if (contact == null)
-				throw new ArgumentNullException("contact");
-
-			IContactMethod contactMethod = extends.DialingPlan.GetContactMethod(contact, mode);
-			extends.Dial(contactMethod, mode);
-		}
-
-		/// <summary>
-		/// Gets the dialing provider for the given number.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="number"></param>
-		/// <returns></returns>
-		public static IDialingDeviceControl GetDialingProvider(this IConferenceManager extends, string number)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			eConferenceSourceType sourceType = extends.DialingPlan.GetSourceType(number);
-			return extends.GetDialingProvider(sourceType);
 		}
 
 		/// <summary>

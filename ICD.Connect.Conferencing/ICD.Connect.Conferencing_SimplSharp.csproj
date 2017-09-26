@@ -97,6 +97,8 @@
     <Compile Include="DialingPlans\Matchers\IPlanMatcher.cs" />
     <Compile Include="DialingPlans\Matchers\NumericPlanMatcher.cs" />
     <Compile Include="DialingPlans\Matchers\RegexPlanMatcher.cs" />
+    <Compile Include="EventArguments\ConferenceSourceTypeEventArgs.cs" />
+    <Compile Include="EventArguments\InCallEventArgs.cs" />
     <Compile Include="Favorites\FavoriteContactMethod.cs" />
     <Compile Include="Favorites\Favorite.cs" />
     <Compile Include="EventArguments\ConferenceEventArgs.cs" />

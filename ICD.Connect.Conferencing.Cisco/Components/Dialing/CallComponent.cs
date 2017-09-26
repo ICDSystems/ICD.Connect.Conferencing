@@ -60,7 +60,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		/// <summary>
 		/// Raised when the source type changes.
 		/// </summary>
-		public event EventHandler OnSourceTypeChanged;
+		public event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
 
 		private eConferenceSourceStatus m_Status;
 		private FarCamera m_CachedCamera;
@@ -260,7 +260,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 
 				m_SourceType = value;
 
-				OnSourceTypeChanged.Raise(this);
+				OnSourceTypeChanged.Raise(this, new ConferenceSourceTypeEventArgs(m_SourceType));
 			}
 		}
 

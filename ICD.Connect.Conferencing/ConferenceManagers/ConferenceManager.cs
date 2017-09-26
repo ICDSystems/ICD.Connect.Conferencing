@@ -24,14 +24,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		public event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
-		public event EventHandler<ConferenceEventArgs> OnActiveConferenceSourcesChanged;
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
 
 		public event EventHandler<ConferenceSourceEventArgs> OnRecentSourceAdded;
 		public event EventHandler<ConferenceSourceStatusEventArgs> OnActiveSourceStatusChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
-		public event EventHandler<BoolEventArgs> OnInCallChanged;
-		public event EventHandler<BoolEventArgs> OnInVideoCallChanged;
+		public event EventHandler<InCallEventArgs> OnInCallChanged;
 
 		private readonly ScrollQueue<IConference> m_RecentConferences;
 		private readonly ScrollQueue<IConferenceSource> m_RecentSources;
@@ -47,6 +45,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private IDialingDeviceControl m_DefaultDialingControl;
 
 		private bool m_PrivacyMuted;
+		private eInCall m_IsInCall;
 
 		#region Properties
 
@@ -109,14 +108,21 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public bool DoNotDisturb { get; private set; }
 
 		/// <summary>
-		/// Returns true if actively in a video call.
-		/// </summary>
-		public bool IsInVideoCall { get; private set; }
-
-		/// <summary>
 		/// Returns true if actively in a call.
 		/// </summary>
-		public bool IsInCall { get; private set; }
+		public eInCall IsInCall
+		{
+			get { return m_IsInCall; }
+			private set
+			{
+				if (value == m_IsInCall)
+					return;
+
+				m_IsInCall = value;
+
+				OnInCallChanged.Raise(this, new InCallEventArgs(m_IsInCall));
+			}
+		}
 
 		/// <summary>
 		/// Gets the number of registered dialling providers.
@@ -358,28 +364,38 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Checks for change in the IsInCall and IsInVideoCall states and raises events.
+		/// Updates the current call state.
 		/// </summary>
 		private void UpdateIsInCall()
 		{
-			IConferenceSource[] online = m_ActiveConference == null
-				                             ? new IConferenceSource[0]
-				                             : m_ActiveConference.GetOnlineSources();
+			IEnumerable<IConferenceSource> online = m_ActiveConference == null
+				                                        ? Enumerable.Empty<IConferenceSource>()
+				                                        : m_ActiveConference.GetOnlineSources();
 
-			bool isInCall = online.Length > 0;
-			bool isInVideoCall = online.Any(s => s.SourceType == eConferenceSourceType.Video);
+			eInCall inCall = eInCall.None;
 
-			bool raiseInCall = isInCall != IsInCall;
-			bool raiseInVideoCall = isInVideoCall != IsInVideoCall;
+			foreach (IConferenceSource source in online)
+			{
+				switch (source.SourceType)
+				{
+					case eConferenceSourceType.Unknown:
+					case eConferenceSourceType.Audio:
+						inCall = eInCall.Audio;
+						break;
 
-			// Update both at the same time for the sake of callbacks.
-			IsInCall = isInCall;
-			IsInVideoCall = isInVideoCall;
+					case eConferenceSourceType.Video:
+						inCall = eInCall.Video;
+						break;
 
-			if (raiseInCall)
-				OnInCallChanged.Raise(this, new BoolEventArgs(IsInCall));
-			if (raiseInVideoCall)
-				OnInVideoCallChanged.Raise(this, new BoolEventArgs(IsInVideoCall));
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+
+				if (inCall == eInCall.Video)
+					break;
+			}
+
+			IsInCall = inCall;
 		}
 
 		#endregion
@@ -521,12 +537,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged += ConferenceOnStatusChanged;
-			conference.OnSourcesChanged += ConferenceOnSourcesChanged;
-		}
-
-		private void ConferenceOnSourcesChanged(object sender, EventArgs eventArgs)
-		{
-			OnActiveConferenceSourcesChanged.Raise(this, new ConferenceEventArgs(sender as IConference));
 		}
 
 		/// <summary>
@@ -539,7 +549,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged -= ConferenceOnStatusChanged;
-			conference.OnSourcesChanged -= ConferenceOnSourcesChanged;
 
 			// Unsubscribe from the sources.
 			foreach (IConferenceSource source in conference.GetSources())
@@ -555,21 +564,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			OnActiveConferenceStatusChanged.Raise(this, new ConferenceStatusEventArgs(args.Data));
 
-			switch (args.Data)
-			{
-				case eConferenceStatus.Connected:
-				case eConferenceStatus.Connecting:
-				case eConferenceStatus.OnHold:
-				case eConferenceStatus.Undefined:
-					return;
-
-				case eConferenceStatus.Disconnected:
-					ActiveConference = null;
-					break;
-
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			if (args.Data == eConferenceStatus.Disconnected)
+				ActiveConference = null;
 		}
 
 		#endregion

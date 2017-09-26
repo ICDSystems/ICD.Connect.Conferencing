@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialingPlans.Matchers;
+using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.DialingPlans
 {
