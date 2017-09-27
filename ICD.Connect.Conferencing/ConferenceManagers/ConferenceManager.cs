@@ -358,9 +358,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="dialingControl"></param>
 		private void UpdateProvider(IDialingDeviceControl dialingControl)
 		{
-			dialingControl.SetAutoAnswer(AutoAnswer);
-			dialingControl.SetDoNotDisturb(DoNotDisturb);
-			dialingControl.SetPrivacyMute(PrivacyMuted);
+			if (dialingControl.AutoAnswer != AutoAnswer)
+				dialingControl.SetAutoAnswer(AutoAnswer);
+
+			if (dialingControl.DoNotDisturb != DoNotDisturb)
+				dialingControl.SetDoNotDisturb(DoNotDisturb);
+
+			if (dialingControl.PrivacyMuted != PrivacyMuted)
+				dialingControl.SetPrivacyMute(PrivacyMuted);
 		}
 
 		/// <summary>
