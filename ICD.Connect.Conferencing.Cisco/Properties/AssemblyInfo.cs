@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("RSD.SimplSharp.VTC.Cisco")]
+[assembly: AssemblyTitle("ICD.Connect.Conferencing.Cisco")]
 [assembly: AssemblyCompany("ICD Systems")]
-[assembly: AssemblyProduct("RSD.SimplSharp.VTC.Cisco")]
-[assembly: AssemblyCopyright("Copyright © ICD Systems 2016")]
+[assembly: AssemblyProduct("ICD.Connect.Conferencing.Cisco")]
+[assembly: AssemblyCopyright("Copyright © ICD Systems 2017")]
 [assembly: AssemblyVersion("3.0.0.*")]
