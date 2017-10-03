@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Services;
+using ICD.Common.Services.Logging;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -47,6 +49,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private eInCall m_IsInCall;
 
 		#region Properties
+
+		/// <summary>
+		/// Gets the logger.
+		/// </summary>
+		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
 
 		/// <summary>
 		/// Gets the dialing plan.
@@ -106,6 +113,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					return;
 
 				m_IsInCall = value;
+
+				Logger.AddEntry(eSeverity.Informational, "{0} call state changed to {1}", GetType().Name, m_IsInCall);
 
 				OnInCallChanged.Raise(this, new InCallEventArgs(m_IsInCall));
 			}
