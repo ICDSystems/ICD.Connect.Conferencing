@@ -9,22 +9,15 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
-#if SIMPLSHARP
-#else
-using System.Threading.Tasks;
-#endif
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 {
-	// Ignore missing comment warnings.
-#pragma warning disable 1591
 	public enum eContactType
 	{
 		[PublicAPI] Any,
 		[PublicAPI] Folder,
 		[PublicAPI] Contact
 	}
-#pragma warning restore 1591
 
 	/// <summary>
 	/// DirectoryComponent provides functionality for using the codec directory features.
@@ -58,9 +51,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		private readonly SafeCriticalSection m_FolderSection;
 		private readonly SafeCriticalSection m_RootsSection;
 
-// ReSharper disable NotAccessedField.Local
+		[UsedImplicitly]
 		private object m_ParseAsyncHandle;
-// ReSharper restore NotAccessedField.Local
 
 		#region Constructors
 
