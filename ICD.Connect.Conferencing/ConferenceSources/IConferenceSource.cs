@@ -199,5 +199,31 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 					throw new ArgumentOutOfRangeException();
 			}
 		}
+
+		/// <summary>
+		/// Returns true if the source has been answered.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static bool GetIsAnswered(this IConferenceSource extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			switch (extends.AnswerState)
+			{
+				case eConferenceSourceAnswerState.Unknown:
+				case eConferenceSourceAnswerState.Unanswered:
+				case eConferenceSourceAnswerState.Ignored:
+					return false;
+
+				case eConferenceSourceAnswerState.Autoanswered:
+				case eConferenceSourceAnswerState.Answered:
+					return true;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
 	}
 }
