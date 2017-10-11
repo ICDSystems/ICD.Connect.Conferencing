@@ -145,6 +145,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <param name="data"></param>
 		public static void SendDtmf(this IConferenceSource extends, char data)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
 			extends.SendDtmf(data.ToString());
 		}
 
@@ -154,6 +157,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <param name="extends"></param>
 		public static TimeSpan GetDuration(this IConferenceSource extends)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
 			if (extends.Start == null)
 				return new TimeSpan();
 
@@ -168,6 +174,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <param name="extends"></param>
 		public static bool GetIsOnline(this IConferenceSource extends)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
 			switch (extends.Status)
 			{
 				case eConferenceSourceStatus.Undefined:
