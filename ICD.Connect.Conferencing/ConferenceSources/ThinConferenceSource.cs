@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 				m_Direction = value;
 
-				Log(eSeverity.Informational, "Direction set to {0}", m_Status);
+				Log(eSeverity.Informational, "Direction set to {0}", m_Direction);
 			}
 		}
 
