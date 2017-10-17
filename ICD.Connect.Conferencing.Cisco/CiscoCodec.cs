@@ -206,6 +206,9 @@ namespace ICD.Connect.Conferencing.Cisco
 			m_Port = port;
 			Subscribe(m_Port);
 
+			if (m_Port != null && !m_Port.IsConnected)
+				m_Port.Connect();
+
 			UpdateCachedOnlineStatus();
 		}
 
