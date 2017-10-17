@@ -265,7 +265,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// <param name="command"></param>
 		public void SendCommand(string command)
 		{
-			SendCommand(command, new object[0]);
+			SendCommand(command, null);
 		}
 
 		/// <summary>
@@ -275,7 +275,8 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// <param name="args"></param>
 		public void SendCommand(string command, params object[] args)
 		{
-			command = string.Format(command, args);
+			if (args != null)
+				command = string.Format(command, args);
 
 			if (!IsConnected)
 			{
@@ -299,6 +300,9 @@ namespace ICD.Connect.Conferencing.Cisco
 		[PublicAPI]
 		public void SendCommands(params string[] commands)
 		{
+			if (commands == null)
+				throw new ArgumentNullException("commands");
+
 			foreach (string command in commands)
 				SendCommand(command);
 		}
