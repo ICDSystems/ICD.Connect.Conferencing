@@ -16,6 +16,7 @@ using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Ports;
+using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings.Core;
 
@@ -202,14 +203,34 @@ namespace ICD.Connect.Conferencing.Cisco
 			if (port == m_Port)
 				return;
 
+			if (port is IComPort)
+				ConfigureComPort(port as IComPort);
+
 			Unsubscribe(m_Port);
 			m_Port = port;
 			Subscribe(m_Port);
 
-			if (m_Port != null && !m_Port.IsConnected)
-				m_Port.Connect();
+			if (m_Port != null)
+				Connect();
 
 			UpdateCachedOnlineStatus();
+		}
+
+		/// <summary>
+		/// Configures a com port for communication with the hardware.
+		/// </summary>
+		/// <param name="port"></param>
+		[PublicAPI]
+		public static void ConfigureComPort(IComPort port)
+		{
+			port.SetComPortSpec(eComBaudRates.ComspecBaudRate115200,
+								eComDataBits.ComspecDataBits8,
+								eComParityType.ComspecParityNone,
+								eComStopBits.ComspecStopBits1,
+								eComProtocolType.ComspecProtocolRS232,
+								eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
+								eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
+								false);
 		}
 
 		/// <summary>
@@ -226,6 +247,9 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			m_Port.Connect();
 			IsConnected = m_Port.IsConnected;
+
+			if (IsConnected)
+				Initialize();
 		}
 
 		/// <summary>
