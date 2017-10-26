@@ -181,6 +181,27 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	public static class ConferenceManagerExtensions
 	{
 		/// <summary>
+		/// Gets the call type for the given number.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="number"></param>
+		/// <returns></returns>
+		public static eConferenceSourceType GetCallType(this IConferenceManager extends, string number)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			// Gets the type the number resolves to
+			eConferenceSourceType type = extends.DialingPlan.GetSourceType(number);
+
+			// Gets the best provider for that call type
+			IDialingDeviceControl provider = extends.GetDialingProvider(type);
+
+			// Return the best available type we can handle the call as.
+			return provider == null ? eConferenceSourceType.Unknown : provider.Supports;
+		}
+
+		/// <summary>
 		/// Returns true if the active conference is connected.
 		/// </summary>
 		/// <param name="extends"></param>
@@ -203,7 +224,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			eConferenceSourceType mode = extends.DialingPlan.GetSourceType(number);
+			eConferenceSourceType mode = extends.GetCallType(number);
 			extends.Dial(number, mode);
 		}
 

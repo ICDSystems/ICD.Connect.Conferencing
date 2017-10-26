@@ -181,6 +181,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				mode = DialingPlan.DefaultSourceType;
 
 			IDialingDeviceControl dialingControl = GetDialingProvider(mode);
+
+			// Don't try to dial something the control can't support.
+			if (dialingControl.Supports < mode)
+				mode = dialingControl.Supports;
+
 			dialingControl.Dial(number, mode);
 		}
 
