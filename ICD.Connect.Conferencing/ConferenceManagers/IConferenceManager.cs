@@ -198,7 +198,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			IDialingDeviceControl provider = extends.GetDialingProvider(type);
 
 			// Return the best available type we can handle the call as.
-			return provider == null ? eConferenceSourceType.Unknown : provider.Supports;
+			eConferenceSourceType providerType = provider == null ? eConferenceSourceType.Unknown : provider.Supports;
+			return providerType < type ? providerType : type;
 		}
 
 		/// <summary>
