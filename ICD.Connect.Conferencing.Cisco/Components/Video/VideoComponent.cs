@@ -361,11 +361,14 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		[PublicAPI]
 		public void SetMainVideoSource(int sourceId)
 		{
-			Codec.SendCommand("xCommand Video Input SetMainVideoSource SourceId: {0}", sourceId);
-			Codec.Log(eSeverity.Informational, "Setting Main Video Source SourceId: {0}", sourceId);
+		    foreach (var connector in m_VideoInputConnectors.Where(connector => connector.Value.SourceId == sourceId))
+		    {
+		        SetActiveVideoConnector(connector.Value.ConnectorId);
+		        return;
+		    }
 		}
 
-		/// <summary>
+	    /// <summary>
 		/// Sets the active video connector.
 		/// </summary>
 		/// <param name="connectorId"></param>
