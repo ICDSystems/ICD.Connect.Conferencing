@@ -196,6 +196,7 @@ namespace ICD.Connect.Conferencing.Controls
 			addRow("AutoAnswer", m_AutoAnswer);
 			addRow("PrivacyMuted", m_PrivacyMuted);
 			addRow("DoNotDisturb", m_DoNotDisturb);
+			addRow("Supports", Supports);
 		}
 
 		#endregion
