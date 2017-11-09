@@ -189,6 +189,8 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			m_FeedbackTimer.Dispose();
 
+			m_Components.Dispose();
+
 			Unsubscribe(m_Port);
 			Disconnect();
 		}
@@ -304,6 +306,12 @@ namespace ICD.Connect.Conferencing.Cisco
 		{
 			if (args != null)
 				command = string.Format(command, args);
+
+			if (m_Port == null)
+			{
+				Log(eSeverity.Error, "Unable to communicate with Codec - port is null");
+				return;
+			}
 
 			if (!IsConnected)
 			{

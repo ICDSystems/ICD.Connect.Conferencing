@@ -17,7 +17,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 	/// <summary>
 	/// CiscoComponentFactory provides a facility for lazy-loading components.
 	/// </summary>
-	public sealed class CiscoComponentFactory
+	public sealed class CiscoComponentFactory : IDisposable
 	{
 		private readonly IcdHashSet<AbstractCiscoComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
@@ -51,6 +51,25 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 			// Add some default components
 			GetComponent<DiagnosticsComponent>();
 			GetComponent<PeripheralsComponent>();
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		public void Dispose()
+		{
+			m_ComponentsSection.Enter();
+
+			try
+			{
+				foreach (AbstractCiscoComponent component in m_Components)
+					component.Dispose();
+				m_Components.Clear();
+			}
+			finally
+			{
+				m_ComponentsSection.Leave();
+			}
 		}
 
 		/// <summary>
