@@ -175,25 +175,27 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		}
 
 		/// <summary>
-		/// Gets the input for the given output.
+		/// Gets the input routed to the given output matching the given type.
 		/// </summary>
 		/// <param name="output"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public override IEnumerable<ConnectorInfo> GetInputs(int output, eConnectionType type)
+		/// <exception cref="InvalidOperationException">Type has multiple flags.</exception>
+		public override ConnectorInfo? GetInput(int output, eConnectionType type)
 		{
-			if (EnumUtils.HasMultipleFlags(type))
-			{
-				return EnumUtils.GetFlagsExceptNone(type)
-				                .SelectMany(f => GetInputs(output, f))
-				                .Distinct();
-			}
+			if (!VideoComponent.ContainsVideoOutputConnector(output))
+				throw new KeyNotFoundException(string.Format("{0} has no output at address {1}", Parent, output));
 
 			if (type != eConnectionType.Video || !IsPresentationOutput(output))
-				return Enumerable.Empty<ConnectorInfo>();
+				throw new ArgumentException(string.Format("{0} has no output at address {1}", Parent, output));
 
-			return PresentationComponent.GetPresentations()
-			                            .Select(p => GetInput(p.VideoInputConnector));
+			ConnectorInfo connector;
+			if (PresentationComponent.GetPresentations()
+			                         .Select(p => GetInput(p.VideoInputConnector))
+			                         .TryFirst(out connector))
+				return connector;
+
+			return null;
 		}
 
 		/// <summary>
@@ -218,6 +220,17 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		{
 			return VideoComponent.GetVideoOutputConnectorIds()
 			                     .Select(id => GetOutput(id));
+		}
+
+		/// <summary>
+		/// Gets the outputs for the given input.
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public override IEnumerable<ConnectorInfo> GetOutputs(int input, eConnectionType type)
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion
@@ -366,13 +379,10 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		{
 			foreach (int output in GetOutputs().Select(c => c.Address))
 			{
-				int temp;
-				int? input = GetInputs(output, eConnectionType.Video).Select(c => c.Address)
-				                                                     .TryFirst(out temp)
-					             ? temp
-					             : (int?)null;
+				ConnectorInfo? input = GetInput(output, eConnectionType.Video);
+				int? address = input == null ? (int?)null : ((ConnectorInfo)input).Address;
 
-				m_Cache.SetInputForOutput(output, input, eConnectionType.Video);
+				m_Cache.SetInputForOutput(output, address, eConnectionType.Video);
 			}
 		}
 
