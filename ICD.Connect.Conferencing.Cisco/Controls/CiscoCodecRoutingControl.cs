@@ -187,7 +187,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 				throw new KeyNotFoundException(string.Format("{0} has no output at address {1}", Parent, output));
 
 			if (type != eConnectionType.Video || !IsPresentationOutput(output))
-				throw new ArgumentException(string.Format("{0} has no output at address {1}", Parent, output));
+				throw new ArgumentException(string.Format("{0} has no {1} output at address {2}", Parent, type, output));
 
 			ConnectorInfo connector;
 			if (PresentationComponent.GetPresentations()
@@ -230,7 +230,16 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetOutputs(int input, eConnectionType type)
 		{
-			throw new NotImplementedException();
+			if (!VideoComponent.ContainsVideoInputConnector(input))
+				throw new KeyNotFoundException(string.Format("{0} has no input at address {1}", Parent, input));
+
+			if (type != eConnectionType.Video)
+				throw new ArgumentException(string.Format("{0} has no {1} input at address {2}", Parent, type, input));
+
+			return PresentationComponent.GetPresentations()
+			                            .Where(p => p.VideoInputConnector == input)
+			                            .SelectMany(p => GetPresentationOutputs())
+			                            .Select(o => new ConnectorInfo(o, type));
 		}
 
 		#endregion
