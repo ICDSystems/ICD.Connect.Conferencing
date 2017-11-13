@@ -801,9 +801,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			foreach (IConsoleNodeBase node in m_Components.GetComponents()
-			                                              .OrderBy(c => c.GetType().Name)
-			                                              .Cast<IConsoleNodeBase>())
+			foreach (AbstractCiscoComponent node in m_Components.GetComponents().OrderBy(c => c.GetType().Name))
 				yield return node;
 		}
 
