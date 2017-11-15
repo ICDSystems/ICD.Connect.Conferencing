@@ -4,6 +4,7 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
+using ICD.Connect.Settings.Attributes.SettingsProperties;
 
 namespace ICD.Connect.Conferencing.Cisco
 {
@@ -17,16 +18,27 @@ namespace ICD.Connect.Conferencing.Cisco
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
 
+		private string m_PeripheralsId;
+
 		/// <summary>
 		/// The port id.
 		/// </summary>
-		[SettingsProperty(SettingsProperty.ePropertyType.Id, typeof(ISerialPort))]
+		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
 
 		/// <summary>
 		/// Gets/sets the peripherals id.
 		/// </summary>
-		public string PeripheralsId { get; set; }
+		public string PeripheralsId
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(m_PeripheralsId))
+					m_PeripheralsId = Guid.NewGuid().ToString();
+				return m_PeripheralsId;
+			}
+			set { m_PeripheralsId = value; }
+		}
 
 		/// <summary>
 		/// Gets the originator factory name.
@@ -54,9 +66,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		{
 			base.WriteElements(writer);
 
-			if (Port != null)
-				writer.WriteElementString(PORT_ELEMENT, IcdXmlConvert.ToString((int)Port));
-
+			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
 		}
 
@@ -68,16 +78,11 @@ namespace ICD.Connect.Conferencing.Cisco
 		[PublicAPI, XmlFactoryMethod(FACTORY_NAME)]
 		public static CiscoCodecSettings FromXml(string xml)
 		{
-			int? port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
-			string peripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT);
-
 			CiscoCodecSettings output = new CiscoCodecSettings
 			{
-				Port = port
+				Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT),
+				PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT)
 			};
-
-			if (!string.IsNullOrEmpty(peripheralsId))
-				output.PeripheralsId = peripheralsId;
 
 			ParseXml(output, xml);
 			return output;
