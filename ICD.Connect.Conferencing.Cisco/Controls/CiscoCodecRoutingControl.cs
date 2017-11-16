@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Components.Presentation;
 using ICD.Connect.Conferencing.Cisco.Components.Video;
@@ -114,30 +113,6 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		}
 
 		/// <summary>
-		/// Returns the true if the input is actively being used by the source device.
-		/// For example, a display might true if the input is currently on screen,
-		/// while a switcher may return true if the input is currently routed.
-		/// </summary>
-		public override bool GetInputActiveState(int input, eConnectionType type)
-		{
-			if (EnumUtils.HasMultipleFlags(type))
-			{
-				return EnumUtils.GetFlagsExceptNone(type)
-				                .Select(f => GetInputActiveState(input, f))
-				                .Unanimous(false);
-			}
-
-			if (type != eConnectionType.Video)
-				return false;
-
-			return Parent.Components
-			             .GetComponent<PresentationComponent>()
-			             .GetPresentations()
-			             .Select(p => p.VideoInputConnector)
-			             .Contains(input);
-		}
-
-		/// <summary>
 		/// Returns true if the device is actively transmitting on the given output.
 		/// This is NOT the same as sending video, since some devices may send an
 		/// idle signal by default.
@@ -183,19 +158,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// <exception cref="InvalidOperationException">Type has multiple flags.</exception>
 		public override ConnectorInfo? GetInput(int output, eConnectionType type)
 		{
-			if (!VideoComponent.ContainsVideoOutputConnector(output))
-				throw new KeyNotFoundException(string.Format("{0} has no output at address {1}", Parent, output));
-
-			if (type != eConnectionType.Video || !IsPresentationOutput(output))
-				throw new ArgumentException(string.Format("{0} has no {1} output at address {2}", Parent, type, output));
-
-			ConnectorInfo connector;
-			if (PresentationComponent.GetPresentations()
-			                         .Select(p => GetInput(p.VideoInputConnector))
-			                         .TryFirst(out connector))
-				return connector;
-
-			return null;
+			return m_Cache.GetInputConnectorInfoForOutput(output, type);
 		}
 
 		/// <summary>
@@ -230,16 +193,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetOutputs(int input, eConnectionType type)
 		{
-			if (!VideoComponent.ContainsVideoInputConnector(input))
-				throw new KeyNotFoundException(string.Format("{0} has no input at address {1}", Parent, input));
-
-			if (type != eConnectionType.Video)
-				throw new ArgumentException(string.Format("{0} has no {1} input at address {2}", Parent, type, input));
-
-			return PresentationComponent.GetPresentations()
-			                            .Where(p => p.VideoInputConnector == input)
-			                            .SelectMany(p => GetPresentationOutputs())
-			                            .Select(o => new ConnectorInfo(o, type));
+			return m_Cache.GetOutputsForInput(input, type);
 		}
 
 		#endregion
@@ -336,17 +290,6 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 			}
 		}
 
-		/// <summary>
-		/// Returns true if the given output is being used for presentations. 
-		/// </summary>
-		/// <param name="output"></param>
-		/// <returns></returns>
-		private bool IsPresentationOutput(int output)
-		{
-			return VideoComponent.ContainsVideoOutputConnector(output) &&
-			       IsPresentationOutput(VideoComponent.GetVideoOutputConnector(output));
-		}
-
 		#endregion
 
 		#region Component Callbacks
@@ -388,9 +331,13 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		{
 			foreach (int output in GetOutputs().Select(c => c.Address))
 			{
-				ConnectorInfo? input = GetInput(output, eConnectionType.Video);
-				int? address = input == null ? (int?)null : ((ConnectorInfo)input).Address;
+				ConnectorInfo connector;
+				bool found = PresentationComponent.GetPresentations()
+				                                  .Select(p => GetInput(p.VideoInputConnector))
+				                                  .TryFirst(out connector);
 
+				int? address = found ? (int?)null : connector.Address;
+	
 				m_Cache.SetInputForOutput(output, address, eConnectionType.Video);
 			}
 		}
