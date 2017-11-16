@@ -301,6 +301,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 
 		private void ParsePresentation(CiscoCodec sender, string resultId, string xml)
 		{
+			bool changed = false;
+
 			m_PresentationsSection.Enter();
 
 			try
@@ -319,6 +321,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 						else
 							m_Presentations[item] = PresentationItem.FromLocalInstance(localInstance);
 
+						changed = true;
+
 						localInstance.Dispose();
 					}
 				}
@@ -328,7 +332,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 				m_PresentationsSection.Leave();
 			}
 
-			OnPresentationsChanged.Raise(this);
+			if (changed)
+				OnPresentationsChanged.Raise(this);
 		}
 
 		private void ParsePresentationStoppedCauseEvent(CiscoCodec sender, string resultId, string xml)
