@@ -329,16 +329,14 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// <param name="eventArgs"></param>
 		private void PresentationOnPresentationsChanged(object sender, EventArgs eventArgs)
 		{
-			foreach (int output in GetOutputs().Select(c => c.Address))
+			foreach (int output in GetPresentationOutputs())
 			{
-				ConnectorInfo connector;
+				int input;
 				bool found = PresentationComponent.GetPresentations()
-				                                  .Select(p => GetInput(p.VideoInputConnector))
-				                                  .TryFirst(out connector);
+				                                  .Select(p => p.VideoInputConnector)
+				                                  .TryFirst(out input);
 
-				int? address = found ? (int?)null : connector.Address;
-	
-				m_Cache.SetInputForOutput(output, address, eConnectionType.Video);
+				m_Cache.SetInputForOutput(output, found ? input : (int?)null, eConnectionType.Video);
 			}
 		}
 
