@@ -188,11 +188,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			base.DisposeFinal(disposing);
 
 			m_FeedbackTimer.Dispose();
-
 			m_Components.Dispose();
-
-			Unsubscribe(m_Port);
-			Disconnect();
 		}
 
 		/// <summary>
@@ -207,6 +203,9 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			if (port is IComPort)
 				ConfigureComPort(port as IComPort);
+
+			if (m_Port != null)
+				Disconnect();
 
 			Unsubscribe(m_Port);
 			m_Port = port;
@@ -379,6 +378,9 @@ namespace ICD.Connect.Conferencing.Cisco
 		[PublicAPI]
 		public bool UnregisterParserCallback(ParserCallback callback, params string[] path)
 		{
+			if (!IsConnected)
+				return false;
+
 			m_ParserCallbacksSection.Enter();
 
 			try
