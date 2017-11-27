@@ -187,6 +187,9 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			base.DisposeFinal(disposing);
 
+			Unsubscribe(m_SerialBuffer);
+			Unsubscribe(m_Port);
+
 			m_FeedbackTimer.Dispose();
 			m_Components.Dispose();
 		}
@@ -703,6 +706,15 @@ namespace ICD.Connect.Conferencing.Cisco
 		private void Subscribe(ISerialBuffer buffer)
 		{
 			buffer.OnCompletedSerial += SerialBufferCompletedSerial;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the buffer events.
+		/// </summary>
+		/// <param name="buffer"></param>
+		private void Unsubscribe(ISerialBuffer buffer)
+		{
+			buffer.OnCompletedSerial -= SerialBufferCompletedSerial;
 		}
 
 		/// <summary>
