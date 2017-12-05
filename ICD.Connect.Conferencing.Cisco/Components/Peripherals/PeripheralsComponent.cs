@@ -75,7 +75,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Peripherals
 		/// </summary>
 		private void HeartbeatCallback()
 		{
-			if (Codec.IsConnected)
+			//if (Codec.IsConnected)
 				Codec.SendCommand("xCommand Peripherals HeartBeat ID: \"{0}\"", Codec.PeripheralsId);
 		}
 
