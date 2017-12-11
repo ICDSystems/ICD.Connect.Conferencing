@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Services.Logging;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
@@ -22,6 +23,8 @@ namespace ICD.Connect.Conferencing.Controls
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
+		private readonly SafeCriticalSection m_StateSection;
+
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
@@ -34,15 +37,24 @@ namespace ICD.Connect.Conferencing.Controls
 		[PublicAPI]
 		public bool AutoAnswer
 		{
-			get { return m_AutoAnswer; }
+			get { return m_StateSection.Execute(() => m_AutoAnswer); }
 			protected set
 			{
-				if (value == m_AutoAnswer)
-					return;
+				m_StateSection.Enter();
 
-				m_AutoAnswer = value;
+				try
+				{
+					if (value == m_AutoAnswer)
+						return;
 
-				Logger.AddEntry(eSeverity.Informational, "{0} AutoAnswer set to {1}", this, m_AutoAnswer);
+					m_AutoAnswer = value;
+
+					Logger.AddEntry(eSeverity.Informational, "{0} AutoAnswer set to {1}", this, m_AutoAnswer);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
 
 				OnAutoAnswerChanged.Raise(this, new BoolEventArgs(m_AutoAnswer));
 			}
@@ -54,16 +66,25 @@ namespace ICD.Connect.Conferencing.Controls
 		[PublicAPI]
 		public bool PrivacyMuted
 		{
-			get { return m_PrivacyMuted; }
+			get { return m_StateSection.Execute(() => m_PrivacyMuted); }
 			protected set
 			{
-				if (value == m_PrivacyMuted)
-					return;
+				m_StateSection.Enter();
 
-				m_PrivacyMuted = value;
+				try
+				{
+					if (value == m_PrivacyMuted)
+						return;
 
-				Logger.AddEntry(eSeverity.Informational, "{0} PrivacyMuted set to {1}", this, m_PrivacyMuted);
+					m_PrivacyMuted = value;
 
+					Logger.AddEntry(eSeverity.Informational, "{0} PrivacyMuted set to {1}", this, m_PrivacyMuted);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
+				
 				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMuted));
 			}
 		}
@@ -74,16 +95,25 @@ namespace ICD.Connect.Conferencing.Controls
 		[PublicAPI]
 		public bool DoNotDisturb
 		{
-			get { return m_DoNotDisturb; }
+			get { return m_StateSection.Execute(() => m_DoNotDisturb); }
 			protected set
 			{
-				if (value == m_DoNotDisturb)
-					return;
+				m_StateSection.Enter();
 
-				m_DoNotDisturb = value;
+				try
+				{
+					if (value == m_DoNotDisturb)
+						return;
 
-				Logger.AddEntry(eSeverity.Informational, "{0} DoNotDisturb set to {1}", this, m_DoNotDisturb);
+					m_DoNotDisturb = value;
 
+					Logger.AddEntry(eSeverity.Informational, "{0} DoNotDisturb set to {1}", this, m_DoNotDisturb);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
+				
 				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_DoNotDisturb));
 			}
 		}
@@ -103,6 +133,7 @@ namespace ICD.Connect.Conferencing.Controls
 		protected AbstractDialingDeviceControl(T parent, int id)
 			: base(parent, id)
 		{
+			m_StateSection = new SafeCriticalSection();
 		}
 
 		/// <summary>
