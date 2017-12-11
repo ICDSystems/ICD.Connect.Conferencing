@@ -123,6 +123,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		private void Unsubscribe(DialingComponent component)
 		{
 			component.OnSourceAdded -= ComponentOnSourceAdded;
+			component.OnPrivacyMuteChanged -= ComponentOnPrivacyMuteChanged;
 		}
 
 		private void ComponentOnSourceAdded(object sender, ConferenceSourceEventArgs args)
