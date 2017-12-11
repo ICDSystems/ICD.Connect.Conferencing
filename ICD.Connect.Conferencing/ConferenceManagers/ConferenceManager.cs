@@ -167,6 +167,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Dispose()
 		{
+			OnRecentConferenceAdded = null;
+			OnActiveConferenceChanged = null;
+			OnActiveConferenceStatusChanged = null;
+			OnRecentSourceAdded = null;
+			OnActiveSourceStatusChanged = null;
+			OnPrivacyMuteStatusChange = null;
+			OnInCallChanged = null;
+
 			Unsubscribe(ActiveConference);
 		}
 
@@ -372,14 +380,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="dialingControl"></param>
 		private void UpdateProvider(IDialingDeviceControl dialingControl)
 		{
-			if (dialingControl.AutoAnswer != AutoAnswer)
-				dialingControl.SetAutoAnswer(AutoAnswer);
+			bool autoAnswer = AutoAnswer;
+			bool doNotDisturb = DoNotDisturb;
+			bool privacyMute = PrivacyMuted;
 
-			if (dialingControl.DoNotDisturb != DoNotDisturb)
-				dialingControl.SetDoNotDisturb(DoNotDisturb);
+			if (dialingControl.AutoAnswer != autoAnswer)
+				dialingControl.SetAutoAnswer(autoAnswer);
 
-			if (dialingControl.PrivacyMuted != PrivacyMuted)
-				dialingControl.SetPrivacyMute(PrivacyMuted);
+			if (dialingControl.DoNotDisturb != doNotDisturb)
+				dialingControl.SetDoNotDisturb(doNotDisturb);
+
+			if (dialingControl.PrivacyMuted != privacyMute)
+				dialingControl.SetPrivacyMute(privacyMute);
 		}
 
 		/// <summary>
