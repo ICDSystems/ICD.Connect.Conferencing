@@ -24,6 +24,11 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		public override string Name { get { return string.Format("{0} Dialing Control", Parent.Name); } }
 
 		/// <summary>
+		/// Gets the type of conference this dialer supports.
+		/// </summary>
+		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
+
+		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="parent"></param>
@@ -49,11 +54,6 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		}
 
 		#region Methods
-
-		/// <summary>
-		/// Gets the type of conference this dialer supports.
-		/// </summary>
-		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
 
 		/// <summary>
 		/// Gets the active conference sources.
