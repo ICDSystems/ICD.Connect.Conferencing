@@ -87,14 +87,13 @@ namespace ICD.Connect.Conferencing.Conferences
 		{
 			get
 			{
-				DateTime end;
-				if (m_Sources.Select(s => s.End)
-							 .OfType<DateTime>()
-							 .Order()
-							 .TryLast(out end))
-					return end;
+				DateTime?[] ends = m_Sources.Select(s => s.End).ToArray();
 
-				return null;
+				// Conference hasn't ended yet.
+				if (ends.Length == 0 || ends.Any(e => e == null))
+					return null;
+
+				return ends.ExceptNulls().Max();
 			}
 		}
 
