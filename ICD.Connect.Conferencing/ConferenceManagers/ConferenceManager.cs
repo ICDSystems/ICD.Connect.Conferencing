@@ -175,6 +175,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnPrivacyMuteStatusChange = null;
 			OnInCallChanged = null;
 
+			ClearDialingProviders();
+
 			Unsubscribe(ActiveConference);
 		}
 
