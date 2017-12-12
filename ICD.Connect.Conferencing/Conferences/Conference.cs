@@ -58,9 +58,7 @@ namespace ICD.Connect.Conferencing.Conferences
 
 				m_Status = value;
 
-				EventHandler<ConferenceStatusEventArgs> handler = OnStatusChanged;
-				if (handler != null)
-					handler(this, new ConferenceStatusEventArgs(m_Status));
+				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(m_Status));
 			}
 		}
 
@@ -71,21 +69,14 @@ namespace ICD.Connect.Conferencing.Conferences
 		{
 			get
 			{
-				try
-				{
-					DateTime start;
-					if (m_Sources.Select(s => s.Start)
-					             .OfType<DateTime>()
-					             .Order()
-					             .TryFirst(out start))
-						return start;
+				DateTime start;
+				if (m_Sources.Select(s => s.Start)
+				             .OfType<DateTime>()
+				             .Order()
+				             .TryFirst(out start))
+					return start;
 
-					return null;
-				}
-				catch (InvalidOperationException)
-				{
-					return null;
-				}
+				return null;
 			}
 		}
 
@@ -96,13 +87,14 @@ namespace ICD.Connect.Conferencing.Conferences
 		{
 			get
 			{
-				DateTime?[] ends = m_Sources.Select(s => s.End).ToArray();
+				DateTime end;
+				if (m_Sources.Select(s => s.End)
+							 .OfType<DateTime>()
+							 .Order()
+							 .TryLast(out end))
+					return end;
 
-				// Conference hasn't ended yet.
-				if (ends.Length == 0)
-					return null;
-
-				return ends.Contains(null) ? null : ends.Max();
+				return null;
 			}
 		}
 
@@ -156,10 +148,9 @@ namespace ICD.Connect.Conferencing.Conferences
 
 			try
 			{
-				if (m_Sources.Contains(source))
+				if (!m_Sources.Add(source))
 					return false;
 
-				m_Sources.Add(source);
 				Subscribe(source);
 			}
 			finally
@@ -185,10 +176,9 @@ namespace ICD.Connect.Conferencing.Conferences
 
 			try
 			{
-				if (!m_Sources.Contains(source))
+				if (!m_Sources.Remove(source))
 					return false;
 
-				m_Sources.Remove(source);
 				Unsubscribe(source);
 			}
 			finally
@@ -217,6 +207,9 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public void Dispose()
 		{
+			OnStatusChanged = null;
+			OnSourcesChanged = null;
+
 			Clear();
 		}
 
