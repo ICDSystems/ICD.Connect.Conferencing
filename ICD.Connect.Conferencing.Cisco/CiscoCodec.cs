@@ -425,7 +425,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// <returns></returns>
 		private string AddLogPrefix(string log)
 		{
-			return string.Format("{0} - {1}", GetType().Name, log);
+			return string.Format("{0} - {1}", this, log);
 		}
 
 		#endregion
