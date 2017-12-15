@@ -185,12 +185,13 @@ namespace ICD.Connect.Conferencing.Cisco
 			OnConnectedStateChanged = null;
 			OnParsedError = null;
 
-			base.DisposeFinal(disposing);
+			m_FeedbackTimer.Dispose();
 
 			Unsubscribe(m_SerialBuffer);
 			Unsubscribe(m_Port);
 
-			m_FeedbackTimer.Dispose();
+			base.DisposeFinal(disposing);
+			
 			m_Components.Dispose();
 		}
 
