@@ -542,26 +542,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		}
 
 		/// <summary>
-		/// Called for each element in the xml.
-		/// </summary>
-		/// <param name="resultId"></param>
-		/// <param name="args"></param>
-		private void XmlCallback(string resultId, XmlRecursionEventArgs args)
-		{
-			string xml = args.Outer;
-
-			CallParserCallbacks(xml, resultId, args.Path.Skip(1));
-
-			if (!XmlUtils.HasAttribute(xml, "status"))
-				return;
-
-			// Check for errors
-			IcdXmlAttribute statusAttr = XmlUtils.GetAttribute(xml, "status");
-			if (statusAttr.Value == "Error")
-				ParseError(xml);
-		}
-
-		/// <summary>
 		/// Parse and log the codec error message.
 		/// </summary>
 		/// <param name="xml"></param>
@@ -751,6 +731,26 @@ namespace ICD.Connect.Conferencing.Cisco
 			{
 				Log(eSeverity.Error, "Failed to parse XML - {0} - {1}", e.Message, xml);
 			}
+		}
+
+		/// <summary>
+		/// Called for each element in the xml.
+		/// </summary>
+		/// <param name="resultId"></param>
+		/// <param name="args"></param>
+		private void XmlCallback(string resultId, XmlRecursionEventArgs args)
+		{
+			string xml = args.Outer;
+
+			CallParserCallbacks(xml, resultId, args.Path.Skip(1));
+
+			if (!XmlUtils.HasAttribute(xml, "status"))
+				return;
+
+			// Check for errors
+			IcdXmlAttribute statusAttr = XmlUtils.GetAttribute(xml, "status");
+			if (statusAttr.Value == "Error")
+				ParseError(xml);
 		}
 
 		#endregion
