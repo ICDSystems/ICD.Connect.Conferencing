@@ -93,7 +93,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 				return;
 
 			codec.OnInitializedChanged += CodecOnInitializedChanged;
-			codec.OnConnectedStateChanged += CodecOnConnectedStateChanged;
+			codec.OnConnectedStateChanged += CodecOnConnectionStateChanged;
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 				return;
 
 			codec.OnInitializedChanged -= CodecOnInitializedChanged;
-			codec.OnConnectedStateChanged -= CodecOnConnectedStateChanged;
+			codec.OnConnectedStateChanged -= CodecOnConnectionStateChanged;
 		}
 
 		/// <summary>
@@ -143,7 +143,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void CodecOnConnectedStateChanged(object sender, BoolEventArgs args)
+		private void CodecOnConnectionStateChanged(object sender, BoolEventArgs args)
 		{
 			ConnectionStatusChanged(args.Data);
 		}
