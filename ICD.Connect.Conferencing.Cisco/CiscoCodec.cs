@@ -161,6 +161,8 @@ namespace ICD.Connect.Conferencing.Cisco
         /// </summary>
         public CiscoCodec()
         {
+            Heartbeat = new Heartbeat(this);
+
             m_ParserCallbacks = new Dictionary<string, List<ParserCallback>>();
             m_ParserCallbacksSection = new SafeCriticalSection();
 
@@ -188,6 +190,9 @@ namespace ICD.Connect.Conferencing.Cisco
             OnParsedError = null;
 
             m_FeedbackTimer.Dispose();
+
+            Heartbeat.StopMonitoring();
+            Heartbeat.Dispose();
 
             Unsubscribe(m_SerialBuffer);
             Unsubscribe(m_Port);
@@ -219,6 +224,8 @@ namespace ICD.Connect.Conferencing.Cisco
 
             if (m_Port != null)
                 Connect();
+
+            Heartbeat.StartMonitoring();
 
             UpdateCachedOnlineStatus();
         }
