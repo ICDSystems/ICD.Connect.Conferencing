@@ -98,6 +98,10 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		DateTime? End { get; }
 
+		DateTime Instantiated { get; }
+
+		DateTime StartOrInstantiated { get; }
+
 		/// <summary>
 		/// Gets the remote camera.
 		/// </summary>

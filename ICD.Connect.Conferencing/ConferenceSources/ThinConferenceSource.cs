@@ -39,6 +39,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		private eConferenceSourceAnswerState m_AnswerState;
 		private DateTime? m_Start;
 		private DateTime? m_End;
+		private DateTime m_Instantiated;
 		private eConferenceSourceDirection m_Direction;
 
 		#region Properties
@@ -170,6 +171,25 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			}
 		}
 
+		public DateTime Instantiated
+		{
+			get { return m_Instantiated; }
+			set
+			{
+				if (value == m_Instantiated)
+					return;
+
+				m_Instantiated = value;
+
+				Log(eSeverity.Informational, "Initiated set to {0}", m_Instantiated);
+			}
+		}
+
+		public DateTime StartOrInstantiated
+		{
+			get { return Start ?? Instantiated; }
+		}
+
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
@@ -181,6 +201,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		ICamera IConferenceSource.Camera { get { return null; } }
 
 		#endregion
+
+		public ThinConferenceSource()
+		{
+			Instantiated = IcdEnvironment.GetLocalTime();
+		}
 
 		#region Methods
 
