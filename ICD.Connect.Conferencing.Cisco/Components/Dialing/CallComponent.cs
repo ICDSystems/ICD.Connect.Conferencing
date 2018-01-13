@@ -159,11 +159,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		/// </summary>
 		public DateTime? End { get; private set; }
 
-		public DateTime Instantiated { get; private set; }
+		public DateTime DialTime { get; private set; }
 
-		public DateTime StartOrInstantiated
+		public DateTime StartOrDialTime
 		{
-			get { return Start ?? Instantiated; }
+			get { return Start ?? DialTime; }
 		}
 
 		/// <summary>
@@ -317,7 +317,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 			if (Codec.Initialized)
 				Initialize();
 
-			Instantiated = IcdEnvironment.GetLocalTime();
+			DialTime = IcdEnvironment.GetLocalTime();
 		}
 
 		#endregion

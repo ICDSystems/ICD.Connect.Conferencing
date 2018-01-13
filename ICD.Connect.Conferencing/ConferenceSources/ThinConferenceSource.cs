@@ -39,7 +39,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		private eConferenceSourceAnswerState m_AnswerState;
 		private DateTime? m_Start;
 		private DateTime? m_End;
-		private DateTime m_Instantiated;
+		private DateTime m_DialTime;
 		private eConferenceSourceDirection m_Direction;
 
 		#region Properties
@@ -171,23 +171,23 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			}
 		}
 
-		public DateTime Instantiated
+		public DateTime DialTime
 		{
-			get { return m_Instantiated; }
+			get { return m_DialTime; }
 			set
 			{
-				if (value == m_Instantiated)
+				if (value == m_DialTime)
 					return;
 
-				m_Instantiated = value;
+				m_DialTime = value;
 
-				Log(eSeverity.Informational, "Initiated set to {0}", m_Instantiated);
+				Log(eSeverity.Informational, "Initiated set to {0}", m_DialTime);
 			}
 		}
 
-		public DateTime StartOrInstantiated
+		public DateTime StartOrDialTime
 		{
-			get { return Start ?? Instantiated; }
+			get { return Start ?? DialTime; }
 		}
 
 		/// <summary>
@@ -204,7 +204,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 		public ThinConferenceSource()
 		{
-			Instantiated = IcdEnvironment.GetLocalTime();
+			DialTime = IcdEnvironment.GetLocalTime();
 		}
 
 		#region Methods
