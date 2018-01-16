@@ -1,5 +1,5 @@
-﻿using ICD.Common.Utils.EventArguments;
-using ICD.Common.Properties;
+﻿using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Video
 {

@@ -391,8 +391,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 
 			int surname = string.Compare(x.LastName, y.LastName, StringComparison.Ordinal);
 			return surname != 0
-				? surname
-				: string.Compare(x.FirstName, y.FirstName, StringComparison.Ordinal);
+				       ? surname
+				       : string.Compare(x.FirstName, y.FirstName, StringComparison.Ordinal);
 		}
 	}
 }

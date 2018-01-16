@@ -72,8 +72,8 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		public IEnumerable<int> GetMainOutputs()
 		{
 			return VideoComponent.GetVideoOutputConnectors()
-								 .Where(IsMainOutput)
-								 .Select(c => c.ConnectorId);
+			                     .Where(IsMainOutput)
+			                     .Select(c => c.ConnectorId);
 		}
 
 		/// <summary>
@@ -92,8 +92,8 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		public IEnumerable<int> GetPresentationOutputs()
 		{
 			return VideoComponent.GetVideoOutputConnectors()
-								 .Where(IsPresentationOutput)
-								 .Select(c => c.ConnectorId);
+			                     .Where(IsPresentationOutput)
+			                     .Select(c => c.ConnectorId);
 		}
 
 		/// <summary>
@@ -284,7 +284,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 					return monitors == eMonitors.Dual || monitors == eMonitors.DualPresentationOnly;
 				case VideoOutputConnector.eMonitorRole.Third:
 					return monitors == eMonitors.Triple || monitors == eMonitors.TriplePresentationOnly;
-				
+
 				default:
 					throw new ArgumentOutOfRangeException();
 			}

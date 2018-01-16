@@ -1,7 +1,7 @@
 ﻿using System;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
@@ -156,7 +156,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video.Connectors
 			else if (!string.IsNullOrEmpty(type))
 			{
 				ServiceProvider.GetService<ILoggerService>()
-							   .AddEntry(eSeverity.Warning, "{0} - Unknown connector type {1}", GetType().Name, connectorType);
+				               .AddEntry(eSeverity.Warning, "{0} - Unknown connector type {1}", GetType().Name, connectorType);
 				ConnectorType = eConnectorType.Unknown;
 			}
 		}

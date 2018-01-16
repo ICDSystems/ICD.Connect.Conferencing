@@ -73,7 +73,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			{
 				if (value == m_Number)
 					return;
-				
+
 				m_Number = value;
 
 				Log(eSeverity.Informational, "Number set to {0}", m_Number);
@@ -185,10 +185,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			}
 		}
 
-		public DateTime StartOrDialTime
-		{
-			get { return Start ?? DialTime; }
-		}
+		public DateTime StartOrDialTime { get { return Start ?? DialTime; } }
 
 		/// <summary>
 		/// Gets the source type.

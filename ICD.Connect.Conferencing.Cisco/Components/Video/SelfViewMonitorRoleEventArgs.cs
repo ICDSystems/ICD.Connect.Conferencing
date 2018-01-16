@@ -1,5 +1,5 @@
-﻿using ICD.Common.Utils.EventArguments;
-using ICD.Common.Properties;
+﻿using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Video
 {
@@ -7,14 +7,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 #pragma warning disable 1591
 	public enum eSelfViewMonitorRole
 	{
-		[UsedImplicitly]
-		First = 1,
-		[UsedImplicitly]
-		Second = 2,
-		[UsedImplicitly]
-		Third = 3,
-		[UsedImplicitly]
-		Fourth = 4
+		[UsedImplicitly] First = 1,
+		[UsedImplicitly] Second = 2,
+		[UsedImplicitly] Third = 3,
+		[UsedImplicitly] Fourth = 4
 	}
 #pragma warning restore 1591
 

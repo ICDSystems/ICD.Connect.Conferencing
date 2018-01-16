@@ -268,4 +268,5 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		#endregion
 	}
 }
+
 #endif

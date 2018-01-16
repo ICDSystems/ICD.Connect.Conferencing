@@ -51,8 +51,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		private readonly SafeCriticalSection m_FolderSection;
 		private readonly SafeCriticalSection m_RootsSection;
 
-		[UsedImplicitly]
-		private object m_ParseAsyncHandle;
+		[UsedImplicitly] private object m_ParseAsyncHandle;
 
 		#region Constructors
 
@@ -281,4 +280,4 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 
 		#endregion
 	}
-}	
+}

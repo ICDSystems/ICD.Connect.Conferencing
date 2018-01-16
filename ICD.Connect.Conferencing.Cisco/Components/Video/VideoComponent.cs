@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		/// Called when the number of monitors changes.
 		/// </summary>
 		[PublicAPI]
-		public event EventHandler<MonitorsEventArgs> OnMonitorsChanged; 
+		public event EventHandler<MonitorsEventArgs> OnMonitorsChanged;
 
 		private bool m_SelfViewEnabled;
 		private bool m_SelfViewFullScreenEnabled;
@@ -404,8 +404,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		public VideoInputConnector GetVideoInputConnector(int id)
 		{
 			if (!ContainsVideoInputConnector(id))
+			{
 				throw new KeyNotFoundException(string.Format("{0} contains no {1} with id {2}", GetType().Name,
 				                                             typeof(VideoInputConnector).Name, id));
+			}
 			return m_VideoInputConnectors[id];
 		}
 
@@ -446,8 +448,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		public VideoOutputConnector GetVideoOutputConnector(int id)
 		{
 			if (!ContainsVideoOutputConnector(id))
+			{
 				throw new KeyNotFoundException(string.Format("{0} contains no {1} with id {2}", GetType().Name,
 				                                             typeof(VideoOutputConnector).Name, id));
+			}
 			return m_VideoOutputConnectors[id];
 		}
 

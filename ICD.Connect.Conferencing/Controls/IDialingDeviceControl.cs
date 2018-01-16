@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Controls;

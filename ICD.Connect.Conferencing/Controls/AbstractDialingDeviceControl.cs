@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -84,7 +84,7 @@ namespace ICD.Connect.Conferencing.Controls
 				{
 					m_StateSection.Leave();
 				}
-				
+
 				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMuted));
 			}
 		}
@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.Controls
 				{
 					m_StateSection.Leave();
 				}
-				
+
 				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_DoNotDisturb));
 			}
 		}
