@@ -309,7 +309,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 			{
 				using (IcdXmlReader reader = new IcdXmlReader(xml))
 				{
-					reader.SkipToNextElement();
+					reader.ReadToNextElement();
 
 					foreach (IcdXmlReader localInstance in reader.GetChildElements().Where(l => l.Name == "LocalInstance"))
 					{

@@ -343,7 +343,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		{
 			using (IcdXmlReader reader = new IcdXmlReader(xml))
 			{
-				reader.SkipToNextElement();
+				reader.ReadToNextElement();
 
 				int callId = reader.GetAttributeAsInt("item");
 				if (callId != CallId)

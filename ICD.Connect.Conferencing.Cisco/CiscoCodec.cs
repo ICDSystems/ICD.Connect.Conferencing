@@ -561,7 +561,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			using (IcdXmlReader reader = new IcdXmlReader(xml))
 			{
-				reader.SkipToNextElement();
+				reader.ReadToNextElement();
 
 				message = reader.Name;
 
@@ -716,7 +716,9 @@ namespace ICD.Connect.Conferencing.Cisco
 			string resultId;
 			using (IcdXmlReader reader = new IcdXmlReader(xml))
 			{
-				reader.SkipToNextElement();
+				if (!reader.ReadToNextElement())
+					return;
+
 				resultId = reader.GetAttribute("resultId");
 			}
 

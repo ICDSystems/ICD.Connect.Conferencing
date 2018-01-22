@@ -83,7 +83,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
 
 				using (IcdXmlReader reader = new IcdXmlReader(xml))
 				{
-					reader.SkipToNextElement();
+					reader.ReadToNextElement();
 
 					foreach (string child in reader.GetChildElementsAsString())
 					{

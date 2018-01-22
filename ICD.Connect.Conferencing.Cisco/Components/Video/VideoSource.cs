@@ -62,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		{
 			using (IcdXmlReader reader = new IcdXmlReader(xml))
 			{
-				reader.SkipToNextElement();
+				reader.ReadToNextElement();
 
 				SourceId = reader.GetAttributeAsInt("item");
 

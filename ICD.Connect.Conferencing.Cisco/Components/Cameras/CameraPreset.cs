@@ -65,7 +65,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		{
 			using (IcdXmlReader reader = new IcdXmlReader(xml))
 			{
-				reader.SkipToNextElement();
+				reader.ReadToNextElement();
 
 				int listPosition = reader.GetAttributeAsInt("item");
 				int presetId = 0;
