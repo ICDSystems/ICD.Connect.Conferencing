@@ -58,7 +58,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <param name="contactId"></param>
 		/// <param name="folderId"></param>
 		/// <param name="contactMethods"></param>
-		private CiscoContact(string name, string contactId, string folderId, IContactMethod[] contactMethods)
+		public CiscoContact(string name, string contactId, string folderId, CiscoContactMethod[] contactMethods)
 		{
 			Name = name;
 			ContactId = contactId;
@@ -83,9 +83,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 				string name = XmlUtils.TryReadChildElementContentAsString(xml, "Name");
 				string folderId = XmlUtils.TryReadChildElementContentAsString(xml, "FolderId");
 
-				IContactMethod[] contactMethods = XmlUtils.GetChildElementsAsString(xml, "ContactMethod")
-				                                          .Select(e => CiscoContactMethod.FromXml(e) as IContactMethod)
-				                                          .ToArray();
+				CiscoContactMethod[] contactMethods = XmlUtils.GetChildElementsAsString(xml, "ContactMethod")
+				                                              .Select(e => CiscoContactMethod.FromXml(e))
+				                                              .ToArray();
 
 				cache[cachedId] = new CiscoContact(name, contactId, folderId, contactMethods);
 			}
