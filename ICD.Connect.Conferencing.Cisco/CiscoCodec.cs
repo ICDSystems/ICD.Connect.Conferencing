@@ -581,7 +581,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		}
 
 		/// <summary>
-		/// Periodically re-register feedback to make sure nothing myseriously vanishes.
+		/// Periodically re-register feedback to make sure nothing is unsubscribed.
 		/// </summary>
 		private void FeedbackTimerCallback()
 		{
@@ -590,21 +590,16 @@ namespace ICD.Connect.Conferencing.Cisco
 		}
 
 		/// <summary>
-		/// Parse the feedback registration and ensure nothing has been lost.
+		/// Parse the feedback registration and ensure nothing has been unsubscribed.
 		/// </summary>
 		/// <param name="xml"></param>
 		private void ParseFeedbackRegistration(string xml)
 		{
-			string inner;
-			using (IcdXmlReader reader = new IcdXmlReader(xml))
-			{
-				reader.SkipToNextElement();
-				inner = reader.ReadElementContentAsString();
-			}
+			string inner = XmlUtils.ReadElementContent(xml);
 
 			IcdHashSet<string> actual = new IcdHashSet<string>(inner.Split());
 			IcdHashSet<string> expected =
-				m_ParserCallbacksSection.Execute(() => new IcdHashSet<string>(m_ParserCallbacks.Select(p => p.Key)));
+				m_ParserCallbacksSection.Execute(() => m_ParserCallbacks.Select(p => p.Key).ToIcdHashSet());
 			IcdHashSet<string> missing = expected.Subtract(actual);
 
 			foreach (string item in missing)
