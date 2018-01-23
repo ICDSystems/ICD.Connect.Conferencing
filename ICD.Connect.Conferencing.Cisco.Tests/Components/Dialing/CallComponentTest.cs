@@ -74,11 +74,11 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Dialing
 		[Test]
 		public void DurationTest()
 		{
-			int id = 67;
+			const int id = 67;
 
 			CallComponent component = new CallComponent(id, Codec);
 
-			string rX =
+			const string rX =
 				"<XmlDoc resultId=\"\">"
 				+ "<Status>"
 				+ "<Call item=\"{0}\">"

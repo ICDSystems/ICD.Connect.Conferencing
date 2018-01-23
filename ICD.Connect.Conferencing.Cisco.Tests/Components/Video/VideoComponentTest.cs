@@ -2,7 +2,6 @@
 using ICD.Common.Utils.EventArguments;
 using NUnit.Framework;
 using ICD.Connect.Conferencing.Cisco.Components.Video;
-using ICD.Connect.Conferencing.Cisco.Components.Video.Connectors;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Video
 {
@@ -134,19 +133,19 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Video
 				+ "</Status>"
 				+ "</XmlDoc>";
 
-			string first = string.Format(rX, VideoOutputConnector.eMonitorRole.First);
-			string second = string.Format(rX, VideoOutputConnector.eMonitorRole.Second);
-			string third = string.Format(rX, VideoOutputConnector.eMonitorRole.Third);
+			string first = string.Format(rX, eSelfViewMonitorRole.First);
+			string second = string.Format(rX, eSelfViewMonitorRole.Second);
+			string third = string.Format(rX, eSelfViewMonitorRole.Third);
 
 			Port.Receive(first);
 			Port.Receive(second);
 			Port.Receive(third);
 
 			Assert.AreEqual(3, responses.Count);
-			Assert.AreEqual(VideoOutputConnector.eMonitorRole.First, responses[0].Data);
-			Assert.AreEqual(VideoOutputConnector.eMonitorRole.Second, responses[1].Data);
-			Assert.AreEqual(VideoOutputConnector.eMonitorRole.Third, responses[2].Data);
-			Assert.AreEqual(VideoOutputConnector.eMonitorRole.Third, component.SelfViewMonitor);
+			Assert.AreEqual(eSelfViewMonitorRole.First, responses[0].Data);
+			Assert.AreEqual(eSelfViewMonitorRole.Second, responses[1].Data);
+			Assert.AreEqual(eSelfViewMonitorRole.Third, responses[2].Data);
+			Assert.AreEqual(eSelfViewMonitorRole.Third, component.SelfViewMonitor);
 		}
 
 		[Test]
