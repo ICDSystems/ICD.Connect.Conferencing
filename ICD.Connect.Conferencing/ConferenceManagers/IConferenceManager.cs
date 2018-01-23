@@ -263,6 +263,22 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Redials the contact from the given conference source.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="source"></param>
+		public static void Dial(this IConferenceManager extends, IConferenceSource source)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (source == null)
+				throw new ArgumentNullException("source");
+
+			extends.Dial(source.Number, source.SourceType);
+		}
+
+		/// <summary>
 		/// Toggles the current privacy mute state.
 		/// </summary>
 		/// <param name="extends"></param>
