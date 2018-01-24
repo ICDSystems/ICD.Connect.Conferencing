@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crestron.SimplSharp.CrestronData;
-using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.SQLite;
 using ICD.Common.Utils.IO;
 
@@ -43,7 +42,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 
 			m_ContactMethods = new SqLiteFavoriteContactMethods(m_DataPath);
 
-			if (!File.Exists(m_DataPath))
+			if (!IcdFile.Exists(m_DataPath))
 				SQLiteConnection.CreateFile(m_DataPath);
 
 			CreateTable();
