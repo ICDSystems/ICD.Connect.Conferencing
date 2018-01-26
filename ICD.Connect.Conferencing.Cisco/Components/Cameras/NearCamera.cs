@@ -6,6 +6,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Cameras;
 using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
@@ -115,42 +116,43 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? Connected;
 		}
 
-		/// <summary>
-		/// Moves the local camera.
-		/// </summary>
-		/// <param name="action"></param>
-		public override void Move(eCameraAction action)
-		{
-			switch (action)
-			{
-				case eCameraAction.Left:
-					Pan(eCameraPan.Left);
-					break;
+		//TODO: FIX ME
+		///// <summary>
+		///// Moves the local camera.
+		///// </summary>
+		///// <param name="action"></param>
+		//public override void Move(eCameraPanTiltAction action)
+		//{
+		//    switch (action)
+		//    {
+		//        case eCameraPanTiltAction.Left:
+		//            Pan(eCameraPan.Left);
+		//            break;
 
-				case eCameraAction.Right:
-					Pan(eCameraPan.Right);
-					break;
+		//        case eCameraPanTiltAction.Right:
+		//            Pan(eCameraPan.Right);
+		//            break;
 
-				case eCameraAction.Up:
-					Tilt(eCameraTilt.Up);
-					break;
+		//        case eCameraPanTiltAction.Up:
+		//            Tilt(eCameraTilt.Up);
+		//            break;
 
-				case eCameraAction.Down:
-					Tilt(eCameraTilt.Down);
-					break;
+		//        case eCameraPanTiltAction.Down:
+		//            Tilt(eCameraTilt.Down);
+		//            break;
 
-				case eCameraAction.ZoomIn:
-					Zoom(eCameraZoom.In);
-					break;
+		//        case eCameraPanTiltAction.ZoomIn:
+		//            Zoom(eCameraZoom.In);
+		//            break;
 
-				case eCameraAction.ZoomOut:
-					Zoom(eCameraZoom.Out);
-					break;
+		//        case eCameraPanTiltAction.ZoomOut:
+		//            Zoom(eCameraZoom.Out);
+		//            break;
 
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-		}
+		//        default:
+		//            throw new ArgumentOutOfRangeException();
+		//    }
+		//}
 
 		/// <summary>
 		/// Pans the local camera.
@@ -272,6 +274,15 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 			// Updates the presets
 			Codec.SendCommand("xCommand Camera Preset List");
+		}
+
+		/// <summary>
+		/// Starts the camera moving.
+		/// </summary>
+		/// <param name="action"></param>
+		public override void Move(eCameraPanTiltAction action)
+		{
+			throw new NotImplementedException();
 		}
 
 		/// <summary>

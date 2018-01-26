@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {

@@ -1,23 +1,16 @@
-﻿namespace ICD.Connect.Conferencing.Cameras
+﻿using ICD.Connect.Cameras;
+
+namespace ICD.Connect.Conferencing.Cameras
 {
-	public enum eCameraAction
-	{
-		Left,
-		Right,
-		Up,
-		Down,
+	
 
-		ZoomIn,
-		ZoomOut
-	}
-
-	public interface ICamera
+	public interface ICiscoCamera
 	{
 		/// <summary>
 		/// Starts the camera moving.
 		/// </summary>
 		/// <param name="action"></param>
-		void Move(eCameraAction action);
+		void Move(eCameraPanTiltAction action);
 
 		/// <summary>
 		/// Stops the camera from moving.
