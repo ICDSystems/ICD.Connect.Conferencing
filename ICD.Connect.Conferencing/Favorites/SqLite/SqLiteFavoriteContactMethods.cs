@@ -222,7 +222,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static IEnumerable<FavoriteContactMethod> ContactMethodsFromReader(IDataReader reader)
+		private static IEnumerable<FavoriteContactMethod> ContactMethodsFromReader(IIcdDataReader reader)
 		{
 			while (reader.Read())
 				yield return RowToContactMethod(reader);
@@ -233,7 +233,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static FavoriteContactMethod RowToContactMethod(IDataRecord reader)
+		private static FavoriteContactMethod RowToContactMethod(IIcdDataRecord reader)
 		{
 			return new FavoriteContactMethod
 			{

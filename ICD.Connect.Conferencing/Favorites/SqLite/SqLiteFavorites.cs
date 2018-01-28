@@ -250,7 +250,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static IEnumerable<Favorite> FavoritesFromReader(IDataReader reader)
+		private static IEnumerable<Favorite> FavoritesFromReader(IIcdDataReader reader)
 		{
 			while (reader.Read())
 				yield return RowToFavorite(reader);
@@ -261,7 +261,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static Favorite RowToFavorite(IDataRecord reader)
+		private static Favorite RowToFavorite(IIcdDataRecord reader)
 		{
 			return new Favorite
 			{
