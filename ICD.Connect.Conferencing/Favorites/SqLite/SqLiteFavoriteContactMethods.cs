@@ -1,10 +1,8 @@
-﻿#if SIMPLSHARP
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Crestron.SimplSharp.CrestronData;
-using Crestron.SimplSharp.SQLite;
 using ICD.Common.Properties;
 using ICD.Common.Utils.IO;
+using ICD.Common.Utils.Sqlite;
 
 namespace ICD.Connect.Conferencing.Favorites.SqLite
 {
@@ -43,7 +41,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 			m_DataPath = IcdPath.ChangeExtension(path, SQLITE_EXT);
 
 			if (!IcdFile.Exists(m_DataPath))
-				SQLiteConnection.CreateFile(m_DataPath);
+				IcdSqliteConnection.CreateFile(m_DataPath);
 
 			CreateTable();
 		}
@@ -61,12 +59,12 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		{
 			string query = string.Format("SELECT * FROM {0}", TABLE);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
 					connection.Open();
-					using (SQLiteDataReader reader = command.ExecuteReader())
+					using (IcdSqliteDataReader reader = command.ExecuteReader())
 						return ContactMethodsFromReader(reader).ToArray();
 				}
 			}
@@ -82,14 +80,14 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		{
 			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_ID, PARAM_ID);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_ID, DbType.Int64).Value = id;
+					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = id;
 
 					connection.Open();
-					using (SQLiteDataReader reader = command.ExecuteReader())
+					using (IcdSqliteDataReader reader = command.ExecuteReader())
 						return ContactMethodsFromReader(reader).FirstOrDefault();
 				}
 			}
@@ -105,14 +103,14 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		{
 			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_FAVORITE_ID, PARAM_FAVORITE_ID);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_FAVORITE_ID, DbType.Int64).Value = favoriteId;
+					command.Parameters.Add(PARAM_FAVORITE_ID, eDbType.Int64).Value = favoriteId;
 
 					connection.Open();
-					using (SQLiteDataReader reader = command.ExecuteReader())
+					using (IcdSqliteDataReader reader = command.ExecuteReader())
 						return ContactMethodsFromReader(reader).ToArray();
 				}
 			}
@@ -128,14 +126,14 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		{
 			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_NUMBER, PARAM_NUMBER);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_NUMBER, DbType.String).Value = number;
+					command.Parameters.Add(PARAM_NUMBER, eDbType.String).Value = number;
 
 					connection.Open();
-					using (SQLiteDataReader reader = command.ExecuteReader())
+					using (IcdSqliteDataReader reader = command.ExecuteReader())
 						return ContactMethodsFromReader(reader).ToArray();
 				}
 			}
@@ -156,13 +154,13 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				string.Format("INSERT INTO {0} ({1}, {2}, {3}) VALUES ({4}, {5}, {6})",
 				              TABLE, COLUMN_ID, COLUMN_FAVORITE_ID, COLUMN_NUMBER, PARAM_ID, PARAM_FAVORITE_ID, PARAM_NUMBER);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_ID, DbType.Int64).Value = contactMethod.Id;
-					command.Parameters.Add(PARAM_FAVORITE_ID, DbType.Int64).Value = favoriteId;
-					command.Parameters.Add(PARAM_NUMBER, DbType.String).Value = contactMethod.Number;
+					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = contactMethod.Id;
+					command.Parameters.Add(PARAM_FAVORITE_ID, eDbType.Int64).Value = favoriteId;
+					command.Parameters.Add(PARAM_NUMBER, eDbType.String).Value = contactMethod.Number;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
@@ -180,11 +178,11 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		{
 			string query = string.Format("DELETE FROM {0} WHERE {1}={2}", TABLE, COLUMN_ID, PARAM_ID);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_ID, DbType.Int64).Value = contactMethod.Id;
+					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = contactMethod.Id;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
@@ -203,11 +201,11 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 			string query = string.Format("UPDATE {0} SET {1}={2} WHERE {3}={4}", TABLE, COLUMN_NUMBER, PARAM_NUMBER, COLUMN_ID,
 			                             PARAM_ID);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_NUMBER, DbType.String).Value = contactMethod.Number;
+					command.Parameters.Add(PARAM_NUMBER, eDbType.String).Value = contactMethod.Number;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
@@ -224,7 +222,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static IEnumerable<FavoriteContactMethod> ContactMethodsFromReader(IDataReader reader)
+		private static IEnumerable<FavoriteContactMethod> ContactMethodsFromReader(IIcdDataReader reader)
 		{
 			while (reader.Read())
 				yield return RowToContactMethod(reader);
@@ -235,7 +233,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static FavoriteContactMethod RowToContactMethod(IDataRecord reader)
+		private static FavoriteContactMethod RowToContactMethod(IIcdDataRecord reader)
 		{
 			return new FavoriteContactMethod
 			{
@@ -255,9 +253,9 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				string.Format("CREATE TABLE IF NOT EXISTS {0} ({1} INTEGER PRIMARY KEY, {2} VARCHAR(40) NOT NULL, {3})",
 				              TABLE, COLUMN_ID, COLUMN_NUMBER, favoriteId);
 
-			using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
 					connection.Open();
 					command.ExecuteNonQuery();
@@ -268,5 +266,3 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		#endregion
 	}
 }
-
-#endif
