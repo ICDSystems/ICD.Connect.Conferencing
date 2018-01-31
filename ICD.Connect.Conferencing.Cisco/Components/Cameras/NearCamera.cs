@@ -11,36 +11,7 @@ using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
-	// Ignore missing comment warning.
-#pragma warning disable 1591
-	public enum eCameraPan
-	{
-		[UsedImplicitly] Left,
-		[UsedImplicitly] Right,
-		[UsedImplicitly] Stop
-	}
 
-	public enum eCameraTilt
-	{
-		[UsedImplicitly] Down,
-		[UsedImplicitly] Up,
-		[UsedImplicitly] Stop
-	}
-
-	public enum eCameraZoom
-	{
-		[UsedImplicitly] In,
-		[UsedImplicitly] Out,
-		[UsedImplicitly] Stop
-	}
-
-	public enum eCameraFocus
-	{
-		[UsedImplicitly] Far,
-		[UsedImplicitly] Near,
-		[UsedImplicitly] Stop
-	}
-#pragma warning restore 1591
 
 	/// <summary>
 	/// NearCamera provides functionality for controlling a local camera.
@@ -115,44 +86,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		{
 			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? Connected;
 		}
-
-		//TODO: FIX ME
-		///// <summary>
-		///// Moves the local camera.
-		///// </summary>
-		///// <param name="action"></param>
-		//public override void Move(eCameraPanTiltAction action)
-		//{
-		//    switch (action)
-		//    {
-		//        case eCameraPanTiltAction.Left:
-		//            Pan(eCameraPan.Left);
-		//            break;
-
-		//        case eCameraPanTiltAction.Right:
-		//            Pan(eCameraPan.Right);
-		//            break;
-
-		//        case eCameraPanTiltAction.Up:
-		//            Tilt(eCameraTilt.Up);
-		//            break;
-
-		//        case eCameraPanTiltAction.Down:
-		//            Tilt(eCameraTilt.Down);
-		//            break;
-
-		//        case eCameraPanTiltAction.ZoomIn:
-		//            Zoom(eCameraZoom.In);
-		//            break;
-
-		//        case eCameraPanTiltAction.ZoomOut:
-		//            Zoom(eCameraZoom.Out);
-		//            break;
-
-		//        default:
-		//            throw new ArgumentOutOfRangeException();
-		//    }
-		//}
 
 		/// <summary>
 		/// Pans the local camera.
@@ -342,4 +275,46 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 		#endregion
 	}
+// Ignore missing comment warning.
+#pragma warning disable 1591
+	public enum eCameraPan
+	{
+		[UsedImplicitly]
+		Left,
+		[UsedImplicitly]
+		Right,
+		[UsedImplicitly]
+		Stop
+	}
+
+	public enum eCameraTilt
+	{
+		[UsedImplicitly]
+		Down,
+		[UsedImplicitly]
+		Up,
+		[UsedImplicitly]
+		Stop
+	}
+
+	public enum eCameraZoom
+	{
+		[UsedImplicitly]
+		In,
+		[UsedImplicitly]
+		Out,
+		[UsedImplicitly]
+		Stop
+	}
+
+	public enum eCameraFocus
+	{
+		[UsedImplicitly]
+		Far,
+		[UsedImplicitly]
+		Near,
+		[UsedImplicitly]
+		Stop
+	}
+#pragma warning restore 1591
 }

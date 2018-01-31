@@ -81,6 +81,8 @@
     <Compile Include="Components\AbstractCiscoComponent.cs" />
     <Compile Include="CiscoCodec.cs" />
     <Compile Include="Components\Cameras\AbstractCamera.cs" />
+    <Compile Include="Components\Cameras\CiscoCodecCameraDevice.cs" />
+    <Compile Include="Components\Cameras\CiscoCodecCameraDeviceSettings.cs" />
     <Compile Include="Components\Cameras\FarCamera.cs" />
     <Compile Include="Components\Cameras\NearCamera.cs" />
     <Compile Include="Components\Cameras\NearCamerasComponent.cs" />
