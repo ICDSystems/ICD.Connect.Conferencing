@@ -69,7 +69,17 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		[PublicAPI]
 		public NearCamera GetCamera(int cameraId)
 		{
-			return m_CamerasSection.Execute(() => m_Cameras.ContainsKey(cameraId) ? m_Cameras[cameraId] : null);
+			m_CamerasSection.Enter();
+			try
+			{
+				if (!m_Cameras.ContainsKey(cameraId))
+					m_Cameras[cameraId] = new NearCamera(cameraId, Codec);
+				return m_Cameras[cameraId];
+			}
+			finally
+			{
+				m_CamerasSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -79,7 +89,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<NearCamera> GetCameras()
 		{
-			return m_CamerasSection.Execute(() => m_Cameras.OrderBy(p => p.Key).Select(p => p.Value).ToArray());
+			return m_CamerasSection.Execute(() => m_Cameras.Select(p => p.Value));
 		}
 
 		/// <summary>
