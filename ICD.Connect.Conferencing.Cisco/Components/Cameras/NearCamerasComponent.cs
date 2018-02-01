@@ -99,7 +99,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<CameraPreset> GetCameraPresets()
 		{
-			return m_PresetsSection.Execute(() => m_Presets.OrderBy(p => p.Value.ListPosition).Select(p => p.Value).ToArray());
+			return m_PresetsSection.Execute(() => m_Presets.Select(p => p.Value));
 		}
 
 		/// <summary>
