@@ -9,7 +9,9 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
-	public sealed class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
+	// ReSharper disable once ClassCanBeSealed.Global 
+	//(this device has no inheritors, but its type is used as a filter for the power control so it cant be sealed)
+	public class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
 		ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
 		#region Properties
@@ -25,6 +27,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			Controls.Add(new PanTiltControl<CiscoCodecCameraDevice>(this, 1));
 			Controls.Add(new ZoomControl<CiscoCodecCameraDevice>(this, 2));
 			Controls.Add(new PresetControl<CiscoCodecCameraDevice>(this, 3));
+			Controls.Add(new CiscoCodecCameraDevicePowerControl<CiscoCodecCameraDevice>(this, 4));
 		}
 
 
@@ -179,6 +182,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		#endregion
 
 		#region Public API
+
+		[PublicAPI]
+		public CiscoCodec GetCodec()
+		{
+			return m_Codec;
+		}
+
 		[PublicAPI]
 		public void SetCodec(CiscoCodec codec)
 		{
