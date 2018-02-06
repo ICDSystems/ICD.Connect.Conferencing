@@ -62,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		#region Methods
 
 		/// <summary>
-		/// Gets the camera with the given id.
+		/// Gets the camera with the given id. Lazy Loads if the camera is not loaded.
 		/// </summary>
 		/// <param name="cameraId"></param>
 		/// <returns></returns>

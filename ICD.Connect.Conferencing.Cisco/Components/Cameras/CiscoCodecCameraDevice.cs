@@ -19,6 +19,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		private CiscoCodec m_Codec;
 		private NearCamerasComponent m_CamerasComponent;
 		private NearCamera m_Camera;
+		private int? m_PanTiltSpeed;
+		private int? m_ZoomSpeed;
 		#endregion
 
 		public CiscoCodecCameraDevice()
@@ -41,16 +43,28 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			switch (action)
 			{
 				case eCameraPanTiltAction.Left:
-					m_Camera.Pan(eCameraPan.Left);
+					if(m_PanTiltSpeed == null)
+						m_Camera.Pan(eCameraPan.Left);
+					else
+						m_Camera.Pan(eCameraPan.Left, m_PanTiltSpeed.Value);
 					break;
 				case eCameraPanTiltAction.Right:
-					m_Camera.Pan(eCameraPan.Right);
+					if (m_PanTiltSpeed == null)
+						m_Camera.Pan(eCameraPan.Right);
+					else
+						m_Camera.Pan(eCameraPan.Right, m_PanTiltSpeed.Value);
 					break;
 				case eCameraPanTiltAction.Up:
-					m_Camera.Tilt(eCameraTilt.Up);
+					if (m_PanTiltSpeed == null)
+						m_Camera.Tilt(eCameraTilt.Up);
+					else
+						m_Camera.Tilt(eCameraTilt.Up, m_PanTiltSpeed.Value);
 					break;
 				case eCameraPanTiltAction.Down:
-					m_Camera.Tilt(eCameraTilt.Down);
+					if (m_PanTiltSpeed == null)
+						m_Camera.Tilt(eCameraTilt.Down);
+					else
+						m_Camera.Tilt(eCameraTilt.Down, m_PanTiltSpeed.Value);
 					break;
 				case eCameraPanTiltAction.Stop:
 					m_Camera.Stop();
@@ -71,10 +85,16 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			switch (action)
 			{
 				case eCameraZoomAction.ZoomIn:
-					m_Camera.Zoom(eCameraZoom.In);
+					if (m_ZoomSpeed == null)
+						m_Camera.Zoom(eCameraZoom.In);
+					else
+						m_Camera.Zoom(eCameraZoom.In, m_ZoomSpeed.Value);
 					break;
 				case eCameraZoomAction.ZoomOut:
-					m_Camera.Zoom(eCameraZoom.Out);
+					if (m_ZoomSpeed == null)
+						m_Camera.Zoom(eCameraZoom.Out);
+					else
+						m_Camera.Zoom(eCameraZoom.Out, m_ZoomSpeed.Value);
 					break;
 				case eCameraZoomAction.Stop:
 					m_Camera.Stop();
@@ -166,6 +186,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 				codec = factory.GetOriginatorById<CiscoCodec>(settings.CodecId.Value);
 
 			SetCodec(codec);
+
+			m_PanTiltSpeed = settings.PanTiltSpeed;
+			m_ZoomSpeed = settings.ZoomSpeed;
 		}
 
 		/// <summary>
@@ -178,6 +201,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 			settings.CodecId = m_Codec == null ? null : (int?)m_Codec.Id;
 			settings.CameraId = CameraId;
+			settings.PanTiltSpeed = m_PanTiltSpeed;
+			settings.ZoomSpeed = m_ZoomSpeed;
 		}
 		#endregion
 
@@ -201,7 +226,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 			m_CamerasComponent = m_Codec.Components.GetComponent<NearCamerasComponent>();
 
-			// TODO - m_CamerasComponent.GetCamera needs to lazy load camera with given id
 			m_Camera = m_CamerasComponent.GetCamera(CameraId);
 		}
 		#endregion
