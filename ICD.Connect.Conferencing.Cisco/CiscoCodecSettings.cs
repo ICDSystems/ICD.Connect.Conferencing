@@ -84,7 +84,7 @@ namespace ICD.Connect.Conferencing.Cisco
 				PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT)
 			};
 
-			ParseXml(output, xml);
+			output.ParseXml(xml);
 			return output;
 		}
 	}

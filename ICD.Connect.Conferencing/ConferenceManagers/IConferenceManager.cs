@@ -199,6 +199,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			// Return the best available type we can handle the call as.
 			eConferenceSourceType providerType = provider == null ? eConferenceSourceType.Unknown : provider.Supports;
+
+			// If we don't know the call type use the provider default.
+			if (type == eConferenceSourceType.Unknown)
+				return providerType;
+
+			// Limit the type to what the provider can support.
 			return providerType < type ? providerType : type;
 		}
 
@@ -260,6 +266,22 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			IContactMethod contactMethod = extends.DialingPlan.GetContactMethod(contact);
 			extends.Dial(contactMethod);
+		}
+
+		/// <summary>
+		/// Redials the contact from the given conference source.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="source"></param>
+		public static void Dial(this IConferenceManager extends, IConferenceSource source)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (source == null)
+				throw new ArgumentNullException("source");
+
+			extends.Dial(source.Number, source.SourceType);
 		}
 
 		/// <summary>
