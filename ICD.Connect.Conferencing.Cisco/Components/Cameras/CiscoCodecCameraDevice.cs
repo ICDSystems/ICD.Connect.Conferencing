@@ -15,12 +15,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
 		#region Properties
-		private int CameraId { get; set; }
 		private CiscoCodec m_Codec;
 		private NearCamerasComponent m_CamerasComponent;
 		private NearCamera m_Camera;
 		private int? m_PanTiltSpeed;
 		private int? m_ZoomSpeed;
+		public int CameraId { get; private set; }
 		#endregion
 
 		public CiscoCodecCameraDevice()
