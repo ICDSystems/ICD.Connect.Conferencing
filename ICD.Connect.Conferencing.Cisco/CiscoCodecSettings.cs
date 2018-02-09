@@ -1,5 +1,4 @@
 using System;
-using ICD.Common.Properties;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Ports;
@@ -11,6 +10,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// <summary>
 	/// Settings for the CiscoCodec.
 	/// </summary>
+	[KrangSettings(FACTORY_NAME)]
 	public sealed class CiscoCodecSettings : AbstractDeviceSettings
 	{
 		private const string FACTORY_NAME = "CiscoCodec";
@@ -71,21 +71,15 @@ namespace ICD.Connect.Conferencing.Cisco
 		}
 
 		/// <summary>
-		/// Loads the settings from XML.
+		/// Updates the settings from xml.
 		/// </summary>
 		/// <param name="xml"></param>
-		/// <returns></returns>
-		[PublicAPI, XmlFactoryMethod(FACTORY_NAME)]
-		public static CiscoCodecSettings FromXml(string xml)
+		public override void ParseXml(string xml)
 		{
-			CiscoCodecSettings output = new CiscoCodecSettings
-			{
-				Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT),
-				PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT)
-			};
+			base.ParseXml(xml);
 
-			output.ParseXml(xml);
-			return output;
+			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
+			PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT);
 		}
 	}
 }
