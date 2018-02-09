@@ -68,17 +68,22 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public static CiscoCodecCameraDeviceSettings FromXml(string xml)
 		{
 			CiscoCodecCameraDeviceSettings output = new CiscoCodecCameraDeviceSettings();
-			ParseXml(output, xml);
+			output.ParseXml(xml);
 			return output;
 		}
 
-		private static void ParseXml(CiscoCodecCameraDeviceSettings instance, string xml)
+		/// <summary>
+		/// Updates the settings from xml.
+		/// </summary>
+		/// <param name="xml"></param>
+		public override void ParseXml(string xml)
 		{
-			instance.CodecId = XmlUtils.TryReadChildElementContentAsInt(xml, CODEC_ID_ELEMENT);
-			instance.CameraId = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_ID_ELEMENT);
-			instance.PanTiltSpeed = XmlUtils.TryReadChildElementContentAsInt(xml, PAN_TILT_SPEED_ELEMENT);
-			instance.ZoomSpeed = XmlUtils.TryReadChildElementContentAsInt(xml, ZOOM_SPEED_ELEMENT);
-			AbstractCameraDeviceSettings.ParseXml(instance, xml);
+			base.ParseXml(xml);
+
+			CodecId = XmlUtils.TryReadChildElementContentAsInt(xml, CODEC_ID_ELEMENT);
+			CameraId = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_ID_ELEMENT);
+			PanTiltSpeed = XmlUtils.TryReadChildElementContentAsInt(xml, PAN_TILT_SPEED_ELEMENT);
+			ZoomSpeed = XmlUtils.TryReadChildElementContentAsInt(xml, ZOOM_SPEED_ELEMENT);
 		}
 	}
 }
