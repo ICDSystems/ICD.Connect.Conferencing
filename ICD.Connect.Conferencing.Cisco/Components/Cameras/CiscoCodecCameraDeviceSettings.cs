@@ -1,13 +1,12 @@
 ﻿using System;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Cameras;
-using ICD.Connect.Devices;
 using ICD.Connect.Settings.Attributes;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
+	[KrangSettings(FACTORY_NAME)]
 	public sealed class CiscoCodecCameraDeviceSettings : AbstractCameraDeviceSettings
 	{
 		private int? m_PanTiltSpeed;
@@ -63,14 +62,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// Gets the type of the originator for this settings instance.
 		/// </summary>
 		public override Type OriginatorType { get { return typeof(CiscoCodecCameraDevice); } }
-
-		[PublicAPI, XmlFactoryMethod(FACTORY_NAME)]
-		public static CiscoCodecCameraDeviceSettings FromXml(string xml)
-		{
-			CiscoCodecCameraDeviceSettings output = new CiscoCodecCameraDeviceSettings();
-			output.ParseXml(xml);
-			return output;
-		}
 
 		/// <summary>
 		/// Updates the settings from xml.
