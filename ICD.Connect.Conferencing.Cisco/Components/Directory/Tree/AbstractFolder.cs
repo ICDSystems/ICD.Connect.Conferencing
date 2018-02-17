@@ -308,7 +308,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 				if (m_CachedFolders.Contains(folder))
 					return false;
 
-				m_CachedFolders.AddSorted(folder, new FolderComparer());
+				m_CachedFolders.AddSorted(folder, FolderComparer.Instance);
 			}
 			finally
 			{
@@ -350,7 +350,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 				if (m_CachedContacts.Contains(contact))
 					return false;
 
-				m_CachedContacts.AddSorted(contact, new ContactComparer());
+				m_CachedContacts.AddSorted(contact, ContactComparer.Instance);
 			}
 			finally
 			{
@@ -367,6 +367,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 
 	internal sealed class FolderComparer : IComparer<IFolder>
 	{
+		private static FolderComparer s_Instance;
+
+		public static FolderComparer Instance { get { return s_Instance = s_Instance ?? new FolderComparer(); } }
+
 		public int Compare(IFolder x, IFolder y)
 		{
 			if (x == null)
@@ -381,6 +385,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 
 	internal sealed class ContactComparer : IComparer<CiscoContact>
 	{
+		private static ContactComparer s_Instance;
+
+		public static ContactComparer Instance { get { return s_Instance = s_Instance ?? new ContactComparer(); } }
+
 		public int Compare(CiscoContact x, CiscoContact y)
 		{
 			if (x == null)
