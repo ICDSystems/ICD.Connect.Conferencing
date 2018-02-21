@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public event EventHandler OnPresetsChanged;
 
 		private readonly Dictionary<int, NearCamera> m_Cameras;
-		private readonly Dictionary<int, CameraPreset> m_Presets;
+		private readonly Dictionary<int, Dictionary<int, CameraPreset>> m_Presets;
 
 		private readonly SafeCriticalSection m_CamerasSection;
 		private readonly SafeCriticalSection m_PresetsSection;
@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public NearCamerasComponent(CiscoCodec codec) : base(codec)
 		{
 			m_Cameras = new Dictionary<int, NearCamera>();
-			m_Presets = new Dictionary<int, CameraPreset>();
+			m_Presets = new Dictionary<int, Dictionary<int, CameraPreset>>();
 
 			m_CamerasSection = new SafeCriticalSection();
 			m_PresetsSection = new SafeCriticalSection();
@@ -109,7 +109,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<CameraPreset> GetCameraPresets()
 		{
-			return m_PresetsSection.Execute(() => m_Presets.Select(p => p.Value));
+			return m_PresetsSection.Execute(() => m_Presets.SelectMany(kvp => kvp.Value).Select(kvp => kvp.Value));
 		}
 
 		/// <summary>
@@ -118,9 +118,20 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// <param name="cameraId"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public CameraPreset[] GetCameraPresets(int cameraId)
+		public IEnumerable<CameraPreset> GetCameraPresets(int cameraId)
 		{
-			return GetCameraPresets().Where(p => p.CameraId == cameraId).ToArray();
+			m_PresetsSection.Enter();
+
+			try
+			{
+				return !m_Presets.ContainsKey(cameraId)
+					? Enumerable.Empty<CameraPreset>()
+					: m_Presets[cameraId].Values.ToArray();
+			}
+			finally
+			{
+				m_PresetsSection.Leave();
+			}
 		}
 
 		#endregion
@@ -201,8 +212,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 				foreach (string child in XmlUtils.GetChildElementsAsString(xml))
 				{
-					CameraPreset preset = CameraPreset.FromXml(child);
-					m_Presets[preset.PresetId] = preset;
+					int cameraId;
+					CameraPreset preset = CameraPresetFromXml(child, out cameraId);
+
+					if (!m_Presets.ContainsKey(cameraId))
+						m_Presets[cameraId] = new Dictionary<int, CameraPreset>();
+					m_Presets[cameraId][preset.PresetId] = preset;
 				}
 			}
 			finally
@@ -211,6 +226,50 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			}
 
 			OnPresetsChanged.Raise(this);
+		}
+
+		/// <summary>
+		/// Instantiates a camera preset from a Preset element.
+		/// </summary>
+		/// <param name="xml"></param>
+		/// <param name="cameraId"></param>
+		/// <returns></returns>
+		public static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
+		{
+			cameraId = 0;
+
+			using (IcdXmlReader reader = new IcdXmlReader(xml))
+			{
+				reader.ReadToNextElement();
+
+				int presetId = 0;
+				string name = null;
+
+				foreach (IcdXmlReader child in reader.GetChildElements())
+				{
+					switch (child.Name)
+					{
+						case "CameraId":
+							cameraId = child.ReadElementContentAsInt();
+							break;
+
+						case "PresetId":
+							presetId = child.ReadElementContentAsInt();
+							break;
+
+						case "Name":
+							name = child.ReadElementContentAsString();
+							break;
+
+						default:
+							throw new ArgumentException("Unknown element: " + child.Name);
+					}
+
+					child.Dispose();
+				}
+
+				return new CameraPreset(presetId, name);
+			}
 		}
 
 		#endregion
