@@ -1,4 +1,5 @@
 ﻿using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.Cameras;
 using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
@@ -43,7 +44,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// Moves the camera.
 		/// </summary>
 		/// <param name="action"></param>
-		public override void Move(eCameraAction action)
+		public override void Move(eCameraPanTiltAction action)
 		{
 			Codec.SendCommand("xCommand Call FarEndControl Camera Move CallId: {0} Value: {1}", m_CallId, action);
 			Codec.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);

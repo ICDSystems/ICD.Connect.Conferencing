@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
@@ -61,14 +62,24 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		#region Methods
 
 		/// <summary>
-		/// Gets the camera with the given id.
+		/// Gets the camera with the given id. Lazy Loads if the camera is not loaded.
 		/// </summary>
 		/// <param name="cameraId"></param>
 		/// <returns></returns>
 		[PublicAPI]
 		public NearCamera GetCamera(int cameraId)
 		{
-			return m_CamerasSection.Execute(() => m_Cameras.ContainsKey(cameraId) ? m_Cameras[cameraId] : null);
+			m_CamerasSection.Enter();
+			try
+			{
+				if (!m_Cameras.ContainsKey(cameraId))
+					m_Cameras[cameraId] = new NearCamera(cameraId, Codec);
+				return m_Cameras[cameraId];
+			}
+			finally
+			{
+				m_CamerasSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -78,7 +89,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<NearCamera> GetCameras()
 		{
-			return m_CamerasSection.Execute(() => m_Cameras.OrderBy(p => p.Key).Select(p => p.Value).ToArray());
+			return m_CamerasSection.Execute(() => m_Cameras.Select(p => p.Value));
 		}
 
 		/// <summary>
@@ -98,7 +109,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<CameraPreset> GetCameraPresets()
 		{
-			return m_PresetsSection.Execute(() => m_Presets.OrderBy(p => p.Value.ListPosition).Select(p => p.Value).ToArray());
+			return m_PresetsSection.Execute(() => m_Presets.Select(p => p.Value));
 		}
 
 		/// <summary>

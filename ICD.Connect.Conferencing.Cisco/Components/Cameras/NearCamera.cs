@@ -6,40 +6,12 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Cameras;
 using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
-	// Ignore missing comment warning.
-#pragma warning disable 1591
-	public enum eCameraPan
-	{
-		[UsedImplicitly] Left,
-		[UsedImplicitly] Right,
-		[UsedImplicitly] Stop
-	}
 
-	public enum eCameraTilt
-	{
-		[UsedImplicitly] Down,
-		[UsedImplicitly] Up,
-		[UsedImplicitly] Stop
-	}
-
-	public enum eCameraZoom
-	{
-		[UsedImplicitly] In,
-		[UsedImplicitly] Out,
-		[UsedImplicitly] Stop
-	}
-
-	public enum eCameraFocus
-	{
-		[UsedImplicitly] Far,
-		[UsedImplicitly] Near,
-		[UsedImplicitly] Stop
-	}
-#pragma warning restore 1591
 
 	/// <summary>
 	/// NearCamera provides functionality for controlling a local camera.
@@ -113,43 +85,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public void Parse(string xml)
 		{
 			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? Connected;
-		}
-
-		/// <summary>
-		/// Moves the local camera.
-		/// </summary>
-		/// <param name="action"></param>
-		public override void Move(eCameraAction action)
-		{
-			switch (action)
-			{
-				case eCameraAction.Left:
-					Pan(eCameraPan.Left);
-					break;
-
-				case eCameraAction.Right:
-					Pan(eCameraPan.Right);
-					break;
-
-				case eCameraAction.Up:
-					Tilt(eCameraTilt.Up);
-					break;
-
-				case eCameraAction.Down:
-					Tilt(eCameraTilt.Down);
-					break;
-
-				case eCameraAction.ZoomIn:
-					Zoom(eCameraZoom.In);
-					break;
-
-				case eCameraAction.ZoomOut:
-					Zoom(eCameraZoom.Out);
-					break;
-
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
 		}
 
 		/// <summary>
@@ -275,6 +210,15 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		}
 
 		/// <summary>
+		/// Starts the camera moving.
+		/// </summary>
+		/// <param name="action"></param>
+		public override void Move(eCameraPanTiltAction action)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
 		/// Stops all movement of the local camera.
 		/// </summary>
 		public override void Stop()
@@ -331,4 +275,46 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 		#endregion
 	}
+// Ignore missing comment warning.
+#pragma warning disable 1591
+	public enum eCameraPan
+	{
+		[UsedImplicitly]
+		Left,
+		[UsedImplicitly]
+		Right,
+		[UsedImplicitly]
+		Stop
+	}
+
+	public enum eCameraTilt
+	{
+		[UsedImplicitly]
+		Down,
+		[UsedImplicitly]
+		Up,
+		[UsedImplicitly]
+		Stop
+	}
+
+	public enum eCameraZoom
+	{
+		[UsedImplicitly]
+		In,
+		[UsedImplicitly]
+		Out,
+		[UsedImplicitly]
+		Stop
+	}
+
+	public enum eCameraFocus
+	{
+		[UsedImplicitly]
+		Far,
+		[UsedImplicitly]
+		Near,
+		[UsedImplicitly]
+		Stop
+	}
+#pragma warning restore 1591
 }

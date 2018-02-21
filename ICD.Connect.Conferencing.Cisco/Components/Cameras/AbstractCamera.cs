@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Connect.API.Commands;
+using ICD.Connect.Cameras;
 using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
@@ -8,7 +9,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	/// <summary>
 	/// Base class for cameras.
 	/// </summary>
-	public abstract class AbstractCamera : AbstractCiscoComponent, ICamera
+	public abstract class AbstractCamera : AbstractCiscoComponent, ICiscoCamera
 	{
 		#region Constructors
 
@@ -28,7 +29,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// Starts the camera moving.
 		/// </summary>
 		/// <param name="action"></param>
-		public abstract void Move(eCameraAction action);
+		public abstract void Move(eCameraPanTiltAction action);
 
 		/// <summary>
 		/// Stops the camera from moving.
@@ -44,8 +45,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			string moveParams = StringUtils.ArrayFormat(EnumUtils.GetValues<eCameraAction>());
-			yield return new GenericConsoleCommand<eCameraAction>("Move", "Move x " + moveParams, e => Move(e));
+			string moveParams = StringUtils.ArrayFormat(EnumUtils.GetValues<eCameraPanTiltAction>());
+			yield return new GenericConsoleCommand<eCameraPanTiltAction>("Move", "Move x " + moveParams, e => Move(e));
 			yield return new ConsoleCommand("Stop", "Stops moving the camera", () => Stop());
 		}
 

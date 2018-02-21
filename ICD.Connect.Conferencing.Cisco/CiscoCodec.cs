@@ -301,6 +301,12 @@ namespace ICD.Connect.Conferencing.Cisco
 			SendCommand("xCommand Standby Deactivate");
 		}
 
+		[PublicAPI]
+		public void ResetSleepTimer(int minutes)
+		{
+			SendCommand("xCommand Standby ResetTimer Delay:{0}", minutes);
+		}
+
 		/// <summary>
 		/// Send command.
 		/// </summary>
