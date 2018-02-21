@@ -1,6 +1,5 @@
 ﻿using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
-using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {

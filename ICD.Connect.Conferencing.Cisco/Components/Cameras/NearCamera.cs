@@ -7,12 +7,9 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
-using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
-
-
 	/// <summary>
 	/// NearCamera provides functionality for controlling a local camera.
 	/// </summary>
