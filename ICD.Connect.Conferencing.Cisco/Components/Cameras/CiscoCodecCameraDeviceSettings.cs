@@ -64,6 +64,20 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public override Type OriginatorType { get { return typeof(CiscoCodecCameraDevice); } }
 
 		/// <summary>
+		/// Writes property elements to xml.
+		/// </summary>
+		/// <param name="writer"></param>
+		protected override void WriteElements(IcdXmlTextWriter writer)
+		{
+			base.WriteElements(writer);
+
+			writer.WriteElementString(CODEC_ID_ELEMENT, IcdXmlConvert.ToString(CodecId));
+			writer.WriteElementString(CAMERA_ID_ELEMENT, IcdXmlConvert.ToString(CameraId));
+			writer.WriteElementString(PAN_TILT_SPEED_ELEMENT, IcdXmlConvert.ToString(PanTiltSpeed));
+			writer.WriteElementString(ZOOM_SPEED_ELEMENT, IcdXmlConvert.ToString(ZoomSpeed));
+		}
+
+		/// <summary>
 		/// Updates the settings from xml.
 		/// </summary>
 		/// <param name="xml"></param>
