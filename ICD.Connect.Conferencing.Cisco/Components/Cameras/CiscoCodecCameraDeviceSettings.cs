@@ -3,6 +3,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Cameras;
 using ICD.Connect.Settings.Attributes;
+using ICD.Connect.Settings.Attributes.SettingsProperties;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
@@ -17,6 +18,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		private const string CODEC_ID_ELEMENT = "Codec";
 		private const string CAMERA_ID_ELEMENT = "CameraId";
 
+		[OriginatorIdSettingsProperty(typeof(CiscoCodec))]
 		public int? CodecId { get; set; }
 
 		public int? CameraId { get; set; }
