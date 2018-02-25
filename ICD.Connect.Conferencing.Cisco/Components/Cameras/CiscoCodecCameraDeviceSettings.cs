@@ -10,13 +10,20 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	[KrangSettings(FACTORY_NAME)]
 	public sealed class CiscoCodecCameraDeviceSettings : AbstractCameraDeviceSettings
 	{
-		private int? m_PanTiltSpeed;
-		private int? m_ZoomSpeed;
 		private const string FACTORY_NAME = "CiscoCamera";
+
 		private const string PAN_TILT_SPEED_ELEMENT = "PanTiltSpeed";
 		private const string ZOOM_SPEED_ELEMENT = "ZoomSpeed";
 		private const string CODEC_ID_ELEMENT = "Codec";
 		private const string CAMERA_ID_ELEMENT = "CameraId";
+
+		private int? m_PanTiltSpeed;
+		private int? m_ZoomSpeed;
+
+		/// <summary>
+		/// Gets the type of the originator for this settings instance.
+		/// </summary>
+		public override Type OriginatorType { get { return typeof(CiscoCodecCameraDevice); } }
 
 		[OriginatorIdSettingsProperty(typeof(CiscoCodec))]
 		public int? CodecId { get; set; }
@@ -59,11 +66,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 				}
 			}
 		}
-
-		/// <summary>
-		/// Gets the type of the originator for this settings instance.
-		/// </summary>
-		public override Type OriginatorType { get { return typeof(CiscoCodecCameraDevice); } }
 
 		/// <summary>
 		/// Writes property elements to xml.
