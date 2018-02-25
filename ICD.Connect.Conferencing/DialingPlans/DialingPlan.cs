@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
@@ -143,6 +144,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// </summary>
 		/// <param name="contact"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		public IContactMethod GetContactMethod(IContact contact)
 		{
 			if (contact == null)
@@ -157,6 +159,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// <param name="contact"></param>
 		/// <param name="mode"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		public IContactMethod GetContactMethod(IContact contact, eConferenceSourceType mode)
 		{
 			if (contact == null)

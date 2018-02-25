@@ -50,7 +50,7 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// Sets the contact methods.
 		/// </summary>
 		/// <param name="contactMethods"></param>
-		private void SetContactMethods(IEnumerable<FavoriteContactMethod> contactMethods)
+		public void SetContactMethods(IEnumerable<FavoriteContactMethod> contactMethods)
 		{
 			m_ContactMethods = contactMethods.ToArray();
 		}

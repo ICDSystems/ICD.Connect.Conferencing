@@ -88,7 +88,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 					connection.Open();
 
 					using (IcdSqliteDataReader reader = command.ExecuteReader())
-						return FavoritesFromReader(reader).FirstOrDefault();
+						return FavoritesFromReader(reader).First();
 				}
 			}
 		}
@@ -250,7 +250,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static IEnumerable<Favorite> FavoritesFromReader(IIcdDataReader reader)
+		private IEnumerable<Favorite> FavoritesFromReader(IIcdDataReader reader)
 		{
 			while (reader.Read())
 				yield return RowToFavorite(reader);
@@ -261,13 +261,20 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static Favorite RowToFavorite(IIcdDataRecord reader)
+		private Favorite RowToFavorite(IIcdDataRecord reader)
 		{
-			return new Favorite
+			Favorite output = new Favorite
 			{
 				Id = (long)reader[COLUMN_ID],
 				Name = reader[COLUMN_NAME] as string,
 			};
+
+			IEnumerable<FavoriteContactMethod> contactMethods =
+				m_ContactMethods.GetContactMethodsForFavorite(output.Id);
+
+			output.SetContactMethods(contactMethods);
+
+			return output;
 		}
 
 		/// <summary>
