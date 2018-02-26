@@ -265,6 +265,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				throw new ArgumentNullException("contact");
 
 			IContactMethod contactMethod = extends.DialingPlan.GetContactMethod(contact);
+			if (contactMethod == null)
+				throw new ArgumentException("Contact has no contact methods", "contact");
+
 			extends.Dial(contactMethod);
 		}
 

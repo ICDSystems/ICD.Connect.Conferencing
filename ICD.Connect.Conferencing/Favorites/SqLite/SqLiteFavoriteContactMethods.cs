@@ -151,14 +151,13 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		{
 			// Insertion
 			string query =
-				string.Format("INSERT INTO {0} ({1}, {2}, {3}) VALUES ({4}, {5}, {6})",
-				              TABLE, COLUMN_ID, COLUMN_FAVORITE_ID, COLUMN_NUMBER, PARAM_ID, PARAM_FAVORITE_ID, PARAM_NUMBER);
+				string.Format("INSERT INTO {0} ({1}, {2}) VALUES ({3}, {4})",
+				              TABLE, COLUMN_FAVORITE_ID, COLUMN_NUMBER, PARAM_FAVORITE_ID, PARAM_NUMBER);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = contactMethod.Id;
 					command.Parameters.Add(PARAM_FAVORITE_ID, eDbType.Int64).Value = favoriteId;
 					command.Parameters.Add(PARAM_NUMBER, eDbType.String).Value = contactMethod.Number;
 

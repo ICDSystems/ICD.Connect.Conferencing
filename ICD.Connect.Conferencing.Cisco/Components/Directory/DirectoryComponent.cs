@@ -154,6 +154,18 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		#region Private Methods
 
 		/// <summary>
+		/// Called to initialize the component.
+		/// </summary>
+		protected override void Initialize()
+		{
+			base.Initialize();
+
+			// Populate the root folders
+			foreach (RootFolder root in GetRoots())
+				Codec.SendCommand(root.GetSearchCommand());
+		}
+
+		/// <summary>
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>

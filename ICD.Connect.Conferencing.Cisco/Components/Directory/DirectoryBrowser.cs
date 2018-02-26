@@ -268,7 +268,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		private void PopulateFolder(IFolder parent)
 		{
-			if (m_PopulatedSection.Execute(() => m_Populated.Add(parent)))
+			if (m_PopulatedSection.Execute(() => m_Populated.Add(parent)) && parent.ChildCount == 0)
 				m_Component.Codec.SendCommand(parent.GetSearchCommand());
 		}
 
