@@ -24,7 +24,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests
 		[OneTimeTearDown]
 		public void Deinit()
 		{
-			ServiceProvider.RemoveService<ILoggerService>(m_Logger);
+			ServiceProvider.RemoveAllServices();
 		}
 	}
 }
