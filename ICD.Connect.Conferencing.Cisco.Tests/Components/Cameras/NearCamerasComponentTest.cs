@@ -111,7 +111,6 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Cameras
 			Port.Receive(rX2);
 
 			Assert.AreEqual(0, component.CamerasCount);
-			Assert.IsNull(component.GetCamera(1));
 		}
 	}
 }
