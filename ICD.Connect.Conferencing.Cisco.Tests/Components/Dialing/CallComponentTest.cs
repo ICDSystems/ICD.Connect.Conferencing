@@ -93,7 +93,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Dialing
 			Assert.AreEqual(0, component.GetDuration().Milliseconds);
 
 			Port.Receive(connected);
-			Assert.AreEqual(IcdEnvironment.GetLocalTime(), component.Start);
+			Assert.That(component.Start, Is.EqualTo(IcdEnvironment.GetLocalTime()).Within(1).Seconds);
 
 			ThreadingUtils.Sleep(1000);
 
