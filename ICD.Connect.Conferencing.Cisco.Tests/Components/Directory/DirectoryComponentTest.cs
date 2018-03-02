@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ICD.Common.Utils;
 using NUnit.Framework;
 using ICD.Connect.Conferencing.Cisco.Components.Directory;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
@@ -194,6 +195,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory
 
 			Port.Receive(rX);
 
+			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
+
 			Assert.AreEqual(11, component.GetRoot(ePhonebookType.Local).GetFolders().Length);
 			Assert.AreEqual(10, component.GetRoot(ePhonebookType.Local).GetContacts().Length);
 		}
@@ -208,6 +211,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory
 
 			Port.Receive(EXAMPLE_XML);
 
+			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
+
 			Assert.AreEqual(11, results.Count);
 		}
 
@@ -220,6 +225,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory
 			component.OnResultParsed += (id, folders, contacts) => results.AddRange(contacts);
 
 			Port.Receive(EXAMPLE_XML);
+
+			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
 
 			Assert.AreEqual(10, results.Count);
 		}
