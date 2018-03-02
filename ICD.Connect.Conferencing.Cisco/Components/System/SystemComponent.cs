@@ -487,7 +487,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.System
 
 		private void ParseStandbyStatus(CiscoCodec sender, string resultId, string xml)
 		{
-			Awake = XmlUtils.GetInnerXml(xml) == "Off";
+			Awake = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
 		private void ParseSipRegistrationStatus(CiscoCodec sender, string resultId, string xml)
