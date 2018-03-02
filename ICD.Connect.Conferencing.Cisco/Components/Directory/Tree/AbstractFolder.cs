@@ -21,6 +21,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 
 		private readonly SafeCriticalSection m_FoldersSection;
 		private readonly SafeCriticalSection m_ContactsSection;
+		private readonly string m_FolderSearchId;
+		private readonly string m_FolderId;
 
 		#region Properties
 
@@ -32,12 +34,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <summary>
 		/// The id of the folder.
 		/// </summary>
-		public string FolderId { get; private set; }
+		public string FolderId { get { return m_FolderId; } }
 
 		/// <summary>
 		/// The result id for browsing.
 		/// </summary>
-		public string FolderSearchId { get; private set; }
+		public string FolderSearchId { get { return m_FolderSearchId; } }
 
 		/// <summary>
 		/// Gets the phonebook type.
@@ -68,7 +70,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// </summary>
 		protected AbstractFolder(string folderId)
 		{
-			FolderId = folderId;
+			m_FolderId = folderId;
 
 			m_CachedFolders = new List<IFolder>();
 			m_CachedContacts = new List<CiscoContact>();
@@ -76,7 +78,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 			m_FoldersSection = new SafeCriticalSection();
 			m_ContactsSection = new SafeCriticalSection();
 
-			FolderSearchId = Guid.NewGuid().ToString();
+			m_FolderSearchId = Guid.NewGuid().ToString();
 		}
 
 		#endregion
