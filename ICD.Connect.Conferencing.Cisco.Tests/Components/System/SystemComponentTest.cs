@@ -90,8 +90,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.System
 			const string rX =
 				"<XmlDoc resultId=\"\">"
 				+ "<Status>"
-				+ "<Standby item=\"1\">"
-				+ "<Active item=\"1\">{0}</Active>"
+				+ "<Standby>"
+				+ "<State>{0}</State>"
 				+ "</Standby>"
 				+ "</Status>"
 				+ "</XmlDoc>";
@@ -99,8 +99,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.System
 			string on = string.Format(rX, "On");
 			string off = string.Format(rX, "Off");
 
-			Port.Receive(off);
 			Port.Receive(on);
+			Port.Receive(off);
 
 			Assert.AreEqual(2, responses.Count);
 			Assert.IsTrue(responses[0].Data);
