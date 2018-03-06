@@ -454,9 +454,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		public eCodecInputType GetInputTypeForConnector(int connectorId)
 		{
 			if (connectorId >= 1 && connectorId <= 4)
-			{
 				return m_InputTypes[connectorId - 1];
-			}
 
 			return eCodecInputType.None;
 		}
@@ -634,9 +632,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		private void SetInputTypeForConnector(int connectorId, eCodecInputType type)
 		{
 			if (connectorId >= 1 && connectorId <= 4)
-			{
 				m_InputTypes[connectorId - 1] = type;
-			}
 		}
 
 		#endregion

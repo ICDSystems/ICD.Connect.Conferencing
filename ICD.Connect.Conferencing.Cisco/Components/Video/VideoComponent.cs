@@ -610,7 +610,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 			// Create the new connector.
 			if (connector == null)
 			{
-				connector = new VideoInputConnector { CodecInputType = Codec.GetInputTypeForConnector(connectorId) };
+				connector = new VideoInputConnector();
 				m_VideoInputConnectors[connectorId] = connector;
 				Subscribe(connector);
 			}
