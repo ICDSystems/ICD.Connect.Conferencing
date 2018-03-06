@@ -18,10 +18,10 @@ namespace ICD.Connect.Conferencing.Cisco
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
 
-		private const string INPUT_1_ELEMENT = "INPUT1";
-		private const string INPUT_2_ELEMENT = "INPUT2";
-		private const string INPUT_3_ELEMENT = "INPUT3";
-		private const string INPUT_4_ELEMENT = "INPUT4";
+		private const string INPUT_1_ELEMENT = "Input1Type";
+		private const string INPUT_2_ELEMENT = "Input2Type";
+		private const string INPUT_3_ELEMENT = "Input3Type";
+		private const string INPUT_4_ELEMENT = "Input4Type";
 
 		private string m_PeripheralsId;
 
