@@ -830,21 +830,20 @@ namespace ICD.Connect.Conferencing.Cisco
 			PeripheralsId = settings.PeripheralsId;
 
 			// Set input types before setting the port, otherwise the connector type of none gets cached inproperly.
-			// todo: fix this so it works correctly?
 			SetInputTypeForConnector(1, settings.Input1CodecInputType == null
-										? eCodecInputType.Content
-										: settings.Input1CodecInputType.Value);
+										    ? eCodecInputType.None
+										    : settings.Input1CodecInputType.Value);
 
 			SetInputTypeForConnector(2, settings.Input2CodecInputType == null
-											? eCodecInputType.Content
+											? eCodecInputType.None
 											: settings.Input2CodecInputType.Value);
 
 			SetInputTypeForConnector(3, settings.Input3CodecInputType == null
-											? eCodecInputType.Content
+											? eCodecInputType.None
 											: settings.Input3CodecInputType.Value);
 
 			SetInputTypeForConnector(4, settings.Input4CodecInputType == null
-											? eCodecInputType.Content
+											? eCodecInputType.None
 											: settings.Input4CodecInputType.Value);
 
 			ISerialPort port = null;
@@ -857,8 +856,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 
 			SetPort(port);
-
-		
 		}
 
 		#endregion
