@@ -856,8 +856,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 
 			SetPort(port);
-
-		
 		}
 
 		#endregion
