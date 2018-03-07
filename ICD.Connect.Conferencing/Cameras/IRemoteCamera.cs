@@ -2,9 +2,7 @@
 
 namespace ICD.Connect.Conferencing.Cameras
 {
-	
-
-	public interface ICiscoCamera
+	public interface IRemoteCamera
 	{
 		/// <summary>
 		/// Starts the camera moving.

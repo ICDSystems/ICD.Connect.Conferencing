@@ -282,7 +282,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 			}
 		}
 
-		ICiscoCamera IConferenceSource.Camera { get { return Camera; } }
+		IRemoteCamera IConferenceSource.Camera { get { return Camera; } }
 
 		#endregion
 

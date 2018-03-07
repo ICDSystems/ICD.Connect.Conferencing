@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	/// <summary>
 	/// Base class for cameras.
 	/// </summary>
-	public abstract class AbstractCamera : AbstractCiscoComponent, ICiscoCamera
+	public abstract class AbstractCamera : AbstractCiscoComponent, IRemoteCamera
 	{
 		#region Constructors
 

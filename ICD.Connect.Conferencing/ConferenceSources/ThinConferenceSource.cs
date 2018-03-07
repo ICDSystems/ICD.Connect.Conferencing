@@ -195,7 +195,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <summary>
 		/// Gets the remote camera.
 		/// </summary>
-		ICiscoCamera IConferenceSource.Camera { get { return null; } }
+		IRemoteCamera IConferenceSource.Camera { get { return null; } }
 
 		#endregion
 
