@@ -4,6 +4,7 @@
     {
 		None,
 		Content,
-		Camera
+		Camera,
+		Integrated
     }
 }
