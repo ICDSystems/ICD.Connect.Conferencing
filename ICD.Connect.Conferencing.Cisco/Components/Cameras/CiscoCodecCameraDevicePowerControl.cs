@@ -8,7 +8,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		where T : CiscoCodecCameraDevice
 	{
 		private readonly IcdTimer m_Timer;
-		private readonly CiscoCodec m_Codec;
 		private const int CODEC_SLEEP_TIMER_MIN = 120;
 		private const long KEEP_AWAKE_TICK_MS = 3600 * 1000;
 
@@ -21,22 +20,21 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		{
 			m_Timer = new IcdTimer();
 			m_Timer.OnElapsed += TimerExpired;
-			m_Codec = Parent.GetCodec();
 		}
 
 		private void TimerExpired(object sender, EventArgs eventArgs)
 		{
-			m_Codec.Wake();
+			Parent.GetCodec().Wake();
 			m_Timer.Restart(KEEP_AWAKE_TICK_MS);
-			m_Codec.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
+			Parent.GetCodec().ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
 		}
 
 		public override void PowerOn()
 		{
 			IsPowered = true;
-			m_Codec.Wake();
+			Parent.GetCodec().Wake();
 			m_Timer.Restart(KEEP_AWAKE_TICK_MS);
-			m_Codec.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
+			Parent.GetCodec().ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
 		}
 
 		public override void PowerOff()
