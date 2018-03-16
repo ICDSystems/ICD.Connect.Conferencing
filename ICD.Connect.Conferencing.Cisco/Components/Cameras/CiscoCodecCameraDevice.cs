@@ -43,7 +43,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			switch (action)
 			{
 				case eCameraPanTiltAction.Left:
-					if(m_PanTiltSpeed == null)
+					if (m_PanTiltSpeed == null)
 						m_Camera.Pan(eCameraPan.Left);
 					else
 						m_Camera.Pan(eCameraPan.Left, m_PanTiltSpeed.Value);
@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 						m_Camera.Tilt(eCameraTilt.Down, m_PanTiltSpeed.Value);
 					break;
 				case eCameraPanTiltAction.Stop:
-					m_Camera.Stop();
+					m_Camera.StopPanTilt();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException("action");
@@ -97,7 +97,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 						m_Camera.Zoom(eCameraZoom.Out, m_ZoomSpeed.Value);
 					break;
 				case eCameraZoomAction.Stop:
-					m_Camera.Stop();
+					m_Camera.StopZoom();
 					break;
 				default:
 					throw new ArgumentOutOfRangeException("action");

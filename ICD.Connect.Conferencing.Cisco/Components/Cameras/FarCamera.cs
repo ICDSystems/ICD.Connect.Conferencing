@@ -1,12 +1,13 @@
 ﻿using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
+using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
 	/// <summary>
 	/// FarCamera provides functionality for controlling a remote camera.
 	/// </summary>
-	public sealed class FarCamera : AbstractCamera
+	public sealed class FarCamera : AbstractCiscoCamera, IRemoteCamera
 	{
 		/// <summary>
 		/// The CallId for the remote camera.
@@ -43,7 +44,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// Moves the camera.
 		/// </summary>
 		/// <param name="action"></param>
-		public override void Move(eCameraPanTiltAction action)
+		public override void PanTilt(eCameraPanTiltAction action)
 		{
 			Codec.SendCommand("xCommand Call FarEndControl Camera Move CallId: {0} Value: {1}", m_CallId, action);
 			Codec.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
@@ -52,7 +53,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// <summary>
 		/// Stops the camera from moving.
 		/// </summary>
-		public override void Stop()
+		public override void StopPanTilt()
 		{
 			Codec.SendCommand("xCommand Call FarEndControl Camera Stop CallId: {0}", m_CallId);
 			Codec.Log(eSeverity.Informational, "Stop Moving Far End Camera CallId: {0}", m_CallId);

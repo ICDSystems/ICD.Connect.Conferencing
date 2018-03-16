@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	/// <summary>
 	/// NearCamera provides functionality for controlling a local camera.
 	/// </summary>
-	public sealed class NearCamera : AbstractCamera
+	public sealed class NearCamera : AbstractCiscoCamera
 	{
 		private const int MIN_SPEED = 1;
 		private const int MAX_SPEED = 15;
@@ -210,19 +210,48 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// Starts the camera moving.
 		/// </summary>
 		/// <param name="action"></param>
-		public override void Move(eCameraPanTiltAction action)
+		public override void PanTilt(eCameraPanTiltAction action)
 		{
-			throw new NotImplementedException();
+			switch (action)
+			{
+				case eCameraPanTiltAction.Left:
+					Pan(eCameraPan.Left);
+					break;
+				case eCameraPanTiltAction.Right:
+					Pan(eCameraPan.Right);
+					break;
+				case eCameraPanTiltAction.Up:
+					Tilt(eCameraTilt.Up);
+					break;
+				case eCameraPanTiltAction.Down:
+					Tilt(eCameraTilt.Down);
+					break;
+				case eCameraPanTiltAction.Stop:
+					StopPanTilt();
+					break;
+				default:
+					throw new ArgumentOutOfRangeException("action");
+			}
 		}
 
 		/// <summary>
 		/// Stops all movement of the local camera.
 		/// </summary>
-		public override void Stop()
+		public override void StopPanTilt()
 		{
-			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Pan: {1} Tilt: {2} Zoom: {3} Focus: {4}",
-			                  CameraId, eCameraPan.Stop, eCameraTilt.Stop, eCameraZoom.Stop, eCameraFocus.Stop);
-			Codec.Log(eSeverity.Informational, "Stopping Camera {0}", CameraId);
+			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Pan: {1} Tilt: {2}",
+			                  CameraId, eCameraPan.Stop, eCameraTilt.Stop);
+			Codec.Log(eSeverity.Informational, "Stopping Pan/Tilt on Camera {0}", CameraId);
+		}
+
+		/// <summary>
+		/// Stops all movement of the local camera.
+		/// </summary>
+		public void StopZoom()
+		{
+			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Zoom: {1}",
+							  CameraId, eCameraPan.Stop);
+			Codec.Log(eSeverity.Informational, "Stopping Zoom on Camera {0}", CameraId);
 		}
 
 		#endregion

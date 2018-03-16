@@ -80,7 +80,7 @@
     <Compile Include="CiscoCodecSettings.cs" />
     <Compile Include="Components\AbstractCiscoComponent.cs" />
     <Compile Include="CiscoCodec.cs" />
-    <Compile Include="Components\Cameras\AbstractCamera.cs" />
+    <Compile Include="Components\Cameras\AbstractCiscoCamera.cs" />
     <Compile Include="Components\Cameras\CiscoCodecCameraDevice.cs" />
     <Compile Include="Components\Cameras\CiscoCodecCameraDevicePowerControl.cs" />
     <Compile Include="Components\Cameras\CiscoCodecCameraDeviceSettings.cs" />
