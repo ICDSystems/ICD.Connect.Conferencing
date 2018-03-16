@@ -1,30 +1,44 @@
 ﻿using System;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Timers;
+using ICD.Connect.Conferencing.Cisco.Components.System;
 using ICD.Connect.Devices.Controls;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
-	public sealed class CiscoCodecCameraDevicePowerControl<T> : AbstractPowerDeviceControl<T>
-		where T : CiscoCodecCameraDevice
+	public sealed class CiscoCodecCameraDevicePowerControl : AbstractPowerDeviceControl<CiscoCodecCameraDevice>
 	{
-		private readonly SafeTimer m_Timer;
 		private const int CODEC_SLEEP_TIMER_MIN = 120;
 		private const long KEEP_AWAKE_TICK_MS = 3600 * 1000;
+
+		private readonly SafeTimer m_Timer;
+		private readonly SystemComponent m_SystemComponent;
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public CiscoCodecCameraDevicePowerControl(T parent, int id) : base(parent, id)
+		public CiscoCodecCameraDevicePowerControl(CiscoCodecCameraDevice parent, int id)
+			: base(parent, id)
 		{
 			m_Timer = SafeTimer.Stopped(TimerExpired);
+
+			m_SystemComponent = Parent.GetCodec().Components.GetComponent<SystemComponent>();
+			m_SystemComponent.OnAwakeStateChanged += SystemComponentOnAwakeStateChanged;
+		}
+
+		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			if (IsPowered)
+				TimerExpired();
 		}
 
 		private void TimerExpired()
 		{
-			Parent.GetCodec().Wake();
-			Parent.GetCodec().ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
+			if (!m_SystemComponent.Awake)
+				m_SystemComponent.Wake();
+			m_SystemComponent.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
 		}
 
 		public override void PowerOn()

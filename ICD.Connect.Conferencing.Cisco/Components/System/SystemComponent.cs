@@ -420,6 +420,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.System
 			Codec.Log(eSeverity.Informational, "Activating VTC");
 		}
 
+		[PublicAPI]
+		public void ResetSleepTimer(int minutes)
+		{
+			Codec.SendCommand("xCommand Standby ResetTimer Delay:{0}", minutes);
+			Codec.Log(eSeverity.Informational, "Resetting standby timer to {0} minutes", minutes);
+		}
+
 		#endregion
 
 		#region Private Methods

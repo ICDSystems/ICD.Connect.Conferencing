@@ -29,7 +29,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			Controls.Add(new PanTiltControl<CiscoCodecCameraDevice>(this, 1));
 			Controls.Add(new ZoomControl<CiscoCodecCameraDevice>(this, 2));
 			Controls.Add(new PresetControl<CiscoCodecCameraDevice>(this, 3));
-			Controls.Add(new CiscoCodecCameraDevicePowerControl<CiscoCodecCameraDevice>(this, 4));
+			Controls.Add(new CiscoCodecCameraDevicePowerControl(this, 4));
 		}
 
 

@@ -286,30 +286,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		}
 
 		/// <summary>
-		/// Puts the codec in standby mode.
-		/// </summary>
-		[PublicAPI]
-		public void Sleep()
-		{
-			SendCommand("xCommand Standby Activate");
-		}
-
-		/// <summary>
-		/// Wakes the codec from standby.
-		/// </summary>
-		[PublicAPI]
-		public void Wake()
-		{
-			SendCommand("xCommand Standby Deactivate");
-		}
-
-		[PublicAPI]
-		public void ResetSleepTimer(int minutes)
-		{
-			SendCommand("xCommand Standby ResetTimer Delay:{0}", minutes);
-		}
-
-		/// <summary>
 		/// Send command.
 		/// </summary>
 		/// <param name="command"></param>
