@@ -1,5 +1,4 @@
-﻿using System;
-using ICD.Common.Utils.EventArguments;
+﻿using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Cisco.Components.System;
 using ICD.Connect.Devices.Controls;
@@ -24,7 +23,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		{
 			m_Timer = SafeTimer.Stopped(TimerExpired);
 
-			m_SystemComponent = Parent.GetCodec().Components.GetComponent<SystemComponent>();
+			CiscoCodec codec = Parent.GetCodec();
+			if (codec == null)
+				return;
+
+			m_SystemComponent = codec.Components.GetComponent<SystemComponent>();
 			m_SystemComponent.OnAwakeStateChanged += SystemComponentOnAwakeStateChanged;
 		}
 
