@@ -21,14 +21,14 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public CiscoCodecCameraDevicePowerControl(CiscoCodecCameraDevice parent, int id)
 			: base(parent, id)
 		{
-			m_Timer = SafeTimer.Stopped(TimerExpired);
-
 			CiscoCodec codec = Parent.GetCodec();
 			if (codec == null)
 				return;
 
 			m_SystemComponent = codec.Components.GetComponent<SystemComponent>();
 			m_SystemComponent.OnAwakeStateChanged += SystemComponentOnAwakeStateChanged;
+
+			m_Timer = SafeTimer.Stopped(TimerExpired);
 		}
 
 		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs boolEventArgs)
@@ -39,6 +39,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 		private void TimerExpired()
 		{
+			if (m_SystemComponent == null)
+				return;
 			if (!m_SystemComponent.Awake)
 				m_SystemComponent.Wake();
 			m_SystemComponent.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
