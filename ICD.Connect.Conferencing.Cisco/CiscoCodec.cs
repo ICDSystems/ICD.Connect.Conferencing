@@ -225,9 +225,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			m_Port = port;
 			Subscribe(m_Port);
 
-			if (m_Port != null)
-				Connect();
-
 			Heartbeat.StartMonitoring();
 
 			UpdateCachedOnlineStatus();
