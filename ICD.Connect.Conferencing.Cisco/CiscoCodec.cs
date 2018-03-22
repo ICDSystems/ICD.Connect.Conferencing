@@ -194,7 +194,6 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			m_FeedbackTimer.Dispose();
 
-			Heartbeat.StopMonitoring();
 			Heartbeat.Dispose();
 
 			Unsubscribe(m_SerialBuffer);
