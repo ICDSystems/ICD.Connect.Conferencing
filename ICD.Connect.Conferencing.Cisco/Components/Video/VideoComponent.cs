@@ -427,7 +427,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		/// </summary>
 		/// <returns></returns>
 		[CanBeNull]
-		public VideoInputConnector GetActiveVideoInputConnector()
+		public VideoInputConnector GetMainVideoInputConnector()
 		{
 			VideoSource source;
 			if (!m_VideoSources.TryGetValue(MainVideoSource, out source))
