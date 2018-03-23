@@ -31,6 +31,17 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			m_Timer = SafeTimer.Stopped(TimerExpired);
 		}
 
+		/// <summary>
+		/// Override to release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void DisposeFinal(bool disposing)
+		{
+			base.DisposeFinal(disposing);
+			m_Timer.Stop();
+			m_Timer.Dispose();
+		}
+
 		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs boolEventArgs)
 		{
 			if (IsPowered)
