@@ -204,7 +204,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		}
 
 		/// <summary>
-		/// Gets the main video source.
+		/// Gets the main video source (the active camera input).
 		/// </summary>
 		[PublicAPI]
 		public int MainVideoSource
@@ -420,6 +420,23 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 															 typeof(VideoInputConnector).Name, id));
 			}
 			return m_VideoInputConnectors[id];
+		}
+
+		/// <summary>
+		/// Gets the physical connector which is currently recieving camera input.
+		/// </summary>
+		/// <returns></returns>
+		[CanBeNull]
+		public VideoInputConnector GetMainVideoInputConnector()
+		{
+			VideoSource source;
+			if (!m_VideoSources.TryGetValue(MainVideoSource, out source))
+				return null;
+
+			VideoInputConnector connector;
+			return m_VideoInputConnectors.TryGetValue(source.ConnectorId, out connector)
+				       ? connector
+				       : null;
 		}
 
 		/// <summary>
