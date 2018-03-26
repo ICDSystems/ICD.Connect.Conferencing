@@ -84,6 +84,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 		private void UpdateSystemComponent()
 		{
+			if (m_SystemComponent != null)
+				m_SystemComponent.OnAwakeStateChanged -= SystemComponentOnAwakeStateChanged;
+
 			CiscoCodec codec = Parent.GetCodec();
 			if (codec == null)
 				return;
