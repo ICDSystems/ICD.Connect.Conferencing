@@ -41,6 +41,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		{
 			base.DisposeFinal(disposing);
 			Unsubscribe();
+			m_SystemComponent = null;
 			m_Timer.Stop();
 			m_Timer.Dispose();
 		}
