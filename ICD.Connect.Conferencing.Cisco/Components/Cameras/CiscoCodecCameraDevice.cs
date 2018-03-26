@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
@@ -14,6 +15,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	public class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
 		ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
+		public event EventHandler CodecChanged;
 		#region Properties
 		private CiscoCodec m_Codec;
 		private NearCamerasComponent m_CamerasComponent;
@@ -228,6 +230,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			m_CamerasComponent = m_Codec.Components.GetComponent<NearCamerasComponent>();
 
 			m_Camera = m_CamerasComponent.GetCamera(CameraId);
+
+			CodecChanged.Raise(this);
 		}
 		#endregion
 

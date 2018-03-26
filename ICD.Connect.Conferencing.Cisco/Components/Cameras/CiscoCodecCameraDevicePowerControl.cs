@@ -1,4 +1,5 @@
-﻿using ICD.Common.Utils.EventArguments;
+﻿using System;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Cisco.Components.System;
 using ICD.Connect.Devices.Controls;
@@ -11,7 +12,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		private const long KEEP_AWAKE_TICK_MS = 3600 * 1000;
 
 		private readonly SafeTimer m_Timer;
-		private readonly SystemComponent m_SystemComponent;
+
+		private SystemComponent m_SystemComponent;
 
 		/// <summary>
 		/// Constructor.
@@ -21,14 +23,14 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public CiscoCodecCameraDevicePowerControl(CiscoCodecCameraDevice parent, int id)
 			: base(parent, id)
 		{
-			CiscoCodec codec = Parent.GetCodec();
-			if (codec == null)
-				return;
-
-			m_SystemComponent = codec.Components.GetComponent<SystemComponent>();
-			m_SystemComponent.OnAwakeStateChanged += SystemComponentOnAwakeStateChanged;
-
+			Subscribe();
+			UpdateSystemComponent();
 			m_Timer = SafeTimer.Stopped(TimerExpired);
+		}
+
+		private void ParentOnCodecChanged(object sender, EventArgs eventArgs)
+		{
+			UpdateSystemComponent();
 		}
 
 		/// <summary>
@@ -38,6 +40,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		protected override void DisposeFinal(bool disposing)
 		{
 			base.DisposeFinal(disposing);
+			Unsubscribe();
 			m_Timer.Stop();
 			m_Timer.Dispose();
 		}
@@ -67,6 +70,26 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		{
 			IsPowered = false;
 			m_Timer.Stop();
+		}
+
+		private void Subscribe()
+		{
+			Parent.CodecChanged += ParentOnCodecChanged;
+		}
+
+		private void Unsubscribe()
+		{
+			Parent.CodecChanged -= ParentOnCodecChanged;
+		}
+
+		private void UpdateSystemComponent()
+		{
+			CiscoCodec codec = Parent.GetCodec();
+			if (codec == null)
+				return;
+
+			m_SystemComponent = codec.Components.GetComponent<SystemComponent>();
+			m_SystemComponent.OnAwakeStateChanged += SystemComponentOnAwakeStateChanged;
 		}
 	}
 }
