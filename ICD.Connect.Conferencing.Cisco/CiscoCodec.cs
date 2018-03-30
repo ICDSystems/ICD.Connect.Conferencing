@@ -803,21 +803,13 @@ namespace ICD.Connect.Conferencing.Cisco
 			PeripheralsId = settings.PeripheralsId;
 
 			// Set input types before setting the port, otherwise the connector type of none gets cached inproperly.
-			SetInputTypeForConnector(1, settings.Input1CodecInputType == null
-										    ? eCodecInputType.None
-										    : settings.Input1CodecInputType.Value);
+			SetInputTypeForConnector(1, settings.Input1CodecInputType);
 
-			SetInputTypeForConnector(2, settings.Input2CodecInputType == null
-											? eCodecInputType.None
-											: settings.Input2CodecInputType.Value);
+			SetInputTypeForConnector(2, settings.Input2CodecInputType);
 
-			SetInputTypeForConnector(3, settings.Input3CodecInputType == null
-											? eCodecInputType.None
-											: settings.Input3CodecInputType.Value);
+			SetInputTypeForConnector(3, settings.Input3CodecInputType);
 
-			SetInputTypeForConnector(4, settings.Input4CodecInputType == null
-											? eCodecInputType.None
-											: settings.Input4CodecInputType.Value);
+			SetInputTypeForConnector(4, settings.Input4CodecInputType);
 
 			ISerialPort port = null;
 

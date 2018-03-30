@@ -224,12 +224,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 			Unsubscribe(m_Codec);
 			m_Codec = codec;
+
 			Subscribe(m_Codec);
 			UpdateCachedOnlineStatus();
 
-			m_CamerasComponent = m_Codec.Components.GetComponent<NearCamerasComponent>();
+			m_CamerasComponent = m_Codec == null ? null :m_Codec.Components.GetComponent<NearCamerasComponent>();
 
-			m_Camera = m_CamerasComponent.GetCamera(CameraId);
+			m_Camera = m_CamerasComponent == null ? null : m_CamerasComponent.GetCamera(CameraId);
 
 			CodecChanged.Raise(this);
 		}
