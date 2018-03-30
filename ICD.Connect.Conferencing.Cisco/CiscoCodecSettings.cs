@@ -79,10 +79,10 @@ namespace ICD.Connect.Conferencing.Cisco
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
 
-			writer.WriteElementString(INPUT_1_ELEMENT, Input1CodecInputType.ToString());
-			writer.WriteElementString(INPUT_2_ELEMENT, Input2CodecInputType.ToString());
-			writer.WriteElementString(INPUT_3_ELEMENT, Input3CodecInputType.ToString());
-			writer.WriteElementString(INPUT_4_ELEMENT, Input4CodecInputType.ToString());
+			writer.WriteElementString(INPUT_1_ELEMENT, IcdXmlConvert.ToString(Input1CodecInputType));
+			writer.WriteElementString(INPUT_2_ELEMENT, IcdXmlConvert.ToString(Input2CodecInputType));
+			writer.WriteElementString(INPUT_3_ELEMENT, IcdXmlConvert.ToString(Input3CodecInputType));
+			writer.WriteElementString(INPUT_4_ELEMENT, IcdXmlConvert.ToString(Input4CodecInputType));
 		}
 
 		/// <summary>
