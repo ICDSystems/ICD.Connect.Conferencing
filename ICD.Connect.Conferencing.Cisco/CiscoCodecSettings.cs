@@ -31,10 +31,10 @@ namespace ICD.Connect.Conferencing.Cisco
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
 
-		public eCodecInputType? Input1CodecInputType { get; set; }
-		public eCodecInputType? Input2CodecInputType { get; set; }
-		public eCodecInputType? Input3CodecInputType { get; set; }
-		public eCodecInputType? Input4CodecInputType { get; set; }
+		public eCodecInputType Input1CodecInputType { get; set; }
+		public eCodecInputType Input2CodecInputType { get; set; }
+		public eCodecInputType Input3CodecInputType { get; set; }
+		public eCodecInputType Input4CodecInputType { get; set; }
 
 		/// <summary>
 		/// Gets/sets the peripherals id.
@@ -79,10 +79,10 @@ namespace ICD.Connect.Conferencing.Cisco
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
 
-			writer.WriteElementString(INPUT_1_ELEMENT, Input1CodecInputType == null ? null : Input1CodecInputType.Value.ToString());
-			writer.WriteElementString(INPUT_2_ELEMENT, Input2CodecInputType == null ? null : Input2CodecInputType.Value.ToString());
-			writer.WriteElementString(INPUT_3_ELEMENT, Input3CodecInputType == null ? null : Input3CodecInputType.Value.ToString());
-			writer.WriteElementString(INPUT_4_ELEMENT, Input4CodecInputType == null ? null : Input4CodecInputType.Value.ToString());
+			writer.WriteElementString(INPUT_1_ELEMENT, Input1CodecInputType.ToString());
+			writer.WriteElementString(INPUT_2_ELEMENT, Input2CodecInputType.ToString());
+			writer.WriteElementString(INPUT_3_ELEMENT, Input3CodecInputType.ToString());
+			writer.WriteElementString(INPUT_4_ELEMENT, Input4CodecInputType.ToString());
 		}
 
 		/// <summary>
@@ -96,10 +96,10 @@ namespace ICD.Connect.Conferencing.Cisco
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 			PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT);
 
-			Input1CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_1_ELEMENT, true);
-			Input2CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_2_ELEMENT, true);
-			Input3CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_3_ELEMENT, true);
-			Input4CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_4_ELEMENT, true);
+			Input1CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_1_ELEMENT, true) ?? eCodecInputType.None;
+			Input2CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_2_ELEMENT, true) ?? eCodecInputType.None;
+			Input3CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_3_ELEMENT, true) ?? eCodecInputType.None;
+			Input4CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_4_ELEMENT, true) ?? eCodecInputType.None;
 		}
 	}
 }
