@@ -201,10 +201,8 @@ namespace ICD.Connect.Conferencing.Controls
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<string>("Dial", "Dial <NUMBER>", s => Dial(s));
-			yield return new GenericConsoleCommand<bool>("SetDoNotDisturb", "SetDoNotDisturb <true/false>", b => SetDoNotDisturb(b));
-			yield return new GenericConsoleCommand<bool>("SetAutoAnswer", "SetAutoAnswer <true/false>", b => SetAutoAnswer(b));
-			yield return new GenericConsoleCommand<bool>("SetPrivacyMute", "SetPrivacyMute <true/false>", b => SetPrivacyMute(b));
+			foreach (IConsoleCommand command in DialingDeviceControlConsole.GetConsoleCommands(this))
+				yield return command;
 		}
 
 		/// <summary>
@@ -224,10 +222,29 @@ namespace ICD.Connect.Conferencing.Controls
 		{
 			base.BuildConsoleStatus(addRow);
 
-			addRow("AutoAnswer", m_AutoAnswer);
-			addRow("PrivacyMuted", m_PrivacyMuted);
-			addRow("DoNotDisturb", m_DoNotDisturb);
-			addRow("Supports", Supports);
+			DialingDeviceControlConsole.BuildConsoleStatus(this, addRow);
+		}
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
+
+			foreach (IConsoleNodeBase node in DialingDeviceControlConsole.GetConsoleNodes(this))
+				yield return node;
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		#endregion
