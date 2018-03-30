@@ -1,7 +1,7 @@
 ﻿using System;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Cameras;
+using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
 
