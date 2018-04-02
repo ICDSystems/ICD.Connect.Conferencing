@@ -94,6 +94,20 @@ namespace ICD.Connect.Conferencing.Proxies
 		{
 		}
 
+		/// <summary>
+		/// Override to release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void DisposeFinal(bool disposing)
+		{
+			OnSourceAdded = null;
+			OnDoNotDisturbChanged = null;
+			OnAutoAnswerChanged = null;
+			OnPrivacyMuteChanged = null;
+
+			base.DisposeFinal(disposing);
+		}
+
 		#region Methods
 
 		/// <summary>
