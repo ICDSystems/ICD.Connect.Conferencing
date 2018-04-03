@@ -13,18 +13,25 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	// ReSharper disable once ClassCanBeSealed.Global 
 	//(this device has no inheritors, but its type is used as a filter for the power control so it cant be sealed)
 	public class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
-		ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
+	                                      ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
 		public event EventHandler CodecChanged;
-		#region Properties
+
 		private CiscoCodec m_Codec;
 		private NearCamerasComponent m_CamerasComponent;
 		private NearCamera m_Camera;
 		private int? m_PanTiltSpeed;
 		private int? m_ZoomSpeed;
+
+		#region Properties
+
 		public int CameraId { get; private set; }
+
 		#endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		public CiscoCodecCameraDevice()
 		{
 			Controls.Add(new GenericCameraRouteSourceControl<CiscoCodecCameraDevice>(this, 0));
@@ -34,14 +41,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			Controls.Add(new CiscoCodecCameraDevicePowerControl(this, 4));
 		}
 
-
 		#region ICameraWithPanTilt
+
 		public void PanTilt(eCameraPanTiltAction action)
 		{
 			if (m_Camera == null)
-			{
 				return;
-			}
+
 			switch (action)
 			{
 				case eCameraPanTiltAction.Left:
@@ -75,15 +81,16 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 					throw new ArgumentOutOfRangeException("action");
 			}
 		}
+
 		#endregion
 
 		#region ICameraWithZoom
+
 		public void Zoom(eCameraZoomAction action)
 		{
 			if (m_Camera == null)
-			{
 				return;
-			}
+
 			switch (action)
 			{
 				case eCameraZoomAction.ZoomIn:
@@ -105,9 +112,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 					throw new ArgumentOutOfRangeException("action");
 			}
 		}
+
 		#endregion
 
 		#region ICameraWithPresets
+
 		public int MaxPresets { get { return 35; } }
 
 		public IEnumerable<CameraPreset> GetPresets()
@@ -118,23 +127,22 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public void ActivatePreset(int presetId)
 		{
 			if (m_Camera == null)
-			{
 				return;
-			}
+
 			if (presetId < 1 || presetId > MaxPresets)
 			{
 				Logger.AddEntry(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not activated.", MaxPresets);
 				return;
 			}
+
 			m_Camera.ActivatePreset(presetId);
 		}
 
 		public void StorePreset(int presetId)
 		{
 			if (m_Camera == null)
-			{
 				return;
-			}
+
 			if (presetId < 1 || presetId > MaxPresets)
 			{
 				Logger.AddEntry(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not stored.", MaxPresets);
@@ -143,9 +151,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 			m_Camera.StorePreset(presetId);
 		}
+
 		#endregion
 
 		#region DeviceBase
+
 		protected override bool GetIsOnlineStatus()
 		{
 			return m_Codec != null && m_Codec.IsOnline;
@@ -160,6 +170,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// </summary>
 		protected override void ClearSettingsFinal()
 		{
+			CodecChanged = null;
+
 			base.ClearSettingsFinal();
 
 			CameraId = 0;
@@ -206,6 +218,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			settings.PanTiltSpeed = m_PanTiltSpeed;
 			settings.ZoomSpeed = m_ZoomSpeed;
 		}
+
 		#endregion
 
 		#region Public API
@@ -228,12 +241,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			Subscribe(m_Codec);
 			UpdateCachedOnlineStatus();
 
-			m_CamerasComponent = m_Codec == null ? null :m_Codec.Components.GetComponent<NearCamerasComponent>();
+			m_CamerasComponent = m_Codec == null ? null : m_Codec.Components.GetComponent<NearCamerasComponent>();
 
 			m_Camera = m_CamerasComponent == null ? null : m_CamerasComponent.GetCamera(CameraId);
 
 			CodecChanged.Raise(this);
 		}
+
 		#endregion
 
 		#region Codec Callbacks
