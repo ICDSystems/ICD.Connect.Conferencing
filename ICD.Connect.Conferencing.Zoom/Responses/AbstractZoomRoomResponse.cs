@@ -13,23 +13,27 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		/// <summary>
 		/// Property key of where the actual response data is stored
 		/// </summary>
-		public string TopKey { get; set; }
+		[JsonProperty("topKey")]
+		public string TopKey { get; private set; }
 
 		/// <summary>
 		/// The type of response
 		/// </summary>
-		public eZoomRoomApiType Type { get; set; }
+		[JsonProperty("type")]
+		public eZoomRoomApiType Type { get; private set; }
 
 		/// <summary>
 		/// Whether the command succeeded or not
 		/// </summary>
-		public ZoomRoomResponseStatus Status { get; set; }
+		[JsonProperty("Status")]
+		public ZoomRoomResponseStatus Status { get; private set; }
 
 		/// <summary>
 		/// Whether or not this is a synchronous response to a command (true)
 		/// or asynchronous status update (false)
 		/// </summary>
-		public bool Sync { get; set; }
+		[JsonProperty("Sync")]
+		public bool Sync { get; private set; }
 	}
 
 	public enum eZoomRoomApiType
@@ -42,7 +46,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 
 	public class ZoomRoomResponseStatus
 	{
-		public string Message { get; set; }
-		public string State { get; set; }
+		[JsonProperty("message")]
+		public string Message { get; private set; }
+		[JsonProperty("state")]
+		public string State { get; private set; }
 	}
 }
