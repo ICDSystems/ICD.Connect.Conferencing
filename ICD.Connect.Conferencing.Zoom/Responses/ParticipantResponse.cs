@@ -8,20 +8,20 @@ using Newtonsoft.Json;
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	[ZoomRoomApiResponse("ListParticipantsResult", eZoomRoomApiType.zCommand, true)]
-	public class ListParticipantsCommandResponse : AbstractZoomRoomResponse
+	public sealed class ListParticipantsCommandResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("ListParticipantsResult")]
 		public ParticipantInfo[] ListParticipantsResult { get; set; }
 	}
 
 	[ZoomRoomApiResponse("ListParticipantsResult", eZoomRoomApiType.zCommand, false)]
-	public class ParticipantUpdateResponse : AbstractZoomRoomResponse
+	public sealed class ParticipantUpdateResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("ListParticipantsResult")]
 		public ParticipantInfo ListParticipantsResult { get; set; }
 	}
 
-	public class ParticipantInfo
+	public sealed class ParticipantInfo
 	{
 		[JsonProperty("user_name")]
 		public string UserName { get; set; }

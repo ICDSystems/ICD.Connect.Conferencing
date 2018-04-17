@@ -1,22 +1,22 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace ICD.Connect.Conferencing.Zoom.Responses.CallInfo
+namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	/// <summary>
 	/// Contains call info, received either as an event, status update, or command
 	/// </summary>
-	[ZoomRoomApiResponse("InfoResult")]
-	public class InfoResultResponse : AbstractZoomRoomResponse
+	[ZoomRoomApiResponse("InfoResult", eZoomRoomApiType.zCommand, true)]
+	public sealed class InfoResultResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("InfoResult")]
 		public CallInfo InfoResult { get; set; }
 	}
 
-	public class CallInfo
+	public sealed class CallInfo
 	{
 		[JsonProperty("Info")]
-		public CallInOutLists Info { get; set; }
+		public CallInOutLists CallInOutInfo { get; set; }
 
 		[JsonProperty("real_meeting_id")]
 		public string RealMeetingId { get; set; }
@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.CallInfo
 		public string InviteEmailContent { get; set; }
 	}
 
-	public class CallInOutLists
+	public sealed class CallInOutLists
 	{
 		[JsonProperty("callout_country_list")]
 		public List<CallInOutListEntry> CalloutCountryList { get; set; }
@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.CallInfo
 		public List<CallInOutListEntry> TollFreeCallinList { get; set; }
 	}
 
-	public class CallInOutListEntry
+	public sealed class CallInOutListEntry
 	{
 		[JsonProperty("id")]
 		public string Id { get; set; }

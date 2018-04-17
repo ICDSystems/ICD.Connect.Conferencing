@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
+	// do not put a [JsonConverter(typeof(ZoomRoomResponseConverter)] attribute here, will infinite loop
 	public abstract class AbstractZoomRoomResponse
 	{
 		/// <summary>
