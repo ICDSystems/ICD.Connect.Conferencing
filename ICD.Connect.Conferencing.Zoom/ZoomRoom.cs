@@ -5,6 +5,7 @@ using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.IO;
@@ -23,8 +24,15 @@ namespace ICD.Connect.Conferencing.Zoom
 {
 	public sealed class ZoomRoom : AbstractDevice<ZoomRoomSettings>, IConnectable
 	{
+		/// <summary>
+		/// Callback for parser events.
+		/// </summary>
+		public delegate void ResponseCallback(ZoomRoom zoomRoom, AbstractZoomRoomResponse response);
+
+		public delegate void ResponseCallback<T>(ZoomRoom zoomRoom, T response) where T : AbstractZoomRoomResponse;
 
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
+		public event EventHandler<BoolEventArgs> OnInitializedChanged;
 
 		private bool m_Initialized;
 		private bool m_IsConnected;
@@ -32,14 +40,71 @@ namespace ICD.Connect.Conferencing.Zoom
 		private JsonSerialBuffer m_SerialBuffer;
 		private const string END_OF_LINE = "\n";
 
+		/// <summary>
+		/// System Configuration Commands
+		/// </summary>
+		private readonly string[] m_ConfigurationCommands =
+		{
+			"echo off",
+			"format json"
+		};
+
+		private readonly Dictionary<Type, List<ResponseCallback>> m_ResponseCallbacks;
+		private readonly SafeCriticalSection m_ResponseCallbacksSection;
+
 		#region Properties
 
 		public Heartbeat Heartbeat { get; private set; }
 
-		public bool Initialized { get; set; }
+		/// <summary>
+		/// Device Initialized Status.
+		/// </summary>
+		public bool Initialized
+		{
+			get { return m_Initialized; }
+			private set
+			{
+				if (value == m_Initialized)
+					return;
 
-		public bool IsConnected { get; set; }
+				m_Initialized = value;
 
+				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
+			}
+		}
+
+		/// <summary>
+		/// Returns true when the codec is connected.
+		/// </summary>
+		public bool IsConnected
+		{
+			get { return m_IsConnected; }
+			private set
+			{
+				if (value == m_IsConnected)
+					return;
+
+				m_IsConnected = value;
+
+				OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
+			}
+		}
+
+		/// <summary>
+		/// Gets the help information for the node.
+		/// </summary>
+		public override string ConsoleHelp { get { return "The Zoom Room conferencing device"; } }
+
+		#endregion
+
+		#region Constructors
+
+		public ZoomRoom()
+		{
+			Heartbeat = new Heartbeat(this);
+			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallback>>();
+			m_ResponseCallbacksSection = new SafeCriticalSection();
+		}
 		#endregion
 
 		#region Methods
@@ -124,19 +189,19 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			if (m_Port == null)
 			{
-				Log(eSeverity.Error, "Unable to communicate with Codec - port is null");
+				Log(eSeverity.Error, "Unable to communicate with Zoom Room - port is null");
 				return;
 			}
 
 			if (!IsConnected)
 			{
-				Log(eSeverity.Warning, "Codec is disconnected, attempting reconnect");
+				Log(eSeverity.Warning, "Zoom Room is disconnected, attempting reconnect");
 				Connect();
 			}
 
 			if (!IsConnected)
 			{
-				Log(eSeverity.Critical, "Unable to communicate with Codec");
+				Log(eSeverity.Critical, "Unable to communicate with Zoom Room");
 				return;
 			}
 
@@ -157,9 +222,53 @@ namespace ICD.Connect.Conferencing.Zoom
 				SendCommand(command);
 		}
 
+		public void RegisterResponseCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
+		{
+			var wrappedCallback = new ResponseCallback((zr, resp) => callback(zr, (T) resp));
+
+			m_ResponseCallbacksSection.Execute(() =>
+			{
+				if (!m_ResponseCallbacks.ContainsKey(typeof (T)))
+					m_ResponseCallbacks.Add(typeof (T), new List<ResponseCallback>());
+
+				m_ResponseCallbacks[typeof (T)].Add(wrappedCallback);
+			});
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		/// <summary>
+		/// Initialize the Zoom Room API.
+		/// </summary>
 		private void Initialize()
 		{
-			throw new NotImplementedException();
+			SendCommands(m_ConfigurationCommands);
+
+			Initialized = true;
+		}
+
+		private void CallResponseCallbacks(AbstractZoomRoomResponse response)
+		{
+			Type responseType = response.GetType();
+			ResponseCallback[] callbacks;
+
+			m_ResponseCallbacksSection.Enter();
+			try
+			{
+				if (!m_ResponseCallbacks.ContainsKey(responseType))
+					return;
+
+				callbacks = m_ResponseCallbacks[responseType].ToArray();
+			}
+			finally
+			{
+				m_ResponseCallbacksSection.Leave();
+			}
+
+			foreach (ResponseCallback callback in callbacks)
+				callback(this, response);
 		}
 
 		#endregion
@@ -269,6 +378,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			settings.Converters.Add(new ZoomRoomResponseConverter());
 			var response = JsonConvert.DeserializeObject<AbstractZoomRoomResponse>(json, settings);
 
+			CallResponseCallbacks(response);
 		}
 
 		#endregion
