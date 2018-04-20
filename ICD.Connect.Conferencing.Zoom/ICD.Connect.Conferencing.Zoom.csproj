@@ -72,11 +72,14 @@
     <Compile Include="Component\CallComponent.cs" />
     <Compile Include="Controls\ZoomDialingDeviceControl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Responses\eZoomRoomApiType.cs" />
-    <Compile Include="Responses\CallInfo\InfoResultResponse.cs" />
+    <Compile Include="Responses\CallConnectErrorResponse.cs" />
+    <Compile Include="Responses\CallDisconnectResponse.cs" />
+    <Compile Include="Responses\IncomingCallResponse.cs" />
+    <Compile Include="Responses\InfoResultResponse.cs" />
+    <Compile Include="Responses\ParticipantResponse.cs" />
+    <Compile Include="Responses\PhonebookResponse.cs" />
     <Compile Include="Responses\ZoomRoomApiResponseAttribute.cs" />
     <Compile Include="Responses\ZoomRoomResponseConverter.cs" />
-    <Compile Include="Responses\ZoomRoomResponseStatus.cs" />
     <Compile Include="ZoomRoom.cs" />
     <Compile Include="Responses\AbstractZoomRoomResponse.cs" />
     <Compile Include="ZoomRoomSettings.cs" />
