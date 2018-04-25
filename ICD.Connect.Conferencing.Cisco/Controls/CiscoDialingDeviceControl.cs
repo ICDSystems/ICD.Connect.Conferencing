@@ -118,12 +118,16 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		{
 			component.OnSourceAdded += ComponentOnSourceAdded;
 			component.OnPrivacyMuteChanged += ComponentOnPrivacyMuteChanged;
+			component.OnAutoAnswerChanged += ComponentOnAutoAnswerChanged;
+			component.OnDoNotDisturbChanged += ComponentOnDoNotDisturbChanged;
 		}
 
 		private void Unsubscribe(DialingComponent component)
 		{
 			component.OnSourceAdded -= ComponentOnSourceAdded;
 			component.OnPrivacyMuteChanged -= ComponentOnPrivacyMuteChanged;
+			component.OnAutoAnswerChanged -= ComponentOnAutoAnswerChanged;
+			component.OnDoNotDisturbChanged -= ComponentOnDoNotDisturbChanged;
 		}
 
 		private void ComponentOnSourceAdded(object sender, ConferenceSourceEventArgs args)
@@ -134,6 +138,16 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		private void ComponentOnPrivacyMuteChanged(object sender, BoolEventArgs args)
 		{
 			PrivacyMuted = args.Data;
+		}
+
+		private void ComponentOnDoNotDisturbChanged(object sender, BoolEventArgs args)
+		{
+			DoNotDisturb = args.Data;
+		}
+
+		private void ComponentOnAutoAnswerChanged(object sender, BoolEventArgs args)
+		{
+			AutoAnswer = args.Data;
 		}
 
 		#endregion

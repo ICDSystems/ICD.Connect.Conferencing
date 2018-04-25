@@ -10,3 +10,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - ICD.Connect.Conferencing.Mock project, relevant project files
  - Mock conferencing device + settings, to simulate a conferencing device such as a cisco codec
  - Mock dialing device control, to simulate a dialer
+
+### Changed
+ - Make the cisco codec properly update its do not disturb and auto answer values
