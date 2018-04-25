@@ -9,7 +9,17 @@ namespace ICD.Connect.Conferencing.EventArguments
 		/// Constructor.
 		/// </summary>
 		/// <param name="source"></param>
-		public ConferenceSourceEventArgs(IConferenceSource source) : base(source)
+		public ConferenceSourceEventArgs(IConferenceSource source)
+			: base(source)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="other"></param>
+		public ConferenceSourceEventArgs(ConferenceSourceEventArgs other)
+			: this(other.Data)
 		{
 		}
 	}
