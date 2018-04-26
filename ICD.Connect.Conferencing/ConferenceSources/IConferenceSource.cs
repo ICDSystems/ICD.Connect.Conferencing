@@ -229,5 +229,67 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 					throw new ArgumentOutOfRangeException();
 			}
 		}
+
+		/// <summary>
+		/// Returns true if the source is incoming and actively ringing.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		[PublicAPI]
+		public static bool GetIsRingingIncomingCall(this IConferenceSource extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			switch (extends.Direction)
+			{
+				case eConferenceSourceDirection.Undefined:
+				case eConferenceSourceDirection.Outgoing:
+					return false;
+
+				case eConferenceSourceDirection.Incoming:
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+
+			switch (extends.AnswerState)
+			{
+				case eConferenceSourceAnswerState.Answered:
+				case eConferenceSourceAnswerState.Autoanswered:
+				case eConferenceSourceAnswerState.Ignored:
+					return false;
+
+				case eConferenceSourceAnswerState.Unknown:
+				case eConferenceSourceAnswerState.Unanswered:
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+
+			switch (extends.Status)
+			{
+				case eConferenceSourceStatus.Undefined:
+				case eConferenceSourceStatus.Connected:
+				case eConferenceSourceStatus.Disconnecting:
+				case eConferenceSourceStatus.OnHold:
+				case eConferenceSourceStatus.EarlyMedia:
+				case eConferenceSourceStatus.Preserved:
+				case eConferenceSourceStatus.RemotePreserved:
+				case eConferenceSourceStatus.Disconnected:
+				case eConferenceSourceStatus.Idle:
+					return false;
+
+				case eConferenceSourceStatus.Dialing:
+				case eConferenceSourceStatus.Ringing:
+				case eConferenceSourceStatus.Connecting:
+					return true;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
 	}
 }

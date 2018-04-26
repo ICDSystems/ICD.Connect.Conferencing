@@ -14,6 +14,7 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components;
 using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
@@ -674,8 +675,8 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// Called when the port online status changes.
 		/// </summary>
 		/// <param name="sender"></param>
-		/// <param name="boolEventArgs"></param>
-		private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs boolEventArgs)
+		/// <param name="args"></param>
+		private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
 		}
