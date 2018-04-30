@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Services;
 using ICD.Common.Services.Logging;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Commands;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 
@@ -271,5 +274,57 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			message = string.Format("{0} - {1}", this, message);
 			ServiceProvider.GetService<ILoggerService>().AddEntry(severity, message, args);
 		}
+
+		#region Console
+
+		/// <summary>
+		/// Gets the name of the node.
+		/// </summary>
+		public string ConsoleName { get { return "ConferenceSource"; } }
+
+		/// <summary>
+		/// Gets the help information for the node.
+		/// </summary>
+		public string ConsoleHelp { get { return string.Empty; } }
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			yield break;
+		}
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			addRow("Name", Name);
+			addRow("Number", Number);
+			addRow("Status", Status);
+			addRow("Direction", Direction);
+			addRow("AnswerState", AnswerState);
+			addRow("Start", Start);
+			addRow("End", End);
+			addRow("DialTime", DialTime);
+		}
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			yield return new ConsoleCommand("Hold", "Holds the call", () => Hold());
+			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
+			yield return new ConsoleCommand("Hangup", "Ends the call", () => Hangup());
+			yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
+			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
+		}
+
+		#endregion
 	}
 }
