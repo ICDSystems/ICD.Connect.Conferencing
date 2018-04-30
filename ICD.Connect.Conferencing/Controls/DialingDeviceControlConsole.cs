@@ -17,7 +17,9 @@ namespace ICD.Connect.Conferencing.Controls
 			if (instance == null)
 				throw new ArgumentNullException("instance");
 
-			yield break;
+			yield return
+				ConsoleNodeGroup.IndexNodeMap("Sources", "The conference sources being tracked by this dialer",
+				                              instance.GetSources());
 		}
 
 		/// <summary>
