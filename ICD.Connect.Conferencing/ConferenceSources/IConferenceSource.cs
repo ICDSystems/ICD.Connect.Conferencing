@@ -2,6 +2,7 @@
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 
@@ -29,7 +30,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 	/// <summary>
 	/// A conference source represents a conferencing end-point (e.g. a telephone)
 	/// </summary>
-	public interface IConferenceSource
+	public interface IConferenceSource : IConsoleNode
 	{
 		/// <summary>
 		/// Raised when the answer state changes.
