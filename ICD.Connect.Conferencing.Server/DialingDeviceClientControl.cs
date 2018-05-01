@@ -55,12 +55,12 @@ namespace ICD.Connect.Conferencing.Server
 
 		public override void Dial(string number)
 		{
-			Parent.Dial(number);
+			//TODO: Dialing for Interpretation to be supported in the future, but currently out of spec
 		}
 
 		public override void Dial(string number, eConferenceSourceType callType)
 		{
-			Parent.Dial(number, callType);
+			//TODO: Dialing for Interpretation to be supported in the future, but currently out of spec
 		}
 
 		public override void SetDoNotDisturb(bool enabled)

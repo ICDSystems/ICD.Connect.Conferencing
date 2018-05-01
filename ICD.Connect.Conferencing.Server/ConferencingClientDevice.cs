@@ -35,6 +35,8 @@ namespace ICD.Connect.Conferencing.Server
 
 		#region RPC Constants
 
+	    public const string SET_INTERPRETATION_STATE_RPC = "SetInterpretationState";
+
 	    public const string SET_CACHED_PRIVACY_MUTE_STATE = "SetCachedPrivacyMuteState";
 		public const string SET_CACHED_AUTO_ANSWER_STATE = "SetCachedAutoAnswerState";
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
@@ -54,6 +56,7 @@ namespace ICD.Connect.Conferencing.Server
 	    private bool m_PrivacyMuted;
 	    private bool m_DoNotDisturb;
 	    private bool m_AutoAnswer;
+	    private int m_Room;
 
 	    #endregion
 
@@ -90,6 +93,8 @@ namespace ICD.Connect.Conferencing.Server
 		/// Gets the heartbeat instance that is enforcing the connection state.
 		/// </summary>
 		public Heartbeat Heartbeat { get; private set; }
+
+	    public bool IsInterpretationActive { get; private set; }
 
 	    public bool PrivacyMuted
 	    {
@@ -173,67 +178,53 @@ namespace ICD.Connect.Conferencing.Server
 
 		#region	Public Methods
 
-	    [PublicAPI]
-	    public void Dial(string number)
-	    {
-		    if (IsConnected)
-			    m_RpcController.CallMethod(ConferencingServerDevice.DIAL_RPC, number);
-	    }
-
-	    [PublicAPI]
-	    public void Dial(string number, eConferenceSourceType type)
-	    {
-		    if (IsConnected)
-			    m_RpcController.CallMethod(ConferencingServerDevice.DIAL_TYPE_RPC, number, type);
-	    }
-
 		[PublicAPI]
 	    public void SetPrivacyMute(bool enabled)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.PRIVACY_MUTE_RPC, enabled);
+				m_RpcController.CallMethod(ConferencingServerDevice.PRIVACY_MUTE_RPC, m_Room, enabled);
 	    }
 
 		[PublicAPI]
 		public void SetAutoAnswer(bool enabled)
 		{
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.AUTO_ANSWER_RPC, enabled);
+				m_RpcController.CallMethod(ConferencingServerDevice.AUTO_ANSWER_RPC, m_Room, enabled);
 		}
 
 	    [PublicAPI]
 	    public void SetDoNotDisturb(bool enabled)
 	    {
 		    if (IsConnected)
-			    m_RpcController.CallMethod(ConferencingServerDevice.DO_NOT_DISTURB_RPC, enabled);
+				m_RpcController.CallMethod(ConferencingServerDevice.DO_NOT_DISTURB_RPC, m_Room, enabled);
 	    }
 
 		[PublicAPI]
 		public void HoldEnable()
 	    {
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.HOLD_ENABLE_RPC);
+				m_RpcController.CallMethod(ConferencingServerDevice.HOLD_ENABLE_RPC, m_Room);
 		}
 
 		[PublicAPI]
 		public void HoldResume()
 	    {
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.HOLD_RESUME_RPC);
+				m_RpcController.CallMethod(ConferencingServerDevice.HOLD_RESUME_RPC, m_Room);
 		}
 
 		[PublicAPI]
 		public void EndCall()
 	    {
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.END_CALL_RPC);
+				m_RpcController.CallMethod(ConferencingServerDevice.END_CALL_RPC, m_Room);
 		}
 
 		[PublicAPI]
 		public void SendDtmf(string data)
 	    {
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.SEND_DTMF_RPC, data);
+				m_RpcController.CallMethod(ConferencingServerDevice.SEND_DTMF_RPC, m_Room, data);
 		}
 
 		[PublicAPI]
@@ -281,6 +272,12 @@ namespace ICD.Connect.Conferencing.Server
 		#endregion
 
 	    #region RPCs
+
+	    [Rpc(SET_INTERPRETATION_STATE_RPC), UsedImplicitly]
+	    private void SetInterpretationState(bool state)
+	    {
+		    IsInterpretationActive = state;
+	    }
 
 	    [Rpc(SET_CACHED_PRIVACY_MUTE_STATE), UsedImplicitly]
 	    private void SetCachedPrivacyMuteState(bool state)
@@ -535,6 +532,8 @@ namespace ICD.Connect.Conferencing.Server
 				Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
 
 			SetPort(port);
+
+			m_Room = settings.Room == null ? 0 : settings.Room.Value;
 	    }
 
 	    protected override void CopySettingsFinal(ConferencingClientDeviceSettings settings)
@@ -542,6 +541,7 @@ namespace ICD.Connect.Conferencing.Server
 		    base.CopySettingsFinal(settings);
 
 		    settings.Port = m_Port == null ? (int?)null : m_Port.Id;
+		    settings.Room = m_Room;
 	    }
 
 	    protected override void ClearSettingsFinal()

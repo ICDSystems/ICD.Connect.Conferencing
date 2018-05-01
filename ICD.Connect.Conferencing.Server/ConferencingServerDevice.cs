@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -21,8 +22,8 @@ namespace ICD.Connect.Conferencing.Server
 	{
 		#region RPC Constants
 
-		public const string DIAL_RPC = "Dial";
-		public const string DIAL_TYPE_RPC = "DialType";
+		public const string REGISTER_ROOM_RPC = "RegisterRoom";
+		public const string UNREGISTER_ROOM_RPC = "UnregisterRoom";
 
 		public const string PRIVACY_MUTE_RPC = "PrivacyMute";
 		public const string AUTO_ANSWER_RPC = "AutoAnswer";
@@ -41,18 +42,34 @@ namespace ICD.Connect.Conferencing.Server
 
 		#region Private Members
 
-		private IDialingDeviceControl m_WrappedControl;
 		private AsyncTcpServer m_Server;
 		private readonly ServerSerialRpcController m_RpcController;
 
+		// key is booth id, value is booth object
+		private readonly Dictionary<int, IInterpreterBooth> m_Booths;
+
+		// key is booth id, value is adapter device for that booth.
+		private readonly Dictionary<int, IInterpretationAdapter> m_Adapters;
+
+		// key is guid id of source, value is the source
 		private readonly Dictionary<Guid, IConferenceSource> m_Sources;
+
+		// key is room id, value is booth number or null if no booth
+		private readonly Dictionary<int, int?> m_Rooms;
+
+		// key is tcp client id, value is room id
+		private readonly Dictionary<uint, int> m_Clients; 
 
 		#endregion
 
 		public ConferencingServerDevice()
 		{
 			m_RpcController = new ServerSerialRpcController(this);
+			m_Booths = new Dictionary<int, IInterpreterBooth>();
+			m_Adapters = new Dictionary<int, IInterpretationAdapter>();
 			m_Sources = new Dictionary<Guid, IConferenceSource>();
+			m_Rooms = new Dictionary<int, int?>();
+			m_Clients = new Dictionary<uint, int>();
 
 			SetServer(new AsyncTcpServer());
 		}
@@ -61,12 +78,60 @@ namespace ICD.Connect.Conferencing.Server
 		{
 			base.DisposeFinal(disposing);
 
-			SetControl(null);
-
 			SetServer(null);
 
+			ClearAdapters();
+			ClearBooths();
 			ClearSources();
 		}
+
+		#region Public Methods
+
+		/// <summary>
+		/// Gets the rooms which are registered with the core, 
+		/// but do not currently have interpretation active.
+		/// </summary>
+		/// <returns></returns>
+		[PublicAPI]
+		public IEnumerable<int> GetAvailableRoomIds()
+		{
+			return m_Clients.Where(kvp => !m_Rooms.ContainsKey(kvp.Value))
+			                .Select(kvp => kvp.Value)
+			                .ToArray();
+
+			//return m_Rooms.Where(kvp => kvp.Value == null).Select(kvp => kvp.Key).ToArray();
+		}
+
+		/// <summary>
+		/// Gets the booths that are not currently interpreting for any rooms.
+		/// </summary>
+		/// <returns></returns>
+		[PublicAPI]
+		public IEnumerable<int> GetAvailableBoothIds()
+		{
+			return m_Booths.Keys.Where(boothId => m_Rooms.All(kvp => kvp.Value != boothId)).ToArray();
+		}
+
+		/// <summary>
+		/// Begins forwarding 
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <param name="boothId"></param>
+		[PublicAPI]
+		public void BeginInterpretation(int roomId, int boothId)
+		{
+			if (!m_Rooms.ContainsKey(roomId) || !m_Booths.ContainsKey(boothId))
+				return;
+
+			if (m_Rooms[roomId] != null)
+				return;
+
+			m_Rooms[roomId] = boothId;
+
+			const string key = ConferencingClientDevice.SET_INTERPRETATION_STATE_RPC;
+		}
+
+		#endregion
 
 		#region Private Helper Methods
 
@@ -93,173 +158,403 @@ namespace ICD.Connect.Conferencing.Server
 			Logger.AddEntry(severity, message);
 		}
 
+		private IEnumerable<IDialingDeviceControl> GetDialersForBooth(int boothId)
+		{
+			return m_Booths.ContainsKey(boothId)
+				? m_Booths[boothId].GetDialers()
+				: Enumerable.Empty<IDialingDeviceControl>();
+		}
+
+		private IEnumerable<IConferenceSource> GetConferenceSourcesForBooth(int boothId)
+		{
+			IDialingDeviceControl[] dialers = GetDialersForBooth(boothId).ToArray();
+
+			if (dialers.Length == 0)
+				return Enumerable.Empty<IConferenceSource>();
+
+			List<IConferenceSource> sources = new List<IConferenceSource>();
+
+			foreach (IDialingDeviceControl dialer in dialers)
+			{
+				sources.AddRange(dialer.GetSources());
+			}
+			return sources;
+		}
+
+		private bool TryGetTargetSource(int roomId, Guid id, out IConferenceSource targetSource)
+		{
+			targetSource = null;
+
+			int? boothId;
+			if (!m_Rooms.TryGetValue(roomId, out boothId))
+			{
+				Log(eSeverity.Error, "No room with id {0} exists.", roomId);
+				return false;
+			}
+
+			if (boothId == null)
+			{
+				Log(eSeverity.Error, "No booth is assigned to room {0}", roomId);
+				return false;
+			}
+
+			IEnumerable<IConferenceSource> sources = GetConferenceSourcesForBooth(boothId.Value);
+
+			if (!m_Sources.TryGetValue(id, out targetSource))
+			{
+				Log(eSeverity.Error, "No Source with the given key found.");
+				return false;
+			}
+
+			if (!sources.Contains(targetSource))
+			{
+				Log(eSeverity.Error, "Source {0} is not from the booth assigned to room {1}", id.ToString(), roomId);
+				return false;
+			}
+
+			return true;
+		}
+
+		private bool TryGetClientIdForSource(Guid sourceId, out uint? clientId)
+		{
+			clientId = null;
+
+			IConferenceSource source;
+			if (!m_Sources.TryGetValue(sourceId, out source))
+			{
+				Log(eSeverity.Error, "No Source with the given key found.");
+				return false;
+			}
+
+			int? targetBooth = null;
+			foreach (var booth in m_Booths.Where(booth => booth.Value.GetDialers().Any(dialer => dialer.GetSources().Any(src => source == src))))
+			{
+				targetBooth = booth.Key;
+				break;
+			}
+			if (targetBooth == null)
+			{
+				Log(eSeverity.Error, "Unable to match source {0} with an active booth.", sourceId);
+				return false;
+			}
+
+			targetBooth = m_Booths.FirstOrDefault( booth => booth.Value.GetDialers().Any(dialer => dialer.GetSources().Any(src => source == src))).Key;
+
+
+		}
+
 		#endregion
 
 		#region RPCs
 
-		[Rpc(DIAL_RPC), UsedImplicitly]
-		public void Dial(uint clientId, string number)
+		[Rpc(REGISTER_ROOM_RPC), UsedImplicitly]
+		public void RegisterRoom(uint clientId, int roomId)
 		{
-			if (m_WrappedControl == null)
+			if (m_Clients.ContainsKey(clientId))
 				return;
 
-			m_WrappedControl.Dial(number);
+			if (m_Rooms.ContainsKey(roomId))
+				return;
+
+			m_Clients.Add(clientId, roomId);
+
+			m_Rooms.Add(roomId, null);
 		}
 
-		[Rpc(DIAL_TYPE_RPC), UsedImplicitly]
-		public void Dial(uint clientId, string number, eConferenceSourceType type)
+		[Rpc(UNREGISTER_ROOM_RPC), UsedImplicitly]
+		public void UnregisterRoom(uint clientId, int roomId)
 		{
-			if (m_WrappedControl == null)
+			if (!m_Clients.ContainsKey(clientId))
 				return;
 
-			m_WrappedControl.Dial(number, type);
+			if (!m_Rooms.ContainsKey(roomId))
+				return;
+
+			m_Clients.Remove(clientId);
+
+			m_Rooms.Remove(roomId);
 		}
 
 		[Rpc(PRIVACY_MUTE_RPC), UsedImplicitly]
-		public void PrivacyMute(uint clientId, bool enabled)
+		public void PrivacyMute(uint clientId, int roomId, bool enabled)
 		{
-			if (m_WrappedControl == null)
+			int? boothId;
+			if (!m_Rooms.TryGetValue(roomId, out boothId))
 				return;
 
-			m_WrappedControl.SetPrivacyMute(enabled);
+			if (boothId == null)
+				return;
+
+			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId.Value);
+			foreach (IDialingDeviceControl dialer in dialers)
+			{
+				dialer.SetPrivacyMute(enabled);
+			}
 		}
 
 		[Rpc(AUTO_ANSWER_RPC), UsedImplicitly]
-		public void SetAutoAnswer(uint clientId, bool enabled)
+		public void SetAutoAnswer(uint clientId, int roomId, bool enabled)
 		{
-			if (m_WrappedControl == null)
+			int? boothId;
+			if (!m_Rooms.TryGetValue(roomId, out boothId))
 				return;
 
-			m_WrappedControl.SetAutoAnswer(enabled);
+			if (boothId == null)
+				return;
+
+			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId.Value);
+			foreach (IDialingDeviceControl dialer in dialers)
+			{
+				dialer.SetAutoAnswer(enabled);
+			}
 		}
 
 		[Rpc(DO_NOT_DISTURB_RPC), UsedImplicitly]
-		public void SetDoNotDisturb(uint clientId, bool enabled)
+		public void SetDoNotDisturb(uint clientId, int roomId, bool enabled)
 		{
-			if (m_WrappedControl == null)
+			int? boothId;
+			if (!m_Rooms.TryGetValue(roomId, out boothId))
 				return;
 
-			m_WrappedControl.SetDoNotDisturb(enabled);
+			if (boothId == null)
+				return;
+
+			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId.Value);
+			foreach (IDialingDeviceControl dialer in dialers)
+			{
+				dialer.SetDoNotDisturb(enabled);
+			}
 		}
 
 		[Rpc(HOLD_ENABLE_RPC), UsedImplicitly]
-		public void HoldEnable(uint clientId, Guid id)
+		public void HoldEnable(uint clientId, int roomId, Guid id)
 		{
-			if (m_WrappedControl == null)
+			IConferenceSource targetSource;
+			if (!TryGetTargetSource(roomId, id, out targetSource))
 				return;
 
-			if (!m_Sources.ContainsKey(id))
-			{
-				Log(eSeverity.Error, "No Source with the given key found.");
-				return;
-			}
-
-			var source = m_Sources[id];
-			source.Hold();
+			targetSource.Hold();
 		}
 
 		[Rpc(ANSWER_RPC), UsedImplicitly]
-		public void Answer(uint clientId, Guid id)
+		public void Answer(uint clientId, int roomId, Guid id)
 		{
-			if (m_WrappedControl == null)
+			IConferenceSource targetSource;
+			if (!TryGetTargetSource(roomId, id, out targetSource))
 				return;
 
-			if (!m_Sources.ContainsKey(id))
-			{
-				Log(eSeverity.Error, "No Source with the given key found.");
-				return;
-			}
-
-			var source = m_Sources[id];
-			source.Answer();
+			targetSource.Answer();
 		}
 
 		[Rpc(HOLD_RESUME_RPC), UsedImplicitly]
-		public void HoldResume(uint clientId, Guid id)
+		public void HoldResume(uint clientId, int roomId, Guid id)
 		{
-			if (m_WrappedControl == null)
+			IConferenceSource targetSource;
+			if (!TryGetTargetSource(roomId, id, out targetSource))
 				return;
 
-			if (!m_Sources.ContainsKey(id))
-			{
-				Log(eSeverity.Error, "No Source with the given key found.");
-				return;
-			}
-
-			var source = m_Sources[id];
-			source.Resume();
+			targetSource.Resume();
 		}
 
 		[Rpc(END_CALL_RPC), UsedImplicitly]
-		public void EndCall(uint clientId, Guid id)
+		public void EndCall(uint clientId, int roomId, Guid id)
 		{
-			if (m_WrappedControl == null)
+			IConferenceSource targetSource;
+			if (!TryGetTargetSource(roomId, id, out targetSource))
 				return;
 
-			if (!m_Sources.ContainsKey(id))
-			{
-				Log(eSeverity.Error, "No Source with the given key found.");
-				return;
-			}
-
-			var source = m_Sources[id];
-			source.Hangup();
+			targetSource.Hangup();
 		}
 
 		[Rpc(SEND_DTMF_RPC), UsedImplicitly]
-		public void SendDtmf(uint clientId, Guid id, string data)
+		public void SendDtmf(uint clientId, int roomId, Guid id, string data)
 		{
-			if (m_WrappedControl == null)
+			IConferenceSource targetSource;
+			if (!TryGetTargetSource(roomId, id, out targetSource))
 				return;
 
-			if (!m_Sources.ContainsKey(id))
-			{
-				Log(eSeverity.Error, "No Source with the given key found.");
-				return;
-			}
-
-			var source = m_Sources[id];
-			source.SendDtmf(data);
+			targetSource.SendDtmf(data);
 		}
 		#endregion
 
-		#region Control
-		/// <summary>
-		/// Sets the control for this server to wrap.
-		/// </summary>
-		/// <param name="control"></param>
-		[PublicAPI]
-		public void SetControl(IDialingDeviceControl control)
+		#region Adapters
+
+		private void AddAdapter(int boothId, IInterpretationAdapter adapter)
 		{
-			if (m_WrappedControl == control)
+			if (m_Adapters.ContainsValue(adapter))
 				return;
 
-			ClearSources();
+			m_Adapters.Add(boothId, adapter);
 
-			Unsubscribe(control);
+			Subscribe(adapter);
 
-			m_WrappedControl = control;
-
-			Subscribe(control);
-
-			if (m_WrappedControl == null)
-				return;
-
-			foreach (var source in m_WrappedControl.GetSources())
-				AddSource(source);
-
-			UpdateCachedOnlineStatus();
+			AddBoothForAdapter(boothId, adapter);
 		}
+
+		private void ClearAdapters()
+		{
+			foreach (IInterpretationAdapter adapter in m_Adapters.Values.ToArray())
+				Unsubscribe(adapter);
+
+			m_Adapters.Clear();
+
+			ClearBooths();
+		}
+
+		private void Subscribe(IInterpretationAdapter adapter)
+		{
+			if (adapter == null)
+				return;
+
+			adapter.OnDialerAdded += AdapterOnDialerAdded;
+			adapter.OnDialerRemoved += AdapterOnDialerRemoved;
+		}
+
+		private void Unsubscribe(IInterpretationAdapter adapter)
+		{
+			if (adapter == null)
+				return;
+
+			adapter.OnDialerAdded -= AdapterOnDialerAdded;
+			adapter.OnDialerRemoved -= AdapterOnDialerRemoved;
+		}
+
+		private void AdapterOnDialerAdded(object sender, GenericEventArgs<IDialingDeviceControl> args)
+		{
+			IInterpretationAdapter adapter = sender as IInterpretationAdapter;
+			if (adapter == null)
+				return;
+
+			int boothId;
+			try
+			{
+				boothId = m_Adapters.GetKey(adapter);
+			}
+			catch (ArgumentOutOfRangeException ex)
+			{
+				Logger.AddEntry(eSeverity.Error, "Unable to find booth for adapter {0}", adapter.Id);
+				return;
+			}
+
+			IInterpreterBooth booth = m_Booths[boothId];
+
+			booth.AddDialer(args.Data);
+		}
+
+		private void AdapterOnDialerRemoved(object sender, GenericEventArgs<IDialingDeviceControl> args)
+		{
+			IInterpretationAdapter adapter = sender as IInterpretationAdapter;
+			if (adapter == null)
+				return;
+
+			int boothId;
+			try
+			{
+				boothId = m_Adapters.GetKey(adapter);
+			}
+			catch (ArgumentOutOfRangeException ex)
+			{
+				Logger.AddEntry(eSeverity.Error, "Unable to find booth for adapter {0}", adapter.Id);
+				return;
+			}
+
+			IInterpreterBooth booth = m_Booths[boothId];
+
+			booth.RemoveDialer(args.Data);
+		}
+
+		#endregion
+
+		#region Booths
+
+		private void AddBoothForAdapter(int boothId, IInterpretationAdapter adapter)
+		{
+			IInterpreterBooth booth = AddBooth(boothId);
+
+			foreach (KeyValuePair<IDialingDeviceClientControl, string> keyValuePair in adapter.GetDialingControls())
+			{
+				booth.AddDialer(keyValuePair.Key, keyValuePair.Value);
+			}
+		}
+
+		private IInterpreterBooth AddBooth(int boothId)
+		{
+			if (m_Booths.ContainsKey(boothId))
+				return null;
+
+			IInterpreterBooth booth = new InterpreterBooth(boothId);
+			m_Booths.Add(boothId, booth);
+
+			Subscribe(booth);
+
+			return booth;
+		}
+
+		private void RemoveBooth(int boothId)
+		{
+			if (!m_Booths.ContainsKey(boothId))
+				return;
+
+			IInterpreterBooth booth = m_Booths[boothId];
+
+			Unsubscribe(booth);
+
+			m_Booths.Remove(boothId);
+		}
+
+		private void ClearBooths()
+		{
+			foreach (int booth in m_Booths.Keys)
+				RemoveBooth(booth);
+		}
+
+		private void Subscribe(IInterpreterBooth booth)
+		{
+			if (booth == null)
+				return;
+
+			booth.OnDialerAdded += BoothOnDialerAdded;
+			booth.OnDialerRemoved += BoothOnDialerRemoved;
+		}
+
+		private void Unsubscribe(IInterpreterBooth booth)
+		{
+			if (booth == null)
+				return;
+
+			booth.OnDialerAdded -= BoothOnDialerAdded;
+			booth.OnDialerRemoved -= BoothOnDialerRemoved;
+		}
+
+		private void BoothOnDialerAdded(object sender, GenericEventArgs<IDialingDeviceControl> args)
+		{
+			Subscribe(args.Data);
+
+			foreach (IConferenceSource source in args.Data.GetSources())
+				AddSource(source);
+		}
+
+		private void BoothOnDialerRemoved(object sender, GenericEventArgs<IDialingDeviceControl> args)
+		{
+			Unsubscribe(args.Data);
+
+			foreach (IConferenceSource source in args.Data.GetSources())
+				RemoveSource(source);
+		}
+
+		#endregion
+
+		#region Control
 
 		private void Subscribe(IDialingDeviceControl control)
 		{
 			if (control == null)
 				return;
 
-			control.OnPrivacyMuteChanged += WrappedOnPrivacyMuteChanged;
-			control.OnAutoAnswerChanged += WrappedOnAutoAnswerChanged;
-			control.OnDoNotDisturbChanged += WrappedOnDoNotDisturbChanged;
-			control.OnSourceAdded += WrappedOnSourceAdded;
+			control.OnPrivacyMuteChanged += DialerOnPrivacyMuteChanged;
+			control.OnAutoAnswerChanged += DialerOnAutoAnswerChanged;
+			control.OnDoNotDisturbChanged += DialerOnDoNotDisturbChanged;
+			control.OnSourceAdded += DialerOnSourceAdded;
 		}
 
 		private void Unsubscribe(IDialingDeviceControl control)
@@ -267,31 +562,31 @@ namespace ICD.Connect.Conferencing.Server
 			if (control == null)
 				return;
 
-			control.OnPrivacyMuteChanged -= WrappedOnPrivacyMuteChanged;
-			control.OnAutoAnswerChanged -= WrappedOnAutoAnswerChanged;
-			control.OnDoNotDisturbChanged -= WrappedOnDoNotDisturbChanged;
-			control.OnSourceAdded -= WrappedOnSourceAdded;
+			control.OnPrivacyMuteChanged -= DialerOnPrivacyMuteChanged;
+			control.OnAutoAnswerChanged -= DialerOnAutoAnswerChanged;
+			control.OnDoNotDisturbChanged -= DialerOnDoNotDisturbChanged;
+			control.OnSourceAdded -= DialerOnSourceAdded;
 		}
 
-		private void WrappedOnPrivacyMuteChanged(object sender, BoolEventArgs args)
+		private void DialerOnPrivacyMuteChanged(object sender, BoolEventArgs args)
 		{
 			const string key = ConferencingClientDevice.SET_CACHED_PRIVACY_MUTE_STATE;
 			CallActionForConnectedClients(clientId => m_RpcController.CallMethod(clientId, key, args.Data));
 		}
 
-		private void WrappedOnAutoAnswerChanged(object sender, BoolEventArgs args)
+		private void DialerOnAutoAnswerChanged(object sender, BoolEventArgs args)
 		{
 			const string key = ConferencingClientDevice.SET_CACHED_AUTO_ANSWER_STATE;
 			CallActionForConnectedClients(clientId => m_RpcController.CallMethod(clientId, key, args.Data));
 		}
 
-		private void WrappedOnDoNotDisturbChanged(object sender, BoolEventArgs args)
+		private void DialerOnDoNotDisturbChanged(object sender, BoolEventArgs args)
 		{
 			const string key = ConferencingClientDevice.SET_CACHED_DO_NOT_DISTURB_STATE;
 			CallActionForConnectedClients(clientId => m_RpcController.CallMethod(clientId, key, args.Data));
 		}
 
-		private void WrappedOnSourceAdded(object sender, ConferenceSourceEventArgs args)
+		private void DialerOnSourceAdded(object sender, ConferenceSourceEventArgs args)
 		{
 			AddSource(args.Data);
 		}
@@ -304,8 +599,8 @@ namespace ICD.Connect.Conferencing.Server
 		{
 			if (m_Sources.ContainsValue(source))
 				return;
-
-			m_Sources.Add(Guid.NewGuid(), source);
+			Guid newId = Guid.NewGuid();
+			m_Sources.Add(newId, source);
 
 			Subscribe(source);
 		}
@@ -322,7 +617,7 @@ namespace ICD.Connect.Conferencing.Server
 
 		private void ClearSources()
 		{
-			foreach (var source in m_Sources.Values.ToArray(m_Sources.Count))
+			foreach (IConferenceSource source in m_Sources.Values.ToArray(m_Sources.Count))
 				RemoveSource(source);
 		}
 
@@ -346,7 +641,7 @@ namespace ICD.Connect.Conferencing.Server
 
 		private void SourceOnPropertyChanged(object sender, EventArgs args)
 		{
-			var source = sender as IConferenceSource;
+			IConferenceSource source = sender as IConferenceSource;
 			if (source == null)
 				return;
 
@@ -356,11 +651,12 @@ namespace ICD.Connect.Conferencing.Server
 				return;
 			}
 
-			var id = m_Sources.GetKey(source);
-			var rpcSource = new RpcConferenceSource(source);
+			Guid id = m_Sources.GetKey(source);
+			RpcConferenceSource rpcSource = new RpcConferenceSource(source);
+
 			const string key = ConferencingClientDevice.UPDATE_CACHED_SOURCE_STATE;
-			CallActionForConnectedClients(clientId => m_RpcController.CallMethod(clientId, key, id, rpcSource));
-		
+			 m_RpcController.CallMethod(clientId, key, id, rpcSource);
+
 			if (source.Status == eConferenceSourceStatus.Disconnected)
 				RemoveSource(source);
 		}
@@ -400,6 +696,15 @@ namespace ICD.Connect.Conferencing.Server
 		private void ServerOnSocketStateChange(object sender, SocketStateEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
+
+			if (args.SocketState == SocketStateEventArgs.eSocketStatus.SocketStatusConnected)
+				return;
+
+			if (!m_Clients.ContainsKey(args.ClientId))
+				return;
+
+			int roomId = m_Clients[args.ClientId];
+			UnregisterRoom(args.ClientId, roomId);
 		}
 
 		#endregion
@@ -410,55 +715,25 @@ namespace ICD.Connect.Conferencing.Server
 		{
 			base.ApplySettingsFinal(settings, factory);
 
-			IDialingDeviceControl control = null;
-
-			if (settings.WrappedDeviceId == null)
+			for (int boothId = 0; boothId < settings.WrappedDeviceIds.Count; boothId++)
 			{
-				Logger.AddEntry(eSeverity.Warning, "No Wrapped Device Id Configured");
-			}
-			else
-			{
-				IDevice wrappedDevice = null;
+				int adapterId = settings.WrappedDeviceIds[boothId];
+				IInterpretationAdapter adapter = null;
 
 				try
 				{
-					wrappedDevice = factory.GetOriginatorById<IDevice>(settings.WrappedDeviceId.Value);
+					adapter = factory.GetOriginatorById<IInterpretationAdapter>(adapterId);
 				}
-				catch (KeyNotFoundException ex)
+				catch (KeyNotFoundException)
 				{
-					Logger.AddEntry(eSeverity.Error, "No device found with Id:{0}", settings.WrappedDeviceId.Value);
+					Logger.AddEntry(eSeverity.Error, "No Interpretation Adapter found with Id:{0}", adapterId);
 				}
 
-				if (wrappedDevice != null)
-				{
-					if (settings.WrappedControlId == null)
-					{
-						control = wrappedDevice.Controls.GetControl<IDialingDeviceControl>();
-						if (control == null)
-						{
-							Logger.AddEntry(eSeverity.Error, "No control of type IDialingDeviceControl found on device {0}",
-							                settings.WrappedDeviceId);
-						}
-					}
-					else
-					{
-						try
-						{
-							control = wrappedDevice.Controls.GetControl<IDialingDeviceControl>(settings.WrappedControlId.Value);
-						}
-						catch (InvalidOperationException ex)
-						{
-							Logger.AddEntry(eSeverity.Error,
-											"No control with id {0} found on device {1}:{2}",
-							                settings.WrappedControlId.Value,
-							                wrappedDevice.Name,
-							                wrappedDevice.Id);
-						}
-					}
-				}
+				if (adapter == null)
+					continue;
+
+				AddAdapter(boothId, adapter);
 			}
-
-			SetControl(control);
 
 			m_Server.Port = settings.ServerPort;
 			m_Server.MaxNumberOfClients = settings.ServerMaxClients;
@@ -469,17 +744,7 @@ namespace ICD.Connect.Conferencing.Server
 		{
 			base.CopySettingsFinal(settings);
 
-			settings.WrappedDeviceId =
-				m_WrappedControl == null
-					? null
-					: m_WrappedControl.Parent == null
-						  ? (int?)null
-						  : m_WrappedControl.Parent.Id;
-
-			settings.WrappedControlId =
-				m_WrappedControl == null
-					? (int?)null
-					: m_WrappedControl.Id;
+			settings.WrappedDeviceIds = m_Adapters.Values.Select(adapter => adapter.Id).ToList();
 		}
 
 		protected override void ClearSettingsFinal()
@@ -488,7 +753,9 @@ namespace ICD.Connect.Conferencing.Server
 
 			m_Server.Stop();
 
-			SetControl(null);
+			ClearAdapters();
+			ClearBooths();
+			ClearSources();
 		}
 
 		#endregion
@@ -497,9 +764,7 @@ namespace ICD.Connect.Conferencing.Server
 
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_WrappedControl != null &&
-			       m_WrappedControl.Parent != null &&
-			       m_WrappedControl.Parent.IsOnline;
+			return m_Adapters.AnyAndAll(adapter => adapter.Value.IsOnline);
 		}
 
 		#endregion

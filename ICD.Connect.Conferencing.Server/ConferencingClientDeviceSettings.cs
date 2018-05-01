@@ -11,6 +11,7 @@ namespace ICD.Connect.Conferencing.Server
 	{
 		private const string FACTORY_NAME = "ConferencingClient";
 		private const string PORT_ELEMENT = "Port";
+		private const string ROOM_ID_ELEMENT = "Room";
 
 		public override string FactoryName { get { return FACTORY_NAME; } }
 
@@ -19,10 +20,14 @@ namespace ICD.Connect.Conferencing.Server
 		[PublicAPI]
 		public int? Port { get; set; }
 
+		[PublicAPI]
+		public int? Room { get; set; }
+
 		protected override void WriteElements(IcdXmlTextWriter writer)
 		{
 			base.WriteElements(writer);
 
+			writer.WriteElementString(ROOM_ID_ELEMENT, IcdXmlConvert.ToString(Room));
 			writer.WriteElementString(PORT_ELEMENT, IcdXmlConvert.ToString(Port));
 		}
 
@@ -30,6 +35,7 @@ namespace ICD.Connect.Conferencing.Server
 		{
 			base.ParseXml(xml);
 
+			Room = XmlUtils.TryReadChildElementContentAsInt(xml, ROOM_ID_ELEMENT);
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 		}
 	}

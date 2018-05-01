@@ -36,8 +36,6 @@ namespace ICD.Connect.Conferencing.Server
 		bool DoNotDisturb { get; }
 		bool AutoAnswer { get; }
 
-		void Dial(string number);
-		void Dial(string number, eConferenceSourceType type);
 		void SetPrivacyMute(bool enabled);
 		void SetAutoAnswer(bool enabled);
 		void SetDoNotDisturb(bool enabled);
