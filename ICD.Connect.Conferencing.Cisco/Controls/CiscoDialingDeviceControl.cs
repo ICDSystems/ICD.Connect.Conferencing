@@ -15,6 +15,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// Called when a source is added to the dialing component.
 		/// </summary>
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		private readonly DialingComponent m_Component;
 
@@ -47,6 +48,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnSourceAdded = null;
+			OnSourceRemoved = null;
 
 			base.DisposeFinal(disposing);
 
@@ -117,6 +119,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		private void Subscribe(DialingComponent component)
 		{
 			component.OnSourceAdded += ComponentOnSourceAdded;
+			component.OnSourceRemoved += ComponentOnSourceRemoved;
 			component.OnPrivacyMuteChanged += ComponentOnPrivacyMuteChanged;
 			component.OnAutoAnswerChanged += ComponentOnAutoAnswerChanged;
 			component.OnDoNotDisturbChanged += ComponentOnDoNotDisturbChanged;
@@ -125,6 +128,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		private void Unsubscribe(DialingComponent component)
 		{
 			component.OnSourceAdded -= ComponentOnSourceAdded;
+			component.OnSourceRemoved -= ComponentOnSourceRemoved;
 			component.OnPrivacyMuteChanged -= ComponentOnPrivacyMuteChanged;
 			component.OnAutoAnswerChanged -= ComponentOnAutoAnswerChanged;
 			component.OnDoNotDisturbChanged -= ComponentOnDoNotDisturbChanged;
@@ -133,6 +137,11 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		private void ComponentOnSourceAdded(object sender, ConferenceSourceEventArgs args)
 		{
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(args.Data));
+		}
+
+		private void ComponentOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
+		{
+			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(args.Data));
 		}
 
 		private void ComponentOnPrivacyMuteChanged(object sender, BoolEventArgs args)

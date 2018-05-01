@@ -11,6 +11,7 @@ namespace ICD.Connect.Conferencing.Server
 	public sealed class DialingDeviceClientControl : AbstractDialingDeviceControl<IConferencingClientDevice>, IDialingDeviceClientControl 
 	{
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
 
@@ -26,11 +27,17 @@ namespace ICD.Connect.Conferencing.Server
 			parent.OnDoNotDisturbChanged += ParentOnDoNotDisturbChanged;
 			parent.OnPrivacyMuteChanged += ParentOnPrivacyMuteChanged;
 			parent.OnSourceAdded += ParentOnSourceAdded;
+			parent.OnSourceRemoved += ParentOnSourceRemoved;
 		}
 
 		private void ParentOnSourceAdded(object sender, ConferenceSourceEventArgs eventArgs)
 		{
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs));
+		}
+
+		private void ParentOnSourceRemoved(object sender, ConferenceSourceEventArgs eventArgs)
+		{
+			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs));
 		}
 
 		private void ParentOnPrivacyMuteChanged(object sender, BoolEventArgs eventArgs)

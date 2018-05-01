@@ -11,6 +11,7 @@ namespace ICD.Connect.Conferencing.Mock
 	public sealed class MockDialingDeviceControl : AbstractDialingDeviceControl<IMockConferencingDevice>
 	{
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
 
@@ -18,11 +19,17 @@ namespace ICD.Connect.Conferencing.Mock
 			: base(parent, id)
 		{
 			parent.OnSourceAdded += ParentOnSourceAdded;
+			parent.OnSourceRemoved += ParentOnSourceRemoved;
 		}
 
 		private void ParentOnSourceAdded(object sender, ConferenceSourceEventArgs eventArgs)
 		{
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs));
+		}
+
+		private void ParentOnSourceRemoved(object sender, ConferenceSourceEventArgs eventArgs)
+		{
+			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs));
 		}
 
 		/// <summary>
@@ -32,6 +39,7 @@ namespace ICD.Connect.Conferencing.Mock
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnSourceAdded = null;
+			OnSourceRemoved = null;
 
 			base.DisposeFinal(disposing);
 		}

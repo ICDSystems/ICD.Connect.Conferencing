@@ -18,6 +18,7 @@ namespace ICD.Connect.Conferencing.Controls
 		where T : IDeviceBase
 	{
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;

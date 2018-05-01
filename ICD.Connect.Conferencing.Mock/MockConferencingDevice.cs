@@ -13,6 +13,7 @@ namespace ICD.Connect.Conferencing.Mock
 	public sealed class MockConferencingDevice : AbstractDevice<MockConferencingDeviceSettings>, IMockConferencingDevice
 	{
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		#region Private Memebers
 
@@ -38,6 +39,7 @@ namespace ICD.Connect.Conferencing.Mock
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnSourceAdded = null;
+			OnSourceRemoved = null;
 
 			base.DisposeFinal(disposing);
 

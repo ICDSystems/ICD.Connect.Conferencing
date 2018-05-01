@@ -27,6 +27,7 @@ namespace ICD.Connect.Conferencing.Server
 	    public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
 	    public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+	    public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 	    public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 	    public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 	    public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
