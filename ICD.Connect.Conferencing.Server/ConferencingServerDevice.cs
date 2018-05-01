@@ -54,11 +54,11 @@ namespace ICD.Connect.Conferencing.Server
 		// key is guid id of source, value is the source
 		private readonly Dictionary<Guid, IConferenceSource> m_Sources;
 
-		// key is room id, value is booth number or null if no booth
-		private readonly Dictionary<int, int?> m_Rooms;
+		// key is room id, value is booth number
+		private readonly Dictionary<int, int> m_RoomToBooth;
 
 		// key is tcp client id, value is room id
-		private readonly Dictionary<uint, int> m_Clients; 
+		private readonly Dictionary<uint, int> m_ClientToRoom; 
 
 		#endregion
 
@@ -68,8 +68,8 @@ namespace ICD.Connect.Conferencing.Server
 			m_Booths = new Dictionary<int, IInterpreterBooth>();
 			m_Adapters = new Dictionary<int, IInterpretationAdapter>();
 			m_Sources = new Dictionary<Guid, IConferenceSource>();
-			m_Rooms = new Dictionary<int, int?>();
-			m_Clients = new Dictionary<uint, int>();
+			m_RoomToBooth = new Dictionary<int, int>();
+			m_ClientToRoom = new Dictionary<uint, int>();
 
 			SetServer(new AsyncTcpServer());
 		}
@@ -95,11 +95,9 @@ namespace ICD.Connect.Conferencing.Server
 		[PublicAPI]
 		public IEnumerable<int> GetAvailableRoomIds()
 		{
-			return m_Clients.Where(kvp => !m_Rooms.ContainsKey(kvp.Value))
-			                .Select(kvp => kvp.Value)
-			                .ToArray();
-
-			//return m_Rooms.Where(kvp => kvp.Value == null).Select(kvp => kvp.Key).ToArray();
+			return m_ClientToRoom.Where(kvp => !m_RoomToBooth.ContainsKey(kvp.Value))
+			                     .Select(kvp => kvp.Value)
+			                     .ToArray();
 		}
 
 		/// <summary>
@@ -109,7 +107,8 @@ namespace ICD.Connect.Conferencing.Server
 		[PublicAPI]
 		public IEnumerable<int> GetAvailableBoothIds()
 		{
-			return m_Booths.Keys.Where(boothId => m_Rooms.All(kvp => kvp.Value != boothId)).ToArray();
+			IEnumerable<int> usedBooths = m_RoomToBooth.Values;
+			return m_Booths.Keys.Except(usedBooths);
 		}
 
 		/// <summary>
@@ -120,13 +119,14 @@ namespace ICD.Connect.Conferencing.Server
 		[PublicAPI]
 		public void BeginInterpretation(int roomId, int boothId)
 		{
-			if (!m_Rooms.ContainsKey(roomId) || !m_Booths.ContainsKey(boothId))
+			if (!m_Booths.ContainsKey(boothId))
 				return;
 
-			if (m_Rooms[roomId] != null)
+			// No change
+			if (m_RoomToBooth[roomId] == boothId)
 				return;
 
-			m_Rooms[roomId] = boothId;
+			m_RoomToBooth[roomId] = boothId;
 
 			const string key = ConferencingClientDevice.SET_INTERPRETATION_STATE_RPC;
 		}
@@ -161,63 +161,38 @@ namespace ICD.Connect.Conferencing.Server
 		private IEnumerable<IDialingDeviceControl> GetDialersForBooth(int boothId)
 		{
 			return m_Booths.ContainsKey(boothId)
-				? m_Booths[boothId].GetDialers()
-				: Enumerable.Empty<IDialingDeviceControl>();
+				       ? m_Booths[boothId].GetDialers()
+				       : Enumerable.Empty<IDialingDeviceControl>();
 		}
 
 		private IEnumerable<IConferenceSource> GetConferenceSourcesForBooth(int boothId)
 		{
-			IDialingDeviceControl[] dialers = GetDialersForBooth(boothId).ToArray();
-
-			if (dialers.Length == 0)
-				return Enumerable.Empty<IConferenceSource>();
-
-			List<IConferenceSource> sources = new List<IConferenceSource>();
-
-			foreach (IDialingDeviceControl dialer in dialers)
-			{
-				sources.AddRange(dialer.GetSources());
-			}
-			return sources;
+			return GetDialersForBooth(boothId).SelectMany(d => d.GetSources());
 		}
 
-		private bool TryGetTargetSource(int roomId, Guid id, out IConferenceSource targetSource)
+		private bool TryGetTargetSource(int roomId, Guid sourceId, out IConferenceSource targetSource)
 		{
 			targetSource = null;
 
-			int? boothId;
-			if (!m_Rooms.TryGetValue(roomId, out boothId))
-			{
-				Log(eSeverity.Error, "No room with id {0} exists.", roomId);
-				return false;
-			}
-
-			if (boothId == null)
+			int boothId;
+			if (!m_RoomToBooth.TryGetValue(roomId, out boothId))
 			{
 				Log(eSeverity.Error, "No booth is assigned to room {0}", roomId);
 				return false;
 			}
 
-			IEnumerable<IConferenceSource> sources = GetConferenceSourcesForBooth(boothId.Value);
-
-			if (!m_Sources.TryGetValue(id, out targetSource))
+			if (!m_Sources.TryGetValue(sourceId, out targetSource))
 			{
 				Log(eSeverity.Error, "No Source with the given key found.");
-				return false;
-			}
-
-			if (!sources.Contains(targetSource))
-			{
-				Log(eSeverity.Error, "Source {0} is not from the booth assigned to room {1}", id.ToString(), roomId);
 				return false;
 			}
 
 			return true;
 		}
 
-		private bool TryGetClientIdForSource(Guid sourceId, out uint? clientId)
+		private bool TryGetClientIdForSource(Guid sourceId, out uint clientId)
 		{
-			clientId = null;
+			clientId = 0;
 
 			IConferenceSource source;
 			if (!m_Sources.TryGetValue(sourceId, out source))
@@ -232,6 +207,7 @@ namespace ICD.Connect.Conferencing.Server
 				targetBooth = booth.Key;
 				break;
 			}
+
 			if (targetBooth == null)
 			{
 				Log(eSeverity.Error, "Unable to match source {0} with an active booth.", sourceId);
@@ -240,6 +216,7 @@ namespace ICD.Connect.Conferencing.Server
 
 			targetBooth = m_Booths.FirstOrDefault( booth => booth.Value.GetDialers().Any(dialer => dialer.GetSources().Any(src => source == src))).Key;
 
+			//TODO: add a client id to source id guid dictionary
 
 		}
 
@@ -250,42 +227,37 @@ namespace ICD.Connect.Conferencing.Server
 		[Rpc(REGISTER_ROOM_RPC), UsedImplicitly]
 		public void RegisterRoom(uint clientId, int roomId)
 		{
-			if (m_Clients.ContainsKey(clientId))
+			if (m_ClientToRoom.ContainsKey(clientId))
 				return;
 
-			if (m_Rooms.ContainsKey(roomId))
+			if (m_RoomToBooth.ContainsKey(roomId))
 				return;
 
-			m_Clients.Add(clientId, roomId);
-
-			m_Rooms.Add(roomId, null);
+			m_ClientToRoom.Add(clientId, roomId);
 		}
 
 		[Rpc(UNREGISTER_ROOM_RPC), UsedImplicitly]
 		public void UnregisterRoom(uint clientId, int roomId)
 		{
-			if (!m_Clients.ContainsKey(clientId))
+			if (!m_ClientToRoom.ContainsKey(clientId))
 				return;
 
-			if (!m_Rooms.ContainsKey(roomId))
+			if (!m_RoomToBooth.ContainsKey(roomId))
 				return;
 
-			m_Clients.Remove(clientId);
+			m_ClientToRoom.Remove(clientId);
 
-			m_Rooms.Remove(roomId);
+			m_RoomToBooth.Remove(roomId);
 		}
 
 		[Rpc(PRIVACY_MUTE_RPC), UsedImplicitly]
 		public void PrivacyMute(uint clientId, int roomId, bool enabled)
 		{
-			int? boothId;
-			if (!m_Rooms.TryGetValue(roomId, out boothId))
+			int boothId;
+			if (!m_RoomToBooth.TryGetValue(roomId, out boothId))
 				return;
 
-			if (boothId == null)
-				return;
-
-			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId.Value);
+			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId);
 			foreach (IDialingDeviceControl dialer in dialers)
 			{
 				dialer.SetPrivacyMute(enabled);
@@ -295,14 +267,11 @@ namespace ICD.Connect.Conferencing.Server
 		[Rpc(AUTO_ANSWER_RPC), UsedImplicitly]
 		public void SetAutoAnswer(uint clientId, int roomId, bool enabled)
 		{
-			int? boothId;
-			if (!m_Rooms.TryGetValue(roomId, out boothId))
+			int boothId;
+			if (!m_RoomToBooth.TryGetValue(roomId, out boothId))
 				return;
 
-			if (boothId == null)
-				return;
-
-			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId.Value);
+			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId);
 			foreach (IDialingDeviceControl dialer in dialers)
 			{
 				dialer.SetAutoAnswer(enabled);
@@ -312,14 +281,11 @@ namespace ICD.Connect.Conferencing.Server
 		[Rpc(DO_NOT_DISTURB_RPC), UsedImplicitly]
 		public void SetDoNotDisturb(uint clientId, int roomId, bool enabled)
 		{
-			int? boothId;
-			if (!m_Rooms.TryGetValue(roomId, out boothId))
+			int boothId;
+			if (!m_RoomToBooth.TryGetValue(roomId, out boothId))
 				return;
 
-			if (boothId == null)
-				return;
-
-			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId.Value);
+			IEnumerable<IDialingDeviceControl> dialers = GetDialersForBooth(boothId);
 			foreach (IDialingDeviceControl dialer in dialers)
 			{
 				dialer.SetDoNotDisturb(enabled);
@@ -700,10 +666,10 @@ namespace ICD.Connect.Conferencing.Server
 			if (args.SocketState == SocketStateEventArgs.eSocketStatus.SocketStatusConnected)
 				return;
 
-			if (!m_Clients.ContainsKey(args.ClientId))
+			if (!m_ClientToRoom.ContainsKey(args.ClientId))
 				return;
 
-			int roomId = m_Clients[args.ClientId];
+			int roomId = m_ClientToRoom[args.ClientId];
 			UnregisterRoom(args.ClientId, roomId);
 		}
 
