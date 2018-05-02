@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
+using ICD.Connect.Cameras.Devices;
+using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
@@ -268,7 +269,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			codec.OnIsOnlineStateChanged -= CodecOnIsOnlineStateChanged;
 		}
 
-		private void CodecOnIsOnlineStateChanged(object sender, BoolEventArgs boolEventArgs)
+		private void CodecOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
 		}

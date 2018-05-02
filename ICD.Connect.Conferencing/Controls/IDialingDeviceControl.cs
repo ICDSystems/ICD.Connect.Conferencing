@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
+using ICD.Connect.API.Attributes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Proxies;
 using ICD.Connect.Devices.Controls;
 
 namespace ICD.Connect.Conferencing.Controls
@@ -11,6 +13,7 @@ namespace ICD.Connect.Conferencing.Controls
 	/// <summary>
 	/// IDialingProvider provides an interface for managing conferences.
 	/// </summary>
+	[ApiClass(typeof(ProxyDialingDeviceControl), typeof(IDeviceControl))]
 	public interface IDialingDeviceControl : IDeviceControl
 	{
 		/// <summary>
@@ -48,25 +51,25 @@ namespace ICD.Connect.Conferencing.Controls
 		/// <summary>
 		/// Gets the AutoAnswer state.
 		/// </summary>
-		[PublicAPI]
+		[ApiProperty(DialingDeviceControlApi.PROPERTY_AUTO_ANSWER, DialingDeviceControlApi.HELP_PROPERTY_AUTO_ANSWER)]
 		bool AutoAnswer { get; }
 
 		/// <summary>
 		/// Gets the current microphone mute state.
 		/// </summary>
-		[PublicAPI]
+		[ApiProperty(DialingDeviceControlApi.PROPERTY_PRIVACY_MUTED, DialingDeviceControlApi.HELP_PROPERTY_PRIVACY_MUTED)]
 		bool PrivacyMuted { get; }
 
 		/// <summary>
 		/// Gets the DoNotDisturb state.
 		/// </summary>
-		[PublicAPI]
+		[ApiProperty(DialingDeviceControlApi.PROPERTY_DO_NOT_DISTURB, DialingDeviceControlApi.HELP_PROPERTY_DO_NOT_DISTURB)]
 		bool DoNotDisturb { get; }
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
-		[PublicAPI]
+		[ApiProperty(DialingDeviceControlApi.PROPERTY_SUPPORTS, DialingDeviceControlApi.HELP_PROPERTY_SUPPORTS)]
 		eConferenceSourceType Supports { get; }
 
 		#endregion
@@ -84,7 +87,7 @@ namespace ICD.Connect.Conferencing.Controls
 		/// Dials the given number.
 		/// </summary>
 		/// <param name="number"></param>
-		[PublicAPI]
+		[ApiMethod(DialingDeviceControlApi.METHOD_DIAL, DialingDeviceControlApi.HELP_METHOD_DIAL)]
 		void Dial(string number);
 
 		/// <summary>
@@ -92,28 +95,28 @@ namespace ICD.Connect.Conferencing.Controls
 		/// </summary>
 		/// <param name="number"></param>
 		/// <param name="callType"></param>
-		[PublicAPI]
+		[ApiMethod(DialingDeviceControlApi.METHOD_DIAL_TYPE, DialingDeviceControlApi.HELP_METHOD_DIAL_TYPE)]
 		void Dial(string number, eConferenceSourceType callType);
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.
 		/// </summary>
 		/// <param name="enabled"></param>
-		[PublicAPI]
+		[ApiMethod(DialingDeviceControlApi.METHOD_SET_DO_NOT_DISTURB, DialingDeviceControlApi.HELP_METHOD_SET_DO_NOT_DISTURB)]
 		void SetDoNotDisturb(bool enabled);
 
 		/// <summary>
 		/// Sets the auto-answer enabled state.
 		/// </summary>
 		/// <param name="enabled"></param>
-		[PublicAPI]
+		[ApiMethod(DialingDeviceControlApi.METHOD_SET_AUTO_ANSWER, DialingDeviceControlApi.HELP_METHOD_SET_AUTO_ANSWER)]
 		void SetAutoAnswer(bool enabled);
 
 		/// <summary>
 		/// Sets the privacy mute enabled state.
 		/// </summary>
 		/// <param name="enabled"></param>
-		[PublicAPI]
+		[ApiMethod(DialingDeviceControlApi.METHOD_SET_PRIVACY_MUTE, DialingDeviceControlApi.HELP_METHOD_SET_PRIVACY_MUTE)]
 		void SetPrivacyMute(bool enabled);
 
 		#endregion

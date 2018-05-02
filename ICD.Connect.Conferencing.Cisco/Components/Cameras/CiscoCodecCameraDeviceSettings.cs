@@ -1,17 +1,14 @@
-﻿using System;
-using ICD.Common.Utils;
+﻿using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Cameras;
+using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
-	[KrangSettings(FACTORY_NAME)]
+	[KrangSettings("CiscoCamera", typeof(CiscoCodecCameraDevice))]
 	public sealed class CiscoCodecCameraDeviceSettings : AbstractCameraDeviceSettings
 	{
-		private const string FACTORY_NAME = "CiscoCamera";
-
 		private const string PAN_TILT_SPEED_ELEMENT = "PanTiltSpeed";
 		private const string ZOOM_SPEED_ELEMENT = "ZoomSpeed";
 		private const string CODEC_ID_ELEMENT = "Codec";
@@ -20,20 +17,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		private int? m_PanTiltSpeed;
 		private int? m_ZoomSpeed;
 
-		/// <summary>
-		/// Gets the type of the originator for this settings instance.
-		/// </summary>
-		public override Type OriginatorType { get { return typeof(CiscoCodecCameraDevice); } }
-
 		[OriginatorIdSettingsProperty(typeof(CiscoCodec))]
 		public int? CodecId { get; set; }
 
 		public int? CameraId { get; set; }
-
-		/// <summary>
-		/// Gets the originator factory name.
-		/// </summary>
-		public override string FactoryName { get { return FACTORY_NAME; } }
 
 		public int? PanTiltSpeed
 		{
