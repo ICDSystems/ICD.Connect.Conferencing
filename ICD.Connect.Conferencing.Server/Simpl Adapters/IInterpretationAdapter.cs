@@ -10,7 +10,12 @@ namespace ICD.Connect.Conferencing.Server
 	{
 		event EventHandler<GenericEventArgs<IDialingDeviceControl>> OnDialerAdded;
 		event EventHandler<GenericEventArgs<IDialingDeviceControl>> OnDialerRemoved;
+		event EventHandler<GenericEventArgs<IDialingDeviceControl>> OnDialerChanged; 
 
-		Dictionary<IDialingDeviceClientControl, string> GetDialingControls();
+		event EventHandler<DialerSourceEventArgs> OnDialerSourceChanged;
+		event EventHandler<DialerSourceEventArgs> OnDialerSourceAdded;
+		event EventHandler<DialerSourceEventArgs> OnDialerSourceRemoved;
+
+		Dictionary<IDialingDeviceControl, string> GetDialingControls();
 	}
 }

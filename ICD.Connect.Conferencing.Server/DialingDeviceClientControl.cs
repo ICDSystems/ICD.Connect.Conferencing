@@ -32,11 +32,13 @@ namespace ICD.Connect.Conferencing.Server
 
 		private void ParentOnSourceAdded(object sender, ConferenceSourceEventArgs eventArgs)
 		{
+			SourceSubscribe(eventArgs.Data);
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs));
 		}
 
 		private void ParentOnSourceRemoved(object sender, ConferenceSourceEventArgs eventArgs)
 		{
+			SourceUnsubscribe(eventArgs.Data);
 			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs));
 		}
 

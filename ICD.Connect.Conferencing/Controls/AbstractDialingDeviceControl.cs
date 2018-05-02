@@ -20,6 +20,7 @@ namespace ICD.Connect.Conferencing.Controls
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
+		public event EventHandler<ConferenceSourceEventArgs> OnSourceChanged;
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
@@ -188,6 +189,33 @@ namespace ICD.Connect.Conferencing.Controls
 		/// </summary>
 		/// <param name="enabled"></param>
 		public abstract void SetPrivacyMute(bool enabled);
+
+		#endregion
+
+		#region Source Events
+
+		protected void SourceSubscribe(IConferenceSource source)
+		{
+			source.OnAnswerStateChanged += SourceOnPropertyChanged;
+			source.OnNameChanged += SourceOnPropertyChanged;
+			source.OnNumberChanged += SourceOnPropertyChanged;
+			source.OnSourceTypeChanged += SourceOnPropertyChanged;
+			source.OnStatusChanged += SourceOnPropertyChanged;
+		}
+
+		protected void SourceUnsubscribe(IConferenceSource source)
+		{
+			source.OnAnswerStateChanged -= SourceOnPropertyChanged;
+			source.OnNameChanged -= SourceOnPropertyChanged;
+			source.OnNumberChanged -= SourceOnPropertyChanged;
+			source.OnSourceTypeChanged -= SourceOnPropertyChanged;
+			source.OnStatusChanged -= SourceOnPropertyChanged;
+		}
+
+		private void SourceOnPropertyChanged(object sender, EventArgs args)
+		{
+			OnSourceChanged.Raise(this, new ConferenceSourceEventArgs(sender as IConferenceSource));
+		}
 
 		#endregion
 

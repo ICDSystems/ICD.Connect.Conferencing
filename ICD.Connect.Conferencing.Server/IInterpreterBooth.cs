@@ -9,6 +9,11 @@ namespace ICD.Connect.Conferencing.Server
 	{
 		event EventHandler<GenericEventArgs<IDialingDeviceControl>> OnDialerAdded;
 		event EventHandler<GenericEventArgs<IDialingDeviceControl>> OnDialerRemoved;
+		event EventHandler<GenericEventArgs<IDialingDeviceControl>> OnDialerChanged;
+
+		event EventHandler<DialerSourceEventArgs> OnDialerSourceChanged;
+		event EventHandler<DialerSourceEventArgs> OnDialerSourceAdded;
+		event EventHandler<DialerSourceEventArgs> OnDialerSourceRemoved;
 
 		int Id { get; }
 

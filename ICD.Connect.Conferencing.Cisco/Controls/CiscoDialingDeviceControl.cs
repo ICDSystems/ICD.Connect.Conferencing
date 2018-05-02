@@ -136,11 +136,13 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 
 		private void ComponentOnSourceAdded(object sender, ConferenceSourceEventArgs args)
 		{
+			SourceSubscribe(args.Data);
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(args.Data));
 		}
 
 		private void ComponentOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
 		{
+			SourceUnsubscribe(args.Data);
 			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(args.Data));
 		}
 
