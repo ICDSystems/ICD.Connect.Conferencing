@@ -13,6 +13,8 @@ namespace ICD.Connect.Conferencing.Proxies
 	public abstract class AbstractProxyDialingDeviceControl : AbstractProxyDeviceControl, IProxyDialingDeviceControl
 	{
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		public event EventHandler<ConferenceSourceEventArgs> OnSourceChanged;
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
@@ -101,6 +103,8 @@ namespace ICD.Connect.Conferencing.Proxies
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnSourceAdded = null;
+			OnSourceRemoved = null;
+			OnSourceChanged = null;
 			OnDoNotDisturbChanged = null;
 			OnAutoAnswerChanged = null;
 			OnPrivacyMuteChanged = null;
