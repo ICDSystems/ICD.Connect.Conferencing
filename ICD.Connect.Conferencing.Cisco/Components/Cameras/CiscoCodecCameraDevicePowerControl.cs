@@ -75,12 +75,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 		private void Subscribe()
 		{
-			Parent.CodecChanged += ParentOnCodecChanged;
+			Parent.OnCodecChanged += ParentOnCodecChanged;
 		}
 
 		private void Unsubscribe()
 		{
-			Parent.CodecChanged -= ParentOnCodecChanged;
+			Parent.OnCodecChanged -= ParentOnCodecChanged;
 		}
 
 		private void UpdateSystemComponent()

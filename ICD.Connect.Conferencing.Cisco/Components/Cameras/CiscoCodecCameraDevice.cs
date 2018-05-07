@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	public class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
 	                                      ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
-		public event EventHandler CodecChanged;
+		public event EventHandler OnCodecChanged;
 
 		private CiscoCodec m_Codec;
 		private NearCamerasComponent m_CamerasComponent;
@@ -171,7 +171,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// </summary>
 		protected override void ClearSettingsFinal()
 		{
-			CodecChanged = null;
+			OnCodecChanged = null;
 
 			base.ClearSettingsFinal();
 
@@ -246,7 +246,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 			m_Camera = m_CamerasComponent == null ? null : m_CamerasComponent.GetCamera(CameraId);
 
-			CodecChanged.Raise(this);
+			OnCodecChanged.Raise(this);
 		}
 
 		#endregion
