@@ -4,7 +4,7 @@ using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Cisco.Components.System;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco.Controls
 {
 	public sealed class CiscoCodecCameraDevicePowerControl : AbstractPowerDeviceControl<CiscoCodecCameraDevice>
 	{

@@ -4,7 +4,7 @@ using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco
 {
 	[KrangSettings("CiscoCamera", typeof(CiscoCodecCameraDevice))]
 	public sealed class CiscoCodecCameraDeviceSettings : AbstractCameraDeviceSettings
