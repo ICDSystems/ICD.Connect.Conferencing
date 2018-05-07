@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	public sealed class NearCamerasComponent : AbstractCiscoComponent
 	{
 		/// <summary>
-		/// Called when the cameras are rebuilt.
+		/// Raises when the cameras are rebuilt.
 		/// </summary>
 		public event EventHandler OnCamerasChanged;
 
@@ -179,6 +179,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			codec.UnregisterParserCallback(ParseCameraPresets, "PresetListResult");
 		}
 
+		/// <summary>
+		/// Parses the camera status result.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="resultId"></param>
+		/// <param name="xml"></param>
 		private void ParseCameraStatus(CiscoCodec sender, string resultId, string xml)
 		{
 			m_CamerasSection.Enter();
@@ -202,6 +208,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			OnCamerasChanged.Raise(this);
 		}
 
+		/// <summary>
+		/// Parses the camera presets result.
+		/// </summary>
+		/// <param name="codec"></param>
+		/// <param name="resultid"></param>
+		/// <param name="xml"></param>
 		private void ParseCameraPresets(CiscoCodec codec, string resultid, string xml)
 		{
 			m_PresetsSection.Enter();
@@ -234,7 +246,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// <param name="xml"></param>
 		/// <param name="cameraId"></param>
 		/// <returns></returns>
-		public static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
+		private static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
 		{
 			cameraId = 0;
 
