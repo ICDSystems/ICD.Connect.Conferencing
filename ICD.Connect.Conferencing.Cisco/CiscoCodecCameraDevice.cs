@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
@@ -324,8 +325,11 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="eventArgs"></param>
-		private void CamerasComponentOnPresetsChanged(object sender, EventArgs eventArgs)
+		private void CamerasComponentOnPresetsChanged(object sender, IntEventArgs eventArgs)
 		{
+			if (eventArgs.Data != CameraId)
+				return;
+
 			OnPresetsChanged.Raise(this);
 		}
 
