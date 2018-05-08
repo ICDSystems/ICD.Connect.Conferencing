@@ -42,7 +42,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		#region Private Members
 
-		private AsyncTcpServer m_Server;
+		private readonly AsyncTcpServer m_Server;
 		private readonly ServerSerialRpcController m_RpcController;
 
 		// key is booth id, value is adapter device for that booth.
@@ -59,6 +59,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		#endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		public ConferencingServerDevice()
 		{
 			m_RpcController = new ServerSerialRpcController(this);
@@ -67,17 +70,23 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			m_RoomToBooth = new Dictionary<int, int>();
 			m_ClientToRoom = new Dictionary<uint, int>();
 
-			SetServer(new AsyncTcpServer());
+			m_Server = new AsyncTcpServer();
+			m_RpcController.SetServer(m_Server);
+			Subscribe(m_Server);
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
+			Unsubscribe(m_Server);
+			m_Server.Stop();
+
 			base.DisposeFinal(disposing);
 
-			SetServer(null);
-
 			ClearAdapters();
-
 			ClearSources();
 		}
 
@@ -587,22 +596,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		#endregion
 
 		#region TCP Server
-
-		/// <summary>
-		/// Sets the server for communication with clients.
-		/// </summary>
-		/// <param name="server"></param>
-		[PublicAPI]
-		public void SetServer(AsyncTcpServer server)
-		{
-			if (server == m_Server)
-				return;
-
-			Unsubscribe(m_Server);
-			m_Server = server;
-			m_RpcController.SetServer(m_Server);
-			Subscribe(m_Server);
-		}
 
 		private void Subscribe(AsyncTcpServer server)
 		{
