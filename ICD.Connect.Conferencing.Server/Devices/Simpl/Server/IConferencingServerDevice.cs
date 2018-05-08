@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Connect.Devices.Simpl;
 
-namespace ICD.Connect.Conferencing.Server.Devices.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 {
 	public interface IConferencingServerDevice : ISimplDevice
 	{

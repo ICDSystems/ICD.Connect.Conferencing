@@ -8,7 +8,6 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
-using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.EventArguments;
@@ -17,7 +16,7 @@ using ICD.Connect.Protocol.Network.RemoteProcedure;
 using ICD.Connect.Protocol.Network.Tcp;
 using ICD.Connect.Settings.Core;
 
-namespace ICD.Connect.Conferencing.Server.Devices.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 {
 	[PublicAPI]
 	public sealed class ConferencingServerDevice : AbstractDevice<ConferencingServerDeviceSettings>, IConferencingServerDevice
