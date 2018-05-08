@@ -176,20 +176,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		#region Private Helper Methods
 
-		/// <summary>
-		/// Logs to logging core.
-		/// </summary>
-		/// <param name="severity"></param>
-		/// <param name="message"></param>
-		/// <param name="args"></param>
-		private void Log(eSeverity severity, string message, params object[] args)
-		{
-			message = string.Format(message, args);
-			message = string.Format("{0} - {1}", GetType().Name, message);
-
-			Logger.AddEntry(severity, message);
-		}
-
 		private IEnumerable<IConferenceSource> GetConferenceSourcesForBooth(int boothId)
 		{
 			if (!m_Adapters.ContainsKey(boothId))
@@ -205,13 +191,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			int boothId;
 			if (!m_RoomToBooth.TryGetValue(roomId, out boothId))
 			{
-				Log(eSeverity.Error, "No booth is assigned to room {0}", roomId);
+				Logger.AddEntry(eSeverity.Error, "No booth is assigned to room {0}", roomId);
 				return false;
 			}
 
 			if (!m_Sources.TryGetValue(sourceId, out targetSource))
 			{
-				Log(eSeverity.Error, "No Source with the given key found.");
+				Logger.AddEntry(eSeverity.Error, "No Source with the given key found.");
 				return false;
 			}
 
@@ -225,7 +211,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			IConferenceSource source;
 			if (!m_Sources.TryGetValue(sourceId, out source))
 			{
-				Log(eSeverity.Error, "No Source with the given key found.");
+				Logger.AddEntry(eSeverity.Error, "No Source with the given key found.");
 				return false;
 			}
 
@@ -236,13 +222,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			int targetRoom;
 			if (!m_RoomToBooth.TryGetKey(targetBooth, out targetRoom))
 			{
-				Log(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
+				Logger.AddEntry(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
 				return false;
 			}
 
 			if (!m_ClientToRoom.TryGetKey(targetRoom, out clientId))
 			{
-				Log(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
+				Logger.AddEntry(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
 				return false;
 			}
 
@@ -256,20 +242,20 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			int targetBooth;
 			if (!m_Adapters.TryGetKey(adapter, out targetBooth))
 			{
-				Log(eSeverity.Error, "No booth assigned to target adapter {0}", adapter.Id);
+				Logger.AddEntry(eSeverity.Error, "No booth assigned to target adapter {0}", adapter.Id);
 				return false;
 			}
 
 			int targetRoom;
 			if (!m_RoomToBooth.TryGetKey(targetBooth, out targetRoom))
 			{
-				Log(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
+				Logger.AddEntry(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
 				return false;
 			}
 
 			if (!m_ClientToRoom.TryGetKey(targetRoom, out clientId))
 			{
-				Log(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
+				Logger.AddEntry(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
 				return false;
 			}
 
@@ -283,13 +269,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			int targetBooth;
 			if (!m_RoomToBooth.TryGetValue(roomId, out targetBooth))
 			{
-				Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
+				Logger.AddEntry(eSeverity.Error, "No booth assigned to room {0}", roomId);
 				return false;
 			}
 
 			if (!m_Adapters.TryGetValue(targetBooth, out adapter))
 			{
-				Log(eSeverity.Error, "No booth with id {0}", targetBooth);
+				Logger.AddEntry(eSeverity.Error, "No booth with id {0}", targetBooth);
 				return false;
 			}
 
@@ -574,7 +560,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 			if (!m_Sources.ContainsValue(source))
 			{
-				Log(eSeverity.Error, "Unknown sourceState {0}", source.Name);
+				Logger.AddEntry(eSeverity.Error, "Unknown sourceState {0}", source.Name);
 				return;
 			}
 
