@@ -1,10 +1,9 @@
 ﻿using System;
 using ICD.Common.Properties;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using Newtonsoft.Json;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.ConferenceSources
 {
 	public sealed class ConferenceSourceState
 	{

@@ -80,7 +80,6 @@
     <Compile Include="Devices\Client\DialingDeviceClientControl.cs" />
     <Compile Include="Devices\Client\IConferencingClientDevice.cs" />
     <Compile Include="Devices\Client\IDialingDeviceClientControl.cs" />
-    <Compile Include="ConferenceSourceState.cs" />
     <Compile Include="Devices\Simpl\IInterpretationAdapter.cs" />
     <Compile Include="Devices\Simpl\IInterpretationAdapterSettings.cs" />
     <Compile Include="SimplShims\SPlusConferencingServerShim.cs" />
