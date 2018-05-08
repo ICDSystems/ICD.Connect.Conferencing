@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CiscoCodecSettings.cs" />
+    <Compile Include="CodecInputTypes.cs" />
     <Compile Include="Components\AbstractCiscoComponent.cs" />
     <Compile Include="CiscoCodec.cs" />
     <Compile Include="Components\Cameras\AbstractCiscoCamera.cs" />

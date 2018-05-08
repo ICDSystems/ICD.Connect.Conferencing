@@ -95,7 +95,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		private readonly ISerialBuffer m_SerialBuffer;
 		private readonly SafeTimer m_FeedbackTimer;
 
-		private readonly eCodecInputType[] m_InputTypes = new eCodecInputType[4];
+		private readonly CodecInputTypes m_InputTypes;
 
 		private readonly CiscoComponentFactory m_Components;
 
@@ -135,6 +135,11 @@ namespace ICD.Connect.Conferencing.Cisco
 		public CiscoComponentFactory Components { get { return m_Components; } }
 
 		/// <summary>
+		/// Configured information about how the input connectors should be used.
+		/// </summary>
+		public CodecInputTypes InputTypes { get { return m_InputTypes; } }
+
+		/// <summary>
 		/// Returns true when the codec is connected.
 		/// </summary>
 		public bool IsConnected
@@ -171,6 +176,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
 			m_Components = new CiscoComponentFactory(this);
+			m_InputTypes = new CodecInputTypes();
 			m_FeedbackTimer = SafeTimer.Stopped(FeedbackTimerCallback);
 
 			m_SerialBuffer = new XmlSerialBuffer();
@@ -421,18 +427,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			return string.Format("{0} - {1}", this, log);
 		}
 
-		/// <summary>
-		/// Gets the input type for the connector at the given 1-indexed id.
-		/// </summary>
-		/// <param name="connectorId"></param>
-		public eCodecInputType GetInputTypeForConnector(int connectorId)
-		{
-			if (connectorId >= 1 && connectorId <= 4)
-				return m_InputTypes[connectorId - 1];
-
-			return eCodecInputType.None;
-		}
-
 		#endregion
 
 		#region Private Methods
@@ -603,12 +597,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 		}
 
-		private void SetInputTypeForConnector(int connectorId, eCodecInputType type)
-		{
-			if (connectorId >= 1 && connectorId <= 4)
-				m_InputTypes[connectorId - 1] = type;
-		}
-
 		#endregion
 
 		#region Port Callbacks
@@ -775,10 +763,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
 			settings.PeripheralsId = PeripheralsId;
 
-			settings.Input1CodecInputType = GetInputTypeForConnector(1);
-			settings.Input2CodecInputType = GetInputTypeForConnector(2);
-			settings.Input3CodecInputType = GetInputTypeForConnector(3);
-			settings.Input4CodecInputType = GetInputTypeForConnector(4);
+			InputTypes.CopySettings(settings);
 		}
 
 		/// <summary>
@@ -790,6 +775,8 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			PeripheralsId = null;
 			SetPort(null);
+
+			InputTypes.ClearSettings();
 		}
 
 		/// <summary>
@@ -803,14 +790,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			PeripheralsId = settings.PeripheralsId;
 
-			// Set input types before setting the port, otherwise the connector type of none gets cached inproperly.
-			SetInputTypeForConnector(1, settings.Input1CodecInputType);
-
-			SetInputTypeForConnector(2, settings.Input2CodecInputType);
-
-			SetInputTypeForConnector(3, settings.Input3CodecInputType);
-
-			SetInputTypeForConnector(4, settings.Input4CodecInputType);
+			InputTypes.ApplySettings(settings);
 
 			ISerialPort port = null;
 
