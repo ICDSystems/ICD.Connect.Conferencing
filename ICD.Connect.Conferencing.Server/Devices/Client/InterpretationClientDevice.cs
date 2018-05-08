@@ -180,7 +180,17 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region	Public Methods
 
-		//TODO: register and unregister rooms
+	    public void Register()
+	    {
+		    if(IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_Room);
+	    }
+
+	    public void Unregister()
+	    {
+			if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.UNREGISTER_ROOM_RPC, m_Room);
+	    }
 
 	    public void Dial(string number)
 	    {
@@ -234,6 +244,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			if (m_Port != null && !m_Port.IsConnected)
 				m_Port.Connect();
+
+			Register();
 		}
 
 		/// <summary>
@@ -241,6 +253,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// </summary>
 		public void Disconnect()
 		{
+			Unregister();
+
 			if (m_Port != null && m_Port.IsConnected)
 				m_Port.Disconnect();
 		}
