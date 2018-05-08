@@ -6,7 +6,7 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls;
 using ICD.Connect.Conferencing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
 	public sealed class DialingDeviceClientControl : AbstractDialingDeviceControl<IConferencingClientDevice>, IDialingDeviceClientControl 
 	{
@@ -64,12 +64,12 @@ namespace ICD.Connect.Conferencing.Server
 
 		public override void Dial(string number)
 		{
-			//TODO: Dialing for Interpretation to be supported in the future, but currently out of spec
+			Parent.Dial(number);
 		}
 
 		public override void Dial(string number, eConferenceSourceType callType)
 		{
-			//TODO: Dialing for Interpretation to be supported in the future, but currently out of spec
+			Parent.Dial(number, callType);
 		}
 
 		public override void SetDoNotDisturb(bool enabled)

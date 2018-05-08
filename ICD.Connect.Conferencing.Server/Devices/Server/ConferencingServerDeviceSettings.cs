@@ -7,7 +7,7 @@ using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Network.Tcp;
 using ICD.Connect.Settings.Attributes;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	[KrangSettings(FACTORY_NAME)]
 	public sealed class ConferencingServerDeviceSettings : AbstractDeviceSettings

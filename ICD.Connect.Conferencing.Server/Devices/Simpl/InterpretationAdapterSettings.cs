@@ -1,18 +1,18 @@
 ﻿using System;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Devices;
+using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Settings.Attributes;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
 	[KrangSettings(FACTORY_NAME)]
-	public sealed class InterpretationAdapterSettings : AbstractDeviceSettings, IInterpretationAdapterSettings
+	public sealed class InterpretationAdapterSettings : AbstractSimplDeviceSettings, IInterpretationAdapterSettings
 	{
-		private const string FACTORY_NAME = "InterpretationAdapter";
+		private const string FACTORY_NAME = "SimplInterpretationAdapter";
 
 		public override string FactoryName { get { return FACTORY_NAME; } }
 
-		public override Type OriginatorType { get { return typeof(InterpretationAdapter); } }
+		public override Type OriginatorType { get { return typeof(SimplInterpretationAdapter); } }
 
 		/// <summary>
 		/// Writes property elements to xml.

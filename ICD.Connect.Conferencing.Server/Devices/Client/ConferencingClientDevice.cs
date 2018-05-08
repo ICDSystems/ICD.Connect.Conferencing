@@ -9,7 +9,9 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
@@ -17,7 +19,7 @@ using ICD.Connect.Protocol.Network.RemoteProcedure;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Core;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
     public sealed class ConferencingClientDevice : AbstractDevice<ConferencingClientDeviceSettings>, IConferencingClientDevice, IConnectable
     {
@@ -28,6 +30,7 @@ namespace ICD.Connect.Conferencing.Server
 
 	    public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 	    public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+
 	    public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 	    public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 	    public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
@@ -41,6 +44,7 @@ namespace ICD.Connect.Conferencing.Server
 	    public const string SET_CACHED_PRIVACY_MUTE_STATE = "SetCachedPrivacyMuteState";
 		public const string SET_CACHED_AUTO_ANSWER_STATE = "SetCachedAutoAnswerState";
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
+
 	    public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
 
 		#endregion
@@ -63,7 +67,6 @@ namespace ICD.Connect.Conferencing.Server
 
 	    #region Public Properties
 
-	    [PublicAPI]
 	    public bool IsConnected
 	    {
 		    get { return m_IsConnected; }
@@ -90,9 +93,6 @@ namespace ICD.Connect.Conferencing.Server
 
 	    }
 
-		/// <summary>
-		/// Gets the heartbeat instance that is enforcing the connection state.
-		/// </summary>
 		public Heartbeat Heartbeat { get; private set; }
 
 	    public bool IsInterpretationActive { get; private set; }
@@ -179,21 +179,30 @@ namespace ICD.Connect.Conferencing.Server
 
 		#region	Public Methods
 
-		[PublicAPI]
-	    public void SetPrivacyMute(bool enabled)
+	    public void Dial(string number)
+	    {
+		    if(IsConnected)
+				m_RpcController.CallMethod(ConferencingServerDevice.DIAL_RPC, m_Room, number);
+	    }
+
+	    public void Dial(string number, eConferenceSourceType callType)
+	    {
+		    if(IsConnected)
+				m_RpcController.CallMethod(ConferencingServerDevice.DIAL_TYPE_RPC, m_Room, number, callType);
+	    }
+
+		public void SetPrivacyMute(bool enabled)
 	    {
 		    if(IsConnected)
 				m_RpcController.CallMethod(ConferencingServerDevice.PRIVACY_MUTE_RPC, m_Room, enabled);
 	    }
 
-		[PublicAPI]
 		public void SetAutoAnswer(bool enabled)
 		{
 			if (IsConnected)
 				m_RpcController.CallMethod(ConferencingServerDevice.AUTO_ANSWER_RPC, m_Room, enabled);
 		}
 
-	    [PublicAPI]
 	    public void SetDoNotDisturb(bool enabled)
 	    {
 		    if (IsConnected)
@@ -201,37 +210,18 @@ namespace ICD.Connect.Conferencing.Server
 	    }
 
 		[PublicAPI]
-		public void HoldEnable()
-	    {
-			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.HOLD_ENABLE_RPC, m_Room);
-		}
-
-		[PublicAPI]
-		public void HoldResume()
-	    {
-			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.HOLD_RESUME_RPC, m_Room);
-		}
-
-		[PublicAPI]
-		public void EndCall()
-	    {
-			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.END_CALL_RPC, m_Room);
-		}
-
-		[PublicAPI]
-		public void SendDtmf(string data)
-	    {
-			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.SEND_DTMF_RPC, m_Room, data);
-		}
-
-		[PublicAPI]
 	    public IEnumerable<IConferenceSource> GetSources()
 		{
-			return m_Sources.Values.ToArray(m_Sources.Count);
+			m_SourcesCriticalSection.Enter();
+			try
+			{
+				return m_Sources.Values.ToArray(m_Sources.Count);
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
+			
 		}
 
 		/// <summary>
@@ -270,6 +260,24 @@ namespace ICD.Connect.Conferencing.Server
 			Logger.AddEntry(severity, message);
 		}
 
+
+
+		private void ClearSources()
+		{
+			m_SourcesCriticalSection.Enter();
+			try
+			{
+				foreach (var src in m_Sources.Values)
+					Unsubscribe(src);
+
+				m_Sources.Clear();
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
+		}
+
 		#endregion
 
 	    #region RPCs
@@ -278,6 +286,8 @@ namespace ICD.Connect.Conferencing.Server
 	    private void SetInterpretationState(bool state)
 	    {
 		    IsInterpretationActive = state;
+
+		    ClearSources();
 	    }
 
 	    [Rpc(SET_CACHED_PRIVACY_MUTE_STATE), UsedImplicitly]
@@ -299,7 +309,7 @@ namespace ICD.Connect.Conferencing.Server
 		}
 
 	    [Rpc(UPDATE_CACHED_SOURCE_STATE), UsedImplicitly]
-	    private void UpdateCachedSourceState(Guid id, RpcConferenceSource source)
+	    private void UpdateCachedSourceState(Guid id, ConferenceSourceState sourceState)
 	    {
 			m_SourcesCriticalSection.Enter();
 
@@ -318,14 +328,14 @@ namespace ICD.Connect.Conferencing.Server
 
 			    var src = m_Sources[id];
 
-			    src.Name = source.Name;
-			    src.Number = source.Number;
-			    src.Status = source.Status;
-			    src.AnswerState = source.AnswerState;
-			    src.DialTime = source.DialTime;
-			    src.Direction = source.Direction;
-			    src.End = source.End;
-			    src.Start = source.Start;
+			    src.Name = sourceState.Name;
+			    src.Number = sourceState.Number;
+			    src.Status = sourceState.Status;
+			    src.AnswerState = sourceState.AnswerState;
+			    src.DialTime = sourceState.DialTime;
+			    src.Direction = sourceState.Direction;
+			    src.End = sourceState.End;
+			    src.Start = sourceState.Start;
 
 			    if (added)
 			    {
@@ -334,7 +344,7 @@ namespace ICD.Connect.Conferencing.Server
 						OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
 			    }
 
-			    if (source.Status != eConferenceSourceStatus.Disconnected)
+			    if (sourceState.Status != eConferenceSourceStatus.Disconnected)
 				    return;
 
 			    var sourceToRemove = m_Sources[id];
@@ -353,95 +363,136 @@ namespace ICD.Connect.Conferencing.Server
 
 		private void Subscribe(ThinConferenceSource source)
 		{
-			source.OnAnswerCallback += SourceOnAnswerCallback;
-			source.OnHoldCallback += SourceOnHoldCallback;
-			source.OnResumeCallback += SourceOnResumeCallback;
-			source.OnHangupCallback += SourceOnHangupCallback;
-			source.OnSendDtmfCallback += SourceOnSendDtmfCallback;
+			source.AnswerCallback += SourceOnCallAnswered;
+			source.HoldCallback += SourceOnCallHeld;
+			source.ResumeCallback += SourceOnCallResumed;
+			source.SendDtmfCallback += SourceOnDtmfSent;
+			source.HangupCallback += SourceOnCallEnded;
 	    }
 		
 	    private void Unsubscribe(ThinConferenceSource source)
 	    {
-		    source.OnAnswerCallback -= SourceOnAnswerCallback;
-		    source.OnHoldCallback -= SourceOnHoldCallback;
-		    source.OnResumeCallback -= SourceOnResumeCallback;
-		    source.OnHangupCallback -= SourceOnHangupCallback;
-		    source.OnSendDtmfCallback -= SourceOnSendDtmfCallback;
+			source.AnswerCallback = null;
+			source.HoldCallback = null;
+			source.ResumeCallback = null;
+			source.SendDtmfCallback = null;
+			source.HangupCallback = null;
+		    
 		}
 
-		private void SourceOnAnswerCallback(object sender, EventArgs eventArgs)
+		private void SourceOnCallAnswered(ThinConferenceSource source)
 		{
-			var source = sender as ThinConferenceSource;
 			if (source == null)
 				return;
+			
+			m_SourcesCriticalSection.Enter();
+			Guid id;
+			try
+			{
+				if (!m_Sources.ContainsValue(source))
+					return;
 
-			if (!m_Sources.ContainsValue(source))
-				return;
-
-			var id = m_Sources.GetKey(source);
+				id = m_Sources.GetKey(source);
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
 
 			if (IsConnected)
 				m_RpcController.CallMethod(ConferencingServerDevice.ANSWER_RPC, id);
 		}
 
-	    private void SourceOnHoldCallback(object sender, EventArgs eventArgs)
+		private void SourceOnCallHeld(ThinConferenceSource source)
 	    {
-			var source = sender as ThinConferenceSource;
-		    if (source == null)
+			if (source == null)
 			    return;
 
-		    if (!m_Sources.ContainsValue(source))
-			    return;
+			m_SourcesCriticalSection.Enter();
+			Guid id;
+			try
+			{
+				if (!m_Sources.ContainsValue(source))
+					return;
 
-		    var id = m_Sources.GetKey(source);
+				id = m_Sources.GetKey(source);
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
 
 		    if (IsConnected)
 			    m_RpcController.CallMethod(ConferencingServerDevice.HOLD_ENABLE_RPC, id);
 		}
 
-	    private void SourceOnResumeCallback(object sender, EventArgs eventArgs)
+		private void SourceOnCallResumed(ThinConferenceSource source)
 	    {
-			var source = sender as ThinConferenceSource;
-		    if (source == null)
+			if (source == null)
 			    return;
 
-		    if (!m_Sources.ContainsValue(source))
-			    return;
+			m_SourcesCriticalSection.Enter();
+			Guid id;
+			try
+			{
+				if (!m_Sources.ContainsValue(source))
+					return;
 
-		    var id = m_Sources.GetKey(source);
+				id = m_Sources.GetKey(source);
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
 
 		    if (IsConnected)
 			    m_RpcController.CallMethod(ConferencingServerDevice.HOLD_RESUME_RPC, id);
 		}
 
-		private void SourceOnHangupCallback(object sender, EventArgs eventArgs)
+		private void SourceOnCallEnded(ThinConferenceSource source)
 		{
-			var source = sender as ThinConferenceSource;
 			if (source == null)
 				return;
 
-			if (!m_Sources.ContainsValue(source))
-				return;
+			m_SourcesCriticalSection.Enter();
+			Guid id;
+			try
+			{
+				if (!m_Sources.ContainsValue(source))
+					return;
 
-			var id = m_Sources.GetKey(source);
+				id = m_Sources.GetKey(source);
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
 
 			if (IsConnected)
 				m_RpcController.CallMethod(ConferencingServerDevice.END_CALL_RPC, id);
 		}
 
-		private void SourceOnSendDtmfCallback(object sender, StringEventArgs args)
+		private void SourceOnDtmfSent(ThinConferenceSource source, string data)
 	    {
-			var source = sender as ThinConferenceSource;
-		    if (source == null)
+			if (source == null)
 			    return;
+			
+			m_SourcesCriticalSection.Enter();
+			Guid id;
+			try
+			{
+				if (!m_Sources.ContainsValue(source))
+					return;
 
-		    if (!m_Sources.ContainsValue(source))
-			    return;
-
-		    var id = m_Sources.GetKey(source);
+				id = m_Sources.GetKey(source);
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(ConferencingServerDevice.SEND_DTMF_RPC, id, args.Data);
+			    m_RpcController.CallMethod(ConferencingServerDevice.SEND_DTMF_RPC, id, data);
 		}
 
 		#endregion
@@ -501,7 +552,7 @@ namespace ICD.Connect.Conferencing.Server
 	    /// </summary>
 	    /// <param name="sender"></param>
 	    /// <param name="args"></param>
-	    private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs args)
+	    private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
 	    {
 		    UpdateCachedOnlineStatus();
 	    }
@@ -535,6 +586,8 @@ namespace ICD.Connect.Conferencing.Server
 			SetPort(port);
 
 			m_Room = settings.Room == null ? 0 : settings.Room.Value;
+
+			Heartbeat.StartMonitoring();
 	    }
 
 	    protected override void CopySettingsFinal(ConferencingClientDeviceSettings settings)
@@ -550,6 +603,8 @@ namespace ICD.Connect.Conferencing.Server
 		    base.ClearSettingsFinal();
 
 			SetPort(null);
+
+			Heartbeat.StopMonitoring();
 	    }
 
 	    #endregion

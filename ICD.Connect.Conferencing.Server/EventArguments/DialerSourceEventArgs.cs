@@ -2,7 +2,7 @@
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Server.EventArguments
 {
 	public class DialerSourceEventArgs : EventArgs
 	{

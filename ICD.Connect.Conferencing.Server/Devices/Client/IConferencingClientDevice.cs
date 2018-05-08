@@ -5,7 +5,7 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
 	public interface IConferencingClientDevice : IDevice
 	{
@@ -32,17 +32,18 @@ namespace ICD.Connect.Conferencing.Server
 		event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		bool IsConnected { get; }
+		bool IsInterpretationActive { get; }
+
 		bool PrivacyMuted { get; }
 		bool DoNotDisturb { get; }
 		bool AutoAnswer { get; }
 
+		void Dial(string number);
+		void Dial(string number, eConferenceSourceType callType);
 		void SetPrivacyMute(bool enabled);
 		void SetAutoAnswer(bool enabled);
 		void SetDoNotDisturb(bool enabled);
-		void HoldEnable();
-		void HoldResume();
-		void EndCall();
-		void SendDtmf(string data);
+		
 		IEnumerable<IConferenceSource> GetSources();
 	}
 }
