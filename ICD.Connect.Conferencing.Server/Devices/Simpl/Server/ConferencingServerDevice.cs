@@ -176,14 +176,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		#region Private Helper Methods
 
-		private IEnumerable<IConferenceSource> GetConferenceSourcesForBooth(int boothId)
-		{
-			if (!m_Adapters.ContainsKey(boothId))
-				return Enumerable.Empty<IConferenceSource>();
-
-			return m_Adapters[boothId].GetSources();
-		}
-
 		private bool TryGetTargetSource(int roomId, Guid sourceId, out IConferenceSource targetSource)
 		{
 			targetSource = null;
