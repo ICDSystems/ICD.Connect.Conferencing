@@ -179,6 +179,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region	Public Methods
 
+		//TODO: register and unregister rooms
+
 	    public void Dial(string number)
 	    {
 		    if(IsConnected)
