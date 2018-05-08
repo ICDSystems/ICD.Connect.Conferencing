@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -30,6 +31,20 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			m_DeviceIds = new IcdHashSet<int>();
 		}
 
+		public void SetDeviceIds(IEnumerable<int> deviceIds)
+		{
+			if (deviceIds == null)
+				throw new ArgumentNullException("deviceIds");
+
+			m_DeviceIds.Clear();
+			m_DeviceIds.AddRange(deviceIds);
+		}
+
+		public IEnumerable<int> GetDeviceIds()
+		{
+			return m_DeviceIds.Order().ToArray(m_DeviceIds.Count);
+		}
+
 		public override void ParseXml(string xml)
 		{
 			base.ParseXml(xml);
@@ -38,8 +53,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			                                                      s => ParseDeviceToInt(s))
 			                                     .ExceptNulls();
 
-			m_DeviceIds.Clear();
-			m_DeviceIds.AddRange(deviceIds);
+			SetDeviceIds(deviceIds);
 
 			ServerPort = XmlUtils.TryReadChildElementContentAsUShort(xml, SERVER_PORT_ELEMENT) ?? 0;
 			ServerMaxClients = XmlUtils.TryReadChildElementContentAsInt(xml, SERVER_CLIENTS_ELEMENT) ??
@@ -50,7 +64,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		{
 			base.WriteElements(writer);
 
-			XmlUtils.WriteListToXml(writer, m_DeviceIds.Order(), WRAPPED_DEVICES_ELEMENT, WRAPPED_DEVICE_ELEMENT);
+			XmlUtils.WriteListToXml(writer, GetDeviceIds(), WRAPPED_DEVICES_ELEMENT, WRAPPED_DEVICE_ELEMENT);
 
 			writer.WriteElementString(SERVER_PORT_ELEMENT, IcdXmlConvert.ToString(ServerPort));
 			writer.WriteElementString(SERVER_CLIENTS_ELEMENT, IcdXmlConvert.ToString(ServerMaxClients));

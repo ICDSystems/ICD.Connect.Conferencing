@@ -142,7 +142,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 			m_RpcController.CallMethod(clientId, ConferencingClientDevice.SET_INTERPRETATION_STATE_RPC, true);
 
-			foreach (var source in m_Adapters[boothId].GetSources())
+			foreach (IConferenceSource source in m_Adapters[boothId].GetSources())
 			{
 				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
 				Guid id = m_Sources.GetKey(source);
@@ -617,7 +617,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		{
 			base.ApplySettingsFinal(settings, factory);
 
-			foreach (int adapterId in settings.WrappedDeviceIds)
+			foreach (int adapterId in settings.GetDeviceIds())
 			{
 				IInterpretationAdapter adapter = null;
 
@@ -645,7 +645,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		{
 			base.CopySettingsFinal(settings);
 
-			settings.WrappedDeviceIds = m_Adapters.Values.Select(adapter => adapter.Id).ToList();
+			settings.SetDeviceIds(m_Adapters.Values.Select(adapter => adapter.Id));
+			settings.ServerMaxClients = m_Server.MaxNumberOfClients;
+			settings.ServerPort = m_Server.Port;
 		}
 
 		protected override void ClearSettingsFinal()
