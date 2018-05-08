@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		private readonly ServerSerialRpcController m_RpcController;
 
 		// key is booth id, value is adapter device for that booth.
-		private readonly Dictionary<int, IInterpretationAdapter> m_Adapters;
+		private readonly Dictionary<int, IInterpretationAdapter> m_BoothToAdapter;
 
 		// key is guid id of source, value is the source
 		private readonly Dictionary<Guid, IConferenceSource> m_Sources;
@@ -65,7 +65,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public ConferencingServerDevice()
 		{
 			m_RpcController = new ServerSerialRpcController(this);
-			m_Adapters = new Dictionary<int, IInterpretationAdapter>();
+			m_BoothToAdapter = new Dictionary<int, IInterpretationAdapter>();
 			m_Sources = new Dictionary<Guid, IConferenceSource>();
 			m_RoomToBooth = new Dictionary<int, int>();
 			m_ClientToRoom = new Dictionary<uint, int>();
@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public IEnumerable<int> GetAvailableBoothIds()
 		{
 			IEnumerable<int> usedBooths = m_RoomToBooth.Values;
-			return m_Adapters.Keys.Except(usedBooths);
+			return m_BoothToAdapter.Keys.Except(usedBooths);
 		}
 
 		/// <summary>
@@ -124,7 +124,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		[PublicAPI]
 		public void BeginInterpretation(int roomId, int boothId)
 		{
-			if (!m_Adapters.ContainsKey(boothId))
+			if (!m_BoothToAdapter.ContainsKey(boothId))
 				return;
 
 			if (!m_RoomToBooth.ContainsKey(roomId))
@@ -135,14 +135,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 				return;
 
 			uint clientId;
-			if (!TrygetClientIdForAdapter(m_Adapters[boothId], out clientId))
+			if (!GetClientIdForAdapter(m_BoothToAdapter[boothId], out clientId))
 				return;
 
 			m_RoomToBooth[roomId] = boothId;
 
 			m_RpcController.CallMethod(clientId, ConferencingClientDevice.SET_INTERPRETATION_STATE_RPC, true);
 
-			foreach (IConferenceSource source in m_Adapters[boothId].GetSources())
+			foreach (IConferenceSource source in m_BoothToAdapter[boothId].GetSources())
 			{
 				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
 				Guid id = m_Sources.GetKey(source);
@@ -153,7 +153,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		[PublicAPI]
 		public void EndInterpretation(int roomId, int boothId)
 		{
-			if (!m_Adapters.ContainsKey(boothId))
+			if (!m_BoothToAdapter.ContainsKey(boothId))
 				return;
 
 			if (!m_RoomToBooth.ContainsKey(roomId))
@@ -164,7 +164,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 				return;
 
 			uint clientId;
-			if (!TrygetClientIdForAdapter(m_Adapters[boothId], out clientId))
+			if (!GetClientIdForAdapter(m_BoothToAdapter[boothId], out clientId))
 				return;
 
 			m_RoomToBooth.Remove(roomId);
@@ -176,40 +176,25 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		#region Private Helper Methods
 
-		private bool TryGetTargetSource(int roomId, Guid sourceId, out IConferenceSource targetSource)
+		private bool GetTargetSource(Guid sourceId, out IConferenceSource targetSource)
 		{
-			targetSource = null;
-
-			int boothId;
-			if (!m_RoomToBooth.TryGetValue(roomId, out boothId))
-			{
-				Log(eSeverity.Error, "No booth is assigned to room {0}", roomId);
-				return false;
-			}
-
-			if (!m_Sources.TryGetValue(sourceId, out targetSource))
-			{
-				Log(eSeverity.Error, "No Source with the given key found.");
-				return false;
-			}
-
-			return targetSource != null;
+			return m_Sources.TryGetValue(sourceId, out targetSource);
 		}
 
-		private bool TryGetClientIdForSource(Guid sourceId, out uint clientId)
+		private bool GetClientIdForSource(Guid sourceId, out uint clientId)
 		{
 			clientId = 0;
 
 			IConferenceSource source;
-			if (!m_Sources.TryGetValue(sourceId, out source))
+			if (!GetTargetSource(sourceId, out source))
 			{
 				Log(eSeverity.Error, "No Source with the given key found.");
 				return false;
 			}
 
-			int targetBooth = m_Adapters.Where(booth => booth.Value.GetSources().Any(src => source == src))
-										.Select(booth => booth.Key)
-										.FirstOrDefault();
+			int targetBooth = m_BoothToAdapter.Where(kvp => kvp.Value.ContainsSource(source))
+			                                  .Select(kvp => kvp.Key)
+			                                  .FirstOrDefault();
 
 			int targetRoom;
 			if (!m_RoomToBooth.TryGetKey(targetBooth, out targetRoom))
@@ -224,15 +209,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 				return false;
 			}
 
-			return clientId != 0;
+			return true;
 		}
 
-		private bool TrygetClientIdForAdapter(IInterpretationAdapter adapter, out uint clientId)
+		private bool GetClientIdForAdapter(IInterpretationAdapter adapter, out uint clientId)
 		{
 			clientId = 0;
 
 			int targetBooth;
-			if (!m_Adapters.TryGetKey(adapter, out targetBooth))
+			if (!m_BoothToAdapter.TryGetKey(adapter, out targetBooth))
 			{
 				Log(eSeverity.Error, "No booth assigned to target adapter {0}", adapter.Id);
 				return false;
@@ -251,10 +236,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 				return false;
 			}
 
-			return clientId != 0;
+			return true;
 		}
 
-		private bool TryGetAdapterForRoom(int roomId, out IInterpretationAdapter adapter)
+		private bool GetAdapterForRoom(int roomId, out IInterpretationAdapter adapter)
 		{
 			adapter = null;
 
@@ -265,14 +250,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 				return false;
 			}
 
-			if (!m_Adapters.TryGetValue(targetBooth, out adapter))
+			if (!m_BoothToAdapter.TryGetValue(targetBooth, out adapter))
 			{
 				Log(eSeverity.Error, "No booth with id {0}", targetBooth);
 				return false;
 			}
 
-			return adapter != null;
-
+			return true;
 		}
 
 		#endregion
@@ -283,10 +267,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void RegisterRoom(uint clientId, int roomId)
 		{
 			if (m_ClientToRoom.ContainsKey(clientId))
+			{
+				Log(eSeverity.Error, "Failed to register room - already registered");
 				return;
-
-			if (m_RoomToBooth.ContainsKey(roomId))
-				return;
+			}	
 
 			m_ClientToRoom.Add(clientId, roomId);
 		}
@@ -295,13 +279,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void UnregisterRoom(uint clientId, int roomId)
 		{
 			if (!m_ClientToRoom.ContainsKey(clientId))
+			{
+				Log(eSeverity.Error, "Failed to unregister room - not registered");
 				return;
-
-			if (!m_RoomToBooth.ContainsKey(roomId))
-				return;
+			}	
 
 			m_ClientToRoom.Remove(clientId);
-
 			m_RoomToBooth.Remove(roomId);
 		}
 
@@ -309,7 +292,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void Dial(uint clientId, int roomId, string number)
 		{
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.Dial(number);
 		}
 
@@ -317,7 +300,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void Dial(uint clientId, int roomId, string number, eConferenceSourceType type)
 		{
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.Dial(number, type);
 		}
 
@@ -325,7 +308,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void SetAutoAnswer(uint clientId, int roomId, bool enabled)
 		{
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.SetAutoAnswer(enabled);
 		}
 
@@ -333,7 +316,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void SetDoNotDisturb(uint clientId, int roomId, bool enabled)
 		{
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.SetDoNotDisturb(enabled);
 		}
 
@@ -341,7 +324,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void SetPrivacyMute(uint clientId, int roomId, bool enabled)
 		{
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.SetPrivacyMute(enabled);
 		}
 
@@ -349,11 +332,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void Answer(uint clientId, int roomId, Guid id)
 		{
 			IConferenceSource source;
-			if (!TryGetTargetSource(roomId, id, out source))
+			if (!GetTargetSource(id, out source))
 				return;
 
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.Answer(source);
 		}
 
@@ -361,11 +344,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void HoldEnable(uint clientId, int roomId, Guid id)
 		{
 			IConferenceSource source;
-			if (!TryGetTargetSource(roomId, id, out source))
+			if (!GetTargetSource(id, out source))
 				return;
 
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.SetHold(source, true);
 		}
 
@@ -373,11 +356,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void HoldResume(uint clientId, int roomId, Guid id)
 		{
 			IConferenceSource source;
-			if (!TryGetTargetSource(roomId, id, out source))
+			if (!GetTargetSource(id, out source))
 				return;
 
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.SetHold(source, false);
 		}
 
@@ -385,11 +368,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void SendDtmf(uint clientId, int roomId, Guid id, string data)
 		{
 			IConferenceSource source;
-			if (!TryGetTargetSource(roomId, id, out source))
+			if (!GetTargetSource(id, out source))
 				return;
 
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.SendDtmf(source, data);
 		}
 
@@ -397,11 +380,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public void EndCall(uint clientId, int roomId, Guid id)
 		{
 			IConferenceSource source;
-			if (!TryGetTargetSource(roomId, id, out source))
+			if (!GetTargetSource(id, out source))
 				return;
 
 			IInterpretationAdapter adapter;
-			if (TryGetAdapterForRoom(roomId, out adapter))
+			if (GetAdapterForRoom(roomId, out adapter))
 				adapter.EndCall(source);
 		}
 
@@ -411,20 +394,20 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		private void AddAdapter(int boothId, IInterpretationAdapter adapter)
 		{
-			if (m_Adapters.ContainsValue(adapter))
+			if (m_BoothToAdapter.ContainsValue(adapter))
 				return;
 
-			m_Adapters.Add(boothId, adapter);
+			m_BoothToAdapter.Add(boothId, adapter);
 
 			Subscribe(adapter);
 		}
 
 		private void ClearAdapters()
 		{
-			foreach (IInterpretationAdapter adapter in m_Adapters.Values.ToArray())
+			foreach (IInterpretationAdapter adapter in m_BoothToAdapter.Values.ToArray())
 				Unsubscribe(adapter);
 
-			m_Adapters.Clear();
+			m_BoothToAdapter.Clear();
 		}
 
 		private void Subscribe(IInterpretationAdapter adapter)
@@ -468,7 +451,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			const string key = ConferencingClientDevice.SET_CACHED_AUTO_ANSWER_STATE;
 
 			uint clientId;
-			if (!TrygetClientIdForAdapter(sender as IInterpretationAdapter, out clientId))
+			if (!GetClientIdForAdapter(sender as IInterpretationAdapter, out clientId))
 				return;
 
 			m_RpcController.CallMethod(clientId, key, args.Data);
@@ -479,7 +462,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			const string key = ConferencingClientDevice.SET_CACHED_DO_NOT_DISTURB_STATE;
 
 			uint clientId;
-			if (!TrygetClientIdForAdapter(sender as IInterpretationAdapter, out clientId))
+			if (!GetClientIdForAdapter(sender as IInterpretationAdapter, out clientId))
 				return;
 
 			m_RpcController.CallMethod(clientId, key, args.Data);
@@ -490,7 +473,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			const string key = ConferencingClientDevice.SET_CACHED_PRIVACY_MUTE_STATE;
 
 			uint clientId;
-			if (!TrygetClientIdForAdapter(sender as IInterpretationAdapter, out clientId))
+			if (!GetClientIdForAdapter(sender as IInterpretationAdapter, out clientId))
 				return;
 
 			m_RpcController.CallMethod(clientId, key, args.Data);
@@ -559,7 +542,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			Guid id = m_Sources.GetKey(source);
 
 			uint clientId;
-			if (!TryGetClientIdForSource(id, out clientId))
+			if (!GetClientIdForSource(id, out clientId))
 				return;
 
 			ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
@@ -637,7 +620,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		{
 			base.CopySettingsFinal(settings);
 
-			settings.SetDeviceIds(m_Adapters.Values.Select(adapter => adapter.Id));
+			settings.SetDeviceIds(m_BoothToAdapter.Values.Select(adapter => adapter.Id));
 			settings.ServerMaxClients = m_Server.MaxNumberOfClients;
 			settings.ServerPort = m_Server.Port;
 		}
@@ -659,7 +642,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_Adapters.AnyAndAll(adapter => adapter.Value.IsOnline);
+			return m_BoothToAdapter.AnyAndAll(adapter => adapter.Value.IsOnline);
 		}
 
 		#endregion

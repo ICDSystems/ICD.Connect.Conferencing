@@ -264,7 +264,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					Status = (eConferenceSourceStatus)status,
 					Start = IcdEnvironment.GetLocalTime()
 				};
-				Originator.ShimSourceAdded(m_Source);
+				Originator.AddShimSource(m_Source);
 
 				switch (m_Source.Direction)
 				{
@@ -281,7 +281,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		[PublicAPI("S+")]
 		public void ClearCallInfo()
 		{
-			Originator.ShimSourceRemoved(m_Source);
+			Originator.RemoveShimSource(m_Source);
 			m_Source = null;
 			OnCallEnded.Raise(this);
 		}

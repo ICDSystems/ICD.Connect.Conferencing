@@ -27,7 +27,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
-
 		SimplDialerDialCallback DialCallback { get; set; }
         SimplDialerDialTypeCallback DialTypeCallback { get; set; }
 		SimplDialerSetAutoAnswerCallback SetAutoAnswerCallback { get; set; }
@@ -57,9 +56,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		void SendDtmf(IConferenceSource source, string data);
 		void EndCall(IConferenceSource source);
 
-		void ShimSourceAdded(IConferenceSource source);
-		void ShimSourceRemoved(IConferenceSource source);
+		void AddShimSource(IConferenceSource source);
+		void RemoveShimSource(IConferenceSource source);
 
 		IEnumerable<IConferenceSource> GetSources();
+		bool ContainsSource(IConferenceSource source);
 	}
 }

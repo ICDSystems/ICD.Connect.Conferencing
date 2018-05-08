@@ -183,21 +183,34 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 				handler(this);
 		}
 
-		public void ShimSourceAdded(IConferenceSource source)
+		public void AddShimSource(IConferenceSource source)
 		{
+			if (source == m_Source)
+				return;
+
 			m_Source = source;
+
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
 		}
 
-		public void ShimSourceRemoved(IConferenceSource source)
+		public void RemoveShimSource(IConferenceSource source)
 		{
+			if (source != m_Source)
+				return;
+
 			m_Source = null;
+
 			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(source));
 		}
 
 		public IEnumerable<IConferenceSource> GetSources()
 		{
 			yield return m_Source;
+		}
+
+		public bool ContainsSource(IConferenceSource source)
+		{
+			return source == m_Source;
 		}
 
 		#endregion
