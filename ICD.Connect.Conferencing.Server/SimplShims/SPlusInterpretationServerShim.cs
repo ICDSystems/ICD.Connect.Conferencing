@@ -6,7 +6,7 @@ using ICD.Connect.Devices.SPlusShims;
 
 namespace ICD.Connect.Conferencing.Server.SimplShims
 {
-	public sealed class SPlusConferencingServerShim : AbstractSPlusDeviceShim<IConferencingServerDevice>
+	public sealed class SPlusInterpretationServerShim : AbstractSPlusDeviceShim<IInterpretationServerDevice>
 	{
 		[PublicAPI("S+")]
 		public void BeginInterpretation(ushort roomId, ushort boothId)

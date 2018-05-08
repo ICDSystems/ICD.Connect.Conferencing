@@ -8,6 +8,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Controls;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Simpl.Server;
 using ICD.Connect.Devices;
@@ -21,7 +22,7 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
-    public sealed class ConferencingClientDevice : AbstractDevice<ConferencingClientDeviceSettings>, IConferencingClientDevice, IConnectable
+    public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>, IInterpretationDevice, IConnectable
     {
 	    #region Events
 
@@ -150,13 +151,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 	    #endregion
 
-		public ConferencingClientDevice()
+		public InterpretationClientDevice()
 	    {
 		    m_RpcController = new ClientSerialRpcController(this);
 			m_Sources = new Dictionary<Guid, ThinConferenceSource>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
 
-			Controls.Add(new DialingDeviceClientControl(this, 0));
+			Controls.Add(new DialerDeviceDialerControl(this, 0));
 
 			Heartbeat = new Heartbeat(this);
 	    }
@@ -184,31 +185,31 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    public void Dial(string number)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.DIAL_RPC, m_Room, number);
+				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_RPC, m_Room, number);
 	    }
 
 	    public void Dial(string number, eConferenceSourceType callType)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.DIAL_TYPE_RPC, m_Room, number, callType);
+				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_TYPE_RPC, m_Room, number, callType);
 	    }
 
 		public void SetPrivacyMute(bool enabled)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.PRIVACY_MUTE_RPC, m_Room, enabled);
+				m_RpcController.CallMethod(InterpretationServerDevice.PRIVACY_MUTE_RPC, m_Room, enabled);
 	    }
 
 		public void SetAutoAnswer(bool enabled)
 		{
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.AUTO_ANSWER_RPC, m_Room, enabled);
+				m_RpcController.CallMethod(InterpretationServerDevice.AUTO_ANSWER_RPC, m_Room, enabled);
 		}
 
 	    public void SetDoNotDisturb(bool enabled)
 	    {
 		    if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.DO_NOT_DISTURB_RPC, m_Room, enabled);
+				m_RpcController.CallMethod(InterpretationServerDevice.DO_NOT_DISTURB_RPC, m_Room, enabled);
 	    }
 
 		[PublicAPI]
@@ -341,7 +342,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			    if (added)
 			    {
-				    var control = Controls.GetControl<IDialingDeviceClientControl>();
+					var control = Controls.GetControl<DialerDeviceDialerControl>();
 				    if (control != null)
 						OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
 			    }
@@ -352,6 +353,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    var sourceToRemove = m_Sources[id];
 			    Unsubscribe(sourceToRemove);
 			    m_Sources.Remove(id);
+
+				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
 		    }
 		    finally
 		    {
@@ -402,7 +405,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.ANSWER_RPC, id);
+				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, id);
 		}
 
 		private void SourceOnCallHeld(ThinConferenceSource source)
@@ -425,7 +428,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(ConferencingServerDevice.HOLD_ENABLE_RPC, id);
+			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, id);
 		}
 
 		private void SourceOnCallResumed(ThinConferenceSource source)
@@ -448,7 +451,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(ConferencingServerDevice.HOLD_RESUME_RPC, id);
+			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, id);
 		}
 
 		private void SourceOnCallEnded(ThinConferenceSource source)
@@ -471,7 +474,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(ConferencingServerDevice.END_CALL_RPC, id);
+				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, id);
 		}
 
 		private void SourceOnDtmfSent(ThinConferenceSource source, string data)
@@ -494,7 +497,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(ConferencingServerDevice.SEND_DTMF_RPC, id, data);
+			    m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, id, data);
 		}
 
 		#endregion
@@ -573,7 +576,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 	    #region Settings
 
-		protected override void ApplySettingsFinal(ConferencingClientDeviceSettings settings, IDeviceFactory factory)
+		protected override void ApplySettingsFinal(InterpretationClientDeviceSettings settings, IDeviceFactory factory)
 	    {
 		    base.ApplySettingsFinal(settings, factory);
 
@@ -592,7 +595,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			Heartbeat.StartMonitoring();
 	    }
 
-	    protected override void CopySettingsFinal(ConferencingClientDeviceSettings settings)
+	    protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
 	    {
 		    base.CopySettingsFinal(settings);
 

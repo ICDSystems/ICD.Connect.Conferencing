@@ -7,13 +7,13 @@ using ICD.Connect.Devices.Simpl;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
-	public delegate void SimplDialerDialCallback(IInterpretationAdapter sender, string number);
-	public delegate void SimplDialerDialTypeCallback(IInterpretationAdapter sender, string number, ushort type);
-	public delegate void SimplDialerSetAutoAnswerCallback(IInterpretationAdapter sender, ushort enabled);
-	public delegate void SimplDialerSetDoNotDisturbCallback(IInterpretationAdapter sender, ushort enabled);
-	public delegate void SimplDialerSetPrivacyMuteCallback(IInterpretationAdapter sender, ushort enabled);
+	public delegate void SimplDialerDialCallback(IInterpretationDevice sender, string number);
+	public delegate void SimplDialerDialTypeCallback(IInterpretationDevice sender, string number, ushort type);
+	public delegate void SimplDialerSetAutoAnswerCallback(IInterpretationDevice sender, ushort enabled);
+	public delegate void SimplDialerSetDoNotDisturbCallback(IInterpretationDevice sender, ushort enabled);
+	public delegate void SimplDialerSetPrivacyMuteCallback(IInterpretationDevice sender, ushort enabled);
 
-	public interface IInterpretationAdapter : ISimplDevice
+	public interface IInterpretationDevice : ISimplDevice
 	{
 		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;

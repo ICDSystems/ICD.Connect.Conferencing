@@ -1,21 +1,15 @@
-﻿using System;
-using ICD.Common.Properties;
+﻿using ICD.Common.Properties;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Devices;
 using ICD.Connect.Settings.Attributes;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
-	[KrangSettings(FACTORY_NAME)]
-	public sealed class ConferencingClientDeviceSettings : AbstractDeviceSettings
+	[KrangSettings("InterpretationClient", typeof(InterpretationClientDevice))]
+	public sealed class InterpretationClientDeviceSettings : AbstractDeviceSettings
 	{
-		private const string FACTORY_NAME = "ConferencingClient";
 		private const string PORT_ELEMENT = "Port";
 		private const string ROOM_ID_ELEMENT = "Room";
-
-		public override string FactoryName { get { return FACTORY_NAME; } }
-
-		public override Type OriginatorType { get { return typeof(ConferencingClientDevice); } }
 
 		[PublicAPI]
 		public int? Port { get; set; }

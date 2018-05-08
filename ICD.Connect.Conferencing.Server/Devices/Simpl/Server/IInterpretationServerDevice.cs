@@ -4,7 +4,7 @@ using ICD.Connect.Devices.Simpl;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 {
-	public interface IConferencingServerDevice : ISimplDevice
+	public interface IInterpretationServerDevice : ISimplDevice
 	{
 		/// <summary>
 		/// Gets the rooms which are registered with the core, 

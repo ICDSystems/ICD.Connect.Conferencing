@@ -82,7 +82,9 @@
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
     <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
     <Compile Include="Controls\AbstractDialingDeviceControl.cs" />
+    <Compile Include="Controls\DialerDeviceDialerControl.cs" />
     <Compile Include="Controls\DialingDeviceControlConsole.cs" />
+    <Compile Include="Devices\IDialerDevice.cs" />
     <Compile Include="DialingPlans\DialingPlan.cs" />
     <Compile Include="DialingPlans\Matchers\ExactPlanMatcher.cs" />
     <Compile Include="EventArguments\ConferenceSourceAnswerStateEventArgs.cs" />
