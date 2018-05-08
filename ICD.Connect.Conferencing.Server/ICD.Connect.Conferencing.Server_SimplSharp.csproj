@@ -86,7 +86,7 @@
     <Compile Include="SimplShims\SPlusConferencingServerShim.cs" />
     <Compile Include="Devices\Simpl\SimplInterpretationAdapter.cs" />
     <Compile Include="Devices\Simpl\InterpretationAdapterSettings.cs" />
-    <Compile Include="SimplShims\SPlusDialerShim.cs" />
+    <Compile Include="SimplShims\SPlusInterpreterShim.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>

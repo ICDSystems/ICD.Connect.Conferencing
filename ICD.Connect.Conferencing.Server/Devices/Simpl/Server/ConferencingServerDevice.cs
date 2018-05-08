@@ -8,7 +8,6 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
-using ICD.Connect.Devices;
 using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
@@ -19,7 +18,7 @@ using ICD.Connect.Settings.Core;
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 {
 	[PublicAPI]
-	public sealed class ConferencingServerDevice : AbstractDevice<ConferencingServerDeviceSettings>, IConferencingServerDevice
+	public sealed class ConferencingServerDevice : AbstractSimplDevice<ConferencingServerDeviceSettings>, IConferencingServerDevice
 	{
 		#region RPC Constants
 
@@ -335,9 +334,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			if (!GetTargetSource(id, out source))
 				return;
 
-			IInterpretationAdapter adapter;
-			if (GetAdapterForRoom(roomId, out adapter))
-				adapter.Answer(source);
+			source.Answer();
 		}
 
 		[Rpc(HOLD_ENABLE_RPC), UsedImplicitly]
@@ -347,9 +344,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			if (!GetTargetSource(id, out source))
 				return;
 
-			IInterpretationAdapter adapter;
-			if (GetAdapterForRoom(roomId, out adapter))
-				adapter.SetHold(source, true);
+			source.Hold();
 		}
 
 		[Rpc(HOLD_RESUME_RPC), UsedImplicitly]
@@ -359,9 +354,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			if (!GetTargetSource(id, out source))
 				return;
 
-			IInterpretationAdapter adapter;
-			if (GetAdapterForRoom(roomId, out adapter))
-				adapter.SetHold(source, false);
+			source.Resume();
 		}
 
 		[Rpc(SEND_DTMF_RPC), UsedImplicitly]
@@ -371,9 +364,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			if (!GetTargetSource(id, out source))
 				return;
 
-			IInterpretationAdapter adapter;
-			if (GetAdapterForRoom(roomId, out adapter))
-				adapter.SendDtmf(source, data);
+			source.SendDtmf(data);
 		}
 
 		[Rpc(END_CALL_RPC), UsedImplicitly]
@@ -383,9 +374,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			if (!GetTargetSource(id, out source))
 				return;
 
-			IInterpretationAdapter adapter;
-			if (GetAdapterForRoom(roomId, out adapter))
-				adapter.EndCall(source);
+			source.Hangup();
 		}
 
 		#endregion
@@ -394,6 +383,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		private void AddAdapter(int boothId, IInterpretationAdapter adapter)
 		{
+			if (adapter == null)
+				throw new ArgumentNullException("adapter");
+
 			if (m_BoothToAdapter.ContainsValue(adapter))
 				return;
 
@@ -417,7 +409,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 			adapter.OnSourceAdded += AdapterOnSourceAdded;
 			adapter.OnSourceRemoved += AdapterOnSourceRemoved;
-
 			adapter.OnAutoAnswerChanged += AdapterOnAutoAnswerChanged;
 			adapter.OnDoNotDisturbChanged += AdapterOnDoNotDisturbChanged;
 			adapter.OnPrivacyMuteChanged += AdapterOnPrivacyMuteChanged;
@@ -430,7 +421,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 			adapter.OnSourceAdded -= AdapterOnSourceAdded;
 			adapter.OnSourceRemoved -= AdapterOnSourceRemoved;
-
 			adapter.OnAutoAnswerChanged -= AdapterOnAutoAnswerChanged;
 			adapter.OnDoNotDisturbChanged -= AdapterOnDoNotDisturbChanged;
 			adapter.OnPrivacyMuteChanged -= AdapterOnPrivacyMuteChanged;
@@ -485,8 +475,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		private void AddSource(IConferenceSource source)
 		{
+			if (source == null)
+				throw new ArgumentNullException("source");
+
 			if (m_Sources.ContainsValue(source))
 				return;
+
 			Guid newId = Guid.NewGuid();
 			m_Sources.Add(newId, source);
 
@@ -602,7 +596,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 				}
 				catch (KeyNotFoundException)
 				{
-					Logger.AddEntry(eSeverity.Error, "No Interpretation Adapter found with Id:{0}", adapterId);
+					Log(eSeverity.Error, "No Interpretation Adapter found with Id:{0}", adapterId);
 				}
 
 				if (adapter == null)
@@ -644,15 +638,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		{
 			return m_BoothToAdapter.AnyAndAll(adapter => adapter.Value.IsOnline);
 		}
-
-		#endregion
-
-		#region ISimplDevice
-
-		/// <summary>
-		/// Gets/sets the online status callback.
-		/// </summary>
-		public SimplDeviceOnlineCallback OnlineStatusCallback { get; set; }
 
 		#endregion
 	}

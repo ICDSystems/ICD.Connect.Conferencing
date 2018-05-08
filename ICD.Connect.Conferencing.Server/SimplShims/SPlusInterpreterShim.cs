@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 	public delegate void SPlusDialerShimSendDtmfCallback(object sender, string data);
 	public delegate void SPlusDialerShimEndCallCallback(object sender);
 
-	public sealed class SPlusDialerShim : AbstractSPlusDeviceShim<IInterpretationAdapter>
+	public sealed class SPlusInterpreterShim : AbstractSPlusDeviceShim<IInterpretationAdapter>
 	{
 		#region Events
 		//Events for S+
@@ -255,6 +255,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			}
 			else
 			{
+				Unsubscribe(m_Source);
 				m_Source = new ThinConferenceSource
 				{
 					Name = name,
@@ -264,6 +265,8 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					Status = (eConferenceSourceStatus)status,
 					Start = IcdEnvironment.GetLocalTime()
 				};
+				Subscribe(m_Source);
+
 				Originator.AddShimSource(m_Source);
 
 				switch (m_Source.Direction)
@@ -282,6 +285,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		public void ClearCallInfo()
 		{
 			Originator.RemoveShimSource(m_Source);
+			Unsubscribe(m_Source);
 			m_Source = null;
 			OnCallEnded.Raise(this);
 		}
@@ -308,10 +312,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			originator.SetAutoAnswerCallback += OriginatorSetAutoAnswerCallback;
 			originator.SetDoNotDisturbCallback += OriginatorSetDoNotDisturbCallback;
 			originator.SetPrivacyMuteCallback += OriginatorSetPrivacyMuteCallback;
-			originator.AnswerCallback += OriginatorAnswerCallback;
-			originator.SetHoldStateCallback += OriginatorSetHoldStateCallback;
-			originator.SendDtmfCallback += OriginatorSendDtmfCallback;
-			originator.EndCallCallback += OriginatorEndCallCallback;
 		}
 
 		protected override void Unsubscribe(IInterpretationAdapter originator)
@@ -326,10 +326,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			originator.SetAutoAnswerCallback = null;
 			originator.SetDoNotDisturbCallback = null;
 			originator.SetPrivacyMuteCallback = null;
-			originator.AnswerCallback = null;
-			originator.SetHoldStateCallback = null;
-			originator.SendDtmfCallback = null;
-			originator.EndCallCallback = null;
 		}
 
 		private void OriginatorDialCallback(IInterpretationAdapter sender, string number)
@@ -367,28 +363,63 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				handler(this, enabled);
 		}
 
-		private void OriginatorAnswerCallback(IInterpretationAdapter sender)
+		#endregion
+
+		#region Source Callbacks
+
+		private void Subscribe(ThinConferenceSource source)
+		{
+			if (source == null)
+				return;
+
+			source.AnswerCallback = SourceAnswerCallback;
+			source.HoldCallback = SourceHoldCallback;
+			source.ResumeCallback = SourceResumeCallback;
+			source.SendDtmfCallback = SourceSendDtmfCallback;
+			source.HangupCallback = SourceHangupCallback;
+		}
+
+		private void Unsubscribe(ThinConferenceSource source)
+		{
+			if (source == null)
+				return;
+
+			source.AnswerCallback = null;
+			source.HoldCallback = null;
+			source.ResumeCallback = null;
+			source.SendDtmfCallback = null;
+			source.HangupCallback = null;
+		}
+
+		private void SourceAnswerCallback(ThinConferenceSource thinConferenceSource)
 		{
 			SPlusDialerShimAnswerCallback handler = AnswerCallback;
 			if (handler != null)
 				handler(this);
 		}
 
-		private void OriginatorSetHoldStateCallback(IInterpretationAdapter sender, ushort enabled)
+		private void SourceHoldCallback(ThinConferenceSource thinConferenceSource)
 		{
 			SPlusDialerShimSetHoldCallback handler = SetHoldCallback;
 			if (handler != null)
-				handler(this, enabled);
+				handler(this, true.ToUShort());
 		}
 
-		private void OriginatorSendDtmfCallback(IInterpretationAdapter sender, string data)
+		private void SourceResumeCallback(ThinConferenceSource thinConferenceSource)
+		{
+			SPlusDialerShimSetHoldCallback handler = SetHoldCallback;
+			if (handler != null)
+				handler(this, false.ToUShort());
+		}
+
+		private void SourceSendDtmfCallback(ThinConferenceSource thinConferenceSource, string data)
 		{
 			SPlusDialerShimSendDtmfCallback handler = SendDtmfCallback;
 			if (handler != null)
 				handler(this, data);
 		}
 
-		private void OriginatorEndCallCallback(IInterpretationAdapter sender)
+		private void SourceHangupCallback(ThinConferenceSource thinConferenceSource)
 		{
 			SPlusDialerShimEndCallCallback handler = EndCallCallback;
 			if (handler != null)

@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Simpl;
-using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
@@ -83,18 +81,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		public SimplDialerSetDoNotDisturbCallback SetDoNotDisturbCallback { get; set; }
 		public SimplDialerSetPrivacyMuteCallback SetPrivacyMuteCallback { get; set; }
 
-		public SimplDialerAnswerCallback AnswerCallback { get; set; }
-		public SimplDialerSetHoldStateCallback SetHoldStateCallback { get; set; }
-		public SimplDialerSendDtmfCallback SendDtmfCallback { get; set; }
-		public SimplDialerEndCallCallback EndCallCallback { get; set; }
-
 		#endregion
 
 		protected override void DisposeFinal(bool disposing)
 		{
-			base.DisposeFinal(disposing);
-
-			m_Source = null;
+			OnSourceAdded = null;
+			OnSourceRemoved = null;
+			OnAutoAnswerChanged = null;
+			OnDoNotDisturbChanged = null;
+			OnPrivacyMuteChanged = null;
 
 			DialCallback = null;
 			DialTypeCallback = null;
@@ -102,8 +97,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 			SetDoNotDisturbCallback = null;
 			SetPrivacyMuteCallback = null;
 
-			OnSourceAdded = null;
-			OnSourceRemoved = null;
+			base.DisposeFinal(disposing);
+
+			SetShimSource(null);
 		}
 
 		#region Public Methods
@@ -143,64 +139,32 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 				handler(this, enabled.ToUShort());
 		}
 
-		public void Answer(IConferenceSource source)
-		{
-			if (m_Source != source)
-				return;
-
-			SimplDialerAnswerCallback handler = AnswerCallback;
-			if (handler != null)
-				handler(this);
-		}
-
-		public void SetHold(IConferenceSource source, bool enabled)
-		{
-			if (m_Source != source)
-				return;
-
-			SimplDialerSetHoldStateCallback handler = SetHoldStateCallback;
-			if (handler != null)
-				handler(this, enabled.ToUShort());
-		}
-
-		public void SendDtmf(IConferenceSource source, string data)
-		{
-			if (m_Source != source)
-				return;
-
-			SimplDialerSendDtmfCallback handler = SendDtmfCallback;
-			if (handler != null)
-				handler(this, data);
-		}
-
-		public void EndCall(IConferenceSource source)
-		{
-			if (m_Source != source)
-				return;
-
-			SimplDialerEndCallCallback handler = EndCallCallback;
-			if (handler != null)
-				handler(this);
-		}
-
 		public void AddShimSource(IConferenceSource source)
 		{
-			if (source == m_Source)
-				return;
-
-			m_Source = source;
-
-			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
+			if (m_Source == null)
+				SetShimSource(source);
 		}
 
 		public void RemoveShimSource(IConferenceSource source)
 		{
-			if (source != m_Source)
+			if (m_Source == source)
+				SetShimSource(null);
+		}
+
+		private void SetShimSource(IConferenceSource source)
+		{
+			if (source == m_Source)
 				return;
 
-			m_Source = null;
+			IConferenceSource oldSource = m_Source;
 
-			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(source));
+			m_Source = source;
+
+			if (oldSource != null)
+				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(oldSource));
+
+			if (m_Source != null)
+				OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(m_Source));
 		}
 
 		public IEnumerable<IConferenceSource> GetSources()
@@ -211,63 +175,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		public bool ContainsSource(IConferenceSource source)
 		{
 			return source == m_Source;
-		}
-
-		#endregion
-
-		#region Settings
-
-		/// <summary>
-		/// Override to apply settings to the instance.
-		/// </summary>
-		/// <param name="settings"></param>
-		/// <param name="factory"></param>
-		protected override void ApplySettingsFinal(InterpretationAdapterSettings settings, IDeviceFactory factory)
-		{
-			base.ApplySettingsFinal(settings, factory);
-		}
-
-		/// <summary>
-		/// Override to apply properties to the settings instance.
-		/// </summary>
-		/// <param name="settings"></param>
-		protected override void CopySettingsFinal(InterpretationAdapterSettings settings)
-		{
-			base.CopySettingsFinal(settings);
-		}
-
-		/// <summary>
-		/// Override to clear the instance settings.
-		/// </summary>
-		protected override void ClearSettingsFinal()
-		{
-			base.ClearSettingsFinal();
-		}
-
-		#endregion
-
-		#region Console
-
-		/// <summary>
-		/// Calls the delegate for each console status item.
-		/// </summary>
-		/// <param name="addRow"></param>
-		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-			base.BuildConsoleStatus(addRow);
-		}
-
-		#endregion
-
-		#region IDevice
-
-		/// <summary>
-		/// Gets the current online status of the device.
-		/// </summary>
-		/// <returns></returns>
-		protected override bool GetIsOnlineStatus()
-		{
-			throw new NotImplementedException();
 		}
 
 		#endregion

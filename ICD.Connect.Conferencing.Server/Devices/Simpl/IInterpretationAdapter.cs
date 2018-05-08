@@ -13,11 +13,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 	public delegate void SimplDialerSetDoNotDisturbCallback(IInterpretationAdapter sender, ushort enabled);
 	public delegate void SimplDialerSetPrivacyMuteCallback(IInterpretationAdapter sender, ushort enabled);
 
-	public delegate void SimplDialerAnswerCallback(IInterpretationAdapter sender);
-	public delegate void SimplDialerSetHoldStateCallback(IInterpretationAdapter sender, ushort enabled);
-	public delegate void SimplDialerSendDtmfCallback(IInterpretationAdapter sender, string data);
-	public delegate void SimplDialerEndCallCallback(IInterpretationAdapter sender);
-
 	public interface IInterpretationAdapter : ISimplDevice
 	{
 		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
@@ -33,11 +28,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		SimplDialerSetDoNotDisturbCallback SetDoNotDisturbCallback { get; set; }
 		SimplDialerSetPrivacyMuteCallback SetPrivacyMuteCallback { get; set; }
 
-		SimplDialerAnswerCallback AnswerCallback { get; set; }
-		SimplDialerSetHoldStateCallback SetHoldStateCallback { get; set; }
-		SimplDialerSendDtmfCallback SendDtmfCallback { get; set; }
-		SimplDialerEndCallCallback EndCallCallback { get; set; }
-
 		string Language { get; set; }
 		ushort BoothId { get; set; }
 
@@ -50,11 +40,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		void SetAutoAnswer(bool enabled);
 		void SetDoNotDisturb(bool enabled);
 		void SetPrivacyMute(bool enabled);
-		
-		void Answer(IConferenceSource source);
-		void SetHold(IConferenceSource source, bool enabled);
-		void SendDtmf(IConferenceSource source, string data);
-		void EndCall(IConferenceSource source);
 
 		void AddShimSource(IConferenceSource source);
 		void RemoveShimSource(IConferenceSource source);
