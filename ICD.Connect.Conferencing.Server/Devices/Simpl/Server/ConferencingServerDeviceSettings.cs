@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Network.Tcp;
@@ -9,37 +9,38 @@ using ICD.Connect.Settings.Attributes;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 {
-	[KrangSettings(FACTORY_NAME)]
+	[KrangSettings("ConferencingServer", typeof(ConferencingServerDevice))]
 	public sealed class ConferencingServerDeviceSettings : AbstractDeviceSettings
 	{
-		private const string FACTORY_NAME = "ConferencingServer";
 		private const string WRAPPED_DEVICES_ELEMENT = "Devices";
 		private const string WRAPPED_DEVICE_ELEMENT = "Device";
 		private const string SERVER_PORT_ELEMENT = "ServerPort";
 		private const string SERVER_CLIENTS_ELEMENT = "ServerMaxClients";
 
-		public override string FactoryName { get { return FACTORY_NAME; } }
-		public override Type OriginatorType { get { return typeof(ConferencingServerDevice); } }
-		public List<int> WrappedDeviceIds { get; set; }
+		private readonly IcdHashSet<int> m_DeviceIds;
 
 		public ushort ServerPort { get; set; }
 		public int ServerMaxClients { get; set; }
 
-		private int? ParseDeviceToInt(string s)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		public ConferencingServerDeviceSettings()
 		{
-			int id;
-			bool isInt = StringUtils.TryParse(s, out id);
-
-			return isInt ? id : (int?)null;
+			m_DeviceIds = new IcdHashSet<int>();
 		}
 
 		public override void ParseXml(string xml)
 		{
 			base.ParseXml(xml);
 
-			var listItems = XmlUtils.ReadListFromXml(xml, WRAPPED_DEVICES_ELEMENT, WRAPPED_DEVICE_ELEMENT, s => ParseDeviceToInt(s));
-			WrappedDeviceIds = listItems.Where(item => item != null).Select(item => item.Value).ToList();
-			
+			IEnumerable<int> deviceIds = XmlUtils.ReadListFromXml(xml, WRAPPED_DEVICES_ELEMENT, WRAPPED_DEVICE_ELEMENT,
+			                                                      s => ParseDeviceToInt(s))
+			                                     .ExceptNulls();
+
+			m_DeviceIds.Clear();
+			m_DeviceIds.AddRange(deviceIds);
+
 			ServerPort = XmlUtils.TryReadChildElementContentAsUShort(xml, SERVER_PORT_ELEMENT) ?? 0;
 			ServerMaxClients = XmlUtils.TryReadChildElementContentAsInt(xml, SERVER_CLIENTS_ELEMENT) ??
 			                   AsyncTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED;
@@ -49,25 +50,18 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		{
 			base.WriteElements(writer);
 
-			WriteDevices(writer);
+			XmlUtils.WriteListToXml(writer, m_DeviceIds.Order(), WRAPPED_DEVICES_ELEMENT, WRAPPED_DEVICE_ELEMENT);
+
 			writer.WriteElementString(SERVER_PORT_ELEMENT, IcdXmlConvert.ToString(ServerPort));
 			writer.WriteElementString(SERVER_CLIENTS_ELEMENT, IcdXmlConvert.ToString(ServerMaxClients));
 		}
 
-		/// <summary>
-		/// Writes all devices to the xml with their room id as an attribute.
-		/// </summary>
-		/// <param name="writer"></param>
-		private void WriteDevices(IcdXmlTextWriter writer)
+		private static int? ParseDeviceToInt(string s)
 		{
-			writer.WriteStartElement(WRAPPED_DEVICES_ELEMENT);
-			foreach (int device in WrappedDeviceIds)
-			{
-				writer.WriteStartElement(WRAPPED_DEVICE_ELEMENT);
-				writer.WriteValue(device);
-				writer.WriteEndElement();
-			}
-			writer.WriteEndElement();
+			int id;
+			bool isInt = StringUtils.TryParse(s, out id);
+
+			return isInt ? id : (int?)null;
 		}
 	}
 }
