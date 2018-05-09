@@ -6,7 +6,6 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
 using ICD.Common.Utils.Xml;
@@ -404,29 +403,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 		}
 
-		/// <summary>
-		/// Logs the message.
-		/// </summary>
-		/// <param name="severity"></param>
-		/// <param name="message"></param>
-		/// <param name="args"></param>
-		public void Log(eSeverity severity, string message, params object[] args)
-		{
-			message = string.Format(message, args);
-
-			ServiceProvider.GetService<ILoggerService>().AddEntry(severity, AddLogPrefix(message));
-		}
-
-		/// <summary>
-		/// Returns the log message with a CiscoCodec prefix.
-		/// </summary>
-		/// <param name="log"></param>
-		/// <returns></returns>
-		private string AddLogPrefix(string log)
-		{
-			return string.Format("{0} - {1}", this, log);
-		}
-
 		#endregion
 
 		#region Private Methods
@@ -798,7 +774,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			{
 				port = factory.GetPortById((int)settings.Port) as ISerialPort;
 				if (port == null)
-					Logger.AddEntry(eSeverity.Error, "No serial port with id {0}", settings.Port);
+					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 			}
 
 			SetPort(port);
