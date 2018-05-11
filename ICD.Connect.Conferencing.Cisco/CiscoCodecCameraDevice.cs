@@ -10,7 +10,8 @@ using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Cisco.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices.EventArguments;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings;
+using ICD.Connect.Settings.Cores;
 
 namespace ICD.Connect.Conferencing.Cisco
 {
