@@ -11,7 +11,6 @@ using ICD.Connect.Conferencing.Cisco.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings;
-using ICD.Connect.Settings.Cores;
 
 namespace ICD.Connect.Conferencing.Cisco
 {
@@ -30,6 +29,10 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the ID for the specific camera being controlled on the wrapped Cisco SX unit.
+		/// </summary>
+		[PublicAPI]
 		public int CameraId { get; private set; }
 
 		#endregion
@@ -48,6 +51,10 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		#region ICameraWithPanTilt
 
+		/// <summary>
+		/// Starts rotating the camera with the given action.
+		/// </summary>
+		/// <param name="action"></param>
 		public void PanTilt(eCameraPanTiltAction action)
 		{
 			if (m_Camera == null)
@@ -91,6 +98,10 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		#region ICameraWithZoom
 
+		/// <summary>
+		/// Starts zooming the camera with the given action.
+		/// </summary>
+		/// <param name="action"></param>
 		public void Zoom(eCameraZoomAction action)
 		{
 			if (m_Camera == null)
@@ -122,13 +133,23 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		#region ICameraWithPresets
 
+		/// <summary>
+		/// Gets the maximum number of presets this camera can support.
+		/// </summary>
 		public int MaxPresets { get { return 35; } }
 
+		/// <summary>
+		/// Gets the stored camera presets.
+		/// </summary>
 		public IEnumerable<CameraPreset> GetPresets()
 		{
 			return m_CamerasComponent.GetCameraPresets(CameraId);
 		}
 
+		/// <summary>
+		/// Tells the camera to change its position to the given preset.
+		/// </summary>
+		/// <param name="presetId">The id of the preset to position to.</param>
 		public void ActivatePreset(int presetId)
 		{
 			if (m_Camera == null)
@@ -143,6 +164,10 @@ namespace ICD.Connect.Conferencing.Cisco
 			m_Camera.ActivatePreset(presetId);
 		}
 
+		/// <summary>
+		/// Stores the cameras current position in the given preset index.
+		/// </summary>
+		/// <param name="presetId">The index to store the preset at.</param>
 		public void StorePreset(int presetId)
 		{
 			if (m_Camera == null)
