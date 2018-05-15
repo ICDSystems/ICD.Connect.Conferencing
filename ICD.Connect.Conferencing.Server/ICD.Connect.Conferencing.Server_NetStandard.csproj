@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.0</TargetFramework>
-	<RootNamespace>ICD.Connect.Conferencing.Mock</RootNamespace>
-	<AssemblyName>ICD.Connect.Conferencing.Mock</AssemblyName>
+	<RootNamespace>ICD.Connect.Conferencing.Server</RootNamespace>
+	<AssemblyName>ICD.Connect.Conferencing.Server</AssemblyName>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	<Deterministic>true</Deterministic>
   </PropertyGroup>
