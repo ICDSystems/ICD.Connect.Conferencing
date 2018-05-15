@@ -14,7 +14,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// Settings for the CiscoCodec.
 	/// </summary>
 	[KrangSettings("CiscoCodec", typeof(CiscoCodec))]
-	public sealed class CiscoCodecSettings : AbstractDeviceSettings, INetworkProperties, IComSpecProperties
+	public sealed class CiscoCodecSettings : AbstractDeviceSettings, INetworkSettings, IComSpecSettings
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
@@ -51,6 +51,16 @@ namespace ICD.Connect.Conferencing.Cisco
 			set { m_PeripheralsId = value; }
 		}
 
+		/// <summary>
+		/// Gets the configurable network properties.
+		/// </summary>
+		public INetworkProperties NetworkProperties { get { return m_NetworkProperties; } }
+
+		/// <summary>
+		/// Gets the configurable Com Spec properties.
+		/// </summary>
+		public IComSpecProperties ComSpecProperties { get { return m_ComSpecProperties; } }
+
 		#endregion
 
 		#region Inputs
@@ -65,14 +75,22 @@ namespace ICD.Connect.Conferencing.Cisco
 		#region Network
 
 		/// <summary>
-		/// Gets/sets the configurable username.
+		/// Gets/sets the configurable network username.
 		/// </summary>
-		public string Username { get { return m_NetworkProperties.Username; } set { m_NetworkProperties.Username = value; } }
+		public string NetworkUsername
+		{
+			get { return m_NetworkProperties.NetworkUsername; }
+			set { m_NetworkProperties.NetworkUsername = value; }
+		}
 
 		/// <summary>
-		/// Gets/sets the configurable password.
+		/// Gets/sets the configurable network password.
 		/// </summary>
-		public string Password { get { return m_NetworkProperties.Password; } set { m_NetworkProperties.Password = value; } }
+		public string NetworkPassword
+		{
+			get { return m_NetworkProperties.NetworkPassword; }
+			set { m_NetworkProperties.NetworkPassword = value; }
+		}
 
 		/// <summary>
 		/// Gets/sets the configurable network address.

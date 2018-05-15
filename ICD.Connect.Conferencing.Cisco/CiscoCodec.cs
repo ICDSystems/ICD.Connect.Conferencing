@@ -16,9 +16,11 @@ using ICD.Connect.Devices;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
+using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
+using ICD.Connect.Protocol.Settings;
 using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Cisco
@@ -98,6 +100,9 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		private readonly CiscoComponentFactory m_Components;
 
+		private readonly NetworkProperties m_NetworkProperties;
+		private readonly ComSpecProperties m_ComSpecProperties;
+
 		private bool m_Initialized;
 		private bool m_IsConnected;
 		private ISerialPort m_Port;
@@ -169,6 +174,9 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// </summary>
 		public CiscoCodec()
 		{
+			m_NetworkProperties = new NetworkProperties();
+			m_ComSpecProperties = new ComSpecProperties();
+
 			Heartbeat = new Heartbeat(this);
 
 			m_ParserCallbacks = new Dictionary<string, List<ParserCallback>>();
@@ -740,6 +748,9 @@ namespace ICD.Connect.Conferencing.Cisco
 			settings.PeripheralsId = PeripheralsId;
 
 			InputTypes.CopySettings(settings);
+
+			settings.ComSpecProperties.Copy(m_ComSpecProperties);
+			settings.NetworkProperties.Copy(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -753,6 +764,9 @@ namespace ICD.Connect.Conferencing.Cisco
 			SetPort(null);
 
 			InputTypes.ClearSettings();
+
+			m_ComSpecProperties.Clear();
+			m_NetworkProperties.Clear();
 		}
 
 		/// <summary>
@@ -763,6 +777,9 @@ namespace ICD.Connect.Conferencing.Cisco
 		protected override void ApplySettingsFinal(CiscoCodecSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
+
+			m_ComSpecProperties.Copy(settings.ComSpecProperties);
+			m_NetworkProperties.Copy(settings.NetworkProperties);
 
 			PeripheralsId = settings.PeripheralsId;
 
