@@ -749,8 +749,8 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			InputTypes.CopySettings(settings);
 
-			settings.ComSpecProperties.Copy(m_ComSpecProperties);
-			settings.NetworkProperties.Copy(m_NetworkProperties);
+			settings.Copy(m_ComSpecProperties);
+			settings.Copy(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -778,8 +778,8 @@ namespace ICD.Connect.Conferencing.Cisco
 		{
 			base.ApplySettingsFinal(settings, factory);
 
-			m_ComSpecProperties.Copy(settings.ComSpecProperties);
-			m_NetworkProperties.Copy(settings.NetworkProperties);
+			m_ComSpecProperties.Copy(settings);
+			m_NetworkProperties.Copy(settings);
 
 			PeripheralsId = settings.PeripheralsId;
 

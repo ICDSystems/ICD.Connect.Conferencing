@@ -14,7 +14,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// Settings for the CiscoCodec.
 	/// </summary>
 	[KrangSettings("CiscoCodec", typeof(CiscoCodec))]
-	public sealed class CiscoCodecSettings : AbstractDeviceSettings, INetworkSettings, IComSpecSettings
+	public sealed class CiscoCodecSettings : AbstractDeviceSettings, ISecureNetworkSettings, IComSpecSettings
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
@@ -24,7 +24,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		private const string INPUT_3_ELEMENT = "Input3Type";
 		private const string INPUT_4_ELEMENT = "Input4Type";
 
-		private readonly NetworkProperties m_NetworkProperties;
+		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private string m_PeripheralsId;
@@ -50,16 +50,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 			set { m_PeripheralsId = value; }
 		}
-
-		/// <summary>
-		/// Gets the configurable network properties.
-		/// </summary>
-		public INetworkProperties NetworkProperties { get { return m_NetworkProperties; } }
-
-		/// <summary>
-		/// Gets the configurable Com Spec properties.
-		/// </summary>
-		public IComSpecProperties ComSpecProperties { get { return m_ComSpecProperties; } }
 
 		#endregion
 
@@ -195,7 +185,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		{
 			PeripheralsId = Guid.NewGuid().ToString();
 
-			m_NetworkProperties = new NetworkProperties();
+			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 		}
 
