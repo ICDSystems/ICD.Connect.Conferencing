@@ -17,6 +17,7 @@ using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
+using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings;
 
@@ -54,13 +55,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region Private Members
 
-		private bool m_IsConnected;
-	    private ISerialPort m_Port;
+	    private readonly SecureNetworkProperties m_NetworkProperties;
+
 	    private readonly ClientSerialRpcController m_RpcController;
 
 	    private readonly Dictionary<Guid, ThinConferenceSource> m_Sources;
-
 	    private readonly SafeCriticalSection m_SourcesCriticalSection;
+
+	    private bool m_IsConnected;
+	    private ISerialPort m_Port;
 	    private bool m_PrivacyMuted;
 	    private bool m_DoNotDisturb;
 	    private bool m_AutoAnswer;
@@ -171,6 +174,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// </summary>
 		public InterpretationClientDevice()
 	    {
+			m_NetworkProperties = new SecureNetworkProperties();
 		    m_RpcController = new ClientSerialRpcController(this);
 			m_Sources = new Dictionary<Guid, ThinConferenceSource>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
@@ -185,9 +189,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// </summary>
 		/// <param name="disposing"></param>
 	    protected override void DisposeFinal(bool disposing)
-	    {
+		{
+			OnInterpretationActiveChanged = null;
 		    OnConnectedStateChanged = null;
 		    OnSourceAdded = null;
+			OnSourceRemoved = null;
 		    OnDoNotDisturbChanged = null;
 		    OnAutoAnswerChanged = null;
 		    OnPrivacyMuteChanged = null;
@@ -604,13 +610,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    {
 		    base.ApplySettingsFinal(settings, factory);
 
+			m_NetworkProperties.Copy(settings);
+
 			ISerialPort port = null;
 
-		    if (settings.Port != null)
-			    port = factory.GetPortById(settings.Port.Value) as ISerialPort;
-
-			if (port == null)
-				Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+			if (settings.Port != null)
+			{
+				port = factory.GetPortById(settings.Port.Value) as ISerialPort;
+				if (port == null)
+					Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+			}
 
 			SetPort(port);
 
@@ -629,6 +638,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		    settings.Port = m_Port == null ? (int?)null : m_Port.Id;
 		    settings.Room = m_Room;
+
+			settings.Copy(m_NetworkProperties);
 	    }
 
 	    /// <summary>
@@ -639,6 +650,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    base.ClearSettingsFinal();
 
 			SetPort(null);
+			m_NetworkProperties.Clear();
 
 			Heartbeat.StopMonitoring();
 	    }
