@@ -45,7 +45,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		private readonly ServerSerialRpcController m_RpcController;
 
 		// key is booth id, value is device device for that booth.
-		private readonly Dictionary<int, IInterpretationDevice> m_BoothToAdapter;
+		private readonly Dictionary<int, ISimplInterpretationDevice> m_BoothToAdapter;
 
 		// key is guid id of source, value is the source
 		private readonly Dictionary<Guid, IConferenceSource> m_Sources;
@@ -64,7 +64,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		public InterpretationServerDevice()
 		{
 			m_RpcController = new ServerSerialRpcController(this);
-			m_BoothToAdapter = new Dictionary<int, IInterpretationDevice>();
+			m_BoothToAdapter = new Dictionary<int, ISimplInterpretationDevice>();
 			m_Sources = new Dictionary<Guid, IConferenceSource>();
 			m_RoomToBooth = new Dictionary<int, int>();
 			m_ClientToRoom = new Dictionary<uint, int>();
@@ -211,7 +211,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			return true;
 		}
 
-		private bool GetClientIdForAdapter(IInterpretationDevice device, out uint clientId)
+		private bool GetClientIdForAdapter(ISimplInterpretationDevice device, out uint clientId)
 		{
 			clientId = 0;
 
@@ -238,7 +238,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			return true;
 		}
 
-		private bool GetAdapterForRoom(int roomId, out IInterpretationDevice device)
+		private bool GetAdapterForRoom(int roomId, out ISimplInterpretationDevice device)
 		{
 			device = null;
 
@@ -290,7 +290,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		[Rpc(DIAL_RPC), UsedImplicitly]
 		public void Dial(uint clientId, int roomId, string number)
 		{
-			IInterpretationDevice device;
+			ISimplInterpretationDevice device;
 			if (GetAdapterForRoom(roomId, out device))
 				device.Dial(number);
 		}
@@ -298,7 +298,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		[Rpc(DIAL_TYPE_RPC), UsedImplicitly]
 		public void Dial(uint clientId, int roomId, string number, eConferenceSourceType type)
 		{
-			IInterpretationDevice device;
+			ISimplInterpretationDevice device;
 			if (GetAdapterForRoom(roomId, out device))
 				device.Dial(number, type);
 		}
@@ -306,7 +306,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		[Rpc(AUTO_ANSWER_RPC), UsedImplicitly]
 		public void SetAutoAnswer(uint clientId, int roomId, bool enabled)
 		{
-			IInterpretationDevice device;
+			ISimplInterpretationDevice device;
 			if (GetAdapterForRoom(roomId, out device))
 				device.SetAutoAnswer(enabled);
 		}
@@ -314,7 +314,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		[Rpc(DO_NOT_DISTURB_RPC), UsedImplicitly]
 		public void SetDoNotDisturb(uint clientId, int roomId, bool enabled)
 		{
-			IInterpretationDevice device;
+			ISimplInterpretationDevice device;
 			if (GetAdapterForRoom(roomId, out device))
 				device.SetDoNotDisturb(enabled);
 		}
@@ -322,7 +322,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 		[Rpc(PRIVACY_MUTE_RPC), UsedImplicitly]
 		public void SetPrivacyMute(uint clientId, int roomId, bool enabled)
 		{
-			IInterpretationDevice device;
+			ISimplInterpretationDevice device;
 			if (GetAdapterForRoom(roomId, out device))
 				device.SetPrivacyMute(enabled);
 		}
@@ -381,7 +381,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		#region Adapters
 
-		private void AddAdapter(int boothId, IInterpretationDevice device)
+		private void AddAdapter(int boothId, ISimplInterpretationDevice device)
 		{
 			if (device == null)
 				throw new ArgumentNullException("device");
@@ -396,13 +396,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		private void ClearAdapters()
 		{
-			foreach (IInterpretationDevice adapter in m_BoothToAdapter.Values.ToArray())
+			foreach (ISimplInterpretationDevice adapter in m_BoothToAdapter.Values.ToArray())
 				Unsubscribe(adapter);
 
 			m_BoothToAdapter.Clear();
 		}
 
-		private void Subscribe(IInterpretationDevice device)
+		private void Subscribe(ISimplInterpretationDevice device)
 		{
 			if (device == null)
 				return;
@@ -414,7 +414,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			device.OnPrivacyMuteChanged += AdapterOnPrivacyMuteChanged;
 		}
 
-		private void Unsubscribe(IInterpretationDevice device)
+		private void Unsubscribe(ISimplInterpretationDevice device)
 		{
 			if (device == null)
 				return;
@@ -441,7 +441,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			const string key = InterpretationClientDevice.SET_CACHED_AUTO_ANSWER_STATE;
 
 			uint clientId;
-			if (!GetClientIdForAdapter(sender as IInterpretationDevice, out clientId))
+			if (!GetClientIdForAdapter(sender as ISimplInterpretationDevice, out clientId))
 				return;
 
 			m_RpcController.CallMethod(clientId, key, args.Data);
@@ -452,7 +452,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			const string key = InterpretationClientDevice.SET_CACHED_DO_NOT_DISTURB_STATE;
 
 			uint clientId;
-			if (!GetClientIdForAdapter(sender as IInterpretationDevice, out clientId))
+			if (!GetClientIdForAdapter(sender as ISimplInterpretationDevice, out clientId))
 				return;
 
 			m_RpcController.CallMethod(clientId, key, args.Data);
@@ -463,7 +463,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			const string key = InterpretationClientDevice.SET_CACHED_PRIVACY_MUTE_STATE;
 
 			uint clientId;
-			if (!GetClientIdForAdapter(sender as IInterpretationDevice, out clientId))
+			if (!GetClientIdForAdapter(sender as ISimplInterpretationDevice, out clientId))
 				return;
 
 			m_RpcController.CallMethod(clientId, key, args.Data);
@@ -588,11 +588,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 			foreach (int adapterId in settings.GetDeviceIds())
 			{
-				IInterpretationDevice device = null;
+				ISimplInterpretationDevice device = null;
 
 				try
 				{
-					device = factory.GetOriginatorById<IInterpretationDevice>(adapterId);
+					device = factory.GetOriginatorById<ISimplInterpretationDevice>(adapterId);
 				}
 				catch (KeyNotFoundException)
 				{

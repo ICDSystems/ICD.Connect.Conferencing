@@ -78,8 +78,8 @@
     <Compile Include="Devices\Client\InterpretationClientDeviceSettings.cs" />
     <Compile Include="Devices\Simpl\Server\InterpretationServerDevice.cs" />
     <Compile Include="Devices\Simpl\Server\InterpretationServerDeviceSettings.cs" />
-    <Compile Include="Devices\Simpl\IInterpretationDevice.cs" />
-    <Compile Include="Devices\Simpl\IInterpretationDeviceSettings.cs" />
+    <Compile Include="Devices\Simpl\ISimplInterpretationDevice.cs" />
+    <Compile Include="Devices\Simpl\ISimplInterpretationDeviceSettings.cs" />
     <Compile Include="SimplShims\SPlusInterpretationServerShim.cs" />
     <Compile Include="Devices\Simpl\SimplInterpretationDevice.cs" />
     <Compile Include="Devices\Simpl\SimplInterpretationDeviceSettings.cs" />

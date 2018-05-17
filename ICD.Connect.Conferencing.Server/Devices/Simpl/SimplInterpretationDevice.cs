@@ -8,7 +8,7 @@ using ICD.Connect.Devices.Simpl;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
-	public sealed class SimplInterpretationDevice : AbstractSimplDevice<SimplInterpretationDeviceSettings>, IInterpretationDevice
+	public sealed class SimplInterpretationDevice : AbstractSimplDevice<SimplInterpretationDeviceSettings>, ISimplInterpretationDevice
 	{
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;

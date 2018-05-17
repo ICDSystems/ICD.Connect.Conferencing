@@ -2,7 +2,7 @@
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
-	public interface IInterpretationDeviceSettings : ISimplDeviceSettings
+	public interface ISimplInterpretationDeviceSettings : ISimplDeviceSettings
 	{
 	}
 }

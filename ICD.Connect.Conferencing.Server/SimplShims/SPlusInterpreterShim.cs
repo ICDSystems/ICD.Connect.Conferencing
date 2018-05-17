@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 	public delegate void SPlusDialerShimSendDtmfCallback(object sender, string data);
 	public delegate void SPlusDialerShimEndCallCallback(object sender);
 
-	public sealed class SPlusInterpreterShim : AbstractSPlusDeviceShim<IInterpretationDevice>
+	public sealed class SPlusInterpreterShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
 	{
 		#region Events
 		//Events for S+
@@ -106,7 +106,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			get
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return string.Empty;
 
@@ -114,7 +114,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			}
 			set
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return;
 
@@ -129,7 +129,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			get
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return 0;
 
@@ -137,7 +137,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			}
 			set
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return;
 
@@ -152,7 +152,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			get
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return 0;
 
@@ -160,7 +160,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			}
 			set
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return;
 
@@ -175,7 +175,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			get
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return 0;
 
@@ -183,7 +183,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			}
 			set
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return;
 
@@ -198,7 +198,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			get
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return 0;
 
@@ -206,7 +206,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			}
 			set
 			{
-				IInterpretationDevice originator = Originator;
+				ISimplInterpretationDevice originator = Originator;
 				if (originator == null)
 					return;
 
@@ -300,7 +300,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		#region Originator Callbacks
 
-		protected override void Subscribe(IInterpretationDevice originator)
+		protected override void Subscribe(ISimplInterpretationDevice originator)
 		{
 			base.Subscribe(originator);
 
@@ -314,7 +314,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			originator.SetPrivacyMuteCallback += OriginatorSetPrivacyMuteCallback;
 		}
 
-		protected override void Unsubscribe(IInterpretationDevice originator)
+		protected override void Unsubscribe(ISimplInterpretationDevice originator)
 		{
 			base.Subscribe(originator);
 
@@ -328,35 +328,35 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			originator.SetPrivacyMuteCallback = null;
 		}
 
-		private void OriginatorDialCallback(IInterpretationDevice sender, string number)
+		private void OriginatorDialCallback(ISimplInterpretationDevice sender, string number)
 		{
 			SPlusDialerShimDialCallback handler = DialCallback;
 			if (handler != null)
 				handler(this, number, eConferenceSourceType.Audio.ToUShort());
 		}
 
-		private void OriginatorDialTypeCallback(IInterpretationDevice sender, string number, ushort type)
+		private void OriginatorDialTypeCallback(ISimplInterpretationDevice sender, string number, ushort type)
 		{
 			SPlusDialerShimDialCallback handler = DialCallback;
 			if (handler != null)
 				handler(this, number, type);
 		}
 
-		private void OriginatorSetAutoAnswerCallback(IInterpretationDevice sender, ushort enabled)
+		private void OriginatorSetAutoAnswerCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
 			SPlusDialerShimSetAutoAnswerCallback handler = SetAutoAnswerCallback;
 			if (handler != null)
 				handler(this, enabled);
 		}
 
-		private void OriginatorSetDoNotDisturbCallback(IInterpretationDevice sender, ushort enabled)
+		private void OriginatorSetDoNotDisturbCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
 			SPlusDialerShimSetDoNotDisturbCallback handler = SetDoNotDisturbCallback;
 			if (handler != null)
 				handler(this, enabled);
 		}
 
-		private void OriginatorSetPrivacyMuteCallback(IInterpretationDevice sender, ushort enabled)
+		private void OriginatorSetPrivacyMuteCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
 			SPlusDialerShimSetPrivacyMuteCallback handler = SetPrivacyMuteCallback;
 			if (handler != null)
