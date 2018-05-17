@@ -18,7 +18,7 @@ using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
 using ICD.Connect.Protocol.Ports;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
@@ -234,7 +234,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			{
 				m_SourcesCriticalSection.Leave();
 			}
-			
 		}
 
 		/// <summary>
