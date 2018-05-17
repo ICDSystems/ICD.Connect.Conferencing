@@ -166,6 +166,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 	    #endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		public InterpretationClientDevice()
 	    {
 		    m_RpcController = new ClientSerialRpcController(this);
@@ -177,6 +180,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			Heartbeat = new Heartbeat(this);
 	    }
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
 	    protected override void DisposeFinal(bool disposing)
 	    {
 		    OnConnectedStateChanged = null;
@@ -588,7 +595,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 	    #region Settings
 
-		protected override void ApplySettingsFinal(InterpretationClientDeviceSettings settings, IDeviceFactory factory)
+	    /// <summary>
+	    /// Override to apply settings to the instance.
+	    /// </summary>
+	    /// <param name="settings"></param>
+	    /// <param name="factory"></param>
+	    protected override void ApplySettingsFinal(InterpretationClientDeviceSettings settings, IDeviceFactory factory)
 	    {
 		    base.ApplySettingsFinal(settings, factory);
 
@@ -607,6 +619,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			Heartbeat.StartMonitoring();
 	    }
 
+	    /// <summary>
+	    /// Override to apply properties to the settings instance.
+	    /// </summary>
+	    /// <param name="settings"></param>
 	    protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
 	    {
 		    base.CopySettingsFinal(settings);
@@ -615,6 +631,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    settings.Room = m_Room;
 	    }
 
+	    /// <summary>
+	    /// Override to clear the instance settings.
+	    /// </summary>
 	    protected override void ClearSettingsFinal()
 	    {
 		    base.ClearSettingsFinal();
