@@ -26,6 +26,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
     {
 	    #region Events
 
+	    public event EventHandler OnInterpretationActiveChanged;
+
 		[PublicAPI]
 	    public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
@@ -63,6 +65,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    private bool m_DoNotDisturb;
 	    private bool m_AutoAnswer;
 	    private int m_Room;
+	    private bool m_IsInterpretationActive;
 
 	    #endregion
 
@@ -96,7 +99,19 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		public Heartbeat Heartbeat { get; private set; }
 
-	    public bool IsInterpretationActive { get; private set; }
+	    public bool IsInterpretationActive
+	    {
+		    get { return m_IsInterpretationActive; }
+		    private set
+		    {
+			    if (m_IsInterpretationActive == value)
+				    return;
+
+			    m_IsInterpretationActive = value;
+			    
+				OnInterpretationActiveChanged.Raise(this);
+		    }
+	    }
 
 	    public bool PrivacyMuted
 	    {
