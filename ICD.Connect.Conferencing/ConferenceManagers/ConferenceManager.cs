@@ -36,10 +36,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly ScrollQueue<IConference> m_RecentConferences;
 		private readonly ScrollQueue<IConferenceSource> m_RecentSources;
 		private readonly Dictionary<eConferenceSourceType, IDialingDeviceControl> m_SourceTypeToProvider;
+		private readonly IcdHashSet<IDialingDeviceControl> m_FeedbackProviders; 
 
 		private readonly SafeCriticalSection m_RecentConferencesSection;
 		private readonly SafeCriticalSection m_RecentSourcesSection;
 		private readonly SafeCriticalSection m_SourceTypeToProviderSection;
+		private readonly SafeCriticalSection m_FeedbackProviderSection;
 
 		private readonly DialingPlan m_DialingPlan;
 
@@ -152,10 +154,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_RecentConferences = new ScrollQueue<IConference>(RECENT_LENGTH);
 			m_RecentSources = new ScrollQueue<IConferenceSource>(RECENT_LENGTH);
 			m_SourceTypeToProvider = new Dictionary<eConferenceSourceType, IDialingDeviceControl>();
+			m_FeedbackProviders = new IcdHashSet<IDialingDeviceControl>();
 
 			m_RecentConferencesSection = new SafeCriticalSection();
 			m_RecentSourcesSection = new SafeCriticalSection();
 			m_SourceTypeToProviderSection = new SafeCriticalSection();
+			m_FeedbackProviderSection = new SafeCriticalSection();
 
 			m_DialingPlan = new DialingPlan();
 		}
@@ -315,6 +319,34 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Registers the dialing component, for feedback only.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		public bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl)
+		{
+			m_FeedbackProviderSection.Enter();
+			try
+			{
+				if (m_FeedbackProviders.Contains(dialingControl))
+					return false;
+
+				m_FeedbackProviders.Add(dialingControl);
+				UpdateProvider(dialingControl);
+
+				Subscribe(dialingControl);
+			}
+			finally
+			{
+				m_FeedbackProviderSection.Leave();
+			}
+
+			AddSources(dialingControl.GetSources());
+
+			return true;
+		}
+
+		/// <summary>
 		/// Deregisters the dialing provider.
 		/// </summary>
 		/// <param name="sourceType"></param>
@@ -342,6 +374,31 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Deregisters the dialing componet from the feedback only list.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		public bool DeregisterFeedbackDialingProvider(IDialingDeviceControl dialingControl)
+		{
+			m_FeedbackProviderSection.Enter();
+			try
+			{
+				if (!m_FeedbackProviders.Contains(dialingControl))
+					return false;
+
+				m_FeedbackProviders.Remove(dialingControl);
+
+				Unsubscribe(dialingControl);
+			}
+			finally
+			{
+				m_FeedbackProviderSection.Leave();
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		/// Deregisters all of the dialing components.
 		/// </summary>
 		public void ClearDialingProviders()
@@ -351,6 +408,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			foreach (eConferenceSourceType sourceType in sourceTypes)
 				DeregisterDialingProvider(sourceType);
+
+			foreach (IDialingDeviceControl provider in m_FeedbackProviders.ToArray(m_FeedbackProviders.Count))
+				DeregisterFeedbackDialingProvider(provider);
 		}
 
 		#endregion

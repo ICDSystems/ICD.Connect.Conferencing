@@ -161,11 +161,25 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		bool RegisterDialingProvider(eConferenceSourceType sourceType, IDialingDeviceControl dialingControl);
 
 		/// <summary>
+		/// Registers the dialing component, for feedback only.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
+
+		/// <summary>
 		/// Deregisters the dialing component.
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
 		bool DeregisterDialingProvider(eConferenceSourceType sourceType);
+
+		/// <summary>
+		/// Deregisters the dialing componet from the feedback only list.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		bool DeregisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
 
 		/// <summary>
 		/// Deregisters all of the dialing components.
