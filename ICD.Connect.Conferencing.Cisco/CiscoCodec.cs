@@ -228,9 +228,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			if (port == m_Port)
 				return;
 
-			if (port is IComPort)
-				ConfigureComPort(port as IComPort);
-
 			if (m_Port != null)
 				Disconnect();
 
@@ -242,23 +239,6 @@ namespace ICD.Connect.Conferencing.Cisco
 				Heartbeat.StartMonitoring();
 
 			UpdateCachedOnlineStatus();
-		}
-
-		/// <summary>
-		/// Configures a com port for communication with the hardware.
-		/// </summary>
-		/// <param name="port"></param>
-		[PublicAPI]
-		public static void ConfigureComPort(IComPort port)
-		{
-			port.SetComPortSpec(eComBaudRates.ComspecBaudRate115200,
-			                    eComDataBits.ComspecDataBits8,
-			                    eComParityType.ComspecParityNone,
-			                    eComStopBits.ComspecStopBits1,
-			                    eComProtocolType.ComspecProtocolRS232,
-			                    eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
-			                    eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
-			                    false);
 		}
 
 		/// <summary>
