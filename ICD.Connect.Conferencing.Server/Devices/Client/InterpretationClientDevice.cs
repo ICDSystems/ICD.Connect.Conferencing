@@ -22,7 +22,7 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
-    public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>, IInterpretationDevice, IConnectable
+    public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>, IClientInterpretationDevice, IConnectable
     {
 	    #region Events
 
