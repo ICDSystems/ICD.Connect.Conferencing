@@ -1,9 +1,9 @@
 ﻿using System;
 using ICD.Connect.Conferencing.Devices;
 
-namespace ICD.Connect.Conferencing.Server.Devices
+namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
-	public interface IInterpretationDevice : IDialerDevice
+	public interface IClientInterpretationDevice : IDialerDevice
 	{
 		event EventHandler OnInterpretationActiveChanged;
 		
