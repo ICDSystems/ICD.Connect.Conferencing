@@ -36,7 +36,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly ScrollQueue<IConference> m_RecentConferences;
 		private readonly ScrollQueue<IConferenceSource> m_RecentSources;
 		private readonly Dictionary<eConferenceSourceType, IDialingDeviceControl> m_SourceTypeToProvider;
-		private readonly List<IDialingDeviceControl> m_FeedbackProviders; 
+		private readonly IcdHashSet<IDialingDeviceControl> m_FeedbackProviders; 
 
 		private readonly SafeCriticalSection m_RecentConferencesSection;
 		private readonly SafeCriticalSection m_RecentSourcesSection;
@@ -154,7 +154,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_RecentConferences = new ScrollQueue<IConference>(RECENT_LENGTH);
 			m_RecentSources = new ScrollQueue<IConferenceSource>(RECENT_LENGTH);
 			m_SourceTypeToProvider = new Dictionary<eConferenceSourceType, IDialingDeviceControl>();
-			m_FeedbackProviders = new List<IDialingDeviceControl>();
+			m_FeedbackProviders = new IcdHashSet<IDialingDeviceControl>();
 
 			m_RecentConferencesSection = new SafeCriticalSection();
 			m_RecentSourcesSection = new SafeCriticalSection();
