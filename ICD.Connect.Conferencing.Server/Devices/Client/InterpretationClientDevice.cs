@@ -16,6 +16,7 @@ using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
+using ICD.Connect.Protocol.Network.Ports;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
@@ -531,6 +532,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			if (port == m_Port)
 				return;
 
+			ConfigurePort(port);
+
 			Unsubscribe(m_Port);
 
 			m_Port = port;
@@ -541,6 +544,19 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_Port.Connect();
 
 			UpdateCachedOnlineStatus();
+		}
+
+		/// <summary>
+		/// Configures the given port for communication with the device.
+		/// </summary>
+		/// <param name="port"></param>
+		private void ConfigurePort(ISerialPort port)
+		{
+			// Network (TCP, UDP, SSH)
+			if (port is ISecureNetworkPort)
+				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>

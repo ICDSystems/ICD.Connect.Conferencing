@@ -16,8 +16,10 @@ using ICD.Connect.Devices;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
+using ICD.Connect.Protocol.Network.Ports;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
+using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Protocol.Settings;
 using ICD.Connect.Settings;
@@ -99,7 +101,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		private readonly CiscoComponentFactory m_Components;
 
-		private readonly NetworkProperties m_NetworkProperties;
+		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private bool m_Initialized;
@@ -173,7 +175,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// </summary>
 		public CiscoCodec()
 		{
-			m_NetworkProperties = new NetworkProperties();
+			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
 			Heartbeat = new Heartbeat(this);
@@ -227,6 +229,8 @@ namespace ICD.Connect.Conferencing.Cisco
 			if (port == m_Port)
 				return;
 
+			ConfigurePort(port);
+
 			if (m_Port != null)
 				Disconnect();
 
@@ -238,6 +242,23 @@ namespace ICD.Connect.Conferencing.Cisco
 				Heartbeat.StartMonitoring();
 
 			UpdateCachedOnlineStatus();
+		}
+
+		/// <summary>
+		/// Configures the given port for communication with the device.
+		/// </summary>
+		/// <param name="port"></param>
+		private void ConfigurePort(ISerialPort port)
+		{
+			// Com
+			if (port is IComPort)
+				(port as IComPort).ApplyDeviceConfiguration(m_ComSpecProperties);
+
+			// Network (TCP, UDP, SSH)
+			if (port is ISecureNetworkPort)
+				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>
