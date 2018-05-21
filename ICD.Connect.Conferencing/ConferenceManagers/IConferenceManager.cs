@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.ConferenceSources;
@@ -144,6 +145,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		IDialingDeviceControl GetDialingProvider(eConferenceSourceType sourceType);
 
 		/// <summary>
