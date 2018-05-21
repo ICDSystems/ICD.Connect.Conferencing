@@ -1,14 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.0</TargetFramework>
-	<RootNamespace>ICD.Connect.Conferencing</RootNamespace>
-	<AssemblyName>ICD.Connect.Conferencing</AssemblyName>
+	<RootNamespace>ICD.Connect.Conferencing.Mock</RootNamespace>
+	<AssemblyName>ICD.Connect.Conferencing.Mock</AssemblyName>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	<Deterministic>true</Deterministic>
   </PropertyGroup>
-
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;STANDARD</DefineConstants>
   </PropertyGroup>
@@ -23,25 +23,22 @@
     <EmbeddedResource Remove="SIMPLSharpLogs\**" />
     <None Remove="SIMPLSharpLogs\**" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Remove="ObfuscationSettings.cs" />
     
   </ItemGroup>
-
+  
   <ItemGroup>
     <None Remove=".gitignore" />
-    <None Remove="ICD.Connect.Conferencing_SimplSharp.suo" />
-    <None Remove="ICD.Connect.projectinfo" />
+    <None Remove="ICD.Connect.Conferencing.Mock_SimplSharp.suo" />
+    <None Remove="ICD.Connect.Conferencing.projectinfo" />
     <None Remove="ICD.SimplSharp.projectinfo" />
     <None Remove="Properties\ControlSystem.cfg" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <ProjectReference Include="..\..\ICD.Common.Utils\ICD.Common.Utils\ICD.Common.Utils_NetStandard.csproj" />
-    <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_NetStandard.csproj" />
-    <ProjectReference Include="..\..\ICD.Connect.Devices\ICD.Connect.Devices\ICD.Connect.Devices_NetStandard.csproj" />
-    <ProjectReference Include="..\..\ICD.Connect.Protocol\ICD.Connect.Protocol.Network\ICD.Connect.Protocol.Network_NetStandard.csproj" />
+	<ProjectReference Include="..\ICD.Connect.Conferencing\ICD.Connect.Conferencing_NetStandard.csproj" />
   </ItemGroup>
 
 </Project>

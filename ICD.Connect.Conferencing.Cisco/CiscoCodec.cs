@@ -6,7 +6,6 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
 using ICD.Common.Utils.Xml;
@@ -14,6 +13,7 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components;
 using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
@@ -94,7 +94,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		private readonly ISerialBuffer m_SerialBuffer;
 		private readonly SafeTimer m_FeedbackTimer;
 
-		private readonly eCodecInputType[] m_InputTypes = new eCodecInputType[4];
+		private readonly CodecInputTypes m_InputTypes;
 
 		private readonly CiscoComponentFactory m_Components;
 
@@ -134,6 +134,11 @@ namespace ICD.Connect.Conferencing.Cisco
 		public CiscoComponentFactory Components { get { return m_Components; } }
 
 		/// <summary>
+		/// Configured information about how the input connectors should be used.
+		/// </summary>
+		public CodecInputTypes InputTypes { get { return m_InputTypes; } }
+
+		/// <summary>
 		/// Returns true when the codec is connected.
 		/// </summary>
 		public bool IsConnected
@@ -170,6 +175,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
 			m_Components = new CiscoComponentFactory(this);
+			m_InputTypes = new CodecInputTypes();
 			m_FeedbackTimer = SafeTimer.Stopped(FeedbackTimerCallback);
 
 			m_SerialBuffer = new XmlSerialBuffer();
@@ -397,41 +403,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 		}
 
-		/// <summary>
-		/// Logs the message.
-		/// </summary>
-		/// <param name="severity"></param>
-		/// <param name="message"></param>
-		/// <param name="args"></param>
-		public void Log(eSeverity severity, string message, params object[] args)
-		{
-			message = string.Format(message, args);
-
-			ServiceProvider.GetService<ILoggerService>().AddEntry(severity, AddLogPrefix(message));
-		}
-
-		/// <summary>
-		/// Returns the log message with a CiscoCodec prefix.
-		/// </summary>
-		/// <param name="log"></param>
-		/// <returns></returns>
-		private string AddLogPrefix(string log)
-		{
-			return string.Format("{0} - {1}", this, log);
-		}
-
-		/// <summary>
-		/// Gets the input type for the connector at the given 1-indexed id.
-		/// </summary>
-		/// <param name="connectorId"></param>
-		public eCodecInputType GetInputTypeForConnector(int connectorId)
-		{
-			if (connectorId >= 1 && connectorId <= 4)
-				return m_InputTypes[connectorId - 1];
-
-			return eCodecInputType.None;
-		}
-
 		#endregion
 
 		#region Private Methods
@@ -602,12 +573,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 		}
 
-		private void SetInputTypeForConnector(int connectorId, eCodecInputType type)
-		{
-			if (connectorId >= 1 && connectorId <= 4)
-				m_InputTypes[connectorId - 1] = type;
-		}
-
 		#endregion
 
 		#region Port Callbacks
@@ -674,8 +639,8 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// Called when the port online status changes.
 		/// </summary>
 		/// <param name="sender"></param>
-		/// <param name="boolEventArgs"></param>
-		private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs boolEventArgs)
+		/// <param name="args"></param>
+		private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
 		}
@@ -774,10 +739,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
 			settings.PeripheralsId = PeripheralsId;
 
-			settings.Input1CodecInputType = GetInputTypeForConnector(1);
-			settings.Input2CodecInputType = GetInputTypeForConnector(2);
-			settings.Input3CodecInputType = GetInputTypeForConnector(3);
-			settings.Input4CodecInputType = GetInputTypeForConnector(4);
+			InputTypes.CopySettings(settings);
 		}
 
 		/// <summary>
@@ -789,6 +751,8 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			PeripheralsId = null;
 			SetPort(null);
+
+			InputTypes.ClearSettings();
 		}
 
 		/// <summary>
@@ -802,14 +766,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			PeripheralsId = settings.PeripheralsId;
 
-			// Set input types before setting the port, otherwise the connector type of none gets cached inproperly.
-			SetInputTypeForConnector(1, settings.Input1CodecInputType);
-
-			SetInputTypeForConnector(2, settings.Input2CodecInputType);
-
-			SetInputTypeForConnector(3, settings.Input3CodecInputType);
-
-			SetInputTypeForConnector(4, settings.Input4CodecInputType);
+			InputTypes.ApplySettings(settings);
 
 			ISerialPort port = null;
 
@@ -817,7 +774,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			{
 				port = factory.GetPortById((int)settings.Port) as ISerialPort;
 				if (port == null)
-					Logger.AddEntry(eSeverity.Error, "No serial port with id {0}", settings.Port);
+					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 			}
 
 			SetPort(port);

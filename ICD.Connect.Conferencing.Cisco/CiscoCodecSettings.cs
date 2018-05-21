@@ -10,11 +10,9 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// <summary>
 	/// Settings for the CiscoCodec.
 	/// </summary>
-	[KrangSettings(FACTORY_NAME)]
+	[KrangSettings("CiscoCodec", typeof(CiscoCodec))]
 	public sealed class CiscoCodecSettings : AbstractDeviceSettings
 	{
-		private const string FACTORY_NAME = "CiscoCodec";
-
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
 
@@ -49,16 +47,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 			set { m_PeripheralsId = value; }
 		}
-
-		/// <summary>
-		/// Gets the originator factory name.
-		/// </summary>
-		public override string FactoryName { get { return FACTORY_NAME; } }
-
-		/// <summary>
-		/// Gets the type of the originator for this settings instance.
-		/// </summary>
-		public override Type OriginatorType { get { return typeof(CiscoCodec); } }
 
 		/// <summary>
 		/// Constructor.
