@@ -17,12 +17,34 @@ namespace ICD.Connect.Conferencing.Controls
 	public abstract class AbstractDialingDeviceControl<T> : AbstractDeviceControl<T>, IDialingDeviceControl
 		where T : IDeviceBase
 	{
+		/// <summary>
+		/// Raised when a source is added to the dialing component.
+		/// </summary>
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+
+		/// <summary>
+		/// Raised when a source is removed from the dialing component.
+		/// </summary>
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
+		/// <summary>
+		/// Raised when a source property changes.
+		/// </summary>
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceChanged;
+
+		/// <summary>
+		/// Raised when the Do Not Disturb state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
+
+		/// <summary>
+		/// Raised when the Auto Answer state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
+
+		/// <summary>
+		/// Raised when the microphones mute state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		private readonly SafeCriticalSection m_StateSection;
@@ -194,6 +216,10 @@ namespace ICD.Connect.Conferencing.Controls
 
 		#region Source Events
 
+		/// <summary>
+		/// Subscribes to the source events in order to re-raise OnSourceChanged event.
+		/// </summary>
+		/// <param name="source"></param>
 		protected void SourceSubscribe(IConferenceSource source)
 		{
 			source.OnAnswerStateChanged += SourceOnPropertyChanged;
@@ -203,6 +229,10 @@ namespace ICD.Connect.Conferencing.Controls
 			source.OnStatusChanged += SourceOnPropertyChanged;
 		}
 
+		/// <summary>
+		/// Unsubscribes from the source events to stop re-raising OnSourceChanged event.
+		/// </summary>
+		/// <param name="source"></param>
 		protected void SourceUnsubscribe(IConferenceSource source)
 		{
 			source.OnAnswerStateChanged -= SourceOnPropertyChanged;
