@@ -73,7 +73,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_AutoAnswer = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} AutoAnswer set to {1}", this, m_AutoAnswer);
+					Log(eSeverity.Informational, "AutoAnswer set to {0}", m_AutoAnswer);
 				}
 				finally
 				{
@@ -102,7 +102,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_PrivacyMuted = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} PrivacyMuted set to {1}", this, m_PrivacyMuted);
+					Log(eSeverity.Informational, "PrivacyMuted set to {0}", m_PrivacyMuted);
 				}
 				finally
 				{
@@ -131,7 +131,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_DoNotDisturb = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} DoNotDisturb set to {1}", this, m_DoNotDisturb);
+					Log(eSeverity.Informational, "DoNotDisturb set to {0}", m_DoNotDisturb);
 				}
 				finally
 				{
