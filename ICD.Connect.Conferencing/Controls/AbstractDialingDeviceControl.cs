@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -8,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
@@ -17,12 +19,34 @@ namespace ICD.Connect.Conferencing.Controls
 	public abstract class AbstractDialingDeviceControl<T> : AbstractDeviceControl<T>, IDialingDeviceControl
 		where T : IDeviceBase
 	{
+		/// <summary>
+		/// Raised when a source is added to the dialing component.
+		/// </summary>
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+
+		/// <summary>
+		/// Raised when a source is removed from the dialing component.
+		/// </summary>
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
+		/// <summary>
+		/// Raised when a source property changes.
+		/// </summary>
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceChanged;
+
+		/// <summary>
+		/// Raised when the Do Not Disturb state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
+
+		/// <summary>
+		/// Raised when the Auto Answer state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
+
+		/// <summary>
+		/// Raised when the microphones mute state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		private readonly SafeCriticalSection m_StateSection;
@@ -51,7 +75,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_AutoAnswer = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} AutoAnswer set to {1}", this, m_AutoAnswer);
+					Log(eSeverity.Informational, "AutoAnswer set to {0}", m_AutoAnswer);
 				}
 				finally
 				{
@@ -80,7 +104,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_PrivacyMuted = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} PrivacyMuted set to {1}", this, m_PrivacyMuted);
+					Log(eSeverity.Informational, "PrivacyMuted set to {0}", m_PrivacyMuted);
 				}
 				finally
 				{
@@ -109,7 +133,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_DoNotDisturb = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} DoNotDisturb set to {1}", this, m_DoNotDisturb);
+					Log(eSeverity.Informational, "DoNotDisturb set to {0}", m_DoNotDisturb);
 				}
 				finally
 				{
@@ -172,6 +196,21 @@ namespace ICD.Connect.Conferencing.Controls
 		/// <param name="callType"></param>
 		public abstract void Dial(string number, eConferenceSourceType callType);
 
+		public virtual void Dial(IContact contact)
+		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
+			if (!contact.GetContactMethods().Any())
+				throw new InvalidOperationException(string.Format("No contact methods for contact {0}", contact.Name));
+
+			string number = contact.GetContactMethods().FirstOrDefault(cm => !string.IsNullOrEmpty(cm.Number)).Number;
+			if(number == null)
+				throw new InvalidOperationException(string.Format("No contact methods for contact {0} have a valid number", contact.Name));
+
+			Dial(number);
+		}
+
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.
 		/// </summary>
@@ -194,6 +233,10 @@ namespace ICD.Connect.Conferencing.Controls
 
 		#region Source Events
 
+		/// <summary>
+		/// Subscribes to the source events in order to re-raise OnSourceChanged event.
+		/// </summary>
+		/// <param name="source"></param>
 		protected void SourceSubscribe(IConferenceSource source)
 		{
 			source.OnAnswerStateChanged += SourceOnPropertyChanged;
@@ -203,6 +246,10 @@ namespace ICD.Connect.Conferencing.Controls
 			source.OnStatusChanged += SourceOnPropertyChanged;
 		}
 
+		/// <summary>
+		/// Unsubscribes from the source events to stop re-raising OnSourceChanged event.
+		/// </summary>
+		/// <param name="source"></param>
 		protected void SourceUnsubscribe(IConferenceSource source)
 		{
 			source.OnAnswerStateChanged -= SourceOnPropertyChanged;

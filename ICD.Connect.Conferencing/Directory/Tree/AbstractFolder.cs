@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Conferencing.Contacts;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
+namespace ICD.Connect.Conferencing.Directory.Tree
 {
 	/// <summary>
 	/// AbstractFolder provides shared functionality between Folder and RootFolder.
@@ -17,12 +18,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		public event EventHandler OnContentsChanged;
 
 		private readonly List<IFolder> m_CachedFolders;
-		private readonly List<CiscoContact> m_CachedContacts;
+		private readonly List<IContact> m_CachedContacts;
 
 		private readonly SafeCriticalSection m_FoldersSection;
 		private readonly SafeCriticalSection m_ContactsSection;
-		private readonly string m_FolderSearchId;
-		private readonly string m_FolderId;
 
 		#region Properties
 
@@ -30,21 +29,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// The name of the folder.
 		/// </summary>
 		public abstract string Name { get; }
-
-		/// <summary>
-		/// The id of the folder.
-		/// </summary>
-		public string FolderId { get { return m_FolderId; } }
-
-		/// <summary>
-		/// The result id for browsing.
-		/// </summary>
-		public string FolderSearchId { get { return m_FolderSearchId; } }
-
-		/// <summary>
-		/// Gets the phonebook type.
-		/// </summary>
-		public abstract ePhonebookType PhonebookType { get; }
 
 		/// <summary>
 		/// Gets the number of cached child contacts.
@@ -68,17 +52,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		protected AbstractFolder(string folderId)
+		protected AbstractFolder()
 		{
-			m_FolderId = folderId;
-
 			m_CachedFolders = new List<IFolder>();
-			m_CachedContacts = new List<CiscoContact>();
+			m_CachedContacts = new List<IContact>();
 
 			m_FoldersSection = new SafeCriticalSection();
 			m_ContactsSection = new SafeCriticalSection();
-
-			m_FolderSearchId = Guid.NewGuid().ToString();
 		}
 
 		#endregion
@@ -128,7 +108,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// Gets the cached contacts.
 		/// </summary>
 		/// <returns></returns>
-		public CiscoContact[] GetContacts()
+		public IContact[] GetContacts()
 		{
 			return m_ContactsSection.Execute(() => m_CachedContacts.ToArray());
 		}
@@ -138,54 +118,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// </summary>
 		/// <param name="index"></param>
 		/// <returns></returns>
-		public CiscoContact GetContact(int index)
+		public IContact GetContact(int index)
 		{
 			return m_ContactsSection.Execute(() => m_CachedContacts[index]);
-		}
-
-		/// <summary>
-		/// Gets the child folder/contact at the given index (folders come first).
-		/// </summary>
-		/// <param name="index"></param>
-		/// <returns></returns>
-		public INode GetChild(int index)
-		{
-			m_ContactsSection.Enter();
-			m_FoldersSection.Enter();
-
-			try
-			{
-				if (index <= m_CachedFolders.Count)
-					return m_CachedFolders[index];
-				return m_CachedContacts[index - m_CachedFolders.Count];
-			}
-			finally
-			{
-				m_ContactsSection.Leave();
-				m_FoldersSection.Leave();
-			}
-		}
-
-		/// <summary>
-		/// Gets all of the cached children.
-		/// </summary>
-		/// <returns></returns>
-		public INode[] GetChildren()
-		{
-			m_ContactsSection.Enter();
-			m_FoldersSection.Enter();
-
-			try
-			{
-				return m_CachedFolders.Cast<INode>()
-				                      .Concat(m_CachedContacts.Cast<INode>())
-				                      .ToArray();
-			}
-			finally
-			{
-				m_ContactsSection.Leave();
-				m_FoldersSection.Leave();
-			}
 		}
 
 		/// <summary>
@@ -193,7 +128,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// </summary>
 		/// <param name="folders"></param>
 		/// <param name="contacts"></param>
-		public bool AddChildren(IEnumerable<IFolder> folders, IEnumerable<CiscoContact> contacts)
+		public bool AddChildren(IEnumerable<IFolder> folders, IEnumerable<IContact> contacts)
 		{
 			bool output = AddFolders(folders, false);
 			output |= AddContacts(contacts, false);
@@ -226,7 +161,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// Caches the contact.
 		/// </summary>
 		/// <param name="contact"></param>
-		public bool AddContact(CiscoContact contact)
+		public bool AddContact(IContact contact)
 		{
 			return AddContact(contact, true);
 		}
@@ -235,26 +170,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// Caches the contacts.
 		/// </summary>
 		/// <param name="contacts"></param>
-		public bool AddContacts(IEnumerable<CiscoContact> contacts)
+		public bool AddContacts(IEnumerable<IContact> contacts)
 		{
 			return AddContacts(contacts, true);
-		}
-
-		/// <summary>
-		/// Gets the search command for the contents of the folder.
-		/// </summary>
-		/// <returns></returns>
-		public string GetSearchCommand()
-		{
-			string command = "xcommand phonebook search Limit: 65534 Recursive: False";
-			command += " PhonebookType: " + PhonebookType;
-
-			if (!string.IsNullOrEmpty(FolderId))
-				command += string.Format(" FolderId: \"{0}\"", FolderId);
-
-			command += string.Format("| resultId=\"{0}\"", FolderSearchId);
-
-			return command;
 		}
 
 		/// <summary>
@@ -298,11 +216,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 			return output;
 		}
 
-		private bool AddFolder(IFolder folder, bool raise)
+		protected virtual bool AddFolder(IFolder folder, bool raise)
 		{
-			if (folder.PhonebookType != PhonebookType)
-				return false;
-
 			m_FoldersSection.Enter();
 
 			try
@@ -327,11 +242,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// </summary>
 		/// <param name="contacts"></param>
 		/// <param name="raise"></param>
-		private bool AddContacts(IEnumerable<CiscoContact> contacts, bool raise)
+		private bool AddContacts(IEnumerable<IContact> contacts, bool raise)
 		{
 			bool output = false;
 
-			foreach (CiscoContact contact in contacts)
+			foreach (IContact contact in contacts)
 				output |= AddContact(contact, false);
 
 			if (raise && output)
@@ -340,10 +255,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 			return output;
 		}
 
-		private bool AddContact(CiscoContact contact, bool raise)
+		protected virtual bool AddContact(IContact contact, bool raise)
 		{
-			if (contact.PhonebookType != PhonebookType)
-				return false;
 
 			m_ContactsSection.Enter();
 
@@ -385,13 +298,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		}
 	}
 
-	internal sealed class ContactComparer : IComparer<CiscoContact>
+	internal sealed class ContactComparer : IComparer<IContact>
 	{
 		private static ContactComparer s_Instance;
 
 		public static ContactComparer Instance { get { return s_Instance = s_Instance ?? new ContactComparer(); } }
 
-		public int Compare(CiscoContact x, CiscoContact y)
+		public int Compare(IContact x, IContact y)
 		{
 			if (x == null)
 				throw new ArgumentNullException("x");
@@ -399,10 +312,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 			if (y == null)
 				throw new ArgumentNullException("y");
 
-			int surname = string.Compare(x.LastName, y.LastName, StringComparison.Ordinal);
+			int surname = string.Compare(x.Name, y.Name, StringComparison.Ordinal);
 			return surname != 0
 				       ? surname
-				       : string.Compare(x.FirstName, y.FirstName, StringComparison.Ordinal);
+				       : string.Compare(x.Name, y.Name, StringComparison.Ordinal);  
 		}
 	}
 }

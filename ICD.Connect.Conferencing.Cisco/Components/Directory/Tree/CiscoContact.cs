@@ -2,6 +2,7 @@
 using System.Linq;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 {

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Connect.Conferencing.Contacts;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
+namespace ICD.Connect.Conferencing.Directory.Tree
 {
 	/// <summary>
 	/// Interface for all directory folders.
 	/// </summary>
-	public interface IFolder : INode
+	public interface IFolder
 	{
 		/// <summary>
 		/// Called when a child contact/folder is added or removed.
@@ -29,9 +30,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		int ChildCount { get; }
 
 		/// <summary>
-		/// The result id for browsing.
+		/// Name of the folder.
 		/// </summary>
-		string FolderSearchId { get; }
+		string Name { get; }
 
 		/// <summary>
 		/// Clears all children from the folder.
@@ -60,34 +61,21 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// Gets the cached contacts.
 		/// </summary>
 		/// <returns></returns>
-		CiscoContact[] GetContacts();
+		IContact[] GetContacts();
 
 		/// <summary>
 		/// Gets the cached contact at the given index.
 		/// </summary>
 		/// <param name="index"></param>
 		/// <returns></returns>
-		CiscoContact GetContact(int index);
-
-		/// <summary>
-		/// Gets the cached child at the given index.
-		/// </summary>
-		/// <param name="index"></param>
-		/// <returns></returns>
-		INode GetChild(int index);
-
-		/// <summary>
-		/// Gets all of the cached children.
-		/// </summary>
-		/// <returns></returns>
-		INode[] GetChildren();
+		IContact GetContact(int index);
 
 		/// <summary>
 		/// Adds the folders and contacts to the folder.
 		/// </summary>
 		/// <param name="folders"></param>
 		/// <param name="contacts"></param>
-		bool AddChildren(IEnumerable<IFolder> folders, IEnumerable<CiscoContact> contacts);
+		bool AddChildren(IEnumerable<IFolder> folders, IEnumerable<IContact> contacts);
 
 		/// <summary>
 		/// Caches the folder.
@@ -105,19 +93,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// Caches the contact.
 		/// </summary>
 		/// <param name="contact"></param>
-		bool AddContact(CiscoContact contact);
+		bool AddContact(IContact contact);
 
 		/// <summary>
 		/// Caches the contacts.
 		/// </summary>
 		/// <param name="contacts"></param>
-		bool AddContacts(IEnumerable<CiscoContact> contacts);
-
-		/// <summary>
-		/// Gets the search command for the contents of the folder.
-		/// </summary>
-		/// <returns></returns>
-		string GetSearchCommand();
+		bool AddContacts(IEnumerable<IContact> contacts);
 
 		/// <summary>
 		/// Gets this IFolder and all child folders recursively.

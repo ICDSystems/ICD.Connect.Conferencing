@@ -1,12 +1,14 @@
-﻿using ICD.Common.Utils.EventArguments;
+﻿using System;
+using ICD.Common.Utils.EventArguments;
 
 namespace ICD.Connect.Conferencing.EventArguments
 {
+	[Flags]
 	public enum eConferenceSourceType
 	{
-		Unknown,
-		Audio,
-		Video
+		Unknown = 0,
+		Audio = 1,
+		Video = 2
 	}
 
 	public sealed class ConferenceSourceTypeEventArgs : GenericEventArgs<eConferenceSourceType>
