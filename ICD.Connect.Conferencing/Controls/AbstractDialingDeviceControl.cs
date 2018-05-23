@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -8,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
@@ -193,6 +195,21 @@ namespace ICD.Connect.Conferencing.Controls
 		/// <param name="number"></param>
 		/// <param name="callType"></param>
 		public abstract void Dial(string number, eConferenceSourceType callType);
+
+		public virtual void Dial(IContact contact)
+		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
+			if (!contact.GetContactMethods().Any())
+				throw new InvalidOperationException(string.Format("No contact methods for contact {0}", contact.Name));
+
+			string number = contact.GetContactMethods().FirstOrDefault(cm => !string.IsNullOrEmpty(cm.Number)).Number;
+			if(number == null)
+				throw new InvalidOperationException(string.Format("No contact methods for contact {0} have a valid number", contact.Name));
+
+			Dial(number);
+		}
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.

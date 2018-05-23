@@ -1,6 +1,6 @@
 ﻿using ICD.Common.Utils.EventArguments;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
+namespace ICD.Connect.Conferencing.Directory.Tree
 {
 	/// <summary>
 	/// FolderEventArgs is used with events regarding a IFolder.

@@ -3,7 +3,7 @@
 	/// <summary>
 	/// RootFolder represents a root folder in the phonebook (corporate or local)
 	/// </summary>
-	public sealed class RootFolder : AbstractFolder
+	public sealed class CiscoRootFolder : AbstractCiscoFolder
 	{
 		private readonly ePhonebookType m_PhonebookType;
 
@@ -12,7 +12,7 @@
 		/// <summary>
 		/// Gets the phonebook type.
 		/// </summary>
-		public override ePhonebookType PhonebookType { get { return m_PhonebookType; } }
+		public ePhonebookType PhonebookType { get { return m_PhonebookType; } }
 
 		/// <summary>
 		/// Gets the name of the root (i.e. the phonebook type)
@@ -27,7 +27,7 @@
 		/// Constructor.
 		/// </summary>
 		/// <param name="phonebookType"></param>
-		public RootFolder(ePhonebookType phonebookType) : base(null)
+		public CiscoRootFolder(ePhonebookType phonebookType) : base(null)
 		{
 			m_PhonebookType = phonebookType;
 		}

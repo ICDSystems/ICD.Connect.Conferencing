@@ -1,19 +1,22 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Directory.Tree;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory
+namespace ICD.Connect.Conferencing.Directory
 {
+
 	/// <summary>
 	/// DirectoryBrowser provides methods for browsing through a phonebook.
 	/// </summary>
-	public sealed class DirectoryBrowser : IDisposable
+	public abstract class AbstractDirectoryBrowser<TFolder, TContact> : IDisposable, IDirectoryBrowser<TFolder, TContact>
+		where TFolder : class, IFolder
+		where TContact : class, IContact
 	{
 		/// <summary>
 		/// Called when navigating to a different folder.
@@ -28,41 +31,18 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <summary>
 		/// The current path for browsing.
 		/// </summary>
-		private readonly Stack<IFolder> m_Path;
+		protected readonly Stack<TFolder> m_Path;
 
 		/// <summary>
 		/// Tracks folders that have been populated via browsing.
 		/// </summary>
-		private readonly IcdHashSet<IFolder> m_Populated;
+		protected readonly IcdHashSet<TFolder> m_Populated;
 
-		private readonly SafeCriticalSection m_PathSection;
-		private readonly SafeCriticalSection m_PopulatedSection;
-		private readonly SafeCriticalSection m_NavigateSection;
-
-		private readonly DirectoryComponent m_Component;
-
-		private ePhonebookType m_PhonebookType;
+		protected readonly SafeCriticalSection m_PathSection;
+		protected readonly SafeCriticalSection m_PopulatedSection;
+		protected readonly SafeCriticalSection m_NavigateSection;
 
 		#region Properties
-
-		/// <summary>
-		/// Gets the phonebook type.
-		/// </summary>
-		[PublicAPI]
-		public ePhonebookType PhonebookType
-		{
-			get { return m_PhonebookType; }
-			set
-			{
-				if (value == m_PhonebookType)
-					return;
-
-				m_PhonebookType = value;
-
-				RootFolder root = m_Component.GetRoot(m_PhonebookType);
-				GoToRoot(root);
-			}
-		}
 
 		/// <summary>
 		/// Returns true if the current folder is the root.
@@ -71,18 +51,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		public bool IsCurrentFolderRoot { get { return m_Path.Count == 1; } }
 
 		/// <summary>
-		/// Gets the current path as a human readable string.
-		/// </summary>
-		[PublicAPI]
-		public string PathAsString
-		{
-			get { return m_PathSection.Execute(() => string.Join("/", m_Path.Select(x => x.Name).ToArray())); }
-		}
-
-		/// <summary>
 		/// Gets the root folder.
 		/// </summary>
-		private IFolder Root { get { return m_PathSection.Execute(() => m_Path.Last()); } }
+		protected TFolder Root { get { return m_PathSection.Execute(() => m_Path.Last()); } }
 
 		#endregion
 
@@ -92,20 +63,14 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// Constructor.
 		/// </summary>
 		/// <param name="component"></param>
-		public DirectoryBrowser(DirectoryComponent component)
+		public AbstractDirectoryBrowser()
 		{
-			m_Path = new Stack<IFolder>();
-			m_Populated = new IcdHashSet<IFolder>();
+			m_Path = new Stack<TFolder>();
+			m_Populated = new IcdHashSet<TFolder>();
 
 			m_PathSection = new SafeCriticalSection();
 			m_PopulatedSection = new SafeCriticalSection();
 			m_NavigateSection = new SafeCriticalSection();
-
-			m_Component = component;
-			Subscribe(m_Component);
-
-			RootFolder root = component.GetRoot(m_PhonebookType);
-			GoToRoot(root);
 		}
 
 		#endregion
@@ -122,16 +87,15 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 
 			if (m_Path.Count > 0)
 				Unsubscribe(m_Path.Peek());
-			Unsubscribe(m_Component);
 		}
 
 		/// <summary>
 		/// Gets the current folder on the path.
 		/// </summary>
 		/// <returns></returns>
-		public IFolder GetCurrentFolder()
+		public TFolder GetCurrentFolder()
 		{
-			return m_PathSection.Execute(() => m_Path.Count > 0 ? m_Path.Peek() : null);
+			return m_PathSection.Execute(() => m_Path.Count > 0 ? m_Path.Peek() : default(TFolder));
 		}
 
 		/// <summary>
@@ -139,7 +103,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		public void PopulateCurrentFolder()
 		{
-			IFolder folder = GetCurrentFolder();
+			TFolder folder = GetCurrentFolder();
 			if (folder != null)
 				PopulateFolder(folder);
 		}
@@ -150,12 +114,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="folder"></param>
 		/// <returns>The new current folder.</returns>
 		[PublicAPI]
-		public IFolder EnterFolder(IFolder folder)
+		public TFolder EnterFolder(TFolder folder)
 		{
 			if (folder == GetCurrentFolder())
 				return folder;
 
-			IFolder output;
+			TFolder output;
 
 			m_NavigateSection.Enter();
 
@@ -181,12 +145,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		/// <returns>The new current folder.</returns>
 		[PublicAPI]
-		public IFolder GoUp()
+		public TFolder GoUp()
 		{
 			if (IsCurrentFolderRoot)
 				return GoToRoot();
 
-			IFolder output;
+			TFolder output;
 
 			m_NavigateSection.Enter();
 
@@ -212,7 +176,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		/// <returns></returns>
 		/// <returns>The new current folder.</returns>
-		public IFolder GoToRoot()
+		public TFolder GoToRoot()
 		{
 			return IsCurrentFolderRoot ? GetCurrentFolder() : GoToRoot(Root);
 		}
@@ -222,11 +186,9 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		/// <param name="root"></param>
 		/// <returns></returns>
-		private IFolder GoToRoot(IFolder root)
+		protected TFolder GoToRoot(TFolder root)
 		{
-			m_Component.Codec.Log(eSeverity.Debug, "Going to Top level of Phone Book");
-
-			IFolder output;
+			TFolder output;
 
 			m_NavigateSection.Enter();
 
@@ -266,11 +228,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <summary>
 		/// Sends the command to begin populating the folder.
 		/// </summary>
-		private void PopulateFolder(IFolder parent)
-		{
-			if (m_PopulatedSection.Execute(() => m_Populated.Add(parent)) && parent.ChildCount == 0)
-				m_Component.Codec.SendCommand(parent.GetSearchCommand());
-		}
+		protected abstract void PopulateFolder(TFolder parent);
 
 		/// <summary>
 		/// Raises the OnPathChanged event.
@@ -285,7 +243,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// Subscribes to the current folder events.
 		/// </summary>
 		/// <param name="folder"></param>
-		private void Subscribe(IFolder folder)
+		protected virtual void Subscribe(TFolder folder)
 		{
 			if (folder == null)
 				return;
@@ -297,47 +255,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// Unsubscribes from the current folder events.
 		/// </summary>
 		/// <param name="folder"></param>
-		private void Unsubscribe(IFolder folder)
+		protected virtual void Unsubscribe(TFolder folder)
 		{
 			if (folder == null)
 				return;
 
 			folder.OnContentsChanged -= CurrentFolderContentsChanged;
-		}
-
-		/// <summary>
-		/// Subscribe to the component events.
-		/// </summary>
-		/// <param name="component"></param>
-		private void Subscribe(DirectoryComponent component)
-		{
-			if (component == null)
-				return;
-
-			component.OnCleared += ComponentOnCleared;
-		}
-
-		/// <summary>
-		/// Subscribe to the component events.
-		/// </summary>
-		/// <param name="component"></param>
-		private void Unsubscribe(DirectoryComponent component)
-		{
-			if (component == null)
-				return;
-
-			component.OnCleared -= ComponentOnCleared;
-		}
-
-		/// <summary>
-		/// Called when the directory is cleared.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="eventArgs"></param>
-		private void ComponentOnCleared(object sender, EventArgs eventArgs)
-		{
-			m_PopulatedSection.Execute(() => m_Populated.Clear());
-			GoToRoot();
 		}
 
 		/// <summary>

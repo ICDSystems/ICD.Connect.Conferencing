@@ -9,6 +9,8 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 {
@@ -30,7 +32,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="resultId"></param>
 		/// <param name="folders"></param>
 		/// <param name="contacts"></param>
-		public delegate void ResultParsedDelegate(string resultId, IFolder[] folders, CiscoContact[] contacts);
+		public delegate void ResultParsedDelegate(string resultId, AbstractCiscoFolder[] folders, CiscoContact[] contacts);
 
 		/// <summary>
 		/// Called when the cache is cleared.
@@ -43,10 +45,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		public event ResultParsedDelegate OnResultParsed;
 
 		// Mapping folder/contact ids
-		private readonly Dictionary<string, IFolder> m_Folders;
+		private readonly Dictionary<string, CiscoFolder> m_Folders;
 		private readonly Dictionary<string, CiscoContact> m_Contacts;
 
-		private readonly Dictionary<ePhonebookType, RootFolder> m_RootsCache;
+		private readonly Dictionary<ePhonebookType, CiscoRootFolder> m_RootsCache;
 
 		private readonly SafeCriticalSection m_FolderSection;
 		private readonly SafeCriticalSection m_RootsSection;
@@ -62,8 +64,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		public DirectoryComponent(CiscoCodec codec)
 			: base(codec)
 		{
-			m_RootsCache = new Dictionary<ePhonebookType, RootFolder>();
-			m_Folders = new Dictionary<string, IFolder>();
+			m_RootsCache = new Dictionary<ePhonebookType, CiscoRootFolder>();
+			m_Folders = new Dictionary<string, CiscoFolder>();
 			m_Contacts = new Dictionary<string, CiscoContact>();
 
 			m_FolderSection = new SafeCriticalSection();
@@ -101,7 +103,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 
 			try
 			{
-				foreach (RootFolder root in GetRoots())
+				foreach (CiscoRootFolder root in GetRoots())
 					root.ClearRecursive();
 
 				// Folders
@@ -123,14 +125,14 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		/// <param name="phonebookType"></param>
 		/// <returns></returns>
-		public RootFolder GetRoot(ePhonebookType phonebookType)
+		public CiscoRootFolder GetRoot(ePhonebookType phonebookType)
 		{
 			m_RootsSection.Enter();
 
 			try
 			{
 				if (!m_RootsCache.ContainsKey(phonebookType))
-					m_RootsCache[phonebookType] = new RootFolder(phonebookType);
+					m_RootsCache[phonebookType] = new CiscoRootFolder(phonebookType);
 
 				return m_RootsCache[phonebookType];
 			}
@@ -144,7 +146,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// Gets the roots for every phonebook type.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<RootFolder> GetRoots()
+		public IEnumerable<CiscoRootFolder> GetRoots()
 		{
 			return EnumUtils.GetValues<ePhonebookType>().Select(type => GetRoot(type));
 		}
@@ -161,7 +163,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 			base.Initialize();
 
 			// Populate the root folders
-			foreach (RootFolder root in GetRoots())
+			foreach (CiscoRootFolder root in GetRoots())
 				Codec.SendCommand(root.GetSearchCommand());
 		}
 
@@ -212,7 +214,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="xml"></param>
 		private void ParseSearchResult(string resultId, string xml)
 		{
-			IcdHashSet<IFolder> folders = new IcdHashSet<IFolder>();
+			IcdHashSet<CiscoFolder> folders = new IcdHashSet<CiscoFolder>();
 			IcdHashSet<CiscoContact> contacts = new IcdHashSet<CiscoContact>();
 
 			m_FolderSection.Enter();
@@ -220,7 +222,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 			try
 			{
 				folders.AddRange(XmlUtils.GetChildElementsAsString(xml, "Folder")
-				                         .Select(e => Folder.FromXml(e, resultId, m_Folders) as IFolder));
+				                         .Select(e => CiscoFolder.FromXml(e, resultId, m_Folders)));
 
 				contacts.AddRange(XmlUtils.GetChildElementsAsString(xml, "Contact")
 				                          .Select(e => CiscoContact.FromXml(e, resultId, m_Contacts)));
@@ -246,11 +248,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="resultId"></param>
 		/// <param name="folders"></param>
 		/// <param name="contacts"></param>
-		private void Insert(string resultId, IEnumerable<IFolder> folders, IEnumerable<CiscoContact> contacts)
+		private void Insert(string resultId, IEnumerable<CiscoFolder> folders, IEnumerable<CiscoContact> contacts)
 		{
-			IFolder parent = GetFolder(resultId);
+			AbstractCiscoFolder parent = GetFolder(resultId);
 			if (parent != null)
-				parent.AddChildren(folders, contacts);
+				parent.AddChildren(folders.Cast<IFolder>(), contacts.Cast<IContact>());
 		}
 
 		/// <summary>
@@ -258,10 +260,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		/// <param name="resultId"></param>
 		/// <returns></returns>
-		private IFolder GetFolder(string resultId)
+		private AbstractCiscoFolder GetFolder(string resultId)
 		{
-			return m_Folders.Values.AsEnumerable()
-			                .Concat(GetRoots().Cast<IFolder>())
+			return m_Folders.Values.AsEnumerable().Cast<AbstractCiscoFolder>()
+			                .Concat(GetRoots().Cast<AbstractCiscoFolder>())
 			                .FirstOrDefault(f => f.FolderSearchId == resultId);
 		}
 
