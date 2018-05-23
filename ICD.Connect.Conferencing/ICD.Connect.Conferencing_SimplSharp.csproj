@@ -92,9 +92,7 @@
     <Compile Include="DialingPlans\DialingPlan.cs" />
     <Compile Include="DialingPlans\Matchers\ExactPlanMatcher.cs" />
     <Compile Include="Directory\Tree\IFolder.cs" />
-    <Compile Include="Directory\Tree\INode.cs" />
     <Compile Include="Directory\Tree\FolderEventArgs.cs" />
-    <Compile Include="Directory\Tree\RootFolder.cs" />
     <Compile Include="EventArguments\ConferenceSourceAnswerStateEventArgs.cs" />
     <Compile Include="Conferences\Conference.cs" />
     <Compile Include="EventArguments\ConferenceSourceStatusEventArgs.cs" />

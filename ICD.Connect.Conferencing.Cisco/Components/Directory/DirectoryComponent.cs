@@ -32,7 +32,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="resultId"></param>
 		/// <param name="folders"></param>
 		/// <param name="contacts"></param>
-		public delegate void ResultParsedDelegate(string resultId, AbstractCiscoFolder[] folders, CiscoContact[] contacts);
+		public delegate void ResultParsedDelegate(string resultId, CiscoFolder[] folders, CiscoContact[] contacts);
 
 		/// <summary>
 		/// Called when the cache is cleared.
