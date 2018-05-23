@@ -49,6 +49,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		[JsonProperty("message")]
 		public string Message { get; private set; }
 		[JsonProperty("state")]
-		public string State { get; private set; }
+		public eZoomRoomResponseState State { get; private set; }
+	}
+
+	public enum eZoomRoomResponseState
+	{
+		OK,
+		Error
 	}
 }

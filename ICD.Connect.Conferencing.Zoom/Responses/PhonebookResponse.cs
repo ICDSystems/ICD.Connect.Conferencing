@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using ICD.Connect.Conferencing.Contacts;
+using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -9,7 +11,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public PhonebookUpdatedContact Data { get; private set; }
 	}
 
-	[ZoomRoomApiResponse("PhonebookListResponse", eZoomRoomApiType.zCommand, true)]
+	[ZoomRoomApiResponse("PhonebookListResult", eZoomRoomApiType.zCommand, true)]
 	public sealed class PhonebookListCommandResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("PhonebookListResult")]
@@ -34,7 +36,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public ZoomContact Contact { get; private set; }
 	}
 
-	public sealed class ZoomContact
+	public sealed class ZoomContact : IContact
 	{
 		/// <summary>
 		/// Use this ID when inviting the user, or when accepting / rejecting a user who is joining the conversation
@@ -78,6 +80,16 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		/// </summary>
 		[JsonProperty("index")]
 		public int? Index { get; private set; }
+
+		public string Name
+		{
+			get { return string.Format("{0} {1}", FirstName, LastName); }
+		}
+
+		public IEnumerable<IContactMethod> GetContactMethods()
+		{
+			yield return new ContactMethod(JoinId);
+		}
 	}
 
 	public enum eContactPresence

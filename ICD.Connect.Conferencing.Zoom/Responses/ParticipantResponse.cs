@@ -11,14 +11,14 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	public sealed class ListParticipantsCommandResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("ListParticipantsResult")]
-		public ParticipantInfo[] ListParticipantsResult { get; private set; }
+		public ParticipantInfo[] ParticipantList { get; private set; }
 	}
 
 	[ZoomRoomApiResponse("ListParticipantsResult", eZoomRoomApiType.zCommand, false)]
 	public sealed class ParticipantUpdateResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("ListParticipantsResult")]
-		public ParticipantInfo ListParticipantsResult { get; private set; }
+		public ParticipantInfo Participant { get; private set; }
 	}
 
 	public sealed class ParticipantInfo

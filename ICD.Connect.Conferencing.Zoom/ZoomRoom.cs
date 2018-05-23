@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Crestron.SimplSharp;
 using Crestron.SimplSharp.CrestronIO;
+using Crestron.SimplSharp.Reflection;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -12,8 +13,10 @@ using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Json;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.Conferencing.Zoom.Component;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
@@ -25,11 +28,19 @@ namespace ICD.Connect.Conferencing.Zoom
 	public sealed class ZoomRoom : AbstractDevice<ZoomRoomSettings>, IConnectable
 	{
 		/// <summary>
-		/// Callback for parser events.
+		/// Wrapper callback for responses that casts to the appropriate type.
 		/// </summary>
-		public delegate void ResponseCallback(ZoomRoom zoomRoom, AbstractZoomRoomResponse response);
-
+		private delegate void ResponseCallback(ZoomRoom zoomRoom, AbstractZoomRoomResponse response);
+		/// <summary>
+		/// Callback for responses.
+		/// </summary>
 		public delegate void ResponseCallback<T>(ZoomRoom zoomRoom, T response) where T : AbstractZoomRoomResponse;
+
+		private class ResponseCallbackPair
+		{
+			public ResponseCallback WrappedCallback { get; set; }
+			public object ActualCallback { get; set; }
+		}
 
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
@@ -46,10 +57,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly string[] m_ConfigurationCommands =
 		{
 			"echo off",
-			"format json"
+			"format json",
 		};
 
-		private readonly Dictionary<Type, List<ResponseCallback>> m_ResponseCallbacks;
+		private readonly Dictionary<Type, List<ResponseCallbackPair>> m_ResponseCallbacks;
 		private readonly SafeCriticalSection m_ResponseCallbacksSection;
 
 		#region Properties
@@ -90,10 +101,22 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 		}
 
+		public ZoomRoomCall CurrentCall { get; private set; }
+
 		/// <summary>
 		/// Gets the help information for the node.
 		/// </summary>
 		public override string ConsoleHelp { get { return "The Zoom Room conferencing device"; } }
+
+		/// <summary>
+		/// Causes this ZoomRoom to auto-accept any incoming calls.
+		/// </summary>
+		public bool AutoAnswer { get; set; }
+
+		/// <summary>
+		/// Causes this ZoomRoom to auto-reject any incoming calls. Overrides AutoAnswer
+		/// </summary>
+		public bool DoNotDisturb { get; set; }
 
 		#endregion
 
@@ -102,7 +125,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		public ZoomRoom()
 		{
 			Heartbeat = new Heartbeat(this);
-			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallback>>();
+
+			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallbackPair>>();
 			m_ResponseCallbacksSection = new SafeCriticalSection();
 		}
 		#endregion
@@ -222,6 +246,11 @@ namespace ICD.Connect.Conferencing.Zoom
 				SendCommand(command);
 		}
 
+		/// <summary>
+		/// Registers the given callback.
+		/// </summary>
+		/// <param name="callback"></param>
+		/// <param name="path"></param>
 		public void RegisterResponseCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
 		{
 			var wrappedCallback = new ResponseCallback((zr, resp) => callback(zr, (T) resp));
@@ -229,10 +258,48 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_ResponseCallbacksSection.Execute(() =>
 			{
 				if (!m_ResponseCallbacks.ContainsKey(typeof (T)))
-					m_ResponseCallbacks.Add(typeof (T), new List<ResponseCallback>());
+					m_ResponseCallbacks.Add(typeof (T), new List<ResponseCallbackPair>());
 
-				m_ResponseCallbacks[typeof (T)].Add(wrappedCallback);
+				m_ResponseCallbacks[typeof (T)].Add(new ResponseCallbackPair
+				{
+					WrappedCallback = wrappedCallback,
+					ActualCallback = callback
+				});
 			});
+		}
+
+		/// <summary>
+		/// Unregisters callbacks registered via RegisterResponseCallback.
+		/// </summary>
+		/// <param name="callback"></param>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		[PublicAPI]
+		public bool UnregisterResponseCallback<T>(ResponseCallback<T> callback) where T: AbstractZoomRoomResponse
+		{
+			if (!IsConnected)
+				return false;
+
+			m_ResponseCallbacksSection.Enter();
+
+			try
+			{
+				Type key = typeof (T);
+				if (!m_ResponseCallbacks.ContainsKey(key))
+					return false;
+
+				List<ResponseCallbackPair> callbackList = m_ResponseCallbacks[key];
+				ResponseCallbackPair callbackToRemove = callbackList.SingleOrDefault(c => c.ActualCallback.Equals(callback));
+
+				if (callbackToRemove == null)
+					return false;
+
+				return callbackList.Remove(callbackToRemove);
+			}
+			finally
+			{
+				m_ResponseCallbacksSection.Leave();
+			}
 		}
 
 		#endregion
@@ -245,7 +312,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void Initialize()
 		{
 			SendCommands(m_ConfigurationCommands);
-
+            SendCommand("zConfiguration Client deviceSystem: \"Krang Zoom Room Controller\"");
+            SendCommand("zConfiguration Client appVersion: {0}", GetType().GetAssembly().GetName().Version);
 			Initialized = true;
 		}
 
@@ -260,7 +328,7 @@ namespace ICD.Connect.Conferencing.Zoom
 				if (!m_ResponseCallbacks.ContainsKey(responseType))
 					return;
 
-				callbacks = m_ResponseCallbacks[responseType].ToArray();
+				callbacks = m_ResponseCallbacks[responseType].Select(c => c.WrappedCallback).ToArray();
 			}
 			finally
 			{
@@ -337,8 +405,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Called when the port online status changes.
 		/// </summary>
 		/// <param name="sender"></param>
-		/// <param name="boolEventArgs"></param>
-		private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs boolEventArgs)
+		/// <param name="args"></param>
+		private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
 		}
@@ -383,13 +451,9 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		#endregion
 
-		private void Log(eSeverity severity, string format, params object[] data)
+		public void Log(eSeverity severity, string format, params object[] data)
 		{
-			var message = string.Format(format, data);
-			if (Logger != null)
-			{
-				Logger.AddEntry(severity, message, data);
-			}
+			Log(severity, string.Format(format, data));
 		}
 	}
 }
