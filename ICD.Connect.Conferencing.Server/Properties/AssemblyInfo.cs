@@ -4,5 +4,5 @@ using System.Reflection;
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ICD.Connect.Conferencing.Server")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
-[assembly: AssemblyVersion("6.0.0.0")]
+[assembly: AssemblyVersion("7.0.0.0")]
 
