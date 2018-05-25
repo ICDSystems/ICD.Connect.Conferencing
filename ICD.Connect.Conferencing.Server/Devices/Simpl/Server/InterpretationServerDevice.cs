@@ -566,7 +566,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 		private void ServerOnSocketStateChange(object sender, SocketStateEventArgs args)
 		{
-			UpdateCachedOnlineStatus();
+			IsOnline = GetIsOnlineStatus();
 
 			if (args.SocketState == SocketStateEventArgs.eSocketStatus.SocketStatusConnected)
 				return;
@@ -576,6 +576,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 			int roomId = m_ClientToRoom[args.ClientId];
 			UnregisterRoom(args.ClientId, roomId);
+		}
+
+		private bool GetIsOnlineStatus()
+		{
+			return m_BoothToAdapter.AnyAndAll(adapter => adapter.Value.IsOnline);
 		}
 
 		#endregion
@@ -628,15 +633,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			ClearAdapters();
 
 			ClearSources();
-		}
-
-		#endregion
-
-		#region IDevice
-
-		protected override bool GetIsOnlineStatus()
-		{
-			return m_BoothToAdapter.AnyAndAll(adapter => adapter.Value.IsOnline);
 		}
 
 		#endregion
