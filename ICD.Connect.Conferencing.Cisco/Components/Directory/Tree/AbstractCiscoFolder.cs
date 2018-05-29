@@ -34,6 +34,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 			get { return (FolderId.StartsWith("local")) ? ePhonebookType.Local : ePhonebookType.Corporate; }
 		}
 
+		protected override IComparer<IContact> ContactComparer
+		{
+			get { return CiscoContactComparer.Instance; }
+		}
+
 		#endregion
 
 		#region Constructors
@@ -88,5 +93,32 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		}
 
 		#endregion
+	}
+
+	internal sealed class CiscoContactComparer : IComparer<IContact>
+	{
+		private static CiscoContactComparer s_Instance;
+
+		public static CiscoContactComparer Instance { get { return s_Instance = s_Instance ?? new CiscoContactComparer(); } }
+
+		public int Compare(IContact x, IContact y)
+		{
+			if (x == null)
+				throw new ArgumentNullException("x");
+
+			if (y == null)
+				throw new ArgumentNullException("y");
+
+			CiscoContact ciscoX = x as CiscoContact;
+			CiscoContact ciscoY = y as CiscoContact;
+			if (ciscoX == null || ciscoY == null)
+				throw new InvalidOperationException(string.Format("{0} cannot compare types {1} and {2}",
+					GetType().Name, x.GetType().Name, y.GetType().Name));
+
+			int surname = string.Compare(ciscoX.LastName, ciscoY.LastName, StringComparison.Ordinal);
+			return surname != 0
+					   ? surname
+					   : string.Compare(ciscoX.FirstName, ciscoY.FirstName, StringComparison.Ordinal);
+		}
 	}
 }

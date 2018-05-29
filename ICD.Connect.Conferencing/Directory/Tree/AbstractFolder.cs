@@ -17,8 +17,8 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		public event EventHandler OnContentsChanged;
 
-		private readonly List<IFolder> m_CachedFolders;
-		private readonly List<IContact> m_CachedContacts;
+		protected readonly List<IFolder> m_CachedFolders;
+		protected readonly List<IContact> m_CachedContacts;
 
 		private readonly SafeCriticalSection m_FoldersSection;
 		private readonly SafeCriticalSection m_ContactsSection;
@@ -44,6 +44,16 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Gets the number of child folders and contacts.
 		/// </summary>
 		public int ChildCount { get { return FolderCount + ContactCount; } }
+
+		protected virtual IComparer<IContact> ContactComparer
+		{
+			get { return BaseContactComparer.Instance; }
+		}
+
+		protected virtual IComparer<IFolder> FolderComparer
+		{
+			get { return BaseFolderComparer.Instance; }
+		}
 
 		#endregion
 
@@ -89,7 +99,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Gets the cached folders.
 		/// </summary>
 		/// <returns></returns>
-		public IFolder[] GetFolders()
+		public virtual IFolder[] GetFolders()
 		{
 			return m_FoldersSection.Execute(() => m_CachedFolders.ToArray());
 		}
@@ -99,7 +109,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		/// <param name="index"></param>
 		/// <returns></returns>
-		public IFolder GetFolder(int index)
+		public virtual IFolder GetFolder(int index)
 		{
 			return m_FoldersSection.Execute(() => m_CachedFolders[index]);
 		}
@@ -225,7 +235,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 				if (m_CachedFolders.Contains(folder))
 					return false;
 
-				m_CachedFolders.AddSorted(folder, FolderComparer.Instance);
+				m_CachedFolders.AddSorted(folder, FolderComparer);
 			}
 			finally
 			{
@@ -257,7 +267,6 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 
 		protected virtual bool AddContact(IContact contact, bool raise)
 		{
-
 			m_ContactsSection.Enter();
 
 			try
@@ -265,7 +274,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 				if (m_CachedContacts.Contains(contact))
 					return false;
 
-				m_CachedContacts.AddSorted(contact, ContactComparer.Instance);
+				m_CachedContacts.AddSorted(contact, ContactComparer);
 			}
 			finally
 			{
@@ -280,11 +289,11 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		#endregion
 	}
 
-	internal sealed class FolderComparer : IComparer<IFolder>
+	public sealed class BaseFolderComparer : IComparer<IFolder>
 	{
-		private static FolderComparer s_Instance;
+		private static BaseFolderComparer s_Instance;
 
-		public static FolderComparer Instance { get { return s_Instance = s_Instance ?? new FolderComparer(); } }
+		public static BaseFolderComparer Instance { get { return s_Instance = s_Instance ?? new BaseFolderComparer(); } }
 
 		public int Compare(IFolder x, IFolder y)
 		{
@@ -298,11 +307,11 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		}
 	}
 
-	internal sealed class ContactComparer : IComparer<IContact>
+	internal sealed class BaseContactComparer : IComparer<IContact>
 	{
-		private static ContactComparer s_Instance;
+		private static BaseContactComparer s_Instance;
 
-		public static ContactComparer Instance { get { return s_Instance = s_Instance ?? new ContactComparer(); } }
+		public static BaseContactComparer Instance { get { return s_Instance = s_Instance ?? new BaseContactComparer(); } }
 
 		public int Compare(IContact x, IContact y)
 		{
@@ -312,10 +321,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 			if (y == null)
 				throw new ArgumentNullException("y");
 
-			int surname = string.Compare(x.Name, y.Name, StringComparison.Ordinal);
-			return surname != 0
-				       ? surname
-				       : string.Compare(x.Name, y.Name, StringComparison.Ordinal);  
+			return string.Compare(x.Name, y.Name, StringComparison.Ordinal);
 		}
 	}
 }
