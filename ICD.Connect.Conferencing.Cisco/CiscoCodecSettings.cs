@@ -11,7 +11,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// Settings for the CiscoCodec.
 	/// </summary>
 	[KrangSettings("CiscoCodec", typeof(CiscoCodec))]
-	public sealed class CiscoCodecSettings : AbstractConferencingDeviceSettings
+	public sealed class CiscoCodecSettings : AbstractVideoConferenceDeviceSettings
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";

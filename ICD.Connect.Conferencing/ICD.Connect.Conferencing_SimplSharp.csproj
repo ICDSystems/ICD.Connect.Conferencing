@@ -90,12 +90,12 @@
     <Compile Include="Controls\DialerDeviceDialerControl.cs" />
     <Compile Include="Controls\DialingDeviceControlConsole.cs" />
     <Compile Include="Controls\IPresentationControl.cs" />
-    <Compile Include="Devices\AbstractConferencingDevice.cs" />
-    <Compile Include="Devices\AbstractConferencingDeviceSettings.cs" />
+    <Compile Include="Devices\AbstractVideoConferenceDevice.cs" />
+    <Compile Include="Devices\AbstractVideoConferenceDeviceSettings.cs" />
     <Compile Include="Devices\CodecInputTypes.cs" />
     <Compile Include="Devices\eCodecInputType.cs" />
-    <Compile Include="Devices\IConferencingDevice.cs" />
-    <Compile Include="Devices\IConferencingDeviceSettings.cs" />
+    <Compile Include="Devices\IVideoConferenceDevice.cs" />
+    <Compile Include="Devices\IVideoConferenceDeviceSettings.cs" />
     <Compile Include="Devices\IDialerDevice.cs" />
     <Compile Include="Devices\IInterpretationDevice.cs" />
     <Compile Include="DialingPlans\DialingPlan.cs" />

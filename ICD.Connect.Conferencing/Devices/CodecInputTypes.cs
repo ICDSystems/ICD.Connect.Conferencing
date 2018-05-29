@@ -80,7 +80,7 @@ namespace ICD.Connect.Conferencing.Devices
 		/// Updates the input types from the settings instance.
 		/// </summary>
 		/// <param name="settings"></param>
-		public void ApplySettings(IConferencingDeviceSettings settings)
+		public void ApplySettings(IVideoConferenceDeviceSettings settings)
 		{
 			if (settings == null)
 				throw new ArgumentNullException("settings");
@@ -97,7 +97,7 @@ namespace ICD.Connect.Conferencing.Devices
 		/// Copies the input types onto the settings instance.
 		/// </summary>
 		/// <param name="settings"></param>
-		public void CopySettings(IConferencingDeviceSettings settings)
+		public void CopySettings(IVideoConferenceDeviceSettings settings)
 		{
 			if (settings == null)
 				throw new ArgumentNullException("settings");

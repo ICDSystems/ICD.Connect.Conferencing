@@ -3,7 +3,7 @@ using ICD.Connect.Devices;
 
 namespace ICD.Connect.Conferencing.Devices
 {
-	public abstract class AbstractConferencingDeviceSettings : AbstractDeviceSettings, IConferencingDeviceSettings
+	public abstract class AbstractVideoConferenceDeviceSettings : AbstractDeviceSettings, IVideoConferenceDeviceSettings
 	{
 		private const string INPUT_1_ELEMENT = "Input1Type";
 		private const string INPUT_2_ELEMENT = "Input2Type";

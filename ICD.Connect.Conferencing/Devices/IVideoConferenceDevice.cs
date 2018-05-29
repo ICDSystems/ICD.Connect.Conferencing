@@ -2,7 +2,7 @@
 
 namespace ICD.Connect.Conferencing.Devices
 {
-	public interface IConferencingDevice : IDevice
+	public interface IVideoConferenceDevice : IDevice
 	{
 		/// <summary>
 		/// Configured information about how the input connectors should be used.

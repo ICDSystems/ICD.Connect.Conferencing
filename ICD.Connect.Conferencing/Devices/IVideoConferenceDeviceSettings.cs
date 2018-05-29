@@ -2,7 +2,7 @@
 
 namespace ICD.Connect.Conferencing.Devices
 {
-	public interface IConferencingDeviceSettings : IDeviceSettings
+	public interface IVideoConferenceDeviceSettings : IDeviceSettings
 	{
 		eCodecInputType Input1CodecInputType { get; set; }
 		eCodecInputType Input2CodecInputType { get; set; }

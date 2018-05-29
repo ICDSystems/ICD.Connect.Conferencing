@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// <summary>
 	/// Cisco VTC Codec Control
 	/// </summary>
-	public sealed class CiscoCodec : AbstractConferencingDevice<CiscoCodecSettings>, IConnectable
+	public sealed class CiscoCodec : AbstractVideoConferenceDevice<CiscoCodecSettings>, IConnectable
 	{
 		/// <summary>
 		/// Callback for parser events.

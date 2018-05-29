@@ -3,8 +3,8 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Devices
 {
-	public abstract class AbstractConferencingDevice<TSettings> : AbstractDevice<TSettings>, IConferencingDevice
-		where TSettings : IConferencingDeviceSettings, new()
+	public abstract class AbstractVideoConferenceDevice<TSettings> : AbstractDevice<TSettings>, IVideoConferenceDevice
+		where TSettings : IVideoConferenceDeviceSettings, new()
 	{
 		private readonly CodecInputTypes m_InputTypes;
 
@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.Devices
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		protected AbstractConferencingDevice()
+		protected AbstractVideoConferenceDevice()
 		{
 			m_InputTypes = new CodecInputTypes();
 		}
