@@ -26,11 +26,6 @@ namespace ICD.Connect.Conferencing.Directory
 		bool IsCurrentFolderRoot { get; }
 
 		/// <summary>
-		/// Releases resources.
-		/// </summary>
-		void Dispose();
-
-		/// <summary>
 		/// Gets the current folder on the path.
 		/// </summary>
 		/// <returns></returns>

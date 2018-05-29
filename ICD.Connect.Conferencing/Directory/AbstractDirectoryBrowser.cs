@@ -14,7 +14,7 @@ namespace ICD.Connect.Conferencing.Directory
 	/// <summary>
 	/// DirectoryBrowser provides methods for browsing through a phonebook.
 	/// </summary>
-	public abstract class AbstractDirectoryBrowser<TFolder, TContact> : IDisposable, IDirectoryBrowser<TFolder, TContact>
+	public abstract class AbstractDirectoryBrowser<TFolder, TContact> : IDirectoryBrowser<TFolder, TContact>
 		where TFolder : class, IFolder
 		where TContact : class, IContact
 	{
@@ -62,7 +62,6 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="component"></param>
 		public AbstractDirectoryBrowser()
 		{
 			m_Path = new Stack<TFolder>();
