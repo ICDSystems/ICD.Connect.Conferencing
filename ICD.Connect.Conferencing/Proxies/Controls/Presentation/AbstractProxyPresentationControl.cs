@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Controls;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Devices;
-using ICD.Connect.Devices.Controls;
+using ICD.Connect.Devices.Proxies.Controls;
+using ICD.Connect.Devices.Proxies.Devices;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 {
-	public abstract class AbstractPresentationControl<TDevice> : AbstractDeviceControl<TDevice>, IPresentationControl
-		where TDevice : IDeviceBase
+	public abstract class AbstractProxyPresentationControl : AbstractProxyDeviceControl, IProxyPresentationControl
 	{
 		/// <summary>
 		/// Raised when the presentation active state changes.
@@ -25,11 +26,11 @@ namespace ICD.Connect.Conferencing.Controls
 		public bool PresentationActive
 		{
 			get { return m_PresentationActive; }
-			protected set
+			[UsedImplicitly] private set
 			{
 				if (value == m_PresentationActive)
 					return;
-
+				
 				m_PresentationActive = value;
 
 				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
@@ -41,7 +42,7 @@ namespace ICD.Connect.Conferencing.Controls
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		protected AbstractPresentationControl(TDevice parent, int id)
+		protected AbstractProxyPresentationControl(IProxyDeviceBase parent, int id)
 			: base(parent, id)
 		{
 		}
@@ -63,12 +64,18 @@ namespace ICD.Connect.Conferencing.Controls
 		/// Starts presenting the source at the given input address.
 		/// </summary>
 		/// <param name="input"></param>
-		public abstract void StartPresentation(int input);
+		public void StartPresentation(int input)
+		{
+			CallMethod(PresentationControlApi.METHOD_START_PRESENTATION, input);
+		}
 
 		/// <summary>
 		/// Stops the active presentation.
 		/// </summary>
-		public abstract void StopPresentation();
+		public void StopPresentation()
+		{
+			CallMethod(PresentationControlApi.METHOD_STOP_PRESENTATION);
+		}
 
 		#endregion
 

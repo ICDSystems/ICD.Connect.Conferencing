@@ -5,7 +5,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Proxies;
+using ICD.Connect.Conferencing.Proxies.Controls.Dialing;
 using ICD.Connect.Devices.Controls;
 
 namespace ICD.Connect.Conferencing.Controls

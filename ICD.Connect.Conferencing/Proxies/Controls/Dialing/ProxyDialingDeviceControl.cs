@@ -1,6 +1,6 @@
 ﻿using ICD.Connect.Devices.Proxies.Devices;
 
-namespace ICD.Connect.Conferencing.Proxies
+namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 {
 	public sealed class ProxyDialingDeviceControl : AbstractProxyDialingDeviceControl
 	{

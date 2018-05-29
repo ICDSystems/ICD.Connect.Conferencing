@@ -8,7 +8,7 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Proxies.Controls;
 using ICD.Connect.Devices.Proxies.Devices;
 
-namespace ICD.Connect.Conferencing.Proxies
+namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 {
 	public abstract class AbstractProxyDialingDeviceControl : AbstractProxyDeviceControl, IProxyDialingDeviceControl
 	{

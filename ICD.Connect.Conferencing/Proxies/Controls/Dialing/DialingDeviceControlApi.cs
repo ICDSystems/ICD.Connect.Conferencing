@@ -1,4 +1,4 @@
-﻿namespace ICD.Connect.Conferencing.Proxies
+﻿namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 {
 	public static class DialingDeviceControlApi
 	{

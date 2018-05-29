@@ -81,6 +81,7 @@
     <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
     <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
+    <Compile Include="Controls\PresentationControlConsole.cs" />
     <Compile Include="Directory\IDirectoryBrowser.cs" />
     <Compile Include="Directory\Tree\AbstractFolder.cs" />
     <Compile Include="Directory\AbstractDirectoryBrowser.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="DialingPlans\Matchers\RegexPlanMatcher.cs" />
     <Compile Include="EventArguments\ConferenceSourceTypeEventArgs.cs" />
     <Compile Include="EventArguments\InCallEventArgs.cs" />
+    <Compile Include="EventArguments\PresentationActiveApiEventArgs.cs" />
     <Compile Include="Favorites\FavoriteContactMethod.cs" />
     <Compile Include="Favorites\Favorite.cs" />
     <Compile Include="EventArguments\ConferenceEventArgs.cs" />
@@ -127,10 +129,14 @@
     <Compile Include="Controls\IDialingDeviceControl.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Proxies\AbstractProxyDialingDeviceControl.cs" />
-    <Compile Include="Proxies\DialingDeviceControlApi.cs" />
-    <Compile Include="Proxies\IProxyDialingDeviceControl.cs" />
-    <Compile Include="Proxies\ProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Dialing\AbstractProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Presentation\AbstractProxyPresentationControl.cs" />
+    <Compile Include="Proxies\Controls\Dialing\DialingDeviceControlApi.cs" />
+    <Compile Include="Proxies\Controls\Dialing\IProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Presentation\IProxyPresentationControl.cs" />
+    <Compile Include="Proxies\Controls\Presentation\PresentationControlApi.cs" />
+    <Compile Include="Proxies\Controls\Dialing\ProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Presentation\ProxyPresentationControl.cs" />
     <Compile Include="Utils\SipUtils.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
