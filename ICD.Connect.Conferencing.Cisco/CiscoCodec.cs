@@ -104,6 +104,9 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the heartbeat instance that is enforcing the connection state.
+		/// </summary>
 		public Heartbeat Heartbeat { get; private set; }
 
 		/// <summary>
