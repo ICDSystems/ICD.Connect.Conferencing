@@ -1,6 +1,6 @@
 using System;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Devices;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
@@ -11,15 +11,10 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// Settings for the CiscoCodec.
 	/// </summary>
 	[KrangSettings("CiscoCodec", typeof(CiscoCodec))]
-	public sealed class CiscoCodecSettings : AbstractDeviceSettings
+	public sealed class CiscoCodecSettings : AbstractConferencingDeviceSettings
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
-
-		private const string INPUT_1_ELEMENT = "Input1Type";
-		private const string INPUT_2_ELEMENT = "Input2Type";
-		private const string INPUT_3_ELEMENT = "Input3Type";
-		private const string INPUT_4_ELEMENT = "Input4Type";
 
 		private string m_PeripheralsId;
 
@@ -28,11 +23,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// </summary>
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
-
-		public eCodecInputType Input1CodecInputType { get; set; }
-		public eCodecInputType Input2CodecInputType { get; set; }
-		public eCodecInputType Input3CodecInputType { get; set; }
-		public eCodecInputType Input4CodecInputType { get; set; }
 
 		/// <summary>
 		/// Gets/sets the peripherals id.
@@ -66,11 +56,6 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
-
-			writer.WriteElementString(INPUT_1_ELEMENT, IcdXmlConvert.ToString(Input1CodecInputType));
-			writer.WriteElementString(INPUT_2_ELEMENT, IcdXmlConvert.ToString(Input2CodecInputType));
-			writer.WriteElementString(INPUT_3_ELEMENT, IcdXmlConvert.ToString(Input3CodecInputType));
-			writer.WriteElementString(INPUT_4_ELEMENT, IcdXmlConvert.ToString(Input4CodecInputType));
 		}
 
 		/// <summary>
@@ -83,11 +68,6 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 			PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT);
-
-			Input1CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_1_ELEMENT, true) ?? eCodecInputType.None;
-			Input2CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_2_ELEMENT, true) ?? eCodecInputType.None;
-			Input3CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_3_ELEMENT, true) ?? eCodecInputType.None;
-			Input4CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_4_ELEMENT, true) ?? eCodecInputType.None;
 		}
 	}
 }

@@ -12,7 +12,7 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components;
 using ICD.Connect.Conferencing.Cisco.Controls;
-using ICD.Connect.Devices;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// <summary>
 	/// Cisco VTC Codec Control
 	/// </summary>
-	public sealed class CiscoCodec : AbstractDevice<CiscoCodecSettings>, IConnectable
+	public sealed class CiscoCodec : AbstractConferencingDevice<CiscoCodecSettings>, IConnectable
 	{
 		/// <summary>
 		/// Callback for parser events.
@@ -94,8 +94,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		private readonly ISerialBuffer m_SerialBuffer;
 		private readonly SafeTimer m_FeedbackTimer;
 
-		private readonly CodecInputTypes m_InputTypes;
-
 		private readonly CiscoComponentFactory m_Components;
 
 		private bool m_Initialized;
@@ -134,11 +132,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		public CiscoComponentFactory Components { get { return m_Components; } }
 
 		/// <summary>
-		/// Configured information about how the input connectors should be used.
-		/// </summary>
-		public CodecInputTypes InputTypes { get { return m_InputTypes; } }
-
-		/// <summary>
 		/// Returns true when the codec is connected.
 		/// </summary>
 		public bool IsConnected
@@ -175,7 +168,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
 			m_Components = new CiscoComponentFactory(this);
-			m_InputTypes = new CodecInputTypes();
 			m_FeedbackTimer = SafeTimer.Stopped(FeedbackTimerCallback);
 
 			m_SerialBuffer = new XmlSerialBuffer();
@@ -738,8 +730,6 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
 			settings.PeripheralsId = PeripheralsId;
-
-			InputTypes.CopySettings(settings);
 		}
 
 		/// <summary>
@@ -751,8 +741,6 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			PeripheralsId = null;
 			SetPort(null);
-
-			InputTypes.ClearSettings();
 		}
 
 		/// <summary>
@@ -765,8 +753,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			base.ApplySettingsFinal(settings, factory);
 
 			PeripheralsId = settings.PeripheralsId;
-
-			InputTypes.ApplySettings(settings);
 
 			ISerialPort port = null;
 
