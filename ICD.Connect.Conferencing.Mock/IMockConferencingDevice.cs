@@ -9,6 +9,7 @@ namespace ICD.Connect.Conferencing.Mock
 	public interface IMockConferencingDevice : IDevice
 	{
 		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		IEnumerable<IConferenceSource> GetSources();
 

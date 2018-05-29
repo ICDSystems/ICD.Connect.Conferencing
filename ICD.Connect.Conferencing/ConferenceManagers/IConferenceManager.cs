@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.ConferenceSources;
@@ -144,6 +145,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		IDialingDeviceControl GetDialingProvider(eConferenceSourceType sourceType);
 
 		/// <summary>
@@ -161,11 +163,25 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		bool RegisterDialingProvider(eConferenceSourceType sourceType, IDialingDeviceControl dialingControl);
 
 		/// <summary>
+		/// Registers the dialing component, for feedback only.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
+
+		/// <summary>
 		/// Deregisters the dialing component.
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
 		bool DeregisterDialingProvider(eConferenceSourceType sourceType);
+
+		/// <summary>
+		/// Deregisters the dialing componet from the feedback only list.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		bool DeregisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
 
 		/// <summary>
 		/// Deregisters all of the dialing components.

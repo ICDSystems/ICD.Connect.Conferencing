@@ -4,7 +4,7 @@ using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Cisco.Components.System;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco.Controls
 {
 	public sealed class CiscoCodecCameraDevicePowerControl : AbstractPowerDeviceControl<CiscoCodecCameraDevice>
 	{
@@ -75,12 +75,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 		private void Subscribe()
 		{
-			Parent.CodecChanged += ParentOnCodecChanged;
+			Parent.OnCodecChanged += ParentOnCodecChanged;
 		}
 
 		private void Unsubscribe()
 		{
-			Parent.CodecChanged -= ParentOnCodecChanged;
+			Parent.OnCodecChanged -= ParentOnCodecChanged;
 		}
 
 		private void UpdateSystemComponent()

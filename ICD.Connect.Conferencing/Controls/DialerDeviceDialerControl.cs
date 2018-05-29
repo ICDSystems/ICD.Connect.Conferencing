@@ -3,34 +3,43 @@ using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.ConferenceSources;
-using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Controls
 {
-	public sealed class DialingDeviceClientControl : AbstractDialingDeviceControl<IConferencingClientDevice>, IDialingDeviceClientControl 
+	public sealed class DialerDeviceDialerControl : AbstractDialingDeviceControl<IDialerDevice> 
 	{
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
 
-		public DialingDeviceClientControl(ConferencingClientDevice parent, int id)
+		public DialerDeviceDialerControl(IDialerDevice parent, int id)
 			: base(parent, id)
 		{
 			Subscribe(parent);
 		}
 
-		private void Subscribe(ConferencingClientDevice parent)
+		private void Subscribe(IDialerDevice parent)
 		{
 			parent.OnAutoAnswerChanged += ParentOnAutoAnswerChanged;
 			parent.OnDoNotDisturbChanged += ParentOnDoNotDisturbChanged;
 			parent.OnPrivacyMuteChanged += ParentOnPrivacyMuteChanged;
 			parent.OnSourceAdded += ParentOnSourceAdded;
+			parent.OnSourceRemoved += ParentOnSourceRemoved;
 		}
 
 		private void ParentOnSourceAdded(object sender, ConferenceSourceEventArgs eventArgs)
 		{
+			SourceSubscribe(eventArgs.Data);
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs));
+		}
+
+		private void ParentOnSourceRemoved(object sender, ConferenceSourceEventArgs eventArgs)
+		{
+			SourceUnsubscribe(eventArgs.Data);
+			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs));
 		}
 
 		private void ParentOnPrivacyMuteChanged(object sender, BoolEventArgs eventArgs)

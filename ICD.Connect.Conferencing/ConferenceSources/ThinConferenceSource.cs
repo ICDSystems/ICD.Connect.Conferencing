@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -13,7 +12,17 @@ using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.ConferenceSources
 {
-	public sealed class ThinConferenceSource : IConferenceSource
+	public delegate void ThinConferenceSourceAnswerCallback(ThinConferenceSource sender);
+
+	public delegate void ThinConferenceSourceHoldCallback(ThinConferenceSource sender);
+
+	public delegate void ThinConferenceSourceResumeCallback(ThinConferenceSource sender);
+
+	public delegate void ThinConferenceSourceSendDtmfCallback(ThinConferenceSource sender, string data);
+
+	public delegate void ThinConferenceSourceHangupCallback(ThinConferenceSource sender);
+
+	public sealed class ThinConferenceSource : IConferenceSource, IDisposable
 	{
 		public event EventHandler<ConferenceSourceAnswerStateEventArgs> OnAnswerStateChanged;
 		public event EventHandler<ConferenceSourceStatusEventArgs> OnStatusChanged;
@@ -21,20 +30,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		public event EventHandler<StringEventArgs> OnNumberChanged;
 		public event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
 
-		[PublicAPI]
-		public event EventHandler OnAnswerCallback;
-
-		[PublicAPI]
-		public event EventHandler OnHoldCallback;
-
-		[PublicAPI]
-		public event EventHandler OnResumeCallback;
-
-		[PublicAPI]
-		public event EventHandler OnHangupCallback;
-
-		[PublicAPI]
-		public event EventHandler<StringEventArgs> OnSendDtmfCallback;
+		public ThinConferenceSourceAnswerCallback AnswerCallback { get; set; }
+		public ThinConferenceSourceHoldCallback HoldCallback { get; set; }
+		public ThinConferenceSourceResumeCallback ResumeCallback { get; set; }
+		public ThinConferenceSourceSendDtmfCallback SendDtmfCallback { get; set; }
+		public ThinConferenceSourceHangupCallback HangupCallback { get; set; }
 
 		private string m_Name;
 		private string m_Number;
@@ -207,6 +207,15 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			DialTime = IcdEnvironment.GetLocalTime();
 		}
 
+		public void Dispose()
+		{
+			AnswerCallback = null;
+			HoldCallback = null;
+			ResumeCallback = null;
+			SendDtmfCallback = null;
+			HangupCallback = null;
+		}
+
 		#region Methods
 
 		/// <summary>
@@ -228,7 +237,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		public void Answer()
 		{
-			OnAnswerCallback.Raise(this);
+			ThinConferenceSourceAnswerCallback handler = AnswerCallback;
+			if (handler != null)
+				handler(this);
 		}
 
 		/// <summary>
@@ -236,7 +247,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		public void Hold()
 		{
-			OnHoldCallback.Raise(this);
+			ThinConferenceSourceHoldCallback handler = HoldCallback;
+			if (handler != null)
+				handler(this);
 		}
 
 		/// <summary>
@@ -244,15 +257,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// </summary>
 		public void Resume()
 		{
-			OnResumeCallback.Raise(this);
-		}
-
-		/// <summary>
-		/// Disconnects the source.
-		/// </summary>
-		public void Hangup()
-		{
-			OnHangupCallback.Raise(this);
+			ThinConferenceSourceResumeCallback handler = ResumeCallback;
+			if (handler != null)
+				handler(this);
 		}
 
 		/// <summary>
@@ -261,7 +268,19 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <param name="data"></param>
 		public void SendDtmf(string data)
 		{
-			OnSendDtmfCallback.Raise(this, new StringEventArgs(data));
+			ThinConferenceSourceSendDtmfCallback handler = SendDtmfCallback;
+			if (handler != null)
+				handler(this, data);
+		}
+
+		/// <summary>
+		/// Disconnects the source.
+		/// </summary>
+		public void Hangup()
+		{
+			ThinConferenceSourceHangupCallback handler = HangupCallback;
+			if (handler != null)
+				handler(this);
 		}
 
 		#endregion

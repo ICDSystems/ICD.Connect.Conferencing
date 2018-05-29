@@ -17,9 +17,19 @@ namespace ICD.Connect.Conferencing.Controls
 	public interface IDialingDeviceControl : IDeviceControl
 	{
 		/// <summary>
-		/// Called when a source is added to the dialing component.
+		/// Raised when a source is added to the dialing component.
 		/// </summary>
 		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+
+		/// <summary>
+		/// Raised when a source is removed from the dialing component.
+		/// </summary>
+		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+
+		/// <summary>
+		/// Raised when a source property changes.
+		/// </summary>
+		event EventHandler<ConferenceSourceEventArgs> OnSourceChanged;
 
 		/// <summary>
 		/// Raised when the Do Not Disturb state changes.

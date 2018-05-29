@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
@@ -16,14 +18,14 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	public sealed class NearCamerasComponent : AbstractCiscoComponent
 	{
 		/// <summary>
-		/// Called when the cameras are rebuilt.
+		/// Raises when the cameras are rebuilt.
 		/// </summary>
 		public event EventHandler OnCamerasChanged;
 
 		/// <summary>
-		/// Called when the presets are rebuilt.
+		/// Raises the camera id when presets change.
 		/// </summary>
-		public event EventHandler OnPresetsChanged;
+		public event EventHandler<IntEventArgs> OnPresetsChanged;
 
 		private readonly Dictionary<int, NearCamera> m_Cameras;
 		private readonly Dictionary<int, Dictionary<int, CameraPreset>> m_Presets;
@@ -55,6 +57,17 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 
 			if (Codec.Initialized)
 				Initialize();
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		public override void Dispose()
+		{
+			OnCamerasChanged = null;
+			OnPresetsChanged = null;
+
+			base.Dispose();
 		}
 
 		#endregion
@@ -179,6 +192,12 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			codec.UnregisterParserCallback(ParseCameraPresets, "PresetListResult");
 		}
 
+		/// <summary>
+		/// Parses the camera status result.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="resultId"></param>
+		/// <param name="xml"></param>
 		private void ParseCameraStatus(CiscoCodec sender, string resultId, string xml)
 		{
 			m_CamerasSection.Enter();
@@ -202,8 +221,16 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			OnCamerasChanged.Raise(this);
 		}
 
+		/// <summary>
+		/// Parses the camera presets result.
+		/// </summary>
+		/// <param name="codec"></param>
+		/// <param name="resultid"></param>
+		/// <param name="xml"></param>
 		private void ParseCameraPresets(CiscoCodec codec, string resultid, string xml)
 		{
+			IcdHashSet<int> cameras = new IcdHashSet<int>();
+
 			m_PresetsSection.Enter();
 
 			try
@@ -218,6 +245,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 					if (!m_Presets.ContainsKey(cameraId))
 						m_Presets[cameraId] = new Dictionary<int, CameraPreset>();
 					m_Presets[cameraId][preset.PresetId] = preset;
+
+					cameras.Add(cameraId);
 				}
 			}
 			finally
@@ -225,7 +254,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 				m_PresetsSection.Leave();
 			}
 
-			OnPresetsChanged.Raise(this);
+			foreach (int camera in cameras)
+				OnPresetsChanged.Raise(this, new IntEventArgs(camera));
 		}
 
 		/// <summary>
@@ -234,7 +264,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// <param name="xml"></param>
 		/// <param name="cameraId"></param>
 		/// <returns></returns>
-		public static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
+		private static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
 		{
 			cameraId = 0;
 

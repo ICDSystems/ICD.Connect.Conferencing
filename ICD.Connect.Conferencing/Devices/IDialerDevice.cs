@@ -5,16 +5,19 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 
-namespace ICD.Connect.Conferencing.Server
+namespace ICD.Connect.Conferencing.Devices
 {
-	public interface IConferencingClientDevice : IDevice
+	public interface IDialerDevice : IDevice
 	{
-		event EventHandler<BoolEventArgs> OnConnectedStateChanged;
-
 		/// <summary>
-		/// Called when a source is added to the dialing component.
+		/// Called when a source is added to the dialing device.
 		/// </summary>
 		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+
+		/// <summary>
+		/// Called when a source is removed from the dialing device.
+		/// </summary>
+		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		/// <summary>
 		/// Raised when the Do Not Disturb state changes.
@@ -31,20 +34,16 @@ namespace ICD.Connect.Conferencing.Server
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
-		bool IsConnected { get; }
 		bool PrivacyMuted { get; }
 		bool DoNotDisturb { get; }
 		bool AutoAnswer { get; }
 
 		void Dial(string number);
-		void Dial(string number, eConferenceSourceType type);
+		void Dial(string number, eConferenceSourceType callType);
 		void SetPrivacyMute(bool enabled);
 		void SetAutoAnswer(bool enabled);
 		void SetDoNotDisturb(bool enabled);
-		void HoldEnable();
-		void HoldResume();
-		void EndCall();
-		void SendDtmf(string data);
+		
 		IEnumerable<IConferenceSource> GetSources();
 	}
 }

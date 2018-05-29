@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
+using ICD.Connect.Conferencing.Cisco.Components.Cameras;
+using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings.Core;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco
 {
-	// ReSharper disable once ClassCanBeSealed.Global 
-	//(this device has no inheritors, but its type is used as a filter for the power control so it cant be sealed)
-	public class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
-	                                      ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
+	public sealed class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
+	                                             ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
-		public event EventHandler CodecChanged;
+		public event EventHandler OnCodecChanged;
+
+		public event EventHandler OnPresetsChanged;
 
 		private CiscoCodec m_Codec;
 		private NearCamerasComponent m_CamerasComponent;
@@ -171,7 +174,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// </summary>
 		protected override void ClearSettingsFinal()
 		{
-			CodecChanged = null;
+			OnCodecChanged = null;
 
 			base.ClearSettingsFinal();
 
@@ -237,22 +240,28 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 				return;
 
 			Unsubscribe(m_Codec);
+			Unsubscribe(m_CamerasComponent);
+
 			m_Codec = codec;
-
-			Subscribe(m_Codec);
-			UpdateCachedOnlineStatus();
-
 			m_CamerasComponent = m_Codec == null ? null : m_Codec.Components.GetComponent<NearCamerasComponent>();
-
 			m_Camera = m_CamerasComponent == null ? null : m_CamerasComponent.GetCamera(CameraId);
 
-			CodecChanged.Raise(this);
+			Subscribe(m_Codec);
+			Subscribe(m_CamerasComponent);
+
+			UpdateCachedOnlineStatus();
+
+			OnCodecChanged.Raise(this);
 		}
 
 		#endregion
 
 		#region Codec Callbacks
 
+		/// <summary>
+		/// Subscribe to the codec events.
+		/// </summary>
+		/// <param name="codec"></param>
 		private void Subscribe(CiscoCodec codec)
 		{
 			if (codec == null)
@@ -261,6 +270,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			codec.OnIsOnlineStateChanged += CodecOnIsOnlineStateChanged;
 		}
 
+		/// <summary>
+		/// Unsubscribe from the codec events.
+		/// </summary>
+		/// <param name="codec"></param>
 		private void Unsubscribe(CiscoCodec codec)
 		{
 			if (codec == null)
@@ -269,9 +282,55 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 			codec.OnIsOnlineStateChanged -= CodecOnIsOnlineStateChanged;
 		}
 
+		/// <summary>
+		/// Called when the codec changes online status.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
 		private void CodecOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
+		}
+
+		#endregion
+
+		#region Cameras Component Callbacks
+
+		/// <summary>
+		/// Subscribe to the cameras component events.
+		/// </summary>
+		/// <param name="camerasComponent"></param>
+		private void Subscribe(NearCamerasComponent camerasComponent)
+		{
+			if (camerasComponent == null)
+				return;
+
+			camerasComponent.OnPresetsChanged += CamerasComponentOnPresetsChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the cameras component events.
+		/// </summary>
+		/// <param name="camerasComponent"></param>
+		private void Unsubscribe(NearCamerasComponent camerasComponent)
+		{
+			if (camerasComponent == null)
+				return;
+
+			camerasComponent.OnPresetsChanged -= CamerasComponentOnPresetsChanged;
+		}
+
+		/// <summary>
+		/// Called when the cameras component presets change.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void CamerasComponentOnPresetsChanged(object sender, IntEventArgs eventArgs)
+		{
+			if (eventArgs.Data != CameraId)
+				return;
+
+			OnPresetsChanged.Raise(this);
 		}
 
 		#endregion
