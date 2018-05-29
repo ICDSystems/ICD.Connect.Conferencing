@@ -46,6 +46,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		public Heartbeat Heartbeat { get; private set; }
 
 		/// <summary>
+		/// Password for logging in to the device.
+		/// </summary>
+		[PublicAPI]
+		public string Password { get; set; }
+
+		/// <summary>
 		/// Device Initialized Status.
 		/// </summary>
 		public bool Initialized
@@ -383,6 +389,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
+			settings.Password = Password;
 		}
 
 		/// <summary>
@@ -392,6 +399,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		{
 			base.ClearSettingsFinal();
 
+			Password = null;
 			SetPort(null);
 		}
 
@@ -403,6 +411,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		protected override void ApplySettingsFinal(PolycomGroupSeriesSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
+
+			Password = settings.Password;
 
 			ISerialPort port = null;
 
