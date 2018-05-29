@@ -5,6 +5,8 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Directory.Tree;
+using INode = ICD.Connect.Conferencing.Cisco.Components.Directory.Tree.INode;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 {
@@ -27,7 +29,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 
 		// We store the most recent search id so we can parse out the correct results.
 		private string m_SearchId;
-		private readonly IcdHashSet<IFolder> m_FolderSearchResults;
+		private readonly IcdHashSet<CiscoFolder> m_FolderSearchResults;
 		private readonly IcdHashSet<CiscoContact> m_ContactSearchResults;
 
 		/// <summary>
@@ -66,7 +68,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		public DirectorySearch(DirectoryComponent component)
 		{
 			m_ContactSearchResults = new IcdHashSet<CiscoContact>();
-			m_FolderSearchResults = new IcdHashSet<IFolder>();
+			m_FolderSearchResults = new IcdHashSet<CiscoFolder>();
 
 			m_Component = component;
 
@@ -114,7 +116,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// </summary>
 		/// <returns></returns>
 		[PublicAPI]
-		public IFolder[] GetFolderSearchResults()
+		public CiscoFolder[] GetFolderSearchResults()
 		{
 			return m_FolderSearchResults.OrderBy(f => f.Name).ToArray();
 		}
@@ -125,7 +127,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="index"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public IFolder GetFolderSearchResult(int index)
+		public CiscoFolder GetFolderSearchResult(int index)
 		{
 			return GetFolderSearchResults()[index];
 		}
@@ -211,7 +213,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 			Clear();
 		}
 
-		private void ComponentOnResultParsed(string resultId, IFolder[] folders, CiscoContact[] contacts)
+		private void ComponentOnResultParsed(string resultId, CiscoFolder[] folders, CiscoContact[] contacts)
 		{
 			if (resultId != m_SearchId)
 				return;

@@ -196,8 +196,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			IDialingDeviceControl dialingControl = GetDialingProvider(mode);
 
-			// Don't try to dial something the control can't support.
-			if (dialingControl.Supports < mode)
+			mode = EnumUtils.GetFlagsIntersection(dialingControl.Supports, mode);
+			if (mode == eConferenceSourceType.Unknown)
 				mode = dialingControl.Supports;
 
 			dialingControl.Dial(number, mode);

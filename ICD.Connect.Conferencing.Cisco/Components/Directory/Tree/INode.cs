@@ -8,7 +8,7 @@
 		Local
 	}
 #pragma warning restore 1591
-
+	
 	/// <summary>
 	/// Interface for both folder and contacts.
 	/// </summary>

@@ -8,8 +8,8 @@
     <ProjectGuid>{1CCA89DA-1F1C-4997-A94F-ABCE878BD6DE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ICD.Connect.Conferencing</RootNamespace>
-    <AssemblyName>ICD.Connect.Conferencing</AssemblyName>
+    <RootNamespace>ICD.Connect.Conferencing_SimplSharp</RootNamespace>
+    <AssemblyName>ICD.Connect.Conferencing_SimplSharp</AssemblyName>
     <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92500};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>WindowsCE</PlatformFamilyName>
     <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
@@ -81,6 +81,9 @@
     <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
     <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
+    <Compile Include="Directory\IDirectoryBrowser.cs" />
+    <Compile Include="Directory\Tree\AbstractFolder.cs" />
+    <Compile Include="Directory\AbstractDirectoryBrowser.cs" />
     <Compile Include="Controls\AbstractDialingDeviceControl.cs" />
     <Compile Include="Controls\AbstractPresentationControl.cs" />
     <Compile Include="Controls\DialerDeviceDialerControl.cs" />
@@ -96,6 +99,8 @@
     <Compile Include="Devices\IInterpretationDevice.cs" />
     <Compile Include="DialingPlans\DialingPlan.cs" />
     <Compile Include="DialingPlans\Matchers\ExactPlanMatcher.cs" />
+    <Compile Include="Directory\Tree\IFolder.cs" />
+    <Compile Include="Directory\Tree\FolderEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceSourceAnswerStateEventArgs.cs" />
     <Compile Include="Conferences\Conference.cs" />
     <Compile Include="EventArguments\ConferenceSourceStatusEventArgs.cs" />

@@ -7,8 +7,8 @@
     <ProjectGuid>{B2DF3389-5C95-4CAF-BA30-3A4D0AAC9CE3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ICD.Connect.Conferencing.Cisco</RootNamespace>
-    <AssemblyName>ICD.Connect.Conferencing.Cisco</AssemblyName>
+    <RootNamespace>ICD.Connect.Conferencing.Cisco_SimplSharp</RootNamespace>
+    <AssemblyName>ICD.Connect.Conferencing.Cisco_SimplSharp</AssemblyName>
     <ProjectTypeGuids>{0B4745B0-194B-4BB6-8E21-E9057CA92500};{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>WindowsCE</PlatformFamilyName>
     <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
@@ -82,6 +82,10 @@
     <Compile Include="CiscoCodec.cs" />
     <Compile Include="Components\Cameras\AbstractCiscoCamera.cs" />
     <Compile Include="CiscoCodecCameraDevice.cs" />
+    <Compile Include="Components\Directory\DirectoryComponent.cs" />
+    <Compile Include="Components\Directory\Tree\CiscoRootFolder.cs" />
+    <Compile Include="Components\Directory\Tree\CiscoFolder.cs" />
+    <Compile Include="Components\Directory\Tree\INode.cs" />
     <Compile Include="Controls\CiscoCodecCameraDevicePowerControl.cs" />
     <Compile Include="CiscoCodecCameraDeviceSettings.cs" />
     <Compile Include="Components\Cameras\FarCamera.cs" />
@@ -90,17 +94,11 @@
     <Compile Include="Components\CiscoComponentFactory.cs" />
     <Compile Include="Components\Diagnostics\DiagnosticsComponent.cs" />
     <Compile Include="Components\Diagnostics\DiagnosticsMessage.cs" />
-    <Compile Include="Components\Directory\DirectoryBrowser.cs" />
+    <Compile Include="Components\Directory\CiscoDirectoryBrowser.cs" />
     <Compile Include="Components\Directory\DirectorySearch.cs" />
-    <Compile Include="Components\Directory\Tree\Folder.cs" />
-    <Compile Include="Components\Directory\Tree\FolderEventArgs.cs" />
-    <Compile Include="Components\Directory\Tree\AbstractFolder.cs" />
+    <Compile Include="Components\Directory\Tree\AbstractCiscoFolder.cs" />
     <Compile Include="Components\Directory\Tree\CiscoContact.cs" />
     <Compile Include="Components\Directory\Tree\CiscoContactMethod.cs" />
-    <Compile Include="Components\Directory\DirectoryComponent.cs" />
-    <Compile Include="Components\Directory\Tree\IFolder.cs" />
-    <Compile Include="Components\Directory\Tree\INode.cs" />
-    <Compile Include="Components\Directory\Tree\RootFolder.cs" />
     <Compile Include="Components\Peripherals\PeripheralsComponent.cs" />
     <Compile Include="Components\Presentation\LayoutEventArgs.cs" />
     <Compile Include="Components\Presentation\PresentationModeEventArgs.cs" />
