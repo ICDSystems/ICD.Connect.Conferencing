@@ -85,7 +85,7 @@
     <Compile Include="Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Components\Directory\Tree\CiscoRootFolder.cs" />
     <Compile Include="Components\Directory\Tree\CiscoFolder.cs" />
-    <Compile Include="Components\Directory\Tree\INode.cs" />
+    <Compile Include="Components\Directory\Tree\ePhonebookType.cs" />
     <Compile Include="Controls\CiscoCodecCameraDevicePowerControl.cs" />
     <Compile Include="CiscoCodecCameraDeviceSettings.cs" />
     <Compile Include="Components\Cameras\FarCamera.cs" />

@@ -17,8 +17,8 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		public event EventHandler OnContentsChanged;
 
-		protected readonly List<IDirectoryFolder> m_CachedFolders;
-		protected readonly List<IContact> m_CachedContacts;
+		private readonly List<IDirectoryFolder> m_CachedFolders;
+		private readonly List<IContact> m_CachedContacts;
 
 		private readonly SafeCriticalSection m_FoldersSection;
 		private readonly SafeCriticalSection m_ContactsSection;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
@@ -46,9 +45,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="name"></param>
 		/// <param name="folderId"></param>
-		public AbstractCiscoFolder(string folderId) : base()
+		protected AbstractCiscoFolder(string folderId)
 		{
 			m_FolderId = folderId;
 
@@ -81,6 +79,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 			AbstractCiscoFolder abstractCiscoFolder = folder as AbstractCiscoFolder;
 			if (abstractCiscoFolder == null || abstractCiscoFolder.PhonebookType != PhonebookType)
 				return false;
+
 			return base.AddFolder(folder, raise);
 		}
 
@@ -89,6 +88,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 			CiscoContact ciscoContact = contact as CiscoContact;
 			if (ciscoContact == null || ciscoContact.PhonebookType != PhonebookType)
 				return false;
+
 			return base.AddContact(contact, raise);
 		}
 

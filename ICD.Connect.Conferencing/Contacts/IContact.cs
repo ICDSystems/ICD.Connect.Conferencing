@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Contacts
 {

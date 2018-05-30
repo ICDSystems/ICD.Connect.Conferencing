@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using ICD.Common.Properties;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Directory;
 
@@ -13,47 +11,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 	{
 		private readonly DirectoryComponent m_Component;
 
-		private ePhonebookType m_PhonebookType;
-
-		#region Properties
-
-		/// <summary>
-		/// Gets the phonebook type.
-		/// </summary>
-		[PublicAPI]
-		public ePhonebookType PhonebookType
-		{
-			get { return m_PhonebookType; }
-			set
-			{
-				if (value == m_PhonebookType)
-					return;
-
-				m_PhonebookType = value;
-
-				CiscoRootFolder root = new CiscoRootFolder(m_PhonebookType);
-				GoToRoot(root);
-			}
-		}
-
-		/// <summary>
-		/// Gets the current path as a human readable string.
-		/// </summary>
-		[PublicAPI]
-		public string PathAsString
-		{
-			get { return m_PathSection.Execute(() => string.Join("/", m_Path.Select(x => x.Name).ToArray())); }
-		}
-
-		#endregion
-
 		#region Constructors
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="component"></param>
-		public CiscoDirectoryBrowser(DirectoryComponent component) : base()
+		public CiscoDirectoryBrowser(DirectoryComponent component)
 		{
 			m_Component = component;
 			Subscribe(m_Component);
