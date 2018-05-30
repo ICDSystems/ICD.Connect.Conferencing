@@ -1,6 +1,7 @@
 using System;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
@@ -15,6 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
+		private const string PHONEBOOK_TYPE_ELEMENT = "PhonebookType";
 
 		private string m_PeripheralsId;
 
@@ -39,6 +41,11 @@ namespace ICD.Connect.Conferencing.Cisco
 		}
 
 		/// <summary>
+		/// Determines which phonebook to use with directory.
+		/// </summary>
+		public ePhonebookType PhonebookType { get; set; }
+
+		/// <summary>
 		/// Constructor.
 		/// </summary>
 		public CiscoCodecSettings()
@@ -56,6 +63,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
+			writer.WriteElementString(PHONEBOOK_TYPE_ELEMENT, IcdXmlConvert.ToString(PhonebookType));
 		}
 
 		/// <summary>
@@ -68,6 +76,8 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 			PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT);
+			PhonebookType = XmlUtils.TryReadChildElementContentAsEnum<ePhonebookType>(xml, PHONEBOOK_TYPE_ELEMENT, true) ??
+			                ePhonebookType.Corporate;
 		}
 	}
 }

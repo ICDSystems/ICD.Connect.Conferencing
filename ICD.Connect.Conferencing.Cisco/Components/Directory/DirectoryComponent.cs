@@ -121,6 +121,15 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		}
 
 		/// <summary>
+		/// Gets the root for the configured phonebook type.
+		/// </summary>
+		/// <returns></returns>
+		public RootFolder GetRoot()
+		{
+			return GetRoot(Codec.PhonebookType);
+		}
+
+		/// <summary>
 		/// Gets the root for the given phonebook type.
 		/// </summary>
 		/// <param name="phonebookType"></param>
