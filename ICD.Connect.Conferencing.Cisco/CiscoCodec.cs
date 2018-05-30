@@ -557,6 +557,8 @@ namespace ICD.Connect.Conferencing.Cisco
 				Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
 			}
+
+			OnConnectedStateChanged.Raise(this, new BoolEventArgs(args.Data));
 		}
 
 		/// <summary>
