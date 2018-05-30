@@ -9,7 +9,6 @@ using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Directory
 {
-
 	/// <summary>
 	/// DirectoryBrowser provides methods for browsing through a phonebook.
 	/// </summary>
@@ -41,12 +40,19 @@ namespace ICD.Connect.Conferencing.Directory
 		/// Returns true if the current folder is the root.
 		/// </summary>
 		/// <value></value>
-		public bool IsCurrentFolderRoot { get { return m_Path.Count == 1; } }
+		public bool IsCurrentFolderRoot
+		{
+			get
+			{
+				TFolder folder = GetCurrentFolder();
+				return folder != null && GetCurrentFolder() == Root;
+			}
+		}
 
 		/// <summary>
 		/// Gets the root folder.
 		/// </summary>
-		private TFolder Root { get { return m_PathSection.Execute(() => m_Path.Last()); } }
+		protected abstract TFolder Root { get; }
 
 		/// <summary>
 		/// Gets the current path as a human readable string.
@@ -70,6 +76,8 @@ namespace ICD.Connect.Conferencing.Directory
 
 			m_PathSection = new SafeCriticalSection();
 			m_NavigateSection = new SafeCriticalSection();
+
+			GoToRoot();
 		}
 
 		#endregion
@@ -105,7 +113,7 @@ namespace ICD.Connect.Conferencing.Directory
 		[PublicAPI]
 		public TFolder EnterFolder(TFolder folder)
 		{
-			if (folder == GetCurrentFolder())
+			if (folder == null || folder == GetCurrentFolder())
 				return folder;
 
 			TFolder output;
@@ -190,7 +198,9 @@ namespace ICD.Connect.Conferencing.Directory
 				try
 				{
 					m_Path.Clear();
-					m_Path.Push(root);
+
+					if (root != null)
+						m_Path.Push(root);
 				}
 				finally
 				{

@@ -1,7 +1,7 @@
 ﻿using System;
 using ICD.Common.Properties;
 using ICD.Connect.Conferencing.Contacts;
-using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Directory
@@ -9,6 +9,11 @@ namespace ICD.Connect.Conferencing.Directory
 	public sealed class DirectoryControlBrowser : AbstractDirectoryBrowser<IDirectoryFolder, IContact>
 	{
 		private IDirectoryControl m_Control;
+
+		/// <summary>
+		/// Gets the root folder.
+		/// </summary>
+		protected override IDirectoryFolder Root { get { return m_Control == null ? null : m_Control.GetRoot(); } }
 
 		#region Methods
 
@@ -22,7 +27,9 @@ namespace ICD.Connect.Conferencing.Directory
 			if (control == m_Control)
 				return;
 
+			Unsubscribe(m_Control);
 			m_Control = control;
+			Subscribe(m_Control);
 
 			GoToRoot();
 		}
@@ -60,7 +67,7 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <param name="eventArgs"></param>
 		private void ComponentOnCleared(object sender, EventArgs eventArgs)
 		{
-			Clear();
+			GoToRoot();
 		}
 	}
 }

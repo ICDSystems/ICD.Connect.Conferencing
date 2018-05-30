@@ -2,14 +2,13 @@
 using System.Linq;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
-using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 {
 	/// <summary>
 	/// Contact provides information for a phonebook contact.
 	/// </summary>
-	public sealed class CiscoContact : INode, IContact
+	public sealed class CiscoContact : IContact
 	{
 		private readonly IContactMethod[] m_ContactMethods;
 

@@ -8,7 +8,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 	/// <summary>
 	/// FolderComponent represents a folder in the phonebook.
 	/// </summary>
-	public abstract class AbstractCiscoFolder : AbstractDirectoryFolder, INode
+	public abstract class AbstractCiscoFolder : AbstractDirectoryFolder
 	{
 		private readonly string m_FolderId;
 		private readonly string m_FolderSearchId;
