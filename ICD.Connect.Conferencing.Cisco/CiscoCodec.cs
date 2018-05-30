@@ -14,8 +14,8 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components;
 using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices;
+using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
-using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	/// <summary>
 	/// Cisco VTC Codec Control
 	/// </summary>
-	public sealed class CiscoCodec : AbstractDevice<CiscoCodecSettings>, IConnectable
+	public sealed class CiscoCodec : AbstractDevice<CiscoCodecSettings>
 	{
 		/// <summary>
 		/// Callback for parser events.
@@ -94,17 +94,15 @@ namespace ICD.Connect.Conferencing.Cisco
 		private readonly ISerialBuffer m_SerialBuffer;
 		private readonly SafeTimer m_FeedbackTimer;
 
+		private readonly ConnectionStateManager m_ConnectionStateManager;
+
 		private readonly eCodecInputType[] m_InputTypes = new eCodecInputType[4];
 
 		private readonly CiscoComponentFactory m_Components;
 
 		private bool m_Initialized;
-		private bool m_IsConnected;
-		private ISerialPort m_Port;
-
+		
 		#region Properties
-
-		public Heartbeat Heartbeat { get; private set; }
 
 		/// <summary>
 		/// Device Initialized Status.
@@ -134,23 +132,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		public CiscoComponentFactory Components { get { return m_Components; } }
 
 		/// <summary>
-		/// Returns true when the codec is connected.
-		/// </summary>
-		public bool IsConnected
-		{
-			get { return m_IsConnected; }
-			private set
-			{
-				if (value == m_IsConnected)
-					return;
-
-				m_IsConnected = value;
-
-				OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
-			}
-		}
-
-		/// <summary>
 		/// Gets the help information for the node.
 		/// </summary>
 		public override string ConsoleHelp { get { return "The Cisco codec device"; } }
@@ -164,8 +145,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// </summary>
 		public CiscoCodec()
 		{
-			Heartbeat = new Heartbeat(this);
-
 			m_ParserCallbacks = new Dictionary<string, List<ParserCallback>>();
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
@@ -174,6 +153,11 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			m_SerialBuffer = new XmlSerialBuffer();
 			Subscribe(m_SerialBuffer);
+
+			m_ConnectionStateManager = new ConnectionStateManager(this){ConfigurePort = ConfigurePort};
+			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
+			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 
 			Controls.Add(new CiscoCodecRoutingControl(this, 0));
 			Controls.Add(new CiscoDialingDeviceControl(this, 1));
@@ -194,40 +178,16 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			m_FeedbackTimer.Dispose();
 
-			Heartbeat.Dispose();
+			m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
+			m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnSerialDataReceived -= PortOnSerialDataReceived;
+			m_ConnectionStateManager.Dispose();
 
 			Unsubscribe(m_SerialBuffer);
-			Unsubscribe(m_Port);
 
 			base.DisposeFinal(disposing);
 
 			m_Components.Dispose();
-		}
-
-		/// <summary>
-		/// Sets the port for communicating with the device.
-		/// </summary>
-		/// <param name="port"></param>
-		[PublicAPI]
-		public void SetPort(ISerialPort port)
-		{
-			if (port == m_Port)
-				return;
-
-			if (port is IComPort)
-				ConfigureComPort(port as IComPort);
-
-			if (m_Port != null)
-				Disconnect();
-
-			Unsubscribe(m_Port);
-			m_Port = port;
-			Subscribe(m_Port);
-
-			if (m_Port != null)
-				Heartbeat.StartMonitoring();
-
-			UpdateCachedOnlineStatus();
 		}
 
 		/// <summary>
@@ -245,41 +205,6 @@ namespace ICD.Connect.Conferencing.Cisco
 			                    eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
 			                    eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
 			                    false);
-		}
-
-		/// <summary>
-		/// Connect to the codec.
-		/// </summary>
-		[PublicAPI]
-		public void Connect()
-		{
-			if (m_Port == null)
-			{
-				Log(eSeverity.Critical, "Unable to connect, port is null");
-				return;
-			}
-
-			m_Port.Connect();
-			IsConnected = m_Port.IsConnected;
-
-			if (IsConnected)
-				Initialize();
-		}
-
-		/// <summary>
-		/// Disconnect from the codec.
-		/// </summary>
-		[PublicAPI]
-		public void Disconnect()
-		{
-			if (m_Port == null)
-			{
-				Log(eSeverity.Critical, "Unable to disconnect, port is null");
-				return;
-			}
-
-			m_Port.Disconnect();
-			IsConnected = m_Port.IsConnected;
 		}
 
 		/// <summary>
@@ -301,25 +226,13 @@ namespace ICD.Connect.Conferencing.Cisco
 			if (args != null)
 				command = string.Format(command, args);
 
-			if (m_Port == null)
-			{
-				Log(eSeverity.Error, "Unable to communicate with Codec - port is null");
-				return;
-			}
-
-			if (!IsConnected)
-			{
-				Log(eSeverity.Warning, "Codec is disconnected, attempting reconnect");
-				Connect();
-			}
-
-			if (!IsConnected)
+			if (!m_ConnectionStateManager.IsConnected)
 			{
 				Log(eSeverity.Critical, "Unable to communicate with Codec");
 				return;
 			}
 
-			m_Port.Send(command + END_OF_LINE);
+			m_ConnectionStateManager.Send(command + END_OF_LINE);
 		}
 
 		/// <summary>
@@ -373,7 +286,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		[PublicAPI]
 		public bool UnregisterParserCallback(ParserCallback callback, params string[] path)
 		{
-			if (!IsConnected)
+			if (!m_ConnectionStateManager.IsConnected)
 				return false;
 
 			m_ParserCallbacksSection.Enter();
@@ -442,7 +355,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// <returns></returns>
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_Port != null && m_Port.IsOnline;
+			return m_ConnectionStateManager != null && m_ConnectionStateManager.IsConnected;
 		}
 
 		/// <summary>
@@ -578,7 +491,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// </summary>
 		private void FeedbackTimerCallback()
 		{
-			if (IsConnected)
+			if (m_ConnectionStateManager.IsConnected)
 				SendCommand("xFeedback List | resultId=\"{0}\"", FEEDBACK_TIMER_CALLBACK_ID);
 		}
 
@@ -608,37 +521,15 @@ namespace ICD.Connect.Conferencing.Cisco
 				m_InputTypes[connectorId - 1] = type;
 		}
 
+		private void ConfigurePort(ISerialPort port)
+		{
+			if (port is IComPort)
+				ConfigureComPort(port as IComPort);
+		}
+
 		#endregion
 
 		#region Port Callbacks
-
-		/// <summary>
-		/// Subscribes to the port events.
-		/// </summary>
-		/// <param name="port"></param>
-		private void Subscribe(ISerialPort port)
-		{
-			if (port == null)
-				return;
-
-			port.OnSerialDataReceived += PortOnSerialDataReceived;
-			port.OnConnectedStateChanged += PortOnConnectionStatusChanged;
-			port.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-		}
-
-		/// <summary>
-		/// Unsubscribe from the port events.
-		/// </summary>
-		/// <param name="port"></param>
-		private void Unsubscribe(ISerialPort port)
-		{
-			if (port == null)
-				return;
-
-			port.OnSerialDataReceived -= PortOnSerialDataReceived;
-			port.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
-			port.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
-		}
 
 		/// <summary>
 		/// Called when serial data is recieved from the port.
@@ -659,9 +550,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		{
 			m_SerialBuffer.Clear();
 
-			IsConnected = args.Data;
-
-			if (IsConnected)
+			if (args.Data)
 				Initialize();
 			else
 			{
@@ -771,7 +660,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		{
 			base.CopySettingsFinal(settings);
 
-			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
+			settings.Port = m_ConnectionStateManager.PortNumber;
 			settings.PeripheralsId = PeripheralsId;
 
 			settings.Input1CodecInputType = GetInputTypeForConnector(1);
@@ -788,7 +677,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			base.ClearSettingsFinal();
 
 			PeripheralsId = null;
-			SetPort(null);
+			m_ConnectionStateManager.SetPort(null);
 		}
 
 		/// <summary>
@@ -820,7 +709,7 @@ namespace ICD.Connect.Conferencing.Cisco
 					Logger.AddEntry(eSeverity.Error, "No serial port with id {0}", settings.Port);
 			}
 
-			SetPort(port);
+			m_ConnectionStateManager.SetPort(port);
 		}
 
 		#endregion
@@ -857,7 +746,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		{
 			base.BuildConsoleStatus(addRow);
 
-			addRow("Connected", IsConnected);
+			addRow("Connected", m_ConnectionStateManager.IsConnected);
 			addRow("Initialized", Initialized);
 			addRow("Peripherals ID", PeripheralsId);
 		}
