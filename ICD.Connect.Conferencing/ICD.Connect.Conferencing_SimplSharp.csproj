@@ -81,9 +81,11 @@
     <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
     <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
+    <Compile Include="Controls\Directory\IDirectoryControl.cs" />
     <Compile Include="Controls\Presentation\PresentationControlConsole.cs" />
+    <Compile Include="Directory\DirectoryControlBrowser.cs" />
     <Compile Include="Directory\IDirectoryBrowser.cs" />
-    <Compile Include="Directory\Tree\AbstractFolder.cs" />
+    <Compile Include="Directory\Tree\AbstractDirectoryFolder.cs" />
     <Compile Include="Directory\AbstractDirectoryBrowser.cs" />
     <Compile Include="Controls\Dialing\AbstractDialingDeviceControl.cs" />
     <Compile Include="Controls\Presentation\AbstractPresentationControl.cs" />
@@ -100,8 +102,8 @@
     <Compile Include="Devices\IInterpretationDevice.cs" />
     <Compile Include="DialingPlans\DialingPlan.cs" />
     <Compile Include="DialingPlans\Matchers\ExactPlanMatcher.cs" />
-    <Compile Include="Directory\Tree\IFolder.cs" />
-    <Compile Include="Directory\Tree\FolderEventArgs.cs" />
+    <Compile Include="Directory\Tree\IDirectoryFolder.cs" />
+    <Compile Include="Directory\Tree\DirectoryFolderEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceSourceAnswerStateEventArgs.cs" />
     <Compile Include="Conferences\Conference.cs" />
     <Compile Include="EventArguments\ConferenceSourceStatusEventArgs.cs" />

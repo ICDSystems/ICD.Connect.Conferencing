@@ -1,14 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
-using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
-using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Directory;
-using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 {
@@ -17,10 +11,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 	/// </summary>
 	public sealed class CiscoDirectoryBrowser : AbstractDirectoryBrowser<AbstractCiscoFolder, CiscoContact>
 	{
-
 		private readonly DirectoryComponent m_Component;
 
 		private ePhonebookType m_PhonebookType;
+
 		#region Properties
 
 		/// <summary>
@@ -48,7 +42,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		[PublicAPI]
 		public string PathAsString
 		{
-			get { return m_PathSection.Execute(() => string.Join("/", m_Path.Select<AbstractCiscoFolder, string>(x => x.Name).ToArray())); }
+			get { return m_PathSection.Execute(() => string.Join("/", m_Path.Select(x => x.Name).ToArray())); }
 		}
 
 		#endregion

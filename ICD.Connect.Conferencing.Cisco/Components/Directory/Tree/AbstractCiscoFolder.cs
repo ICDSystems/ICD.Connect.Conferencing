@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 	/// <summary>
 	/// FolderComponent represents a folder in the phonebook.
 	/// </summary>
-	public abstract class AbstractCiscoFolder : AbstractFolder, INode
+	public abstract class AbstractCiscoFolder : AbstractDirectoryFolder, INode
 	{
 		private readonly string m_FolderId;
 		private readonly string m_FolderSearchId;
@@ -76,7 +76,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 
 		#region Protected Methods
 
-		protected override bool AddFolder(IFolder folder, bool raise)
+		protected override bool AddFolder(IDirectoryFolder folder, bool raise)
 		{
 			AbstractCiscoFolder abstractCiscoFolder = folder as AbstractCiscoFolder;
 			if (abstractCiscoFolder == null || abstractCiscoFolder.PhonebookType != PhonebookType)

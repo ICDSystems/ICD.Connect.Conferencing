@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
@@ -15,13 +14,13 @@ namespace ICD.Connect.Conferencing.Directory
 	/// DirectoryBrowser provides methods for browsing through a phonebook.
 	/// </summary>
 	public abstract class AbstractDirectoryBrowser<TFolder, TContact> : IDirectoryBrowser<TFolder, TContact>
-		where TFolder : class, IFolder
+		where TFolder : class, IDirectoryFolder
 		where TContact : class, IContact
 	{
 		/// <summary>
 		/// Called when navigating to a different folder.
 		/// </summary>
-		public event EventHandler<FolderEventArgs> OnPathChanged;
+		public event EventHandler<DirectoryFolderEventArgs> OnPathChanged;
 
 		/// <summary>
 		/// Called when the contents of the current folder change.
@@ -31,16 +30,10 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <summary>
 		/// The current path for browsing.
 		/// </summary>
-		protected readonly Stack<TFolder> m_Path;
+		private readonly Stack<TFolder> m_Path;
 
-		/// <summary>
-		/// Tracks folders that have been populated via browsing.
-		/// </summary>
-		protected readonly IcdHashSet<TFolder> m_Populated;
-
-		protected readonly SafeCriticalSection m_PathSection;
-		protected readonly SafeCriticalSection m_PopulatedSection;
-		protected readonly SafeCriticalSection m_NavigateSection;
+		private readonly SafeCriticalSection m_PathSection;
+		private readonly SafeCriticalSection m_NavigateSection;
 
 		#region Properties
 
@@ -53,7 +46,16 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <summary>
 		/// Gets the root folder.
 		/// </summary>
-		protected TFolder Root { get { return m_PathSection.Execute(() => m_Path.Last()); } }
+		private TFolder Root { get { return m_PathSection.Execute(() => m_Path.Last()); } }
+
+		/// <summary>
+		/// Gets the current path as a human readable string.
+		/// </summary>
+		[PublicAPI]
+		public string PathAsString
+		{
+			get { return m_PathSection.Execute(() => string.Join("/", m_Path.Select(x => x.Name).ToArray())); }
+		}
 
 		#endregion
 
@@ -62,19 +64,17 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public AbstractDirectoryBrowser()
+		protected AbstractDirectoryBrowser()
 		{
 			m_Path = new Stack<TFolder>();
-			m_Populated = new IcdHashSet<TFolder>();
 
 			m_PathSection = new SafeCriticalSection();
-			m_PopulatedSection = new SafeCriticalSection();
 			m_NavigateSection = new SafeCriticalSection();
 		}
 
 		#endregion
 
-		#region Method
+		#region Methods
 
 		/// <summary>
 		/// Releases resources.
@@ -95,16 +95,6 @@ namespace ICD.Connect.Conferencing.Directory
 		public TFolder GetCurrentFolder()
 		{
 			return m_PathSection.Execute(() => m_Path.Count > 0 ? m_Path.Peek() : default(TFolder));
-		}
-
-		/// <summary>
-		/// Populates the current folder if it hasn't been populated yet.
-		/// </summary>
-		public void PopulateCurrentFolder()
-		{
-			TFolder folder = GetCurrentFolder();
-			if (folder != null)
-				PopulateFolder(folder);
 		}
 
 		/// <summary>
@@ -222,21 +212,20 @@ namespace ICD.Connect.Conferencing.Directory
 
 		#endregion
 
-		#region Private Method
-
-		/// <summary>
-		/// Sends the command to begin populating the folder.
-		/// </summary>
-		protected abstract void PopulateFolder(TFolder parent);
+		#region Private Methods
 
 		/// <summary>
 		/// Raises the OnPathChanged event.
 		/// </summary>
 		private void RaiseOnPathChanged()
 		{
-			IFolder current = GetCurrentFolder();
-			OnPathChanged.Raise(this, new FolderEventArgs(current));
+			IDirectoryFolder current = GetCurrentFolder();
+			OnPathChanged.Raise(this, new DirectoryFolderEventArgs(current));
 		}
+
+		#endregion
+
+		#region Folder Callbacks
 
 		/// <summary>
 		/// Subscribes to the current folder events.

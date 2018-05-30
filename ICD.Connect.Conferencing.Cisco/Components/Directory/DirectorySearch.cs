@@ -5,7 +5,6 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
-using ICD.Connect.Conferencing.Directory.Tree;
 using INode = ICD.Connect.Conferencing.Cisco.Components.Directory.Tree.INode;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory

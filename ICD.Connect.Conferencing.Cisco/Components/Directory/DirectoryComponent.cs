@@ -252,7 +252,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		{
 			AbstractCiscoFolder parent = GetFolder(resultId);
 			if (parent != null)
-				parent.AddChildren(folders.Cast<IFolder>(), contacts.Cast<IContact>());
+				parent.AddChildren(folders.Cast<IDirectoryFolder>(), contacts.Cast<IContact>());
 		}
 
 		/// <summary>

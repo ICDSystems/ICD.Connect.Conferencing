@@ -7,12 +7,14 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 	/// <summary>
 	/// Interface for all directory folders.
 	/// </summary>
-	public interface IFolder
+	public interface IDirectoryFolder
 	{
 		/// <summary>
 		/// Called when a child contact/folder is added or removed.
 		/// </summary>
 		event EventHandler OnContentsChanged;
+
+		#region Properties
 
 		/// <summary>
 		/// Returns the number of child folders.
@@ -34,6 +36,10 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		string Name { get; }
 
+		#endregion
+
+		#region Methods
+
 		/// <summary>
 		/// Clears all children from the folder.
 		/// </summary>
@@ -48,14 +54,14 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Gets the cached folders.
 		/// </summary>
 		/// <returns></returns>
-		IFolder[] GetFolders();
+		IDirectoryFolder[] GetFolders();
 
 		/// <summary>
 		/// Gets the cached folder at the given index.
 		/// </summary>
 		/// <param name="index"></param>
 		/// <returns></returns>
-		IFolder GetFolder(int index);
+		IDirectoryFolder GetFolder(int index);
 
 		/// <summary>
 		/// Gets the cached contacts.
@@ -71,23 +77,16 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		IContact GetContact(int index);
 
 		/// <summary>
-		/// Adds the folders and contacts to the folder.
-		/// </summary>
-		/// <param name="folders"></param>
-		/// <param name="contacts"></param>
-		bool AddChildren(IEnumerable<IFolder> folders, IEnumerable<IContact> contacts);
-
-		/// <summary>
 		/// Caches the folder.
 		/// </summary>
 		/// <param name="folder"></param>
-		bool AddFolder(IFolder folder);
+		bool AddFolder(IDirectoryFolder folder);
 
 		/// <summary>
 		/// Caches the folders.
 		/// </summary>
 		/// <param name="folders"></param>
-		bool AddFolders(IEnumerable<IFolder> folders);
+		bool AddFolders(IEnumerable<IDirectoryFolder> folders);
 
 		/// <summary>
 		/// Caches the contact.
@@ -105,6 +104,8 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Gets this IFolder and all child folders recursively.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IFolder> Recurse();
+		IEnumerable<IDirectoryFolder> Recurse();
+
+		#endregion
 	}
 }

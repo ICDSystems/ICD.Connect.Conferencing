@@ -10,14 +10,14 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 	/// <summary>
 	/// AbstractFolder provides shared functionality between Folder and RootFolder.
 	/// </summary>
-	public abstract class AbstractFolder : IFolder
+	public abstract class AbstractDirectoryFolder : IDirectoryFolder
 	{
 		/// <summary>
 		/// Called when a child contact/folder is added or removed.
 		/// </summary>
 		public event EventHandler OnContentsChanged;
 
-		protected readonly List<IFolder> m_CachedFolders;
+		protected readonly List<IDirectoryFolder> m_CachedFolders;
 		protected readonly List<IContact> m_CachedContacts;
 
 		private readonly SafeCriticalSection m_FoldersSection;
@@ -50,7 +50,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 			get { return BaseContactComparer.Instance; }
 		}
 
-		protected virtual IComparer<IFolder> FolderComparer
+		protected virtual IComparer<IDirectoryFolder> FolderComparer
 		{
 			get { return BaseFolderComparer.Instance; }
 		}
@@ -62,9 +62,9 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		protected AbstractFolder()
+		protected AbstractDirectoryFolder()
 		{
-			m_CachedFolders = new List<IFolder>();
+			m_CachedFolders = new List<IDirectoryFolder>();
 			m_CachedContacts = new List<IContact>();
 
 			m_FoldersSection = new SafeCriticalSection();
@@ -91,7 +91,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		public void ClearRecursive()
 		{
-			foreach (IFolder folder in Recurse().Reverse())
+			foreach (IDirectoryFolder folder in Recurse().Reverse())
 				folder.Clear();
 		}
 
@@ -99,7 +99,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Gets the cached folders.
 		/// </summary>
 		/// <returns></returns>
-		public virtual IFolder[] GetFolders()
+		public virtual IDirectoryFolder[] GetFolders()
 		{
 			return m_FoldersSection.Execute(() => m_CachedFolders.ToArray());
 		}
@@ -109,7 +109,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		/// <param name="index"></param>
 		/// <returns></returns>
-		public virtual IFolder GetFolder(int index)
+		public virtual IDirectoryFolder GetFolder(int index)
 		{
 			return m_FoldersSection.Execute(() => m_CachedFolders[index]);
 		}
@@ -138,7 +138,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		/// <param name="folders"></param>
 		/// <param name="contacts"></param>
-		public bool AddChildren(IEnumerable<IFolder> folders, IEnumerable<IContact> contacts)
+		public bool AddChildren(IEnumerable<IDirectoryFolder> folders, IEnumerable<IContact> contacts)
 		{
 			bool output = AddFolders(folders, false);
 			output |= AddContacts(contacts, false);
@@ -153,7 +153,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Caches the folder.
 		/// </summary>
 		/// <param name="folder"></param>
-		public bool AddFolder(IFolder folder)
+		public bool AddFolder(IDirectoryFolder folder)
 		{
 			return AddFolder(folder, true);
 		}
@@ -162,7 +162,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Caches the folders.
 		/// </summary>
 		/// <param name="folders"></param>
-		public bool AddFolders(IEnumerable<IFolder> folders)
+		public bool AddFolders(IEnumerable<IDirectoryFolder> folders)
 		{
 			return AddFolders(folders, true);
 		}
@@ -189,17 +189,17 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Gets this IFolder and all child folders recursively.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IFolder> Recurse()
+		public IEnumerable<IDirectoryFolder> Recurse()
 		{
-			Queue<IFolder> toProcess = new Queue<IFolder>();
+			Queue<IDirectoryFolder> toProcess = new Queue<IDirectoryFolder>();
 			toProcess.Enqueue(this);
 
 			while (toProcess.Count > 0)
 			{
-				IFolder parent = toProcess.Dequeue();
+				IDirectoryFolder parent = toProcess.Dequeue();
 				yield return parent;
 
-				foreach (IFolder folder in parent.GetFolders())
+				foreach (IDirectoryFolder folder in parent.GetFolders())
 					toProcess.Enqueue(folder);
 			}
 		}
@@ -213,11 +213,11 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		/// <param name="folders"></param>
 		/// <param name="raise"></param>
-		private bool AddFolders(IEnumerable<IFolder> folders, bool raise)
+		private bool AddFolders(IEnumerable<IDirectoryFolder> folders, bool raise)
 		{
 			bool output = false;
 
-			foreach (IFolder folder in folders)
+			foreach (IDirectoryFolder folder in folders)
 				output |= AddFolder(folder, false);
 
 			if (raise && output)
@@ -226,7 +226,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 			return output;
 		}
 
-		protected virtual bool AddFolder(IFolder folder, bool raise)
+		protected virtual bool AddFolder(IDirectoryFolder folder, bool raise)
 		{
 			m_FoldersSection.Enter();
 
@@ -289,13 +289,13 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		#endregion
 	}
 
-	public sealed class BaseFolderComparer : IComparer<IFolder>
+	public sealed class BaseFolderComparer : IComparer<IDirectoryFolder>
 	{
 		private static BaseFolderComparer s_Instance;
 
 		public static BaseFolderComparer Instance { get { return s_Instance = s_Instance ?? new BaseFolderComparer(); } }
 
-		public int Compare(IFolder x, IFolder y)
+		public int Compare(IDirectoryFolder x, IDirectoryFolder y)
 		{
 			if (x == null)
 				throw new ArgumentNullException("x");
