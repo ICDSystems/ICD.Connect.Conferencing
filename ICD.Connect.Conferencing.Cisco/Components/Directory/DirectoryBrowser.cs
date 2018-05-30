@@ -41,28 +41,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 
 		private readonly DirectoryComponent m_Component;
 
-		private ePhonebookType m_PhonebookType;
-
 		#region Properties
-
-		/// <summary>
-		/// Gets the phonebook type.
-		/// </summary>
-		[PublicAPI]
-		public ePhonebookType PhonebookType
-		{
-			get { return m_PhonebookType; }
-			set
-			{
-				if (value == m_PhonebookType)
-					return;
-
-				m_PhonebookType = value;
-
-				RootFolder root = m_Component.GetRoot(m_PhonebookType);
-				GoToRoot(root);
-			}
-		}
 
 		/// <summary>
 		/// Returns true if the current folder is the root.
@@ -104,7 +83,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 			m_Component = component;
 			Subscribe(m_Component);
 
-			RootFolder root = component.GetRoot(m_PhonebookType);
+			RootFolder root = component.GetRoot();
 			GoToRoot(root);
 		}
 
