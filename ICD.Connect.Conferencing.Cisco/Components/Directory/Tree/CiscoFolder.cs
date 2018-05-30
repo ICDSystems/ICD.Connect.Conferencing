@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+﻿using System.Collections.Generic;
 using ICD.Common.Utils.Xml;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
@@ -11,10 +7,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 	{
 		private readonly string m_Name;
 
-		public override string Name
-		{
-			get { return m_Name; }
-		}
+		public override string Name { get { return m_Name; } }
 
 		public CiscoFolder(string name, string folderId) : base(folderId)
 		{
@@ -39,7 +32,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 				cache[cachedId] = new CiscoFolder(name, folderId);
 			}
 
-			return cache[cachedId] as CiscoFolder;
+			return cache[cachedId];
 		}
 	}
 }
