@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Changed
- - CiscoCodec phonebook type is configured via settings 
+ - CiscoCodec phonebook type is configured via settings
+ - Serial devices use ConnectionStateManager for maintaining connection to remote endpoints
 
 ## [7.0.0] - 2018-05-24
 ### Changed
