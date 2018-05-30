@@ -11,6 +11,7 @@ using ICD.Common.Utils.Timers;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components;
+using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Cisco.Controls;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.EventArguments;
@@ -127,6 +128,11 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// The id used to register the device with the physical codec.
 		/// </summary>
 		public string PeripheralsId { get; private set; }
+
+		/// <summary>
+		/// Gets the phonebook to use with the directory.
+		/// </summary>
+		public ePhonebookType PhonebookType { get; private set; }
 
 		/// <summary>
 		/// Provides the components attached to this codec.
@@ -738,6 +744,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
 			settings.PeripheralsId = PeripheralsId;
+			settings.PhonebookType = PhonebookType;
 
 			InputTypes.CopySettings(settings);
 		}
@@ -750,6 +757,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			base.ClearSettingsFinal();
 
 			PeripheralsId = null;
+			PhonebookType = ePhonebookType.Corporate;
 			SetPort(null);
 
 			InputTypes.ClearSettings();
@@ -765,6 +773,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			base.ApplySettingsFinal(settings, factory);
 
 			PeripheralsId = settings.PeripheralsId;
+			PhonebookType = settings.PhonebookType;
 
 			InputTypes.ApplySettings(settings);
 
@@ -817,6 +826,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			addRow("Connected", IsConnected);
 			addRow("Initialized", Initialized);
 			addRow("Peripherals ID", PeripheralsId);
+			addRow("Phonebook Type", PhonebookType);
 		}
 
 		#endregion

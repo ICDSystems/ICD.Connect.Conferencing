@@ -1,5 +1,6 @@
 using System;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
@@ -15,6 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
+		private const string PHONEBOOK_TYPE_ELEMENT = "PhonebookType";
 
 		private const string INPUT_1_ELEMENT = "Input1Type";
 		private const string INPUT_2_ELEMENT = "Input2Type";
@@ -29,11 +31,6 @@ namespace ICD.Connect.Conferencing.Cisco
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
 
-		public eCodecInputType Input1CodecInputType { get; set; }
-		public eCodecInputType Input2CodecInputType { get; set; }
-		public eCodecInputType Input3CodecInputType { get; set; }
-		public eCodecInputType Input4CodecInputType { get; set; }
-
 		/// <summary>
 		/// Gets/sets the peripherals id.
 		/// </summary>
@@ -47,6 +44,16 @@ namespace ICD.Connect.Conferencing.Cisco
 			}
 			set { m_PeripheralsId = value; }
 		}
+
+		/// <summary>
+		/// Determines which phonebook to use with directory.
+		/// </summary>
+		public ePhonebookType PhonebookType { get; set; }
+
+		public eCodecInputType Input1CodecInputType { get; set; }
+		public eCodecInputType Input2CodecInputType { get; set; }
+		public eCodecInputType Input3CodecInputType { get; set; }
+		public eCodecInputType Input4CodecInputType { get; set; }
 
 		/// <summary>
 		/// Constructor.
@@ -66,6 +73,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
+			writer.WriteElementString(PHONEBOOK_TYPE_ELEMENT, IcdXmlConvert.ToString(PhonebookType));
 
 			writer.WriteElementString(INPUT_1_ELEMENT, IcdXmlConvert.ToString(Input1CodecInputType));
 			writer.WriteElementString(INPUT_2_ELEMENT, IcdXmlConvert.ToString(Input2CodecInputType));
@@ -83,6 +91,8 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 			PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT);
+			PhonebookType = XmlUtils.TryReadChildElementContentAsEnum<ePhonebookType>(xml, PHONEBOOK_TYPE_ELEMENT, true) ??
+			                ePhonebookType.Corporate;
 
 			Input1CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_1_ELEMENT, true) ?? eCodecInputType.None;
 			Input2CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_2_ELEMENT, true) ?? eCodecInputType.None;
