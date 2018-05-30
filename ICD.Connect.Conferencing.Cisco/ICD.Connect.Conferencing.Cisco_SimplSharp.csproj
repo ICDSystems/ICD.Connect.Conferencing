@@ -94,7 +94,6 @@
     <Compile Include="Components\CiscoComponentFactory.cs" />
     <Compile Include="Components\Diagnostics\DiagnosticsComponent.cs" />
     <Compile Include="Components\Diagnostics\DiagnosticsMessage.cs" />
-    <Compile Include="Components\Directory\DirectorySearch.cs" />
     <Compile Include="Components\Directory\Tree\AbstractCiscoFolder.cs" />
     <Compile Include="Components\Directory\Tree\CiscoContact.cs" />
     <Compile Include="Components\Directory\Tree\CiscoContactMethod.cs" />
