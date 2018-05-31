@@ -1,7 +1,6 @@
 ﻿using System;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Proxies;
 using ICD.Connect.Conferencing.Proxies.Controls.Presentation;
 using ICD.Connect.Devices.Controls;
 
@@ -14,13 +13,13 @@ namespace ICD.Connect.Conferencing.Controls
 		/// Raised when the presentation active state changes.
 		/// </summary>
 		[ApiEvent(PresentationControlApi.EVENT_PRESENTATION_ACTIVE, PresentationControlApi.HELP_EVENT_PRESENTATION_ACTIVE)]
-		event EventHandler<PresentationActiveApiEventArgs> OnPresentationActiveChanged;
+		event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveChanged;
 
 		/// <summary>
-		/// Returns true if a presentation is currently active.
+		/// Gets the active presentation input.
 		/// </summary>
-		[ApiProperty(PresentationControlApi.PROPERTY_PRESENTATION_ACTIVE, PresentationControlApi.HELP_PROPERTY_PRESENTATION_ACTIVE)]
-		bool PresentationActive { get; }
+		[ApiProperty(PresentationControlApi.PROPERTY_PRESENTATION_ACTIVE_INPUT, PresentationControlApi.HELP_PROPERTY_PRESENTATION_ACTIVE_INPUT)]
+		int? PresentationActiveInput { get; }
 
 		/// <summary>
 		/// Starts presenting the source at the given input address.

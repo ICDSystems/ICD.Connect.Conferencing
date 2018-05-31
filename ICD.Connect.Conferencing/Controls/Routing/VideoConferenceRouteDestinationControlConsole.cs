@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Controls.Routing
 {
-	public static class PresentationControlConsole
+	public static class VideoConferenceRouteDestinationControlConsole
 	{
 		/// <summary>
 		/// Gets the child console nodes.
 		/// </summary>
 		/// <param name="instance"></param>
 		/// <returns></returns>
-		public static IEnumerable<IConsoleNodeBase> GetConsoleNodes(IPresentationControl instance)
+		public static IEnumerable<IConsoleNodeBase> GetConsoleNodes(IVideoConferenceRouteDestinationControl instance)
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
@@ -25,12 +25,10 @@ namespace ICD.Connect.Conferencing.Controls
 		/// </summary>
 		/// <param name="instance"></param>
 		/// <param name="addRow"></param>
-		public static void BuildConsoleStatus(IPresentationControl instance, AddStatusRowDelegate addRow)
+		public static void BuildConsoleStatus(IVideoConferenceRouteDestinationControl instance, AddStatusRowDelegate addRow)
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
-
-			addRow("Presentation Active Input", instance.PresentationActiveInput);
 		}
 
 		/// <summary>
@@ -38,13 +36,12 @@ namespace ICD.Connect.Conferencing.Controls
 		/// </summary>
 		/// <param name="instance"></param>
 		/// <returns></returns>
-		public static IEnumerable<IConsoleCommand> GetConsoleCommands(IPresentationControl instance)
+		public static IEnumerable<IConsoleCommand> GetConsoleCommands(IVideoConferenceRouteDestinationControl instance)
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
 
-			yield return new GenericConsoleCommand<int>("StartPresentation", "StartPresentation <INPUT>", i => instance.StartPresentation(i));
-			yield return new ConsoleCommand("StopPresentation", "Stops the active presentation", () => instance.StopPresentation());
+			yield return new GenericConsoleCommand<int>("SetCameraInput", "SetCameraInput <INPUT>", i => instance.SetCameraInput(i));
 		}
 	}
 }

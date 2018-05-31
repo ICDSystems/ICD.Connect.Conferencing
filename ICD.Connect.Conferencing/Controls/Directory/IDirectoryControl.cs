@@ -16,5 +16,10 @@ namespace ICD.Connect.Conferencing.Controls.Directory
 		/// </summary>
 		/// <returns></returns>
 		IDirectoryFolder GetRoot();
+
+		/// <summary>
+		/// Clears the cached directory for repopulation.
+		/// </summary>
+		void Clear();
 	}
 }

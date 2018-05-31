@@ -15,14 +15,14 @@ namespace ICD.Connect.Conferencing.Controls
 		/// <summary>
 		/// Raised when the presentation active state changes.
 		/// </summary>
-		public event EventHandler<PresentationActiveApiEventArgs> OnPresentationActiveChanged;
+		public event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveChanged;
 
-		private bool m_PresentationActive;
+		private int? m_PresentationActive;
 
 		/// <summary>
-		/// Returns true if a presentation is currently active.
+		/// Gets the active presentation input.
 		/// </summary>
-		public bool PresentationActive
+		public int? PresentationActiveInput
 		{
 			get { return m_PresentationActive; }
 			protected set
@@ -32,7 +32,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 				m_PresentationActive = value;
 
-				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
+				OnPresentationActiveChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
 			}
 		}
 
