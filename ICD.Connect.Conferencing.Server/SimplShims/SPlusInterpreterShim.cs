@@ -10,18 +10,19 @@ using ICD.Connect.Devices.SPlusShims;
 
 namespace ICD.Connect.Conferencing.Server.SimplShims
 {
-	public delegate void SPlusDialerShimSetLanguageCallback(object sender, string language);
-	public delegate void SPlusDialerShimSetBoothIdCallback(object sender, ushort boothId);
+	public delegate void SPlusDialerShimSetLanguageCallback(string language);
+	public delegate void SPlusDialerShimSetBoothIdCallback(ushort boothId);
 
-	public delegate void SPlusDialerShimDialCallback(object sender, string number, ushort callType);
-	public delegate void SPlusDialerShimSetAutoAnswerCallback(object sender, ushort enabled);
-	public delegate void SPlusDialerShimSetDoNotDisturbCallback(object sender, ushort enabled);
-	public delegate void SPlusDialerShimSetPrivacyMuteCallback(object sender, ushort enabled);
+	public delegate void SPlusDialerShimDialCallback(string number, ushort callType);
+	public delegate void SPlusDialerShimSetAutoAnswerCallback(ushort enabled);
+	public delegate void SPlusDialerShimSetDoNotDisturbCallback(ushort enabled);
+	public delegate void SPlusDialerShimSetPrivacyMuteCallback(ushort enabled);
 
-	public delegate void SPlusDialerShimAnswerCallback(object sender);
-	public delegate void SPlusDialerShimSetHoldCallback(object sender, ushort enabled);
-	public delegate void SPlusDialerShimSendDtmfCallback(object sender, string data);
-	public delegate void SPlusDialerShimEndCallCallback(object sender);
+	public delegate void SPlusDialerShimAnswerCallback();
+	public delegate void SPlusDialerShimSetHoldCallback();
+	public delegate void SPlusDialerShimSetResumeCallback();
+	public delegate void SPlusDialerShimSendDtmfCallback(string data);
+	public delegate void SPlusDialerShimEndCallCallback();
 
 	public sealed class SPlusInterpreterShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
 	{
@@ -84,6 +85,9 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		[PublicAPI("S+")] 
 		public SPlusDialerShimSetHoldCallback SetHoldCallback { get; set; }
+
+		[PublicAPI("S+")]
+		public SPlusDialerShimSetResumeCallback SetResumeCallback { get; set; }
 
 		[PublicAPI("S+")]
 		public SPlusDialerShimSendDtmfCallback SendDtmfCallback { get; set; }
@@ -332,35 +336,35 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			SPlusDialerShimDialCallback handler = DialCallback;
 			if (handler != null)
-				handler(this, number, eConferenceSourceType.Audio.ToUShort());
+				handler(number, eConferenceSourceType.Audio.ToUShort());
 		}
 
 		private void OriginatorDialTypeCallback(ISimplInterpretationDevice sender, string number, ushort type)
 		{
 			SPlusDialerShimDialCallback handler = DialCallback;
 			if (handler != null)
-				handler(this, number, type);
+				handler(number, type);
 		}
 
 		private void OriginatorSetAutoAnswerCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
 			SPlusDialerShimSetAutoAnswerCallback handler = SetAutoAnswerCallback;
 			if (handler != null)
-				handler(this, enabled);
+				handler(enabled);
 		}
 
 		private void OriginatorSetDoNotDisturbCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
 			SPlusDialerShimSetDoNotDisturbCallback handler = SetDoNotDisturbCallback;
 			if (handler != null)
-				handler(this, enabled);
+				handler(enabled);
 		}
 
 		private void OriginatorSetPrivacyMuteCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
 			SPlusDialerShimSetPrivacyMuteCallback handler = SetPrivacyMuteCallback;
 			if (handler != null)
-				handler(this, enabled);
+				handler(enabled);
 		}
 
 		#endregion
@@ -395,35 +399,35 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			SPlusDialerShimAnswerCallback handler = AnswerCallback;
 			if (handler != null)
-				handler(this);
+				handler();
 		}
 
 		private void SourceHoldCallback(ThinConferenceSource thinConferenceSource)
 		{
 			SPlusDialerShimSetHoldCallback handler = SetHoldCallback;
 			if (handler != null)
-				handler(this, true.ToUShort());
+				handler();
 		}
 
 		private void SourceResumeCallback(ThinConferenceSource thinConferenceSource)
 		{
-			SPlusDialerShimSetHoldCallback handler = SetHoldCallback;
+			SPlusDialerShimSetResumeCallback handler = SetResumeCallback;
 			if (handler != null)
-				handler(this, false.ToUShort());
+				handler();
 		}
 
 		private void SourceSendDtmfCallback(ThinConferenceSource thinConferenceSource, string data)
 		{
 			SPlusDialerShimSendDtmfCallback handler = SendDtmfCallback;
 			if (handler != null)
-				handler(this, data);
+				handler(data);
 		}
 
 		private void SourceHangupCallback(ThinConferenceSource thinConferenceSource)
 		{
 			SPlusDialerShimEndCallCallback handler = EndCallCallback;
 			if (handler != null)
-				handler(this);
+				handler();
 		}
 
 		#endregion
