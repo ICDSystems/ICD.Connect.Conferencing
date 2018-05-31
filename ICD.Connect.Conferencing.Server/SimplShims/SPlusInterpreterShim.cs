@@ -302,6 +302,20 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		#endregion
 
+		#region Private/Protected Methods
+
+		/// <summary>
+		/// Called when the originator is detached
+		/// Do any actions needed to desyncronize
+		/// </summary>
+		protected override void DeinitializeOriginator()
+		{
+			base.DeinitializeOriginator();
+			ClearCallInfo();
+		}
+
+		#endregion       
+
 		#region Originator Callbacks
 
 		protected override void Subscribe(ISimplInterpretationDevice originator)
