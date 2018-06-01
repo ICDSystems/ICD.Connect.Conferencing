@@ -12,7 +12,7 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// </summary>
 		/// <param name="instance"></param>
 		/// <returns></returns>
-		public static IEnumerable<IConsoleNodeBase> GetConsoleNodes(IVideoConferenceRouteDestinationControl instance)
+		public static IEnumerable<IConsoleNodeBase> GetConsoleNodes(IVideoConferenceRouteControl instance)
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
@@ -25,10 +25,12 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// </summary>
 		/// <param name="instance"></param>
 		/// <param name="addRow"></param>
-		public static void BuildConsoleStatus(IVideoConferenceRouteDestinationControl instance, AddStatusRowDelegate addRow)
+		public static void BuildConsoleStatus(IVideoConferenceRouteControl instance, AddStatusRowDelegate addRow)
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
+
+			addRow("Camera Input", instance.CameraInput);
 		}
 
 		/// <summary>
@@ -36,7 +38,7 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// </summary>
 		/// <param name="instance"></param>
 		/// <returns></returns>
-		public static IEnumerable<IConsoleCommand> GetConsoleCommands(IVideoConferenceRouteDestinationControl instance)
+		public static IEnumerable<IConsoleCommand> GetConsoleCommands(IVideoConferenceRouteControl instance)
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");

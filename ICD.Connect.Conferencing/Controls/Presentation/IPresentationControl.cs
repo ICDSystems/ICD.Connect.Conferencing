@@ -4,16 +4,16 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Proxies.Controls.Presentation;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Controls.Presentation
 {
 	[ApiClass(typeof(ProxyPresentationControl), typeof(IDeviceControl))]
 	public interface IPresentationControl : IDeviceControl
 	{
 		/// <summary>
-		/// Raised when the presentation active state changes.
+		/// Raised when the presentation active input changes.
 		/// </summary>
-		[ApiEvent(PresentationControlApi.EVENT_PRESENTATION_ACTIVE, PresentationControlApi.HELP_EVENT_PRESENTATION_ACTIVE)]
-		event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveChanged;
+		[ApiEvent(PresentationControlApi.EVENT_PRESENTATION_ACTIVE_INPUT, PresentationControlApi.HELP_EVENT_PRESENTATION_ACTIVE_INPUT)]
+		event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveInputChanged;
 
 		/// <summary>
 		/// Gets the active presentation input.

@@ -1,24 +1,73 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
+using ICD.Connect.Routing;
+using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.Controls;
+using ICD.Connect.Routing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Controls.Routing
 {
-	public abstract class AbstractVideoConferenceRouteDestinationControl<TParent> :
-		AbstractRouteDestinationControl<TParent>, IVideoConferenceRouteDestinationControl
+	public abstract class AbstractVideoConferenceRouteControl<TParent> :
+		AbstractRouteDestinationControl<TParent>, IVideoConferenceRouteControl
 		where TParent : IDeviceBase
 	{
+		/// <summary>
+		/// Raised when the device starts/stops actively transmitting on an output.
+		/// </summary>
+		public abstract event EventHandler<TransmissionStateEventArgs> OnActiveTransmissionStateChanged;
+
+		/// <summary>
+		/// Raised when the camera input changes.
+		/// </summary>
+		public event EventHandler<ConferenceRouteDestinationCameraInputApiEventArgs> OnCameraInputChanged;
+
+		private int? m_CameraInput;
+
+		/// <summary>
+		/// Gets the input address for the camera feed.
+		/// </summary>
+		public int? CameraInput
+		{
+			get { return m_CameraInput; }
+			protected set
+			{
+				if (value == m_CameraInput)
+					return;
+
+				m_CameraInput = value;
+
+				Log(eSeverity.Informational, "CameraInput set to {0}", m_CameraInput);
+
+				OnCameraInputChanged.Raise(this, new ConferenceRouteDestinationCameraInputApiEventArgs(m_CameraInput));
+			}
+		}
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		protected AbstractVideoConferenceRouteDestinationControl(TParent parent, int id)
+		protected AbstractVideoConferenceRouteControl(TParent parent, int id)
 			: base(parent, id)
 		{
+		}
+
+		/// <summary>
+		/// Override to release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void DisposeFinal(bool disposing)
+		{
+			OnCameraInputChanged = null;
+
+			base.DisposeFinal(disposing);
 		}
 
 		#region Methods
@@ -42,6 +91,22 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// </summary>
 		/// <param name="address"></param>
 		public abstract void SetCameraInput(int address);
+
+		/// <summary>
+		/// Returns true if the device is actively transmitting on the given output.
+		/// This is NOT the same as sending video, since some devices may send an
+		/// idle signal by default.
+		/// </summary>
+		/// <param name="output"></param>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public abstract bool GetActiveTransmissionState(int output, eConnectionType type);
+
+		/// <summary>
+		/// Returns the outputs.
+		/// </summary>
+		/// <returns></returns>
+		public abstract IEnumerable<ConnectorInfo> GetOutputs();
 
 		#endregion
 

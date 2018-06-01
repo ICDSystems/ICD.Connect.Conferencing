@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Utils;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 
@@ -29,6 +30,10 @@ namespace ICD.Connect.Conferencing.Controls.Layout
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
+
+			addRow("Layout Available", instance.LayoutAvailable);
+			addRow("Self-View Enabled", instance.SelfViewEnabled);
+			addRow("Self-View FullScreen Enabled", instance.SelfViewFullScreenEnabled);
 		}
 
 		/// <summary>
@@ -41,7 +46,11 @@ namespace ICD.Connect.Conferencing.Controls.Layout
 			if (instance == null)
 				throw new ArgumentNullException("instance");
 
-			yield break;
+			yield return new GenericConsoleCommand<bool>("SetSelfViewEnabled", "SetSelfViewEnabled <true/false>", e => instance.SetSelfViewEnabled(e));
+			yield return new GenericConsoleCommand<bool>("SetSelfViewFullScreenEnabled", "SetSelfViewFullScreenEnabled <true/false>", e => instance.SetSelfViewFullScreenEnabled(e));
+
+			string layoutModeHelp = string.Format("SetLayoutMode <{0}>", StringUtils.ArrayFormat(EnumUtils.GetValues<eLayoutMode>()));
+			yield return new GenericConsoleCommand<eLayoutMode>("SetLayoutMode", layoutModeHelp, m => instance.SetLayoutMode(m));
 		}
 	}
 }

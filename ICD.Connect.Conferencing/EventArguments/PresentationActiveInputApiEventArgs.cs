@@ -10,7 +10,7 @@ namespace ICD.Connect.Conferencing.EventArguments
 		/// </summary>
 		/// <param name="data"></param>
 		public PresentationActiveInputApiEventArgs(int? data)
-			: base(PresentationControlApi.EVENT_PRESENTATION_ACTIVE, data)
+			: base(PresentationControlApi.EVENT_PRESENTATION_ACTIVE_INPUT, data)
 		{
 		}
 	}

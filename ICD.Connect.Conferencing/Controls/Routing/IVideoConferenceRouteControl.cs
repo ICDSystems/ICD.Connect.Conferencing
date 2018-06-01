@@ -1,14 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Proxies.Controls.Routing;
 using ICD.Connect.Routing.Controls;
 
 namespace ICD.Connect.Conferencing.Controls.Routing
 {
-	[ApiClass(typeof(ProxyVideoConferenceRouteDestinationControl), typeof(IRouteDestinationControl))]
-	public interface IVideoConferenceRouteDestinationControl : IRouteDestinationControl
+	[ApiClass(typeof(ProxyVideoConferenceRouteControl), typeof(IRouteDestinationControl))]
+	public interface IVideoConferenceRouteControl : IRouteDestinationControl, IRouteSourceControl
 	{
+		/// <summary>
+		/// Raised when the camera input changes.
+		/// </summary>
+		[ApiEvent(VideoConferenceRouteDestinationControlApi.EVENT_CAMERA_INPUT, VideoConferenceRouteDestinationControlApi.HELP_EVENT_CAMERA_INPUT)]
+		event EventHandler<ConferenceRouteDestinationCameraInputApiEventArgs> OnCameraInputChanged;
+
+		/// <summary>
+		/// Gets the input address for the camera feed.
+		/// </summary>
+		[ApiProperty(VideoConferenceRouteDestinationControlApi.PROPERTY_CAMERA_INPUT, VideoConferenceRouteDestinationControlApi.HELP_PROPERTY_CAMERA_INPUT)]
+		int? CameraInput { get; }
+
 		/// <summary>
 		/// Gets the codec input type for the input with the given address.
 		/// </summary>

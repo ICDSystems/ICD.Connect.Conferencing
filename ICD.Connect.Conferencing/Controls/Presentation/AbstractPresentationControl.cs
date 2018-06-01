@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Controls.Presentation
 {
 	public abstract class AbstractPresentationControl<TDevice> : AbstractDeviceControl<TDevice>, IPresentationControl
 		where TDevice : IDeviceBase
@@ -15,7 +16,7 @@ namespace ICD.Connect.Conferencing.Controls
 		/// <summary>
 		/// Raised when the presentation active state changes.
 		/// </summary>
-		public event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveChanged;
+		public event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveInputChanged;
 
 		private int? m_PresentationActive;
 
@@ -32,7 +33,9 @@ namespace ICD.Connect.Conferencing.Controls
 
 				m_PresentationActive = value;
 
-				OnPresentationActiveChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
+				Log(eSeverity.Informational, "PresentationActiveInput set to {0}", m_PresentationActive);
+
+				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
 			}
 		}
 
@@ -52,7 +55,7 @@ namespace ICD.Connect.Conferencing.Controls
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnPresentationActiveChanged = null;
+			OnPresentationActiveInputChanged = null;
 
 			base.DisposeFinal(disposing);
 		}

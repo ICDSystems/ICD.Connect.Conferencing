@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API;
 using ICD.Connect.API.Commands;
+using ICD.Connect.API.Info;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Controls.Presentation;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Proxies.Controls;
 using ICD.Connect.Devices.Proxies.Devices;
@@ -16,7 +19,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		/// <summary>
 		/// Raised when the presentation active state changes.
 		/// </summary>
-		public event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveChanged;
+		public event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveInputChanged;
 
 		private int? m_PresentationActive;
 
@@ -33,7 +36,9 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 				
 				m_PresentationActive = value;
 
-				OnPresentationActiveChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
+				Log(eSeverity.Informational, "PresentationActiveInput set to {0}", m_PresentationActive);
+
+				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
 			}
 		}
 
@@ -53,7 +58,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnPresentationActiveChanged = null;
+			OnPresentationActiveInputChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -78,6 +83,20 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Override to build initialization commands on top of the current class info.
+		/// </summary>
+		/// <param name="command"></param>
+		protected override void Initialize(ApiClassInfo command)
+		{
+			base.Initialize(command);
+
+			ApiCommandBuilder.UpdateCommand(command)
+							 .SubscribeEvent(PresentationControlApi.EVENT_PRESENTATION_ACTIVE_INPUT)
+							 .GetProperty(PresentationControlApi.PROPERTY_PRESENTATION_ACTIVE_INPUT)
+							 .Complete();
+		}
 
 		#region Console
 
