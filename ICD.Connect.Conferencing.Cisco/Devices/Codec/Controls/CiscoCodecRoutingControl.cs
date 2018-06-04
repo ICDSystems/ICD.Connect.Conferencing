@@ -72,7 +72,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override eCodecInputType GetCodecInputType(int address)
 		{
-			throw new NotImplementedException();
+			return Parent.InputTypes.GetInputType(address);
 		}
 
 		/// <summary>
@@ -82,7 +82,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IEnumerable<int> GetCodecInputs(eCodecInputType type)
 		{
-			throw new NotImplementedException();
+			return Parent.InputTypes.GetInputs(type);
 		}
 
 		/// <summary>
@@ -91,7 +91,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="address"></param>
 		public override void SetCameraInput(int address)
 		{
-			throw new NotImplementedException();
+			Parent.Components.GetComponent<VideoComponent>().SetMainVideoSourceByConnectorId(address);
 		}
 
 		#region Methods
