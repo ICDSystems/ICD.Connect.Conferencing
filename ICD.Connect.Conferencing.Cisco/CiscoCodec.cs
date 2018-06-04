@@ -171,16 +171,45 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			Controls.Add(new CiscoCodecRoutingControl(this, 0));
 			Controls.Add(new CiscoDialingDeviceControl(this, 1));
-		}
+        }
 
 		#endregion
 
 		#region Methods
 
-		/// <summary>
-		/// Release resources.
-		/// </summary>
-		protected override void DisposeFinal(bool disposing)
+        /// <summary>
+        /// Connect to the codec.
+        /// </summary>
+        [PublicAPI]
+        public void Connect()
+        {
+            m_ConnectionStateManager.Connect();
+        }
+        
+        /// <summary>
+        /// Disconnect from the codec.
+        /// </summary>
+        [PublicAPI]
+        public void Disconnect()
+        {
+            m_ConnectionStateManager.Disconnect();
+        
+        }
+        
+        /// <summary>
+        /// Sets the port for communicating with the device.
+        /// </summary>
+        /// <param name="port"></param>
+        [PublicAPI]
+        public void SetPort(ISerialPort port)
+        {
+            m_ConnectionStateManager.SetPort(port);
+        }
+        
+        /// <summary>
+        /// Release resources.
+        /// </summary>
+        protected override void DisposeFinal(bool disposing)
 		{
 			OnInitializedChanged = null;
 			OnConnectedStateChanged = null;
