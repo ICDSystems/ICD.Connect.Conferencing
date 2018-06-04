@@ -165,6 +165,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			Controls.Add(new CiscoCodecRoutingControl(this, 0));
 			Controls.Add(new CiscoCodecDialingDeviceControl(this, 1));
 			Controls.Add(new CiscoCodecDirectoryControl(this, 2));
+			Controls.Add(new CiscoCodecLayoutControl(this, 3));
 		}
 
 		#endregion
