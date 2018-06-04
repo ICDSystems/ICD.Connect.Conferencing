@@ -117,6 +117,7 @@
     <Compile Include="Components\Dialing\CallComponent.cs" />
     <Compile Include="Components\Dialing\DialingComponent.cs" />
     <None Include="ObfuscationSettings.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecDirectoryControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDialingDeviceControl.cs" />
     <Compile Include="KrangPlugin.cs" />
