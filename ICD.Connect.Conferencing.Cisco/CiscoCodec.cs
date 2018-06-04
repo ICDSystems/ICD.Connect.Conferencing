@@ -205,7 +205,7 @@ namespace ICD.Connect.Conferencing.Cisco
         {
             m_ConnectionStateManager.SetPort(port);
         }
-
+        
         /// <summary>
         /// Release resources.
         /// </summary>
