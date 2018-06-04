@@ -119,6 +119,7 @@
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDirectoryControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecLayoutControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecPowerControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDialingDeviceControl.cs" />
