@@ -144,6 +144,10 @@
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxies\Controls\Dialing\AbstractProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Directory\AbstractProxyDirectoryControl.cs" />
+    <Compile Include="Proxies\Controls\Directory\DirectoryControlApi.cs" />
+    <Compile Include="Proxies\Controls\Directory\IProxyDirectoryControl.cs" />
+    <Compile Include="Proxies\Controls\Directory\ProxyDirectoryControl.cs" />
     <Compile Include="Proxies\Controls\Layout\AbstractProxyConferenceLayoutControl.cs" />
     <Compile Include="Proxies\Controls\Layout\ConferenceLayoutControlApi.cs" />
     <Compile Include="Proxies\Controls\Layout\IProxyConferenceLayoutControl.cs" />
