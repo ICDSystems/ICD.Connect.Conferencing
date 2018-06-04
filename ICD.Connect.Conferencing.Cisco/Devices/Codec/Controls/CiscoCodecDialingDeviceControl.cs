@@ -39,6 +39,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			m_Component = Parent.Components.GetComponent<DialingComponent>();
 			Subscribe(m_Component);
+
+			UpdatePrivacyMute();
+			UpdateDoNotDisturb();
+			UpdateAutoAnswer();
 		}
 
 		/// <summary>
@@ -114,6 +118,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		#endregion
 
+		#region Private Methods
+
+		private void UpdatePrivacyMute()
+		{
+			PrivacyMuted = m_Component.PrivacyMuted;
+		}
+
+		private void UpdateDoNotDisturb()
+		{
+			DoNotDisturb = m_Component.DoNotDisturb;
+		}
+
+		private void UpdateAutoAnswer()
+		{
+			AutoAnswer = m_Component.AutoAnswer;
+		}
+
+		#endregion
+
 		#region Component Callbacks
 
 		private void Subscribe(DialingComponent component)
@@ -148,17 +171,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void ComponentOnPrivacyMuteChanged(object sender, BoolEventArgs args)
 		{
-			PrivacyMuted = args.Data;
+			UpdatePrivacyMute();
 		}
 
 		private void ComponentOnDoNotDisturbChanged(object sender, BoolEventArgs args)
 		{
-			DoNotDisturb = args.Data;
+			UpdateDoNotDisturb();
 		}
 
 		private void ComponentOnAutoAnswerChanged(object sender, BoolEventArgs args)
 		{
-			AutoAnswer = args.Data;
+			UpdateAutoAnswer();
 		}
 
 		#endregion
