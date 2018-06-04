@@ -81,6 +81,8 @@
     <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
     <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
+    <Compile Include="Controls\Directory\AbstractDirectoryControl.cs" />
+    <Compile Include="Controls\Directory\DirectoryControlConsole.cs" />
     <Compile Include="Controls\Directory\IDirectoryControl.cs" />
     <Compile Include="Controls\Layout\AbstractConferenceLayoutControl.cs" />
     <Compile Include="Controls\Layout\ConferenceLayoutControlConsole.cs" />
