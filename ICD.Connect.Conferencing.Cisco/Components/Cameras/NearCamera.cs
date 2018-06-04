@@ -7,6 +7,7 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
@@ -61,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// </summary>
 		/// <param name="cameraId"></param>
 		/// <param name="codec"></param>
-		public NearCamera(int cameraId, CiscoCodec codec) : base(codec)
+		public NearCamera(int cameraId, CiscoCodecDevice codec) : base(codec)
 		{
 			CameraId = cameraId;
 

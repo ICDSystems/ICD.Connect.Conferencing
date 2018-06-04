@@ -8,11 +8,11 @@ using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Cisco.Components.Cameras;
-using ICD.Connect.Conferencing.Cisco.Controls;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings.Core;
 
-namespace ICD.Connect.Conferencing.Cisco
+namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 {
 	public sealed class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
 	                                             ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
@@ -21,7 +21,7 @@ namespace ICD.Connect.Conferencing.Cisco
 
 		public event EventHandler OnPresetsChanged;
 
-		private CiscoCodec m_Codec;
+		private CiscoCodecDevice m_Codec;
 		private NearCamerasComponent m_CamerasComponent;
 		private NearCamera m_Camera;
 		private int? m_PanTiltSpeed;
@@ -199,9 +199,9 @@ namespace ICD.Connect.Conferencing.Cisco
 
 			CameraId = (int)settings.CameraId;
 
-			CiscoCodec codec = null;
+			CiscoCodecDevice codec = null;
 			if (settings.CodecId != null)
-				codec = factory.GetOriginatorById<CiscoCodec>(settings.CodecId.Value);
+				codec = factory.GetOriginatorById<CiscoCodecDevice>(settings.CodecId.Value);
 
 			SetCodec(codec);
 
@@ -228,13 +228,13 @@ namespace ICD.Connect.Conferencing.Cisco
 		#region Public API
 
 		[PublicAPI]
-		public CiscoCodec GetCodec()
+		public CiscoCodecDevice GetCodec()
 		{
 			return m_Codec;
 		}
 
 		[PublicAPI]
-		public void SetCodec(CiscoCodec codec)
+		public void SetCodec(CiscoCodecDevice codec)
 		{
 			if (codec == m_Codec)
 				return;
@@ -262,7 +262,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// Subscribe to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		private void Subscribe(CiscoCodec codec)
+		private void Subscribe(CiscoCodecDevice codec)
 		{
 			if (codec == null)
 				return;
@@ -274,7 +274,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// Unsubscribe from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		private void Unsubscribe(CiscoCodec codec)
+		private void Unsubscribe(CiscoCodecDevice codec)
 		{
 			if (codec == null)
 				return;

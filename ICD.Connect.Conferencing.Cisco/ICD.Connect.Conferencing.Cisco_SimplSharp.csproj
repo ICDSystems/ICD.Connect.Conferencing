@@ -77,17 +77,17 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CiscoCodecSettings.cs" />
+    <Compile Include="Devices\Codec\CiscoCodecSettings.cs" />
     <Compile Include="Components\AbstractCiscoComponent.cs" />
-    <Compile Include="CiscoCodec.cs" />
+    <Compile Include="Devices\Codec\CiscoCodecDevice.cs" />
     <Compile Include="Components\Cameras\AbstractCiscoCamera.cs" />
-    <Compile Include="CiscoCodecCameraDevice.cs" />
+    <Compile Include="Devices\Camera\CiscoCodecCameraDevice.cs" />
     <Compile Include="Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Components\Directory\Tree\CiscoRootFolder.cs" />
     <Compile Include="Components\Directory\Tree\CiscoFolder.cs" />
     <Compile Include="Components\Directory\Tree\ePhonebookType.cs" />
-    <Compile Include="Controls\CiscoCodecCameraDevicePowerControl.cs" />
-    <Compile Include="CiscoCodecCameraDeviceSettings.cs" />
+    <Compile Include="Devices\Camera\CiscoCodecCameraDevicePowerControl.cs" />
+    <Compile Include="Devices\Camera\CiscoCodecCameraDeviceSettings.cs" />
     <Compile Include="Components\Cameras\FarCamera.cs" />
     <Compile Include="Components\Cameras\NearCamera.cs" />
     <Compile Include="Components\Cameras\NearCamerasComponent.cs" />
@@ -117,8 +117,8 @@
     <Compile Include="Components\Dialing\CallComponent.cs" />
     <Compile Include="Components\Dialing\DialingComponent.cs" />
     <None Include="ObfuscationSettings.cs" />
-    <Compile Include="Controls\CiscoCodecRoutingControl.cs" />
-    <Compile Include="Controls\CiscoDialingDeviceControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecDialingDeviceControl.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />

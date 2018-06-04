@@ -1,10 +1,11 @@
 ﻿using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Cameras.Devices;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
 
-namespace ICD.Connect.Conferencing.Cisco
+namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 {
 	[KrangSettings("CiscoCamera", typeof(CiscoCodecCameraDevice))]
 	public sealed class CiscoCodecCameraDeviceSettings : AbstractCameraDeviceSettings
@@ -17,7 +18,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		private int? m_PanTiltSpeed;
 		private int? m_ZoomSpeed;
 
-		[OriginatorIdSettingsProperty(typeof(CiscoCodec))]
+		[OriginatorIdSettingsProperty(typeof(CiscoCodecDevice))]
 		public int? CodecId { get; set; }
 
 		public int? CameraId { get; set; }

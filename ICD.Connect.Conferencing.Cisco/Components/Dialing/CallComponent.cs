@@ -12,6 +12,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.Cisco.Components.Cameras;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 
@@ -302,7 +303,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		/// </summary>
 		/// <param name="callId"></param>
 		/// <param name="codec"></param>
-		public CallComponent(int callId, CiscoCodec codec) : base(codec)
+		public CallComponent(int callId, CiscoCodecDevice codec) : base(codec)
 		{
 			m_History = new List<ConferenceSourceSnapshot>();
 			m_HistorySection = new SafeCriticalSection();
@@ -559,31 +560,31 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Subscribe(CiscoCodec codec)
+		protected override void Subscribe(CiscoCodecDevice codec)
 		{
 			base.Subscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.RegisterParserCallback(ParseCallStatus, CiscoCodec.XSTATUS_ELEMENT, "Call");
+			codec.RegisterParserCallback(ParseCallStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Call");
 		}
 
 		/// <summary>
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Unsubscribe(CiscoCodec codec)
+		protected override void Unsubscribe(CiscoCodecDevice codec)
 		{
 			base.Unsubscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.UnregisterParserCallback(ParseCallStatus, CiscoCodec.XSTATUS_ELEMENT, "Call");
+			codec.UnregisterParserCallback(ParseCallStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Call");
 		}
 
-		private void ParseCallStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseCallStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			Parse(xml);
 		}

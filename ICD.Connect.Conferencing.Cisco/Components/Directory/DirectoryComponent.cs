@@ -9,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
@@ -61,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public DirectoryComponent(CiscoCodec codec)
+		public DirectoryComponent(CiscoCodecDevice codec)
 			: base(codec)
 		{
 			m_RootsCache = new Dictionary<ePhonebookType, CiscoRootFolder>();
@@ -180,7 +181,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Subscribe(CiscoCodec codec)
+		protected override void Subscribe(CiscoCodecDevice codec)
 		{
 			base.Subscribe(codec);
 
@@ -194,7 +195,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Unsubscribe(CiscoCodec codec)
+		protected override void Unsubscribe(CiscoCodecDevice codec)
 		{
 			base.Unsubscribe(codec);
 
@@ -211,7 +212,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 		/// <param name="codec"></param>
 		/// <param name="resultid"></param>
 		/// <param name="xml"></param>
-		private void ParseSearchResultAsync(CiscoCodec codec, string resultid, string xml)
+		private void ParseSearchResultAsync(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			m_ParseAsyncHandle = ThreadingUtils.SafeInvoke(() => ParseSearchResult(resultid, xml));
 		}

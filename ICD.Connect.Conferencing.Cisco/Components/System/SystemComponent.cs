@@ -5,6 +5,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.System
 {
@@ -388,7 +389,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.System
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public SystemComponent(CiscoCodec codec) : base(codec)
+		public SystemComponent(CiscoCodecDevice codec) : base(codec)
 		{
 			Subscribe(Codec);
 
@@ -435,126 +436,126 @@ namespace ICD.Connect.Conferencing.Cisco.Components.System
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Subscribe(CiscoCodec codec)
+		protected override void Subscribe(CiscoCodecDevice codec)
 		{
 			base.Subscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.RegisterParserCallback(ParseStandbyStatus, CiscoCodec.XSTATUS_ELEMENT, "Standby", "State");
-			codec.RegisterParserCallback(ParseSipRegistrationStatus, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Registration", "Status");
-			codec.RegisterParserCallback(ParseSipRegistrationUri, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Registration", "URI");
-			codec.RegisterParserCallback(ParseSipProxyStatus, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Proxy", "Status");
-			codec.RegisterParserCallback(ParseSipProxyAddress, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Proxy", "Address");
-			codec.RegisterParserCallback(ParseNameStatus, CiscoCodec.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
-			codec.RegisterParserCallback(ParseVersionStatus, CiscoCodec.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
-			codec.RegisterParserCallback(ParseAddressStatus, CiscoCodec.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
-			codec.RegisterParserCallback(ParseGatewayStatus, CiscoCodec.XSTATUS_ELEMENT, "Network", "IPv4", "Gateway");
-			codec.RegisterParserCallback(ParseSubnetMaskStatus, CiscoCodec.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
-			codec.RegisterParserCallback(ParseH323EnabledStatus, CiscoCodec.XSTATUS_ELEMENT, "H323", "Mode", "Status");
-			codec.RegisterParserCallback(ParseH323GatekeeperStatus, CiscoCodec.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Status");
-			codec.RegisterParserCallback(ParseH323GatekeeperAddress, CiscoCodec.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Address");
-			codec.RegisterParserCallback(ParsePlatformStatus, CiscoCodec.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
+			codec.RegisterParserCallback(ParseStandbyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Standby", "State");
+			codec.RegisterParserCallback(ParseSipRegistrationStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration", "Status");
+			codec.RegisterParserCallback(ParseSipRegistrationUri, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration", "URI");
+			codec.RegisterParserCallback(ParseSipProxyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Status");
+			codec.RegisterParserCallback(ParseSipProxyAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Address");
+			codec.RegisterParserCallback(ParseNameStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
+			codec.RegisterParserCallback(ParseVersionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
+			codec.RegisterParserCallback(ParseAddressStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
+			codec.RegisterParserCallback(ParseGatewayStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Gateway");
+			codec.RegisterParserCallback(ParseSubnetMaskStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
+			codec.RegisterParserCallback(ParseH323EnabledStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Mode", "Status");
+			codec.RegisterParserCallback(ParseH323GatekeeperStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Status");
+			codec.RegisterParserCallback(ParseH323GatekeeperAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Address");
+			codec.RegisterParserCallback(ParsePlatformStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
 		}
 
 		/// <summary>
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Unsubscribe(CiscoCodec codec)
+		protected override void Unsubscribe(CiscoCodecDevice codec)
 		{
 			base.Unsubscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.UnregisterParserCallback(ParseStandbyStatus, CiscoCodec.XSTATUS_ELEMENT, "Standby", "State");
-			codec.UnregisterParserCallback(ParseSipRegistrationStatus, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Registration",
+			codec.UnregisterParserCallback(ParseStandbyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Standby", "State");
+			codec.UnregisterParserCallback(ParseSipRegistrationStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration",
 			                               "Status");
-			codec.UnregisterParserCallback(ParseSipRegistrationUri, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Registration", "URI");
-			codec.UnregisterParserCallback(ParseSipProxyStatus, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Proxy", "Status");
-			codec.UnregisterParserCallback(ParseSipProxyAddress, CiscoCodec.XSTATUS_ELEMENT, "SIP", "Proxy", "Address");
-			codec.UnregisterParserCallback(ParseNameStatus, CiscoCodec.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
-			codec.UnregisterParserCallback(ParseVersionStatus, CiscoCodec.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
-			codec.UnregisterParserCallback(ParseAddressStatus, CiscoCodec.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
-			codec.UnregisterParserCallback(ParseGatewayStatus, CiscoCodec.XSTATUS_ELEMENT, "Network", "IPv4", "Gateway");
-			codec.UnregisterParserCallback(ParseSubnetMaskStatus, CiscoCodec.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
-			codec.UnregisterParserCallback(ParseH323EnabledStatus, CiscoCodec.XSTATUS_ELEMENT, "H323", "Mode", "Status");
-			codec.UnregisterParserCallback(ParseH323GatekeeperStatus, CiscoCodec.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Status");
-			codec.UnregisterParserCallback(ParseH323GatekeeperAddress, CiscoCodec.XSTATUS_ELEMENT, "H323", "Gatekeeper",
+			codec.UnregisterParserCallback(ParseSipRegistrationUri, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration", "URI");
+			codec.UnregisterParserCallback(ParseSipProxyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Status");
+			codec.UnregisterParserCallback(ParseSipProxyAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Address");
+			codec.UnregisterParserCallback(ParseNameStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
+			codec.UnregisterParserCallback(ParseVersionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
+			codec.UnregisterParserCallback(ParseAddressStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
+			codec.UnregisterParserCallback(ParseGatewayStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Gateway");
+			codec.UnregisterParserCallback(ParseSubnetMaskStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
+			codec.UnregisterParserCallback(ParseH323EnabledStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Mode", "Status");
+			codec.UnregisterParserCallback(ParseH323GatekeeperStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Status");
+			codec.UnregisterParserCallback(ParseH323GatekeeperAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper",
 			                               "Address");
-			codec.UnregisterParserCallback(ParsePlatformStatus, CiscoCodec.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
+			codec.UnregisterParserCallback(ParsePlatformStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
 		}
 
-		private void ParsePlatformStatus(CiscoCodec codec, string resultid, string xml)
+		private void ParsePlatformStatus(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			Platform = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseStandbyStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseStandbyStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			Awake = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
-		private void ParseSipRegistrationStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseSipRegistrationStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			SipRegistration = EnumUtils.Parse<eRegState>(content, true);
 		}
 
-		private void ParseSipRegistrationUri(CiscoCodec codec, string resultid, string xml)
+		private void ParseSipRegistrationUri(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			SipUri = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseSipProxyAddress(CiscoCodec codec, string resultid, string xml)
+		private void ParseSipProxyAddress(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			SipProxyAddress = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseSipProxyStatus(CiscoCodec codec, string resultid, string xml)
+		private void ParseSipProxyStatus(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			SipProxyStatus = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseNameStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseNameStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			Name = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseAddressStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseAddressStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			Address = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseGatewayStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseGatewayStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			Gateway = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseSubnetMaskStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseSubnetMaskStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			SubnetMask = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseVersionStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseVersionStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			SoftwareVersion = XmlUtils.GetInnerXml(xml);
 		}
 
-		private void ParseH323EnabledStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseH323EnabledStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			H323Enabled = XmlUtils.GetInnerXml(xml) == "Enabled";
 		}
 
-		private void ParseH323GatekeeperStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseH323GatekeeperStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			H323GatekeeperStatus = EnumUtils.Parse<eH323GatekeeperStatus>(content, true);
 		}
 
-		private void ParseH323GatekeeperAddress(CiscoCodec codec, string resultid, string xml)
+		private void ParseH323GatekeeperAddress(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			H323GatekeeperAddress = XmlUtils.GetInnerXml(xml);
 		}

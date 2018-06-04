@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Timers;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Peripherals
 {
@@ -20,7 +21,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Peripherals
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public PeripheralsComponent(CiscoCodec codec)
+		public PeripheralsComponent(CiscoCodecDevice codec)
 			: base(codec)
 		{
 			m_HeartbeatTimer = SafeTimer.Stopped(HeartbeatCallback);

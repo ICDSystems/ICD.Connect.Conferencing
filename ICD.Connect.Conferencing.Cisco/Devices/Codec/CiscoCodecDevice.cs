@@ -12,7 +12,7 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
-using ICD.Connect.Conferencing.Cisco.Controls;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
@@ -21,12 +21,12 @@ using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings.Core;
 
-namespace ICD.Connect.Conferencing.Cisco
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
 	/// <summary>
 	/// Cisco VTC Codec Control
 	/// </summary>
-	public sealed class CiscoCodec : AbstractVideoConferenceDevice<CiscoCodecSettings>
+	public sealed class CiscoCodecDevice : AbstractVideoConferenceDevice<CiscoCodecSettings>
 	{
 		/// <summary>
 		/// Callback for parser events.
@@ -34,7 +34,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// <param name="codec"></param>
 		/// <param name="resultId"></param>
 		/// <param name="xml"></param>
-		public delegate void ParserCallback(CiscoCodec codec, string resultId, string xml);
+		public delegate void ParserCallback(CiscoCodecDevice codec, string resultId, string xml);
 
 		/// <summary>
 		/// End of line string.
@@ -146,7 +146,7 @@ namespace ICD.Connect.Conferencing.Cisco
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public CiscoCodec()
+		public CiscoCodecDevice()
 		{
 			m_ParserCallbacks = new Dictionary<string, List<ParserCallback>>();
 			m_ParserCallbacksSection = new SafeCriticalSection();
@@ -163,7 +163,7 @@ namespace ICD.Connect.Conferencing.Cisco
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 
 			Controls.Add(new CiscoCodecRoutingControl(this, 0));
-			Controls.Add(new CiscoDialingDeviceControl(this, 1));
+			Controls.Add(new CiscoCodecDialingDeviceControl(this, 1));
 		}
 
 		#endregion

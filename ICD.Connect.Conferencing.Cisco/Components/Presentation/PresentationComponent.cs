@@ -8,6 +8,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cisco.Components.Video;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 {
@@ -122,7 +123,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public PresentationComponent(CiscoCodec codec) : base(codec)
+		public PresentationComponent(CiscoCodecDevice codec) : base(codec)
 		{
 			m_Presentations = new Dictionary<int, PresentationItem>();
 			m_PresentationsSection = new SafeCriticalSection();
@@ -239,22 +240,22 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Subscribe(CiscoCodec codec)
+		protected override void Subscribe(CiscoCodecDevice codec)
 		{
 			base.Subscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.RegisterParserCallback(ParsePresentationPositionStatus, CiscoCodec.XSTATUS_ELEMENT, "Video",
+			codec.RegisterParserCallback(ParsePresentationPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video",
 			                             "Presentation", "PIPPosition");
-			codec.RegisterParserCallback(ParsePresentationViewStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Layout",
+			codec.RegisterParserCallback(ParsePresentationViewStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Layout",
 			                             "PresentationView");
-			codec.RegisterParserCallback(ParsePresentation, CiscoCodec.XSTATUS_ELEMENT, "Conference",
+			codec.RegisterParserCallback(ParsePresentation, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference",
 			                             "Presentation");
-			codec.RegisterParserCallback(ParsePresentationMode, CiscoCodec.XSTATUS_ELEMENT, "Conference",
+			codec.RegisterParserCallback(ParsePresentationMode, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference",
 			                             "Presentation", "Mode");
-			codec.RegisterParserCallback(ParsePresentationStoppedCauseEvent, CiscoCodec.XEVENT_ELEMENT, "PresentationStopped",
+			codec.RegisterParserCallback(ParsePresentationStoppedCauseEvent, CiscoCodecDevice.XEVENT_ELEMENT, "PresentationStopped",
 			                             "Cause");
 		}
 
@@ -262,44 +263,44 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Unsubscribe(CiscoCodec codec)
+		protected override void Unsubscribe(CiscoCodecDevice codec)
 		{
 			base.Unsubscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.UnregisterParserCallback(ParsePresentationPositionStatus, CiscoCodec.XSTATUS_ELEMENT, "Video",
+			codec.UnregisterParserCallback(ParsePresentationPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video",
 			                               "Presentation", "PIPPosition");
-			codec.UnregisterParserCallback(ParsePresentationViewStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Layout",
+			codec.UnregisterParserCallback(ParsePresentationViewStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Layout",
 			                               "PresentationView");
-			codec.UnregisterParserCallback(ParsePresentation, CiscoCodec.XSTATUS_ELEMENT, "Conference",
+			codec.UnregisterParserCallback(ParsePresentation, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference",
 			                               "Presentation");
-			codec.UnregisterParserCallback(ParsePresentationMode, CiscoCodec.XSTATUS_ELEMENT, "Conference",
+			codec.UnregisterParserCallback(ParsePresentationMode, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference",
 			                               "Presentation", "Mode");
-			codec.UnregisterParserCallback(ParsePresentationStoppedCauseEvent, CiscoCodec.XEVENT_ELEMENT, "PresentationStopped",
+			codec.UnregisterParserCallback(ParsePresentationStoppedCauseEvent, CiscoCodecDevice.XEVENT_ELEMENT, "PresentationStopped",
 			                               "Cause");
 		}
 
-		private void ParsePresentationMode(CiscoCodec codec, string resultid, string xml)
+		private void ParsePresentationMode(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			PresentationMode = EnumUtils.Parse<ePresentationMode>(content, true);
 		}
 
-		private void ParsePresentationPositionStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParsePresentationPositionStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			PresentationPosition = EnumUtils.Parse<ePipPosition>(content, true);
 		}
 
-		private void ParsePresentationViewStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParsePresentationViewStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			PresentationView = EnumUtils.Parse<eLayout>(content, true);
 		}
 
-		private void ParsePresentation(CiscoCodec sender, string resultId, string xml)
+		private void ParsePresentation(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			bool changed = false;
 
@@ -336,7 +337,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
 				OnPresentationsChanged.Raise(this);
 		}
 
-		private void ParsePresentationStoppedCauseEvent(CiscoCodec sender, string resultId, string xml)
+		private void ParsePresentationStoppedCauseEvent(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 

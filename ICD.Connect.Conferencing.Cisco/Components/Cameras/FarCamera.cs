@@ -1,6 +1,7 @@
 ﻿using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
 using ICD.Connect.Conferencing.Cameras;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
@@ -26,7 +27,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// </summary>
 		/// <param name="callId"></param>
 		/// <param name="codec"></param>
-		public FarCamera(int callId, CiscoCodec codec) : base(codec)
+		public FarCamera(int callId, CiscoCodecDevice codec) : base(codec)
 		{
 			m_CallId = callId;
 

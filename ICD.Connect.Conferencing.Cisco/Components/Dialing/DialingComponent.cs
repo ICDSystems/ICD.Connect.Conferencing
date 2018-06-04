@@ -9,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 
@@ -151,7 +152,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public DialingComponent(CiscoCodec codec) : base(codec)
+		public DialingComponent(CiscoCodecDevice codec) : base(codec)
 		{
 			m_CallComponents = new Dictionary<int, CallComponent>();
 			m_CallComponentsSection = new SafeCriticalSection();
@@ -418,91 +419,91 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Subscribe(CiscoCodec codec)
+		protected override void Subscribe(CiscoCodecDevice codec)
 		{
 			base.Subscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.RegisterParserCallback(ParseMaxActiveCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.RegisterParserCallback(ParseMaxActiveCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                             "MaxActiveCalls");
-			codec.RegisterParserCallback(ParseMaxAudioCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.RegisterParserCallback(ParseMaxAudioCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                             "MaxAudioCalls");
-			codec.RegisterParserCallback(ParseMaxCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.RegisterParserCallback(ParseMaxCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                             "MaxCalls");
-			codec.RegisterParserCallback(ParseMaxVideoCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.RegisterParserCallback(ParseMaxVideoCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                             "MaxVideoCalls");
 
-			codec.RegisterParserCallback(ParseCallStatus, CiscoCodec.XSTATUS_ELEMENT, "Call");
-			codec.RegisterParserCallback(ParseDoNotDisturbStatus, CiscoCodec.XSTATUS_ELEMENT, "Conference", "DoNotDisturb");
-			codec.RegisterParserCallback(ParseAutoAnswerMode, CiscoCodec.XCONFIGURATION_ELEMENT, "Conference", "AutoAnswer",
+			codec.RegisterParserCallback(ParseCallStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Call");
+			codec.RegisterParserCallback(ParseDoNotDisturbStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "DoNotDisturb");
+			codec.RegisterParserCallback(ParseAutoAnswerMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Conference", "AutoAnswer",
 			                             "Mode");
-			codec.RegisterParserCallback(ParseMuteStatus, CiscoCodec.XSTATUS_ELEMENT, "Audio", "Microphones", "Mute");
+			codec.RegisterParserCallback(ParseMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Audio", "Microphones", "Mute");
 		}
 
 		/// <summary>
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Unsubscribe(CiscoCodec codec)
+		protected override void Unsubscribe(CiscoCodecDevice codec)
 		{
 			base.Unsubscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.UnregisterParserCallback(ParseMaxActiveCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.UnregisterParserCallback(ParseMaxActiveCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                               "MaxActiveCalls");
-			codec.UnregisterParserCallback(ParseMaxAudioCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.UnregisterParserCallback(ParseMaxAudioCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                               "MaxAudioCalls");
-			codec.UnregisterParserCallback(ParseMaxCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.UnregisterParserCallback(ParseMaxCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                               "MaxCalls");
-			codec.UnregisterParserCallback(ParseMaxVideoCalls, CiscoCodec.XSTATUS_ELEMENT, "Capabilities", "Conference",
+			codec.UnregisterParserCallback(ParseMaxVideoCalls, CiscoCodecDevice.XSTATUS_ELEMENT, "Capabilities", "Conference",
 			                               "MaxVideoCalls");
 
-			codec.UnregisterParserCallback(ParseCallStatus, CiscoCodec.XSTATUS_ELEMENT, "Call");
-			codec.UnregisterParserCallback(ParseDoNotDisturbStatus, CiscoCodec.XSTATUS_ELEMENT, "Conference", "DoNotDisturb");
-			codec.UnregisterParserCallback(ParseAutoAnswerMode, CiscoCodec.XCONFIGURATION_ELEMENT, "Conference", "AutoAnswer",
+			codec.UnregisterParserCallback(ParseCallStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Call");
+			codec.UnregisterParserCallback(ParseDoNotDisturbStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "DoNotDisturb");
+			codec.UnregisterParserCallback(ParseAutoAnswerMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Conference", "AutoAnswer",
 			                               "Mode");
-			codec.UnregisterParserCallback(ParseMuteStatus, CiscoCodec.XSTATUS_ELEMENT, "Audio", "Microphones", "Mute");
+			codec.UnregisterParserCallback(ParseMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Audio", "Microphones", "Mute");
 		}
 
-		private void ParseMaxActiveCalls(CiscoCodec codec, string resultid, string xml)
+		private void ParseMaxActiveCalls(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			MaxActiveCalls = uint.Parse(content);
 		}
 
-		private void ParseMaxAudioCalls(CiscoCodec codec, string resultid, string xml)
+		private void ParseMaxAudioCalls(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			MaxAudioCalls = uint.Parse(content);
 		}
 
-		private void ParseMaxCalls(CiscoCodec codec, string resultid, string xml)
+		private void ParseMaxCalls(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			MaxCalls = uint.Parse(content);
 		}
 
-		private void ParseMaxVideoCalls(CiscoCodec codec, string resultid, string xml)
+		private void ParseMaxVideoCalls(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			MaxVideoCalls = uint.Parse(content);
 		}
 
-		private void ParseMuteStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseMuteStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			PrivacyMuted = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
-		private void ParseAutoAnswerMode(CiscoCodec sender, string resultId, string xml)
+		private void ParseAutoAnswerMode(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			AutoAnswer = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
-		private void ParseDoNotDisturbStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseDoNotDisturbStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			DoNotDisturb = XmlUtils.GetInnerXml(xml) == "Active";
 		}
@@ -510,7 +511,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		/// <summary>
 		/// Parses call statuses.
 		/// </summary>
-		private void ParseCallStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseCallStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			// Instantiate a CallState for the call id.
 			int id = XmlUtils.GetAttributeAsInt(xml, "item");

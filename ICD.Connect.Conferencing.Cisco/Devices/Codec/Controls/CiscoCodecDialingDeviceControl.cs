@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Components.Dialing;
-using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
 using ICD.Connect.Conferencing.ConferenceSources;
-using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls;
 using ICD.Connect.Conferencing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Cisco.Controls
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
-	public sealed class CiscoDialingDeviceControl : AbstractDialingDeviceControl<CiscoCodec>
+	public sealed class CiscoCodecDialingDeviceControl : AbstractDialingDeviceControl<CiscoCodecDevice>
 	{
 		/// <summary>
 		/// Called when a source is added to the dialing component.
@@ -37,7 +34,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public CiscoDialingDeviceControl(CiscoCodec parent, int id)
+		public CiscoCodecDialingDeviceControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
 			m_Component = Parent.Components.GetComponent<DialingComponent>();

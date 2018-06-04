@@ -2,9 +2,10 @@
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Cisco.Components.System;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Cisco.Controls
+namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 {
 	public sealed class CiscoCodecCameraDevicePowerControl : AbstractPowerDeviceControl<CiscoCodecCameraDevice>
 	{
@@ -90,7 +91,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 
 			m_SystemComponent = null;
 
-			CiscoCodec codec = Parent.GetCodec();
+			CiscoCodecDevice codec = Parent.GetCodec();
 			if (codec == null)
 				return;
 

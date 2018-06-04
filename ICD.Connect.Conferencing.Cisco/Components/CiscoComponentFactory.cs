@@ -11,6 +11,7 @@ using ICD.Connect.Conferencing.Cisco.Components.Peripherals;
 using ICD.Connect.Conferencing.Cisco.Components.Presentation;
 using ICD.Connect.Conferencing.Cisco.Components.System;
 using ICD.Connect.Conferencing.Cisco.Components.Video;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components
 {
@@ -22,8 +23,8 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 		private readonly IcdHashSet<AbstractCiscoComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
 
-		private static readonly Dictionary<Type, Func<CiscoCodec, AbstractCiscoComponent>> s_Factories =
-			new Dictionary<Type, Func<CiscoCodec, AbstractCiscoComponent>>
+		private static readonly Dictionary<Type, Func<CiscoCodecDevice, AbstractCiscoComponent>> s_Factories =
+			new Dictionary<Type, Func<CiscoCodecDevice, AbstractCiscoComponent>>
 			{
 				{typeof(DiagnosticsComponent), codec => new DiagnosticsComponent(codec)},
 				{typeof(DialingComponent), codec => new DialingComponent(codec)},
@@ -35,13 +36,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 				{typeof(VideoComponent), codec => new VideoComponent(codec)}
 			};
 
-		private readonly CiscoCodec m_Codec;
+		private readonly CiscoCodecDevice m_Codec;
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public CiscoComponentFactory(CiscoCodec codec)
+		public CiscoComponentFactory(CiscoCodecDevice codec)
 		{
 			m_Components = new IcdHashSet<AbstractCiscoComponent>();
 			m_ComponentsSection = new SafeCriticalSection();

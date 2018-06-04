@@ -1,17 +1,17 @@
 using System;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
 
-namespace ICD.Connect.Conferencing.Cisco
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
 	/// <summary>
 	/// Settings for the CiscoCodec.
 	/// </summary>
-	[KrangSettings("CiscoCodec", typeof(CiscoCodec))]
+	[KrangSettings("CiscoCodec", typeof(CiscoCodecDevice))]
 	public sealed class CiscoCodecSettings : AbstractVideoConferenceDeviceSettings
 	{
 		private const string PORT_ELEMENT = "Port";

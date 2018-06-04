@@ -6,6 +6,7 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
 {
@@ -23,7 +24,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public DiagnosticsComponent(CiscoCodec codec)
+		public DiagnosticsComponent(CiscoCodecDevice codec)
 			: base(codec)
 		{
 			m_Messages = new IcdHashSet<DiagnosticsMessage>();
@@ -43,28 +44,28 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Subscribe(CiscoCodec codec)
+		protected override void Subscribe(CiscoCodecDevice codec)
 		{
 			base.Subscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.RegisterParserCallback(ParseMessages, CiscoCodec.XSTATUS_ELEMENT, "Diagnostics");
+			codec.RegisterParserCallback(ParseMessages, CiscoCodecDevice.XSTATUS_ELEMENT, "Diagnostics");
 		}
 
 		/// <summary>
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Unsubscribe(CiscoCodec codec)
+		protected override void Unsubscribe(CiscoCodecDevice codec)
 		{
 			base.Unsubscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.UnregisterParserCallback(ParseMessages, CiscoCodec.XSTATUS_ELEMENT, "Diagnostics");
+			codec.UnregisterParserCallback(ParseMessages, CiscoCodecDevice.XSTATUS_ELEMENT, "Diagnostics");
 		}
 
 		/// <summary>
@@ -73,7 +74,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
 		/// <param name="codec"></param>
 		/// <param name="resultid"></param>
 		/// <param name="xml"></param>
-		private void ParseMessages(CiscoCodec codec, string resultid, string xml)
+		private void ParseMessages(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			m_MessagesSection.Enter();
 

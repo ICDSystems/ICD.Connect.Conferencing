@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Cameras;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 {
@@ -15,7 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected AbstractCiscoCamera(CiscoCodec codec) : base(codec)
+		protected AbstractCiscoCamera(CiscoCodecDevice codec) : base(codec)
 		{
 		}
 

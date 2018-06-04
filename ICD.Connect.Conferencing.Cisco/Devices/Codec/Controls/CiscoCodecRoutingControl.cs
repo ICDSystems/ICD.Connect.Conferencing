@@ -5,18 +5,19 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Components.Presentation;
 using ICD.Connect.Conferencing.Cisco.Components.Video;
 using ICD.Connect.Conferencing.Cisco.Components.Video.Connectors;
+using ICD.Connect.Conferencing.Controls.Routing;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
-using ICD.Connect.Routing.Controls;
 using ICD.Connect.Routing.EventArguments;
 using ICD.Connect.Routing.Utils;
 
-namespace ICD.Connect.Conferencing.Cisco.Controls
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
 	/// <summary>
 	/// The CiscoCodecRoutingControl provides features for determining how content sources pass through the codec.
 	/// </summary>
-	public sealed class CiscoCodecRoutingControl : AbstractRouteMidpointControl<CiscoCodec>
+	public sealed class CiscoCodecRoutingControl : AbstractVideoConferenceRouteControl<CiscoCodecDevice>
 	{
 		public override event EventHandler<TransmissionStateEventArgs> OnActiveTransmissionStateChanged;
 		public override event EventHandler<SourceDetectionStateChangeEventArgs> OnSourceDetectionStateChange;
@@ -40,7 +41,7 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public CiscoCodecRoutingControl(CiscoCodec parent, int id)
+		public CiscoCodecRoutingControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
 			m_Cache = new SwitcherCache();
@@ -62,6 +63,35 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 			OnActiveInputsChanged = null;
 
 			base.DisposeFinal(disposing);
+		}
+
+		/// <summary>
+		/// Gets the codec input type for the input with the given address.
+		/// </summary>
+		/// <param name="address"></param>
+		/// <returns></returns>
+		public override eCodecInputType GetCodecInputType(int address)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Gets the input addresses with the given codec input type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public override IEnumerable<int> GetCodecInputs(eCodecInputType type)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Sets the input address to use for the camera feed.
+		/// </summary>
+		/// <param name="address"></param>
+		public override void SetCameraInput(int address)
+		{
+			throw new NotImplementedException();
 		}
 
 		#region Methods
@@ -113,6 +143,16 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		}
 
 		/// <summary>
+		/// Returns the true if the input is actively being used by the source device.
+		/// For example, a display might true if the input is currently on screen,
+		/// while a switcher may return true if the input is currently routed.
+		/// </summary>
+		public override bool GetInputActiveState(int input, eConnectionType type)
+		{
+			return true;
+		}
+
+		/// <summary>
 		/// Returns true if the device is actively transmitting on the given output.
 		/// This is NOT the same as sending video, since some devices may send an
 		/// idle signal by default.
@@ -150,18 +190,6 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		}
 
 		/// <summary>
-		/// Gets the input routed to the given output matching the given type.
-		/// </summary>
-		/// <param name="output"></param>
-		/// <param name="type"></param>
-		/// <returns></returns>
-		/// <exception cref="InvalidOperationException">Type has multiple flags.</exception>
-		public override ConnectorInfo? GetInput(int output, eConnectionType type)
-		{
-			return m_Cache.GetInputConnectorInfoForOutput(output, type);
-		}
-
-		/// <summary>
 		/// Gets the output connector info at the given address.
 		/// </summary>
 		/// <param name="address"></param>
@@ -183,17 +211,6 @@ namespace ICD.Connect.Conferencing.Cisco.Controls
 		{
 			return VideoComponent.GetVideoOutputConnectorIds()
 			                     .Select(id => GetOutput(id));
-		}
-
-		/// <summary>
-		/// Gets the outputs for the given input.
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="type"></param>
-		/// <returns></returns>
-		public override IEnumerable<ConnectorInfo> GetOutputs(int input, eConnectionType type)
-		{
-			return m_Cache.GetOutputsForInput(input, type);
 		}
 
 		#endregion

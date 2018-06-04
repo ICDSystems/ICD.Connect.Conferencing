@@ -9,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Components.Video.Connectors;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components.Video
 {
@@ -251,7 +252,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public VideoComponent(CiscoCodec codec) : base(codec)
+		public VideoComponent(CiscoCodecDevice codec) : base(codec)
 		{
 			m_VideoSources = new Dictionary<int, VideoSource>();
 			m_VideoInputConnectors = new Dictionary<int, VideoInputConnector>();
@@ -510,97 +511,97 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Subscribe(CiscoCodec codec)
+		protected override void Subscribe(CiscoCodecDevice codec)
 		{
 			base.Subscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.RegisterParserCallback(ParseSelfViewStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview", "Mode");
-			codec.RegisterParserCallback(ParseSelfViewPositionStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview",
+			codec.RegisterParserCallback(ParseSelfViewStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview", "Mode");
+			codec.RegisterParserCallback(ParseSelfViewPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										 "PIPPosition");
-			codec.RegisterParserCallback(ParseSelfViewFullscreenStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview",
+			codec.RegisterParserCallback(ParseSelfViewFullscreenStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										 "FullscreenMode");
-			codec.RegisterParserCallback(ParseSelfViewMonitorStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview",
+			codec.RegisterParserCallback(ParseSelfViewMonitorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										 "OnMonitorRole");
-			codec.RegisterParserCallback(ParseActiveSpeakerPositionStatus, CiscoCodec.XSTATUS_ELEMENT, "Video",
+			codec.RegisterParserCallback(ParseActiveSpeakerPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video",
 										 "ActiveSpeaker", "PIPPosition");
-			codec.RegisterParserCallback(ParseVideoSourceStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Input", "Source");
-			codec.RegisterParserCallback(ParseVideoInputConnectorStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Input",
+			codec.RegisterParserCallback(ParseVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "Source");
+			codec.RegisterParserCallback(ParseVideoInputConnectorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										 "Connector");
-			codec.RegisterParserCallback(ParseVideoOutputConnectorStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Output",
+			codec.RegisterParserCallback(ParseVideoOutputConnectorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Output",
 										 "Connector");
-			codec.RegisterParserCallback(ParseMainVideoSourceStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Input",
+			codec.RegisterParserCallback(ParseMainVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										 "MainVideoSource");
-			codec.RegisterParserCallback(ParseMonitors, CiscoCodec.XSTATUS_ELEMENT, "Video", "Monitors");
+			codec.RegisterParserCallback(ParseMonitors, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Monitors");
 		}
 
 		/// <summary>
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected override void Unsubscribe(CiscoCodec codec)
+		protected override void Unsubscribe(CiscoCodecDevice codec)
 		{
 			base.Unsubscribe(codec);
 
 			if (codec == null)
 				return;
 
-			codec.UnregisterParserCallback(ParseSelfViewStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview", "Mode");
-			codec.UnregisterParserCallback(ParseSelfViewPositionStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview",
+			codec.UnregisterParserCallback(ParseSelfViewStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview", "Mode");
+			codec.UnregisterParserCallback(ParseSelfViewPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										   "PIPPosition");
-			codec.UnregisterParserCallback(ParseSelfViewFullscreenStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview",
+			codec.UnregisterParserCallback(ParseSelfViewFullscreenStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										   "FullscreenMode");
-			codec.UnregisterParserCallback(ParseSelfViewMonitorStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Selfview",
+			codec.UnregisterParserCallback(ParseSelfViewMonitorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										   "OnMonitorRole");
-			codec.UnregisterParserCallback(ParseActiveSpeakerPositionStatus, CiscoCodec.XSTATUS_ELEMENT, "Video",
+			codec.UnregisterParserCallback(ParseActiveSpeakerPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video",
 										   "ActiveSpeaker", "PIPPosition");
-			codec.UnregisterParserCallback(ParseVideoSourceStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Input", "Source");
-			codec.UnregisterParserCallback(ParseVideoInputConnectorStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Input",
+			codec.UnregisterParserCallback(ParseVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "Source");
+			codec.UnregisterParserCallback(ParseVideoInputConnectorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										   "Connector");
-			codec.UnregisterParserCallback(ParseVideoOutputConnectorStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Output",
+			codec.UnregisterParserCallback(ParseVideoOutputConnectorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Output",
 										   "Connector");
-			codec.UnregisterParserCallback(ParseMainVideoSourceStatus, CiscoCodec.XSTATUS_ELEMENT, "Video", "Input",
+			codec.UnregisterParserCallback(ParseMainVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										   "MainVideoSource");
-			codec.UnregisterParserCallback(ParseMonitors, CiscoCodec.XSTATUS_ELEMENT, "Video", "Monitors");
+			codec.UnregisterParserCallback(ParseMonitors, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Monitors");
 		}
 
-		private void ParseMonitors(CiscoCodec codec, string resultid, string xml)
+		private void ParseMonitors(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			Monitors = EnumUtils.Parse<eMonitors>(content, true);
 		}
 
-		private void ParseSelfViewStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseSelfViewStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			SelfViewEnabled = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
-		private void ParseSelfViewPositionStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseSelfViewPositionStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			SelfViewPosition = EnumUtils.Parse<ePipPosition>(content, true);
 		}
 
-		private void ParseSelfViewFullscreenStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseSelfViewFullscreenStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			SelfViewFullScreenEnabled = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
-		private void ParseSelfViewMonitorStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseSelfViewMonitorStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			SelfViewMonitor = EnumUtils.Parse<eSelfViewMonitorRole>(content, true);
 		}
 
-		private void ParseActiveSpeakerPositionStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseActiveSpeakerPositionStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			ActiveSpeakerPosition = EnumUtils.Parse<ePipPosition>(content, true);
 		}
 
-		private void ParseVideoSourceStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseVideoSourceStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			VideoSource source = VideoSource.FromXml(xml);
 			int sourceId = source.SourceId;
@@ -611,7 +612,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 				m_VideoSources[sourceId] = source;
 		}
 
-		private void ParseVideoInputConnectorStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseVideoInputConnectorStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			int connectorId = AbstractVideoConnector.GetConnectorId(xml);
 			var connector = GetOrCreateConnector(connectorId);
@@ -634,7 +635,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 			return connector;
 		}
 
-		private void ParseVideoOutputConnectorStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseVideoOutputConnectorStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			int connectorId = AbstractVideoConnector.GetConnectorId(xml);
 			VideoOutputConnector connector = m_VideoOutputConnectors.GetDefault(connectorId, null);
@@ -650,7 +651,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Video
 			connector.UpdateFromXml(xml);
 		}
 
-		private void ParseMainVideoSourceStatus(CiscoCodec sender, string resultId, string xml)
+		private void ParseMainVideoSourceStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			MainVideoSource = int.Parse(content);

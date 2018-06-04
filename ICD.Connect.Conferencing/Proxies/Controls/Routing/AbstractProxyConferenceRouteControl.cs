@@ -134,6 +134,26 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 		}
 
 		/// <summary>
+		/// Gets the output at the given address.
+		/// </summary>
+		/// <param name="output"></param>
+		/// <returns></returns>
+		public ConnectorInfo GetOutput(int output)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Returns true if the source contains an output at the given address.
+		/// </summary>
+		/// <param name="output"></param>
+		/// <returns></returns>
+		public bool ContainsOutput(int output)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
 		/// Returns the outputs.
 		/// </summary>
 		/// <returns></returns>

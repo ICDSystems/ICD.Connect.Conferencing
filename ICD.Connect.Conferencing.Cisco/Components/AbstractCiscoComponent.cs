@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
 namespace ICD.Connect.Conferencing.Cisco.Components
 {
@@ -16,7 +17,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 		/// <summary>
 		/// Gets the Codec.
 		/// </summary>
-		public CiscoCodec Codec { get; private set; }
+		public CiscoCodecDevice Codec { get; private set; }
 
 		/// <summary>
 		/// Gets the name of the node in the console.
@@ -36,7 +37,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected AbstractCiscoComponent(CiscoCodec codec)
+		protected AbstractCiscoComponent(CiscoCodecDevice codec)
 		{
 			Codec = codec;
 		}
@@ -87,7 +88,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected virtual void Subscribe(CiscoCodec codec)
+		protected virtual void Subscribe(CiscoCodecDevice codec)
 		{
 			if (codec == null)
 				return;
@@ -100,7 +101,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected virtual void Unsubscribe(CiscoCodec codec)
+		protected virtual void Unsubscribe(CiscoCodecDevice codec)
 		{
 			if (codec == null)
 				return;
