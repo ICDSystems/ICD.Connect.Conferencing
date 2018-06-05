@@ -16,7 +16,7 @@ using ICDPlatformString = System.String;
 namespace ICD.Connect.Conferencing.Server.SimplShims
 {
 
-	public sealed class SPlusInterpreterShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
+	public sealed class SimplInterpretationShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
 	{
 
 		public delegate void SPlusDialerShimSetLanguageCallback(ICDPlatformString language);

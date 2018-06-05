@@ -10,7 +10,7 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Server.Devices.Simpl.Server;
+using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Extensions;

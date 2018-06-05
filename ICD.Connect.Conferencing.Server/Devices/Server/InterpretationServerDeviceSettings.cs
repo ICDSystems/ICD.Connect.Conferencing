@@ -8,7 +8,7 @@ using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.Network.Tcp;
 using ICD.Connect.Settings.Attributes;
 
-namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	[KrangSettings("ConferencingServer", typeof(InterpretationServerDevice))]
 	public sealed class InterpretationServerDeviceSettings : AbstractSimplDeviceSettings
