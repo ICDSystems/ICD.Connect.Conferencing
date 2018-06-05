@@ -256,6 +256,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				m_Source.Name = name;
 				m_Source.Number = number;
 				m_Source.AnswerState = (eConferenceSourceAnswerState)answerState;
+				m_Source.Direction = (eConferenceSourceDirection)direction;
 				m_Source.Status = (eConferenceSourceStatus)status;
 			}
 			else
