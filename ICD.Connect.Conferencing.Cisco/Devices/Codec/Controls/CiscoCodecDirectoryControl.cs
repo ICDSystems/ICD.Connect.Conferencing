@@ -61,6 +61,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_Component.Clear();
 		}
 
+		/// <summary>
+		/// Begin caching the child elements of the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		public override void PopulateFolder(IDirectoryFolder folder)
+		{
+			if (folder == null)
+				throw new ArgumentNullException("folder");
+
+			AbstractCiscoFolder ciscoFolder = folder as AbstractCiscoFolder;
+			if (ciscoFolder == null)
+				throw new InvalidOperationException(string.Format("{0} is not of type {1}", folder.GetType().Name,
+				                                                  typeof(AbstractCiscoFolder).Name));
+
+			m_Component.Codec.SendCommand(ciscoFolder.GetSearchCommand());
+		}
+
 		#endregion
 
 		#region Component Callbacks

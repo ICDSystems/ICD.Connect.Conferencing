@@ -26,5 +26,11 @@ namespace ICD.Connect.Conferencing.Controls.Directory
 		/// </summary>
 		[ApiMethod(DirectoryControlApi.METHOD_CLEAR, DirectoryControlApi.HELP_METHOD_CLEAR)]
 		void Clear();
+
+		/// <summary>
+		/// Begin caching the child elements of the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		void PopulateFolder(IDirectoryFolder folder);
 	}
 }

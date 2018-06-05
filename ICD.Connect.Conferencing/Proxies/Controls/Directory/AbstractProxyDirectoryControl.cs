@@ -38,5 +38,14 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Directory
 		{
 			CallMethod(DirectoryControlApi.METHOD_CLEAR);
 		}
+
+		/// <summary>
+		/// Begin caching the child elements of the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		public void PopulateFolder(IDirectoryFolder folder)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

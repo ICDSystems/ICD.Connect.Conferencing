@@ -34,7 +34,24 @@ namespace ICD.Connect.Conferencing.Directory
 			GoToRoot();
 		}
 
+		/// <summary>
+		/// Instructs the wrapped control to populate the current folder.
+		/// </summary>
+		public void PopulateCurrentFolder()
+		{
+			if (m_Control == null)
+				throw new InvalidOperationException("Wrapped control is null");
+
+			IDirectoryFolder current = GetCurrentFolder();
+			if (current == null)
+				return;
+
+			m_Control.PopulateFolder(current);
+		}
+
 		#endregion
+
+		#region Control Callbacks
 
 		/// <summary>
 		/// Subscribe to the component events.
@@ -69,5 +86,7 @@ namespace ICD.Connect.Conferencing.Directory
 		{
 			GoToRoot();
 		}
+
+		#endregion
 	}
 }

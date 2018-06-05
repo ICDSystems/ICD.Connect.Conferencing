@@ -39,6 +39,12 @@ namespace ICD.Connect.Conferencing.Controls.Directory
 		/// </summary>
 		public abstract void Clear();
 
+		/// <summary>
+		/// Begin caching the child elements of the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		public abstract void PopulateFolder(IDirectoryFolder folder);
+
 		#endregion
 
 		#region Console
