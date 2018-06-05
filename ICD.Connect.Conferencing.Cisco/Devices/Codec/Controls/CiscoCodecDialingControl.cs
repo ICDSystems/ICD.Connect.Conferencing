@@ -9,7 +9,7 @@ using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
-	public sealed class CiscoCodecDialingDeviceControl : AbstractDialingDeviceControl<CiscoCodecDevice>
+	public sealed class CiscoCodecDialingControl : AbstractDialingDeviceControl<CiscoCodecDevice>
 	{
 		/// <summary>
 		/// Called when a source is added to the dialing component.
@@ -18,11 +18,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		private readonly DialingComponent m_Component;
-
-		/// <summary>
-		/// Gets the human readable name for this control.
-		/// </summary>
-		public override string Name { get { return string.Format("{0} Dialing Control", Parent.Name); } }
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
@@ -34,7 +29,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public CiscoCodecDialingDeviceControl(CiscoCodecDevice parent, int id)
+		public CiscoCodecDialingControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
 			m_Component = Parent.Components.GetComponent<DialingComponent>();
