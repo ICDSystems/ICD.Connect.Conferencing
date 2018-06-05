@@ -10,7 +10,7 @@ using ICD.Connect.Settings.Attributes;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 {
-	[KrangSettings("ConferencingServer", typeof(InterpretationServerDevice))]
+	[KrangSettings("InterpretationServer", typeof(InterpretationServerDevice))]
 	public sealed class InterpretationServerDeviceSettings : AbstractSimplDeviceSettings
 	{
 		private const string WRAPPED_DEVICES_ELEMENT = "Devices";

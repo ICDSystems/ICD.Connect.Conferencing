@@ -3,25 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Directory
 {
-
 	/// <summary>
 	/// DirectoryBrowser provides methods for browsing through a phonebook.
 	/// </summary>
-	public abstract class AbstractDirectoryBrowser<TFolder, TContact> : IDisposable, IDirectoryBrowser<TFolder, TContact>
-		where TFolder : class, IFolder
+	public abstract class AbstractDirectoryBrowser<TFolder, TContact> : IDirectoryBrowser<TFolder, TContact>
+		where TFolder : class, IDirectoryFolder
 		where TContact : class, IContact
 	{
 		/// <summary>
 		/// Called when navigating to a different folder.
 		/// </summary>
-		public event EventHandler<FolderEventArgs> OnPathChanged;
+		public event EventHandler<DirectoryFolderEventArgs> OnPathChanged;
 
 		/// <summary>
 		/// Called when the contents of the current folder change.
@@ -31,16 +29,10 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <summary>
 		/// The current path for browsing.
 		/// </summary>
-		protected readonly Stack<TFolder> m_Path;
+		private readonly Stack<TFolder> m_Path;
 
-		/// <summary>
-		/// Tracks folders that have been populated via browsing.
-		/// </summary>
-		protected readonly IcdHashSet<TFolder> m_Populated;
-
-		protected readonly SafeCriticalSection m_PathSection;
-		protected readonly SafeCriticalSection m_PopulatedSection;
-		protected readonly SafeCriticalSection m_NavigateSection;
+		private readonly SafeCriticalSection m_PathSection;
+		private readonly SafeCriticalSection m_NavigateSection;
 
 		#region Properties
 
@@ -48,12 +40,28 @@ namespace ICD.Connect.Conferencing.Directory
 		/// Returns true if the current folder is the root.
 		/// </summary>
 		/// <value></value>
-		public bool IsCurrentFolderRoot { get { return m_Path.Count == 1; } }
+		public bool IsCurrentFolderRoot
+		{
+			get
+			{
+				TFolder folder = GetCurrentFolder();
+				return folder != null && GetCurrentFolder() == Root;
+			}
+		}
 
 		/// <summary>
 		/// Gets the root folder.
 		/// </summary>
-		protected TFolder Root { get { return m_PathSection.Execute(() => m_Path.Last()); } }
+		protected abstract TFolder Root { get; }
+
+		/// <summary>
+		/// Gets the current path as a human readable string.
+		/// </summary>
+		[PublicAPI]
+		public string PathAsString
+		{
+			get { return m_PathSection.Execute(() => string.Join("/", m_Path.Select(x => x.Name).ToArray())); }
+		}
 
 		#endregion
 
@@ -62,20 +70,19 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="component"></param>
-		public AbstractDirectoryBrowser()
+		protected AbstractDirectoryBrowser()
 		{
 			m_Path = new Stack<TFolder>();
-			m_Populated = new IcdHashSet<TFolder>();
 
 			m_PathSection = new SafeCriticalSection();
-			m_PopulatedSection = new SafeCriticalSection();
 			m_NavigateSection = new SafeCriticalSection();
+
+			GoToRoot();
 		}
 
 		#endregion
 
-		#region Method
+		#region Methods
 
 		/// <summary>
 		/// Releases resources.
@@ -99,16 +106,6 @@ namespace ICD.Connect.Conferencing.Directory
 		}
 
 		/// <summary>
-		/// Populates the current folder if it hasn't been populated yet.
-		/// </summary>
-		public void PopulateCurrentFolder()
-		{
-			TFolder folder = GetCurrentFolder();
-			if (folder != null)
-				PopulateFolder(folder);
-		}
-
-		/// <summary>
 		/// Pushes the folder onto the path.
 		/// </summary>
 		/// <param name="folder"></param>
@@ -116,7 +113,7 @@ namespace ICD.Connect.Conferencing.Directory
 		[PublicAPI]
 		public TFolder EnterFolder(TFolder folder)
 		{
-			if (folder == GetCurrentFolder())
+			if (folder == null || folder == GetCurrentFolder())
 				return folder;
 
 			TFolder output;
@@ -178,7 +175,7 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <returns>The new current folder.</returns>
 		public TFolder GoToRoot()
 		{
-			return IsCurrentFolderRoot ? GetCurrentFolder() : GoToRoot(Root);
+			return GoToRoot(Root);
 		}
 
 		/// <summary>
@@ -201,7 +198,9 @@ namespace ICD.Connect.Conferencing.Directory
 				try
 				{
 					m_Path.Clear();
-					m_Path.Push(root);
+
+					if (root != null)
+						m_Path.Push(root);
 				}
 				finally
 				{
@@ -223,21 +222,20 @@ namespace ICD.Connect.Conferencing.Directory
 
 		#endregion
 
-		#region Private Method
-
-		/// <summary>
-		/// Sends the command to begin populating the folder.
-		/// </summary>
-		protected abstract void PopulateFolder(TFolder parent);
+		#region Private Methods
 
 		/// <summary>
 		/// Raises the OnPathChanged event.
 		/// </summary>
 		private void RaiseOnPathChanged()
 		{
-			IFolder current = GetCurrentFolder();
-			OnPathChanged.Raise(this, new FolderEventArgs(current));
+			IDirectoryFolder current = GetCurrentFolder();
+			OnPathChanged.Raise(this, new DirectoryFolderEventArgs(current));
 		}
+
+		#endregion
+
+		#region Folder Callbacks
 
 		/// <summary>
 		/// Subscribes to the current folder events.

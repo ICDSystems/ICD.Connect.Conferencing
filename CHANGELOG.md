@@ -5,7 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - Added video conferencing abstractions and interfaces for devices and controls
 
+### Changed
+ - Cisco codec driver overhaul to use new abstractions
+
+## [7.1.0] - 2018-06-04
+### Changed
+ - CiscoCodec phonebook type is configured via settings
+ - Serial devices use ConnectionStateManager for maintaining connection to remote endpoints
+
+## [7.0.0] - 2018-05-24
+### Changed
+ - Significant Interpretation device refactoring
+ 
 ## [6.0.0] - 2018-05-09
 ### Added
  - Adding Interpretation client and server devices

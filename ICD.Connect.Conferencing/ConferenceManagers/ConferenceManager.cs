@@ -9,7 +9,7 @@ using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.ConferenceSources;
-using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;
@@ -195,6 +195,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				mode = DialingPlan.DefaultSourceType;
 
 			IDialingDeviceControl dialingControl = GetDialingProvider(mode);
+
+			if (dialingControl == null)
+			{
+				Logger.AddEntry(eSeverity.Error,
+				                "{0} failed to dial number {1} with mode {2} - No matching dialing control could be found",
+				                GetType().Name,
+				                StringUtils.ToRepresentation(number),
+				                mode);
+				return;
+			}
 
 			mode = EnumUtils.GetFlagsIntersection(dialingControl.Supports, mode);
 			if (mode == eConferenceSourceType.Unknown)
