@@ -7,25 +7,32 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices.SPlusShims;
+#if SIMPLSHARP
+using ICDPlatformString = Crestron.SimplSharp.SimplSharpString;
+#else
+using ICDPlatformString = System.String;
+#endif
 
 namespace ICD.Connect.Conferencing.Server.SimplShims
 {
-	public delegate void SPlusDialerShimSetLanguageCallback(string language);
-	public delegate void SPlusDialerShimSetBoothIdCallback(ushort boothId);
-
-	public delegate void SPlusDialerShimDialCallback(string number, ushort callType);
-	public delegate void SPlusDialerShimSetAutoAnswerCallback(ushort enabled);
-	public delegate void SPlusDialerShimSetDoNotDisturbCallback(ushort enabled);
-	public delegate void SPlusDialerShimSetPrivacyMuteCallback(ushort enabled);
-
-	public delegate void SPlusDialerShimAnswerCallback();
-	public delegate void SPlusDialerShimSetHoldCallback();
-	public delegate void SPlusDialerShimSetResumeCallback();
-	public delegate void SPlusDialerShimSendDtmfCallback(string data);
-	public delegate void SPlusDialerShimEndCallCallback();
 
 	public sealed class SPlusInterpreterShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
 	{
+
+		public delegate void SPlusDialerShimSetLanguageCallback(ICDPlatformString language);
+		public delegate void SPlusDialerShimSetBoothIdCallback(ushort boothId);
+
+		public delegate void SPlusDialerShimDialCallback(ICDPlatformString number);
+		public delegate void SPlusDialerShimSetAutoAnswerCallback(ushort enabled);
+		public delegate void SPlusDialerShimSetDoNotDisturbCallback(ushort enabled);
+		public delegate void SPlusDialerShimSetPrivacyMuteCallback(ushort enabled);
+
+		public delegate void SPlusDialerShimAnswerCallback();
+		public delegate void SPlusDialerShimSetHoldCallback();
+		public delegate void SPlusDialerShimSetResumeCallback();
+		public delegate void SPlusDialerShimSendDtmfCallback(ICDPlatformString data);
+		public delegate void SPlusDialerShimEndCallCallback();
+
 		#region Events
 		//Events for S+
 		[PublicAPI("S+")]
@@ -81,13 +88,13 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		public SPlusDialerShimSetPrivacyMuteCallback SetPrivacyMuteCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimAnswerCallback AnswerCallback { get; set; }
+		public SPlusDialerShimAnswerCallback AnswerCallCallback { get; set; }
 
 		[PublicAPI("S+")] 
-		public SPlusDialerShimSetHoldCallback SetHoldCallback { get; set; }
+		public SPlusDialerShimSetHoldCallback HoldCallCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSetResumeCallback SetResumeCallback { get; set; }
+		public SPlusDialerShimSetResumeCallback ResumeCallCallback { get; set; }
 
 		[PublicAPI("S+")]
 		public SPlusDialerShimSendDtmfCallback SendDtmfCallback { get; set; }
@@ -350,14 +357,16 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			SPlusDialerShimDialCallback handler = DialCallback;
 			if (handler != null)
-				handler(number, eConferenceSourceType.Audio.ToUShort());
+				handler(number);
 		}
 
 		private void OriginatorDialTypeCallback(ISimplInterpretationDevice sender, string number, ushort type)
 		{
+			if (type == eConferenceSourceType.Video.ToUShort())
+				return;
 			SPlusDialerShimDialCallback handler = DialCallback;
 			if (handler != null)
-				handler(number, type);
+				handler(number);
 		}
 
 		private void OriginatorSetAutoAnswerCallback(ISimplInterpretationDevice sender, ushort enabled)
@@ -411,21 +420,21 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		private void SourceAnswerCallback(ThinConferenceSource thinConferenceSource)
 		{
-			SPlusDialerShimAnswerCallback handler = AnswerCallback;
+			SPlusDialerShimAnswerCallback handler = AnswerCallCallback;
 			if (handler != null)
 				handler();
 		}
 
 		private void SourceHoldCallback(ThinConferenceSource thinConferenceSource)
 		{
-			SPlusDialerShimSetHoldCallback handler = SetHoldCallback;
+			SPlusDialerShimSetHoldCallback handler = HoldCallCallback;
 			if (handler != null)
 				handler();
 		}
 
 		private void SourceResumeCallback(ThinConferenceSource thinConferenceSource)
 		{
-			SPlusDialerShimSetResumeCallback handler = SetResumeCallback;
+			SPlusDialerShimSetResumeCallback handler = ResumeCallCallback;
 			if (handler != null)
 				handler();
 		}
