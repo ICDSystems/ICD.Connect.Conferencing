@@ -5,9 +5,8 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.System
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 {
 	/// <summary>
 	/// StateComponent provides feedback for the current state of the codec.

@@ -1,5 +1,5 @@
 ﻿using ICD.Common.Utils.EventArguments;
-using ICD.Connect.Conferencing.Cisco.Components.System;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Devices.Controls;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls

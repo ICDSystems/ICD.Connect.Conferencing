@@ -1,9 +1,8 @@
 ﻿using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
 using ICD.Connect.Conferencing.Cameras;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 {
 	/// <summary>
 	/// FarCamera provides functionality for controlling a remote camera.

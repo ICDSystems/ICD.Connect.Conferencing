@@ -3,7 +3,7 @@ using System.Linq;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
 	/// <summary>
 	/// Contact provides information for a phonebook contact.

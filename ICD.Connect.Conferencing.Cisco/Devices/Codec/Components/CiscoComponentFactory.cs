@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
-using ICD.Connect.Conferencing.Cisco.Components.Cameras;
-using ICD.Connect.Conferencing.Cisco.Components.Diagnostics;
-using ICD.Connect.Conferencing.Cisco.Components.Dialing;
-using ICD.Connect.Conferencing.Cisco.Components.Directory;
-using ICD.Connect.Conferencing.Cisco.Components.Peripherals;
-using ICD.Connect.Conferencing.Cisco.Components.Presentation;
-using ICD.Connect.Conferencing.Cisco.Components.System;
-using ICD.Connect.Conferencing.Cisco.Components.Video;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Peripherals;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
 
-namespace ICD.Connect.Conferencing.Cisco.Components
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 {
 	/// <summary>
 	/// CiscoComponentFactory provides a facility for lazy-loading components.

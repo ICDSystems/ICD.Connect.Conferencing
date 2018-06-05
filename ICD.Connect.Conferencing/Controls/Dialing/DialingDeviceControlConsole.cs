@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	public static class DialingDeviceControlConsole
 	{

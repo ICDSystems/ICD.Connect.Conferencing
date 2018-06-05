@@ -2,7 +2,7 @@
 using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 {
 	/// <summary>
 	/// Represents a Cisco presentation.

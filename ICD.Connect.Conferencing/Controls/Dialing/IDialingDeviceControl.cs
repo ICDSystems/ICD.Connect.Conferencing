@@ -8,7 +8,7 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Proxies.Controls.Dialing;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	/// <summary>
 	/// IDialingProvider provides an interface for managing conferences.

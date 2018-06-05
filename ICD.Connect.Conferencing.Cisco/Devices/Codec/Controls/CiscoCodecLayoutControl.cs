@@ -1,6 +1,6 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
-using ICD.Connect.Conferencing.Cisco.Components.Video;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
 using ICD.Connect.Conferencing.Controls.Layout;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls

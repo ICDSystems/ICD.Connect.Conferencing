@@ -8,12 +8,11 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
-using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 {
 	public enum eContactType
 	{

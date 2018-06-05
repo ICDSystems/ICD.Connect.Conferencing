@@ -8,7 +8,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Routing.Connections;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Video.Connectors
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors
 {
 	// Ignore missing comment warning
 #pragma warning disable 1591

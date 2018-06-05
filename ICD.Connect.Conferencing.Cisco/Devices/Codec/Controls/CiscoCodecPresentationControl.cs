@@ -1,9 +1,9 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Cisco.Components.Presentation;
-using ICD.Connect.Conferencing.Cisco.Components.Video;
-using ICD.Connect.Conferencing.Cisco.Components.Video.Connectors;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors;
 using ICD.Connect.Conferencing.Controls.Presentation;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls

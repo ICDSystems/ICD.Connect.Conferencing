@@ -1,4 +1,4 @@
-﻿namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
+﻿namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
 	/// <summary>
 	/// RootFolder represents a root folder in the phonebook (corporate or local)

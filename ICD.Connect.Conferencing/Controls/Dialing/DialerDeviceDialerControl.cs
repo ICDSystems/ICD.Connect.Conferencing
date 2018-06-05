@@ -6,7 +6,7 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	public sealed class DialerDeviceDialerControl : AbstractDialingDeviceControl<IDialerDevice> 
 	{

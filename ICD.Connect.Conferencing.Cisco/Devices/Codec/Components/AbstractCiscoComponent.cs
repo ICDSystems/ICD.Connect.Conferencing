@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
-namespace ICD.Connect.Conferencing.Cisco.Components
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 {
 	/// <summary>
 	/// AbstractCiscoComponent is a base class for Cisco modules.

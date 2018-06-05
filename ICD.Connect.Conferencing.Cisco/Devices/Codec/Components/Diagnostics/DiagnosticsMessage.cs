@@ -2,7 +2,7 @@
 using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics
 {
 	/// <summary>
 	/// DiagnosticsMessage represents feedback from the codec diagnostics status.

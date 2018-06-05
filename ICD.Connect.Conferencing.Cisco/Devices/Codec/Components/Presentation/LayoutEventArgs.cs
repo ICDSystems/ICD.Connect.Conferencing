@@ -1,7 +1,7 @@
 ﻿using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 {
 	// Ignore missing comments
 #pragma warning disable 1591

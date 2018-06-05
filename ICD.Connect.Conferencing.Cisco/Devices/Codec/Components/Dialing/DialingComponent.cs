@@ -9,11 +9,10 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {
 	// Ignore missing comment warnings
 #pragma warning disable 1591

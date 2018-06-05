@@ -1,6 +1,6 @@
 using System;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Video
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 {
 	/// <summary>
 	/// Simple pairing of video connector id to connection state.

@@ -1,7 +1,7 @@
 ﻿using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Video
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 {
 	public enum eMonitors
 	{

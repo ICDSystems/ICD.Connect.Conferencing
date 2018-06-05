@@ -7,10 +7,9 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.Cisco.Components.Video;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Presentation
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 {
 	/// <summary>
 	/// PresentationComponent provides functionality for controlling presentations.

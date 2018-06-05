@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Cisco.Components.Presentation;
-using ICD.Connect.Conferencing.Cisco.Components.Video;
-using ICD.Connect.Conferencing.Cisco.Components.Video.Connectors;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors;
 using ICD.Connect.Conferencing.Controls.Routing;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Routing;

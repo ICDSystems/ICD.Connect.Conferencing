@@ -7,8 +7,8 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
-using ICD.Connect.Conferencing.Cisco.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings.Core;
 

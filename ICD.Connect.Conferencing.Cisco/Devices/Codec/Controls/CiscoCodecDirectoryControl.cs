@@ -1,7 +1,7 @@
 ﻿using System;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Cisco.Components.Directory;
-using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
 

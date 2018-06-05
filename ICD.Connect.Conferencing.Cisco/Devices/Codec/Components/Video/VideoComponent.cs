@@ -8,10 +8,9 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cisco.Components.Video.Connectors;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Video
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 {
 	public enum eLayoutTarget
 	{

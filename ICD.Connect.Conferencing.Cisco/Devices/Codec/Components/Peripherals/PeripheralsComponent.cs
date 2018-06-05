@@ -1,9 +1,8 @@
 ﻿using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Timers;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Peripherals
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Peripherals
 {
 	/// <summary>
 	/// PeripheralsComponent is responsible for the heartbeat to keep the 

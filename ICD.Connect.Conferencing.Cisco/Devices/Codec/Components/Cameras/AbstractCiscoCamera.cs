@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Cameras;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 {
 	/// <summary>
 	/// Base class for cameras.

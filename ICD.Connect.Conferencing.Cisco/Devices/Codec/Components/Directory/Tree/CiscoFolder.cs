@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils.Xml;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
 	public sealed class CiscoFolder : AbstractCiscoFolder
 	{

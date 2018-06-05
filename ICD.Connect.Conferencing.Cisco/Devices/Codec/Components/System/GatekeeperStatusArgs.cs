@@ -1,7 +1,7 @@
 ﻿using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.System
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 {
 #pragma warning disable 1591
 	public enum eH323GatekeeperStatus

@@ -6,9 +6,8 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Diagnostics
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics
 {
 	/// <summary>
 	/// The DiagnosticsComponent provides status information about the codec itself.

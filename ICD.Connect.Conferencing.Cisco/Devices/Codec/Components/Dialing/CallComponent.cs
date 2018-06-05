@@ -11,12 +11,11 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
-using ICD.Connect.Conferencing.Cisco.Components.Cameras;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {
 	/// <summary>
 	/// Call Type

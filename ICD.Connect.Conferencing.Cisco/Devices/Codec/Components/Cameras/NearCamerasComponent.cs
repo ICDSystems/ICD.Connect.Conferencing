@@ -9,9 +9,8 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 {
 	/// <summary>
 	/// NearCamerasComponent provides methods for managing the near cameras.

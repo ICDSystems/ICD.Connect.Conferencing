@@ -1,6 +1,6 @@
 ﻿using ICD.Common.Utils.Xml;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Video.Connectors
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors
 {
 	public sealed class VideoOutputConnector : AbstractVideoConnector
 	{

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
-namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
 	/// <summary>
 	/// FolderComponent represents a folder in the phonebook.

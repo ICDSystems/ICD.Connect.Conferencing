@@ -10,6 +10,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;

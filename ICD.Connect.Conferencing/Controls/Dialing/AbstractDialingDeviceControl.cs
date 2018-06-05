@@ -14,7 +14,7 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Controls
+namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	public abstract class AbstractDialingDeviceControl<T> : AbstractDeviceControl<T>, IDialingDeviceControl
 		where T : IDeviceBase

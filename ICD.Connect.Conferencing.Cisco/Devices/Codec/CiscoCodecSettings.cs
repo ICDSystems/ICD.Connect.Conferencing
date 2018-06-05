@@ -1,6 +1,6 @@
 using System;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
