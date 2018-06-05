@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.Directory
 		public void PopulateCurrentFolder()
 		{
 			if (m_Control == null)
-				throw new InvalidOperationException("Wrapped control is null");
+				return;
 
 			IDirectoryFolder current = GetCurrentFolder();
 			if (current == null)
