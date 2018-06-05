@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using ICD.Connect.Conferencing.Cisco.Components.Cameras;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Cameras
 {

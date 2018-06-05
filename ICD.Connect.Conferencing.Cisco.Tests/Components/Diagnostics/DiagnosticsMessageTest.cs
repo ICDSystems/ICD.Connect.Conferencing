@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using ICD.Connect.Conferencing.Cisco.Components.Diagnostics;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Diagnostics
 {
