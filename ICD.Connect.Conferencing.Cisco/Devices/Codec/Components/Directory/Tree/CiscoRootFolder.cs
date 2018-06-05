@@ -12,7 +12,7 @@
 		/// <summary>
 		/// Gets the phonebook type.
 		/// </summary>
-		public ePhonebookType PhonebookType { get { return m_PhonebookType; } }
+		public override ePhonebookType PhonebookType { get { return m_PhonebookType; } }
 
 		/// <summary>
 		/// Gets the name of the root (i.e. the phonebook type)
@@ -27,7 +27,8 @@
 		/// Constructor.
 		/// </summary>
 		/// <param name="phonebookType"></param>
-		public CiscoRootFolder(ePhonebookType phonebookType) : base(null)
+		public CiscoRootFolder(ePhonebookType phonebookType)
+			: base(null)
 		{
 			m_PhonebookType = phonebookType;
 		}

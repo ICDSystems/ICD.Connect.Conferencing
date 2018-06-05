@@ -28,7 +28,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// <summary>
 		/// Gets the phonebook type.
 		/// </summary>
-		public ePhonebookType PhonebookType
+		public virtual ePhonebookType PhonebookType
 		{
 			get { return (FolderId.StartsWith("local")) ? ePhonebookType.Local : ePhonebookType.Corporate; }
 		}

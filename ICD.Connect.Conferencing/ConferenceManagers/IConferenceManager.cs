@@ -5,7 +5,6 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
-using ICD.Connect.Conferencing.Controls;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
