@@ -42,9 +42,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		public event EventHandler<UShortEventArgs> OnBoothIdChanged;
 
 		[PublicAPI("S+")]
-		public event EventHandler<StringEventArgs> OnCallDialed;
-
-		[PublicAPI("S+")]
 		public event EventHandler<UShortEventArgs> OnAutoAnswerChanged;
 
 		[PublicAPI("S+")]
@@ -52,9 +49,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		[PublicAPI("S+")]
 		public event EventHandler<UShortEventArgs> OnPrivacyMuteChanged;
-
-		[PublicAPI("S+")]
-		public event EventHandler OnCallAnswered;
 
 		[PublicAPI("S+")]
 		public event EventHandler<UShortEventArgs> OnHoldChanged;
@@ -279,16 +273,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				Subscribe(m_Source);
 
 				Originator.AddShimSource(m_Source);
-
-				switch (m_Source.Direction)
-				{
-					case eConferenceSourceDirection.Outgoing:
-						OnCallDialed.Raise(this, new StringEventArgs(number));
-						break;
-					case eConferenceSourceDirection.Incoming:
-						OnCallAnswered.Raise(this);
-						break;
-				}
 			}
 		}
 
