@@ -175,7 +175,7 @@ namespace ICD.Connect.Conferencing.Directory
 		/// <returns>The new current folder.</returns>
 		public TFolder GoToRoot()
 		{
-			return IsCurrentFolderRoot ? GetCurrentFolder() : GoToRoot(Root);
+			return GoToRoot(Root);
 		}
 
 		/// <summary>
