@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls;
 using ICD.Connect.Conferencing.EventArguments;
@@ -63,32 +62,17 @@ namespace ICD.Connect.Conferencing.Mock
 
 		public override void SetDoNotDisturb(bool enabled)
 		{
-			if (DoNotDisturb == enabled)
-				return;
-
 			DoNotDisturb = enabled;
-
-			Logger.AddEntry(eSeverity.Debug, "{0}:{1} Do Not Disturb set to {2}", Name, Id, DoNotDisturb);
 		}
 
 		public override void SetAutoAnswer(bool enabled)
 		{
-			if (AutoAnswer == enabled)
-				return;
-
 			AutoAnswer = enabled;
-
-			Logger.AddEntry(eSeverity.Debug, "{0}:{1} Auto Answer set to {2}", Name, Id, AutoAnswer);
 		}
 
 		public override void SetPrivacyMute(bool enabled)
 		{
-			if (PrivacyMuted == enabled)
-				return;
-
 			PrivacyMuted = enabled;
-
-			Logger.AddEntry(eSeverity.Debug, "{0}:{1} Privacy Mute set to {2}", Name, Id, PrivacyMuted);
 		}
 	}
 }
