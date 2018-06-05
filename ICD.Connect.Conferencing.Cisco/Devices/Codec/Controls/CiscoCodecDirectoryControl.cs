@@ -75,7 +75,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				throw new InvalidOperationException(string.Format("{0} is not of type {1}", folder.GetType().Name,
 				                                                  typeof(AbstractCiscoFolder).Name));
 
-			m_Component.Codec.SendCommand(ciscoFolder.GetSearchCommand());
+			// Avoid repeatedly querying the directory for the same data
+			if (ciscoFolder.ChildCount == 0)
+				m_Component.Codec.SendCommand(ciscoFolder.GetSearchCommand());
 		}
 
 		#endregion
