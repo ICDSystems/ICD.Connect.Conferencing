@@ -172,7 +172,7 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 
 		public void Hangup()
 		{
-			ZoomRoom.SendCommand("zCommand Call Disconnect");
+			ZoomRoom.SendCommand("zCommand Call Leave");
 			Status = eConferenceSourceStatus.Disconnecting;
 			ZoomRoom.Log(eSeverity.Debug, "Disconnecting call {0}", Name);
 		}
