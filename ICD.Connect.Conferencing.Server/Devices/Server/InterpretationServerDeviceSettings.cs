@@ -4,14 +4,14 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Devices.Simpl;
+using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Network.Tcp;
 using ICD.Connect.Settings.Attributes;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	[KrangSettings("ConferencingServer", typeof(InterpretationServerDevice))]
-	public sealed class InterpretationServerDeviceSettings : AbstractSimplDeviceSettings
+	public sealed class InterpretationServerDeviceSettings : AbstractDeviceSettings
 	{
 		private const string WRAPPED_DEVICES_ELEMENT = "Devices";
 		private const string WRAPPED_DEVICE_ELEMENT = "Device";

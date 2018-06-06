@@ -9,6 +9,7 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
+using ICD.Connect.Devices;
 using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
@@ -19,7 +20,7 @@ using ICD.Connect.Settings.Core;
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	[PublicAPI]
-	public sealed class InterpretationServerDevice : AbstractSimplDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
+	public sealed class InterpretationServerDevice : AbstractDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
 	{
 		#region RPC Constants
 
@@ -567,19 +568,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ServerOnSocketStateChange(object sender, SocketStateEventArgs args)
 		{
-			IsOnline = GetIsOnlineStatus();
-
-			if (args.SocketState == SocketStateEventArgs.eSocketStatus.SocketStatusConnected)
-				return;
-
-			if (!m_ClientToRoom.ContainsKey(args.ClientId))
-				return;
-
-			int roomId = m_ClientToRoom[args.ClientId];
-			UnregisterRoom(args.ClientId, roomId);
+			UpdateCachedOnlineStatus();
 		}
 
-		private bool GetIsOnlineStatus()
+		protected override bool GetIsOnlineStatus()
 		{
 			return m_BoothToAdapter.AnyAndAll(adapter => adapter.Value.IsOnline);
 		}

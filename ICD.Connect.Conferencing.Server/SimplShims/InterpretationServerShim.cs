@@ -2,11 +2,11 @@
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Connect.Conferencing.Server.Devices.Server;
-using ICD.Connect.Devices.SPlusShims;
+using ICD.Connect.Settings.SPlusShims;
 
 namespace ICD.Connect.Conferencing.Server.SimplShims
 {
-	public sealed class InterpretationServerShim : AbstractSPlusDeviceShim<IInterpretationServerDevice>
+	public sealed class InterpretationServerShim : AbstractSPlusOriginatorShim<IInterpretationServerDevice>
 	{
 		[PublicAPI("S+")]
 		public void BeginInterpretation(ushort roomId, ushort boothId)

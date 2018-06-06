@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using ICD.Common.Properties;
-using ICD.Connect.Devices.Simpl;
+using ICD.Connect.Devices;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
-	public interface IInterpretationServerDevice : ISimplDevice
+	public interface IInterpretationServerDevice : IDevice
 	{
 		/// <summary>
 		/// Gets the rooms which are registered with the core, 
