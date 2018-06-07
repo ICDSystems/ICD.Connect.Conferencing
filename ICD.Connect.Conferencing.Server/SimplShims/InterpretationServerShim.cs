@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		[PublicAPI("S+")]
 		public ushort[] GetAvailableBoothIds()
 		{
-			int[] available = Originator.GetAvailableBoothIds().ToArray();
+			ushort[] available = Originator.GetAvailableBoothIds().ToArray();
 			IEnumerable<ushort> availableAsUShorts = available.Where(value => value >= ushort.MinValue && value <= ushort.MaxValue)
 															  .Select(value => (ushort)value);
 

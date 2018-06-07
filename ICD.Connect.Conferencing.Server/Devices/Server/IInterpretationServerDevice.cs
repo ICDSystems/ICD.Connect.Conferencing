@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Connect.Devices;
@@ -6,6 +7,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	public interface IInterpretationServerDevice : IDevice
 	{
+		event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
+
 		/// <summary>
 		/// Gets the rooms which are registered with the core, 
 		/// but do not currently have interpretation active.
@@ -19,7 +22,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// </summary>
 		/// <returns></returns>
 		[PublicAPI]
-		IEnumerable<int> GetAvailableBoothIds();
+		IEnumerable<ushort> GetAvailableBoothIds();
 
 		/// <summary>
 		/// Begins forwarding 
@@ -27,7 +30,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// <param name="roomId"></param>
 		/// <param name="boothId"></param>
 		[PublicAPI]
-		void BeginInterpretation(int roomId, int boothId);
+		void BeginInterpretation(int roomId, ushort boothId);
 
 		/// <summary>
 		/// Ends forwarding 
@@ -35,6 +38,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// <param name="roomId"></param>
 		/// <param name="boothId"></param>
 		[PublicAPI]
-		void EndInterpretation(int roomId, int boothId);
+		void EndInterpretation(int roomId, ushort boothId);
 	}
 }

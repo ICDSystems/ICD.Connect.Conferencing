@@ -10,7 +10,6 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices;
-using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
@@ -22,6 +21,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 	[PublicAPI]
 	public sealed class InterpretationServerDevice : AbstractDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
 	{
+		public event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
+
 		#region RPC Constants
 
 		public const string REGISTER_ROOM_RPC = "RegisterRoom";
@@ -47,13 +48,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		private readonly ServerSerialRpcController m_RpcController;
 
 		// key is booth id, value is device device for that booth.
-		private readonly Dictionary<int, ISimplInterpretationDevice> m_BoothToAdapter;
+		private readonly Dictionary<ushort, ISimplInterpretationDevice> m_BoothToAdapter;
 
 		// key is guid id of source, value is the source
 		private readonly Dictionary<Guid, IConferenceSource> m_Sources;
 
 		// key is room id, value is booth number
-		private readonly Dictionary<int, int> m_RoomToBooth;
+		private readonly Dictionary<int, ushort> m_RoomToBooth;
 
 		// key is tcp client id, value is room id
 		private readonly Dictionary<uint, int> m_ClientToRoom;
@@ -66,9 +67,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		public InterpretationServerDevice()
 		{
 			m_RpcController = new ServerSerialRpcController(this);
-			m_BoothToAdapter = new Dictionary<int, ISimplInterpretationDevice>();
+			m_BoothToAdapter = new Dictionary<ushort, ISimplInterpretationDevice>();
 			m_Sources = new Dictionary<Guid, IConferenceSource>();
-			m_RoomToBooth = new Dictionary<int, int>();
+			m_RoomToBooth = new Dictionary<int, ushort>();
 			m_ClientToRoom = new Dictionary<uint, int>();
 
 			m_Server = new AsyncTcpServer();
@@ -111,9 +112,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// </summary>
 		/// <returns></returns>
 		[PublicAPI]
-		public IEnumerable<int> GetAvailableBoothIds()
+		public IEnumerable<ushort> GetAvailableBoothIds()
 		{
-			IEnumerable<int> usedBooths = m_RoomToBooth.Values;
+			IEnumerable<ushort> usedBooths = m_RoomToBooth.Values;
 			return m_BoothToAdapter.Keys.Except(usedBooths);
 		}
 
@@ -123,7 +124,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// <param name="roomId"></param>
 		/// <param name="boothId"></param>
 		[PublicAPI]
-		public void BeginInterpretation(int roomId, int boothId)
+		public void BeginInterpretation(int roomId, ushort boothId)
 		{
 			if (!m_BoothToAdapter.ContainsKey(boothId))
 				return;
@@ -149,10 +150,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				Guid id = m_Sources.GetKey(source);
 				m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
 			}
+
+			OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, true));
 		}
 
 		[PublicAPI]
-		public void EndInterpretation(int roomId, int boothId)
+		public void EndInterpretation(int roomId, ushort boothId)
 		{
 			if (!m_BoothToAdapter.ContainsKey(boothId))
 				return;
@@ -171,6 +174,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_RoomToBooth.Remove(roomId);
 
 			m_RpcController.CallMethod(clientId, InterpretationClientDevice.SET_INTERPRETATION_STATE_RPC, false);
+			
+			OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, false));
 		}
 
 		#endregion
@@ -193,9 +198,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				return false;
 			}
 
-			int targetBooth = m_BoothToAdapter.Where(kvp => kvp.Value.ContainsSource(source))
-			                                  .Select(kvp => kvp.Key)
-			                                  .FirstOrDefault();
+			ushort targetBooth = m_BoothToAdapter.Where(kvp => kvp.Value.ContainsSource(source))
+			                                     .Select(kvp => kvp.Key)
+			                                     .FirstOrDefault();
 
 			int targetRoom;
 			if (!m_RoomToBooth.TryGetKey(targetBooth, out targetRoom))
@@ -217,7 +222,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		{
 			clientId = 0;
 
-			int targetBooth;
+			ushort targetBooth;
 			if (!m_BoothToAdapter.TryGetKey(device, out targetBooth))
 			{
 				Log(eSeverity.Error, "No booth assigned to target device {0}", device.Id);
@@ -244,7 +249,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		{
 			device = null;
 
-			int targetBooth;
+			ushort targetBooth;
 			if (!m_RoomToBooth.TryGetValue(roomId, out targetBooth))
 			{
 				Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
@@ -383,7 +388,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#region Adapters
 
-		private void AddAdapter(int boothId, ISimplInterpretationDevice device)
+		private void AddAdapter(ushort boothId, ISimplInterpretationDevice device)
 		{
 			if (device == null)
 				throw new ArgumentNullException("device");
