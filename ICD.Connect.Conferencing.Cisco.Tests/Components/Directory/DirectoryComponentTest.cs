@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils;
 using NUnit.Framework;
-using ICD.Connect.Conferencing.Cisco.Components.Directory;
-using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory
 {
@@ -205,7 +206,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory
 		public void FolderSearchResultFeedbackTest()
 		{
 			DirectoryComponent component = new DirectoryComponent(Codec);
-			List<IFolder> results = new List<IFolder>();
+			List<IDirectoryFolder> results = new List<IDirectoryFolder>();
 
 			component.OnResultParsed += (id, folders, contacts) => results.AddRange(folders);
 
