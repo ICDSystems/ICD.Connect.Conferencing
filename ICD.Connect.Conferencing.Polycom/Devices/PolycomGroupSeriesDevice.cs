@@ -5,9 +5,8 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Devices;
-using ICD.Connect.Devices.EventArguments;
+using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
-using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
@@ -15,7 +14,7 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices
 {
-	public sealed class PolycomGroupSeriesDevice : AbstractDevice<PolycomGroupSeriesSettings>, IConnectable
+	public sealed class PolycomGroupSeriesDevice : AbstractDevice<PolycomGroupSeriesSettings>
 	{
 		/// <summary>
 		/// End of line string.
@@ -35,15 +34,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		private readonly ISerialBuffer m_SerialBuffer;
 
 		private bool m_Initialized;
-		private bool m_IsConnected;
-		private ISerialPort m_Port;
+
+		private readonly ConnectionStateManager m_ConnectionStateManager;
 
 		#region Properties
-
-		/// <summary>
-		/// Gets the heartbeat instance that is enforcing the connection state.
-		/// </summary>
-		public Heartbeat Heartbeat { get; private set; }
 
 		/// <summary>
 		/// Password for logging in to the device.
@@ -68,23 +62,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			}
 		}
 
-		/// <summary>
-		/// Returns true when the codec is connected.
-		/// </summary>
-		public bool IsConnected
-		{
-			get { return m_IsConnected; }
-			private set
-			{
-				if (value == m_IsConnected)
-					return;
-
-				m_IsConnected = value;
-
-				OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
-			}
-		}
-
 		#endregion
 
 		#region Constructors
@@ -94,10 +71,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
-			Heartbeat = new Heartbeat(this);
-
 			m_SerialBuffer = new XmlSerialBuffer();
 			Subscribe(m_SerialBuffer);
+
+			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
+			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
+			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 		}
 
 		#endregion
@@ -112,12 +92,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			OnInitializedChanged = null;
 			OnConnectedStateChanged = null;
 
-			Heartbeat.Dispose();
-
 			Unsubscribe(m_SerialBuffer);
-			Unsubscribe(m_Port);
 
 			base.DisposeFinal(disposing);
+
+			m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
+			m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnSerialDataReceived -= PortOnSerialDataReceived;
+			m_ConnectionStateManager.Dispose();
 		}
 
 		/// <summary>
@@ -127,23 +109,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			if (port == m_Port)
-				return;
+			m_ConnectionStateManager.SetPort(port);
+		}
 
+		private void ConfigurePort(ISerialPort port)
+		{
 			if (port is IComPort)
 				ConfigureComPort(port as IComPort);
-
-			if (m_Port != null)
-				Disconnect();
-
-			Unsubscribe(m_Port);
-			m_Port = port;
-			Subscribe(m_Port);
-
-			if (m_Port != null)
-				Heartbeat.StartMonitoring();
-
-			UpdateCachedOnlineStatus();
 		}
 
 		/// <summary>
@@ -169,17 +141,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		[PublicAPI]
 		public void Connect()
 		{
-			if (m_Port == null)
-			{
-				Log(eSeverity.Critical, "Unable to connect, port is null");
-				return;
-			}
-
-			m_Port.Connect();
-			IsConnected = m_Port.IsConnected;
-
-			if (IsConnected)
-				Initialize();
+			m_ConnectionStateManager.Connect();
 		}
 
 		/// <summary>
@@ -188,14 +150,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		[PublicAPI]
 		public void Disconnect()
 		{
-			if (m_Port == null)
-			{
-				Log(eSeverity.Critical, "Unable to disconnect, port is null");
-				return;
-			}
-
-			m_Port.Disconnect();
-			IsConnected = m_Port.IsConnected;
+			m_ConnectionStateManager.Disconnect();
 		}
 
 		/// <summary>
@@ -217,25 +172,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			if (args != null)
 				command = string.Format(command, args);
 
-			if (m_Port == null)
+			if (!m_ConnectionStateManager.IsConnected)
 			{
-				Log(eSeverity.Error, "Unable to communicate with device - port is null");
+				Log(eSeverity.Critical, "Unable to communicate with Codec");
 				return;
 			}
 
-			if (!IsConnected)
-			{
-				Log(eSeverity.Warning, "Device is disconnected, attempting reconnect");
-				Connect();
-			}
-
-			if (!IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with device");
-				return;
-			}
-
-			m_Port.Send(command + END_OF_LINE);
+			m_ConnectionStateManager.Send(command + END_OF_LINE);
 		}
 
 		/// <summary>
@@ -262,7 +205,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		/// <returns></returns>
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_Port != null && m_Port.IsOnline;
+			return m_ConnectionStateManager != null && m_ConnectionStateManager.IsOnline;
 		}
 
 		/// <summary>
@@ -276,34 +219,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		#endregion
 
 		#region Port Callbacks
-
-		/// <summary>
-		/// Subscribes to the port events.
-		/// </summary>
-		/// <param name="port"></param>
-		private void Subscribe(ISerialPort port)
-		{
-			if (port == null)
-				return;
-
-			port.OnSerialDataReceived += PortOnSerialDataReceived;
-			port.OnConnectedStateChanged += PortOnConnectionStatusChanged;
-			port.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-		}
-
-		/// <summary>
-		/// Unsubscribe from the port events.
-		/// </summary>
-		/// <param name="port"></param>
-		private void Unsubscribe(ISerialPort port)
-		{
-			if (port == null)
-				return;
-
-			port.OnSerialDataReceived -= PortOnSerialDataReceived;
-			port.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
-			port.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
-		}
 
 		/// <summary>
 		/// Called when serial data is recieved from the port.
@@ -324,15 +239,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		{
 			m_SerialBuffer.Clear();
 
-			IsConnected = args.Data;
-
-			if (IsConnected)
+			if (args.Data)
 				Initialize();
 			else
 			{
 				Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
 			}
+
+			OnConnectedStateChanged.Raise(this, new BoolEventArgs(args.Data));
 		}
 
 		/// <summary>
@@ -340,7 +255,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
+		private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
 		}
@@ -388,7 +303,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		{
 			base.CopySettingsFinal(settings);
 
-			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
+			settings.Port = m_ConnectionStateManager.PortNumber;
 			settings.Password = Password;
 		}
 
@@ -438,7 +353,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		{
 			base.BuildConsoleStatus(addRow);
 
-			addRow("Connected", IsConnected);
+			addRow("Connected", m_ConnectionStateManager.IsOnline);
 			addRow("Initialized", Initialized);
 		}
 
