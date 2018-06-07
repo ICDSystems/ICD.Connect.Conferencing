@@ -71,6 +71,8 @@
   <ItemGroup>
     <Compile Include="Devices\Client\IClientInterpretationDevice.cs" />
     <Compile Include="Devices\Server\IInterpretationServerDevice.cs" />
+    <Compile Include="Devices\Server\InterpretationRoomInfoArgs.cs" />
+    <Compile Include="Devices\Server\InterpretationStateEventArgs.cs" />
     <Compile Include="KrangPlugin.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
