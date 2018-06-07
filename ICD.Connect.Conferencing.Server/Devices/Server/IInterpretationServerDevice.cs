@@ -64,5 +64,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// <returns></returns>
 		[PublicAPI]
 		ushort GetBoothId(int roomId);
+
+		/// <summary>
+		/// Gets if the room exists
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		[PublicAPI]
+		ushort GetRoomExists(int roomId);
 	}
 }

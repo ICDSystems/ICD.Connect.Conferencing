@@ -59,6 +59,12 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			return Originator.GetBoothId(roomId);
 		}
 
+		[PublicAPI("S+")]
+		public ushort GetRoomExists(int roomId)
+		{
+			return Originator.GetRoomExists(roomId);
+		}
+
 		/// <summary>
 		/// Subscribes to the originator events.
 		/// </summary>

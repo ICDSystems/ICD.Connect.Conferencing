@@ -274,6 +274,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
+		/// <summary>
+		/// Gets if the room exists
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		public ushort GetRoomExists(int roomId)
+		{
+			return m_SafeCriticalSection.Execute(() => m_RoomToRoomInfo.ContainsKey(roomId) ? (ushort)1 : (ushort)0);
+		}
+
 		#endregion
 
 		#region Private Helper Methods
