@@ -64,7 +64,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    private bool m_PrivacyMuted;
 	    private bool m_DoNotDisturb;
 	    private bool m_AutoAnswer;
-	    private int m_Room;
+	    private int m_RoomId;
 	    private bool m_IsInterpretationActive;
 
 	    #endregion
@@ -95,7 +95,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
 		    }
 
-	    }
+			
+		}
+
+	    public string RoomName { get; set; }
+
+		public string RoomPrefix { get; set; }
 
 		public Heartbeat Heartbeat { get; private set; }
 
@@ -198,43 +203,43 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    public void Register()
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_Room);
+				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_RoomId, RoomName, RoomPrefix);
 	    }
 
 	    public void Unregister()
 	    {
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.UNREGISTER_ROOM_RPC, m_Room);
+				m_RpcController.CallMethod(InterpretationServerDevice.UNREGISTER_ROOM_RPC, m_RoomId);
 	    }
 
 	    public void Dial(string number)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_RPC, m_Room, number);
+				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_RPC, m_RoomId, number);
 	    }
 
 	    public void Dial(string number, eConferenceSourceType callType)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_TYPE_RPC, m_Room, number, callType);
+				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_TYPE_RPC, m_RoomId, number, callType);
 	    }
 
 		public void SetPrivacyMute(bool enabled)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.PRIVACY_MUTE_RPC, m_Room, enabled);
+				m_RpcController.CallMethod(InterpretationServerDevice.PRIVACY_MUTE_RPC, m_RoomId, enabled);
 	    }
 
 		public void SetAutoAnswer(bool enabled)
 		{
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.AUTO_ANSWER_RPC, m_Room, enabled);
+				m_RpcController.CallMethod(InterpretationServerDevice.AUTO_ANSWER_RPC, m_RoomId, enabled);
 		}
 
 	    public void SetDoNotDisturb(bool enabled)
 	    {
 		    if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DO_NOT_DISTURB_RPC, m_Room, enabled);
+				m_RpcController.CallMethod(InterpretationServerDevice.DO_NOT_DISTURB_RPC, m_RoomId, enabled);
 	    }
 
 		[PublicAPI]
@@ -619,7 +624,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			SetPort(port);
 
-			m_Room = settings.Room == null ? 0 : settings.Room.Value;
+			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
 
 			Heartbeat.StartMonitoring();
 	    }
@@ -629,7 +634,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    base.CopySettingsFinal(settings);
 
 		    settings.Port = m_Port == null ? (int?)null : m_Port.Id;
-		    settings.Room = m_Room;
+		    settings.Room = m_RoomId;
 	    }
 
 	    protected override void ClearSettingsFinal()

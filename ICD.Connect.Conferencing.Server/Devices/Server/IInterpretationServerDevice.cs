@@ -8,6 +8,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 	public interface IInterpretationServerDevice : IDevice
 	{
 		event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
+		event EventHandler<InterpretationRoomInfoArgs> OnRoomAdded;
 
 		/// <summary>
 		/// Gets the rooms which are registered with the core, 
@@ -39,5 +40,29 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// <param name="boothId"></param>
 		[PublicAPI]
 		void EndInterpretation(int roomId, ushort boothId);
+
+		/// <summary>
+		/// Gets the Room Name for a given Room Id
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		[PublicAPI]
+		string GetRoomName(int roomId);
+
+		/// <summary>
+		/// Gets the Room Prefix for a given Room Id
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		[PublicAPI]
+		string GetRoomPrefix(int roomId);
+
+		/// <summary>
+		/// Gets the Booth Id for a given Room Id
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		[PublicAPI]
+		ushort GetBoothId(int roomId);
 	}
 }

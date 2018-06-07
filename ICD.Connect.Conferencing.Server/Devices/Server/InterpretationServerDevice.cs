@@ -22,6 +22,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 	public sealed class InterpretationServerDevice : AbstractDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
 	{
 		public event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
+		public event EventHandler<InterpretationRoomInfoArgs> OnRoomAdded;
 
 		#region RPC Constants
 
@@ -59,6 +60,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		// key is tcp client id, value is room id
 		private readonly Dictionary<uint, int> m_ClientToRoom;
 
+		// key is room id, value is 2 item array with name, and prefix (in that order)
+		private readonly Dictionary<int, string[]> m_RoomToRoomInfo;
+
 		#endregion
 
 		/// <summary>
@@ -71,6 +75,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_Sources = new Dictionary<Guid, IConferenceSource>();
 			m_RoomToBooth = new Dictionary<int, ushort>();
 			m_ClientToRoom = new Dictionary<uint, int>();
+			m_RoomToRoomInfo = new Dictionary<int, string[]>();
 
 			m_Server = new AsyncTcpServer();
 			m_RpcController.SetServer(m_Server);
@@ -178,6 +183,36 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, false));
 		}
 
+		/// <summary>
+		/// Gets the Room Name for a given Room Id
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		public string GetRoomName(int roomId)
+		{
+			return m_RoomToRoomInfo.ContainsKey(roomId) ? m_RoomToRoomInfo[roomId][0] : string.Empty;
+		}
+
+		/// <summary>
+		/// Gets the Room Prefix for a given Room Id
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		public string GetRoomPrefix(int roomId)
+		{
+			return m_RoomToRoomInfo.ContainsKey(roomId) ?  m_RoomToRoomInfo[roomId][1]: string.Empty;
+		}
+
+		/// <summary>
+		/// Gets the Booth Id for a given Room Id
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		public ushort GetBoothId(int roomId)
+		{
+			return m_RoomToBooth.ContainsKey(roomId) ? m_RoomToBooth[roomId] : (ushort)0;
+		}
+
 		#endregion
 
 		#region Private Helper Methods
@@ -270,7 +305,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		#region RPCs
 
 		[Rpc(REGISTER_ROOM_RPC), UsedImplicitly]
-		public void RegisterRoom(uint clientId, int roomId)
+		public void RegisterRoom(uint clientId, int roomId, string roomName, string roomPrefix)
 		{
 			if (m_ClientToRoom.ContainsKey(clientId))
 			{
@@ -279,6 +314,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}	
 
 			m_ClientToRoom.Add(clientId, roomId);
+			m_RoomToRoomInfo.Add(roomId, new []{roomName, roomPrefix});
+
+			OnRoomAdded.Raise(this, new InterpretationRoomInfoArgs(roomId, roomName, roomPrefix));
 		}
 
 		[Rpc(UNREGISTER_ROOM_RPC), UsedImplicitly]
@@ -292,6 +330,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			m_ClientToRoom.Remove(clientId);
 			m_RoomToBooth.Remove(roomId);
+			m_RoomToRoomInfo.Remove(roomId);
 		}
 
 		[Rpc(DIAL_RPC), UsedImplicitly]
