@@ -21,5 +21,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			RoomPrefix = roomPrefix;
 		}
 
+		/// <summary>
+		/// Empty constructor so S+ can see the class.
+		/// </summary>
+		public InterpretationRoomInfoArgs()
+		{}
+
 	}
 }
