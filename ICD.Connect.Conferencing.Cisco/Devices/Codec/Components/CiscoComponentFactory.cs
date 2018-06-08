@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Connect.API.Commands;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
@@ -17,7 +19,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 	/// <summary>
 	/// CiscoComponentFactory provides a facility for lazy-loading components.
 	/// </summary>
-	public sealed class CiscoComponentFactory : IDisposable
+	public sealed class CiscoComponentFactory : IDisposable, IConsoleNode
 	{
 		private readonly IcdHashSet<AbstractCiscoComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
@@ -37,6 +39,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 
 		private readonly CiscoCodecDevice m_Codec;
 
+		#region Properties
+
+		/// <summary>
+		/// Gets the name of the node.
+		/// </summary>
+		public string ConsoleName { get { return "Components"; } }
+
+		/// <summary>
+		/// Gets the help information for the node.
+		/// </summary>
+		public string ConsoleHelp { get { return string.Empty; } }
+
+		#endregion
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -54,22 +70,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		}
 
 		/// <summary>
+		/// Deconstructor.
+		/// </summary>
+		~CiscoComponentFactory()
+		{
+			Dispose(false);
+		}
+
+		#region Methods
+
+		/// <summary>
 		/// Release resources.
 		/// </summary>
 		public void Dispose()
 		{
-			m_ComponentsSection.Enter();
-
-			try
-			{
-				foreach (AbstractCiscoComponent component in m_Components)
-					component.Dispose();
-				m_Components.Clear();
-			}
-			finally
-			{
-				m_ComponentsSection.Leave();
-			}
+			Dispose(true);
 		}
 
 		/// <summary>
@@ -103,5 +118,57 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		{
 			return m_ComponentsSection.Execute(() => m_Components.ToArray());
 		}
+
+		#endregion
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		private void Dispose(bool disposing)
+		{
+			m_ComponentsSection.Enter();
+
+			try
+			{
+				foreach (AbstractCiscoComponent component in m_Components)
+					component.Dispose();
+				m_Components.Clear();
+			}
+			finally
+			{
+				m_ComponentsSection.Leave();
+			}
+		}
+
+		#region Console
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			return GetComponents().OrderBy(c => c.GetType().Name).Cast<IConsoleNodeBase>();
+		}
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+		}
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			yield break;
+		}
+
+		#endregion
 	}
 }

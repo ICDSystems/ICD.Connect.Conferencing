@@ -712,8 +712,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			foreach (AbstractCiscoComponent node in m_Components.GetComponents().OrderBy(c => c.GetType().Name))
-				yield return node;
+			yield return m_Components;
 		}
 
 		/// <summary>
