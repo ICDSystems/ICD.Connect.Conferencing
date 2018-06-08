@@ -410,6 +410,15 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 		}
 
 		/// <summary>
+		/// Rejects the incoming call.
+		/// </summary>
+		public void Reject()
+		{
+			Codec.SendCommand("xCommand Call Reject CallId: {0}", CallId);
+			Codec.Log(eSeverity.Debug, "Rejecting Incoming Call {0}", CallId);
+		}
+
+		/// <summary>
 		/// Holds the call.
 		/// </summary>
 		public void Hold()
@@ -639,6 +648,7 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Dialing
 			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
 			yield return new ConsoleCommand("Hangup", "Ends the call", () => Hangup());
 			yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
+			yield return new ConsoleCommand("Reject", "Rejects the incoming call", () => Reject());
 			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
 			yield return new ConsoleCommand("History", "Prints the history for the call", () => PrintHistory());
 		}
