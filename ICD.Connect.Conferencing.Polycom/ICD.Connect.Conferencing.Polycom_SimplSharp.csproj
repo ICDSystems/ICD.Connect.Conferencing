@@ -62,6 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ObfuscationSettings.cs" />
+    <Compile Include="Devices\Components\AbstractPolycomComponent.cs" />
+    <Compile Include="Devices\Components\PolycomComponentFactory.cs" />
     <Compile Include="Devices\PolycomGroupSeriesDevice.cs" />
     <Compile Include="Devices\PolycomGroupSeriesSettings.cs" />
     <Compile Include="KrangPlugin.cs" />

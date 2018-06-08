@@ -4,6 +4,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Polycom.Devices.Components;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
@@ -37,6 +38,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
+		private readonly PolycomComponentFactory m_Components;
+
 		#region Properties
 
 		/// <summary>
@@ -62,6 +65,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			}
 		}
 
+		/// <summary>
+		/// Provides the components attached to this codec.
+		/// </summary>
+		public PolycomComponentFactory Components { get { return m_Components; } }
+
 		#endregion
 
 		#region Constructors
@@ -71,6 +79,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
+			m_Components = new PolycomComponentFactory(this);
+
 			m_SerialBuffer = new XmlSerialBuffer();
 			Subscribe(m_SerialBuffer);
 
@@ -100,6 +110,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnSerialDataReceived -= PortOnSerialDataReceived;
 			m_ConnectionStateManager.Dispose();
+
+			m_Components.Dispose();
 		}
 
 		/// <summary>
