@@ -25,6 +25,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		public event EventHandler OnAnswerCallback;
 
 		[PublicAPI]
+		public event EventHandler OnRejectCallback;
+
+		[PublicAPI]
 		public event EventHandler OnHoldCallback;
 
 		[PublicAPI]
@@ -232,6 +235,14 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		}
 
 		/// <summary>
+		/// Rejects the incoming source.
+		/// </summary>
+		public void Reject()
+		{
+			OnRejectCallback.Raise(this);
+		}
+
+		/// <summary>
 		/// Holds the source.
 		/// </summary>
 		public void Hold()
@@ -319,6 +330,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
 			yield return new ConsoleCommand("Hangup", "Ends the call", () => Hangup());
 			yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
+			yield return new ConsoleCommand("Reject", "Rejects the incoming call", () => Reject());
 			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
 		}
 
