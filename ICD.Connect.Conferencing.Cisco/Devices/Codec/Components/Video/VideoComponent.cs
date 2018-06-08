@@ -270,7 +270,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		/// <summary>
 		/// Release resources.
 		/// </summary>
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
 			OnSelfViewEnabledChanged = null;
 			OnSelfViewFullScreenEnabledChanged = null;
@@ -281,7 +281,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			OnVideoInputConnectorConnectionStateChanged = null;
 			OnMonitorsChanged = null;
 
-			base.Dispose();
+			base.Dispose(disposing);
 
 			foreach (VideoInputConnector connector in m_VideoInputConnectors.Values)
 				Unsubscribe(connector);

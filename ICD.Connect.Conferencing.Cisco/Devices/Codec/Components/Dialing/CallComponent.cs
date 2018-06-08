@@ -324,7 +324,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Release resources.
 		/// </summary>
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
 			OnAnswerStateChanged = null;
 			OnStatusChanged = null;
@@ -332,7 +332,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			OnSourceTypeChanged = null;
 			OnNumberChanged = null;
 
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		/// <summary>
