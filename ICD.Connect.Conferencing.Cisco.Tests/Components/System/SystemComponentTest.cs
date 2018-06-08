@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using NUnit.Framework;
-using ICD.Connect.Conferencing.Cisco.Components.System;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Components.System
 {
