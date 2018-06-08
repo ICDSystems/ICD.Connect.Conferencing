@@ -66,6 +66,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer
 			Codec.Log(eSeverity.Informational, "Setting Auto Answer {0}", mode);
 		}
 
+		/// <summary>
+		/// Called to initialize the component.
+		/// </summary>
+		protected override void Initialize()
+		{
+			base.Initialize();
+
+			Codec.SendCommand("autoanswer register");
+			Codec.SendCommand("autoanswer get");
+		}
+
 		#region Console
 
 		/// <summary>

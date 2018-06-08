@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Polycom.Devices.Components;
+using ICD.Connect.Conferencing.Polycom.Devices.Controls;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
@@ -81,13 +84,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		{
 			m_Components = new PolycomComponentFactory(this);
 
-			m_SerialBuffer = new XmlSerialBuffer();
+			m_SerialBuffer = new MultiDelimiterSerialBuffer('\r', '\n');
 			Subscribe(m_SerialBuffer);
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
+
+			//Controls.Add(new PolycomCodecRoutingControl(this, 0));
+			Controls.Add(new PolycomCodecDialingControl(this, 1));
+			//Controls.Add(new PolycomCodecDirectoryControl(this, 2));
+			//Controls.Add(new PolycomCodecLayoutControl(this, 3));
+			//Controls.Add(new PolycomCodecPresentationControl(this, 4));
+			//Controls.Add(new PolycomCodecPowerControl(this, 5));
 		}
 
 		#endregion
@@ -121,6 +131,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
+			if (port != null)
+			{
+				port.DebugRx = eDebugMode.MixedAsciiHex;
+				port.DebugTx = eDebugMode.MixedAsciiHex;
+			}
+
 			m_ConnectionStateManager.SetPort(port);
 		}
 
@@ -251,9 +267,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		{
 			m_SerialBuffer.Clear();
 
-			if (args.Data)
-				Initialize();
-			else
+			if (!args.Data)
 			{
 				Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
@@ -301,6 +315,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
+			if (args.Data == "Password: ")
+				SendCommand(Password);
+
+			IcdConsole.PrintLine(eConsoleColor.Magenta, StringUtils.ToMixedReadableHexLiteral(args.Data));
 		}
 
 		#endregion
@@ -356,6 +374,27 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		#endregion
 
 		#region Console
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
+
+			yield return m_Components;
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
+		}
 
 		/// <summary>
 		/// Calls the delegate for each console status item.
