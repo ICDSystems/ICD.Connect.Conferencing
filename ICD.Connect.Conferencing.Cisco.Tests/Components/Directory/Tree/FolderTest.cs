@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ICD.Connect.Conferencing.Cisco.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
 {
@@ -11,22 +11,22 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
 		[Test]
 		public void PhonebookTypeTest()
 		{
-			Folder folder = new Folder("Test", "Id");
+			CiscoFolder folder = new CiscoFolder("Test", "Id");
 			Assert.AreEqual(ePhonebookType.Corporate, folder.PhonebookType);
 
-			folder = new Folder("Test2", "localId");
+			folder = new CiscoFolder("Test2", "localId");
 			Assert.AreEqual(ePhonebookType.Local, folder.PhonebookType);
 		}
 
 		[Test]
 		public void AddFolderTest()
 		{
-			Folder parent = new Folder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
 
-			Folder notPhonebook = new Folder("NotPhonebook", "localNotPhonebookId");
+			CiscoFolder notPhonebook = new CiscoFolder("NotPhonebook", "localNotPhonebookId");
 			Assert.IsFalse(parent.AddFolder(notPhonebook));
 
-			Folder child = new Folder("Child", "ChildId");
+			CiscoFolder child = new CiscoFolder("Child", "ChildId");
 			Assert.IsTrue(parent.AddFolder(child));
 			Assert.IsFalse(parent.AddFolder(child));
 		}
@@ -34,7 +34,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
 		[Test]
 		public void AddContactTest()
 		{
-			Folder parent = new Folder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
 
 			CiscoContact notPhonebook = new CiscoContact("NotPhonebook", "localNotPhonebookId", "ParentId", new CiscoContactMethod[0]);
 			Assert.IsFalse(parent.AddContact(notPhonebook));
@@ -49,7 +49,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
 		{
 			List<EventArgs> results = new List<EventArgs>();
 
-			Folder parent = new Folder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
 
 			parent.OnContentsChanged += (sender, args) => results.Add(args);
 
@@ -65,11 +65,11 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
 		{
 			List<EventArgs> results = new List<EventArgs>();
 
-			Folder parent = new Folder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
 
 			parent.OnContentsChanged += (sender, args) => results.Add(args);
 
-			Folder child = new Folder("Child", "ChildId");
+			CiscoFolder child = new CiscoFolder("Child", "ChildId");
 			parent.AddFolder(child);
 			parent.AddFolder(child);
 
