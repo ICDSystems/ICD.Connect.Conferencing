@@ -583,7 +583,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    return;
 
 		    port.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
-		    port.OnConnectedStateChanged += PortOnConnectedStateChanged;
+		    port.OnConnectedStateChanged -= PortOnConnectedStateChanged;
 	    }
 
 	    /// <summary>
