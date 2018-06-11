@@ -86,6 +86,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    if (m_IsConnected)
 			    {
 				    Log(eSeverity.Informational, "Connected To Server");
+					Register();
 			    }
 			    else
 			    {
@@ -264,8 +265,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			if (m_Port != null && !m_Port.IsConnected)
 				m_Port.Connect();
-
-			Register();
 		}
 
 		/// <summary>
