@@ -6,9 +6,9 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Components;
 using ICD.Connect.Conferencing.Polycom.Devices.Controls;
-using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Ports;
@@ -18,7 +18,7 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices
 {
-	public sealed class PolycomGroupSeriesDevice : AbstractDevice<PolycomGroupSeriesSettings>
+	public sealed class PolycomGroupSeriesDevice : AbstractVideoConferenceDevice<PolycomGroupSeriesSettings>
 	{
 		/// <summary>
 		/// End of line string.

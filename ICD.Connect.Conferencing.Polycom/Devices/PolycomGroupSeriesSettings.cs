@@ -1,5 +1,5 @@
 ﻿using ICD.Common.Utils.Xml;
-using ICD.Connect.Devices;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
@@ -7,7 +7,7 @@ using ICD.Connect.Settings.Attributes.SettingsProperties;
 namespace ICD.Connect.Conferencing.Polycom.Devices
 {
 	[KrangSettings("PolycomGroupSeries", typeof(PolycomGroupSeriesDevice))]
-	public sealed class PolycomGroupSeriesSettings : AbstractDeviceSettings
+	public sealed class PolycomGroupSeriesSettings : AbstractVideoConferenceDeviceSettings
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PASSWORD_ELEMENT = "Password";
