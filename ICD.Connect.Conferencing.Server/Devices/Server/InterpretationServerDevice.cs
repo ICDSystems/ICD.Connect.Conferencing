@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
@@ -822,6 +823,39 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			ClearAdapters();
 
 			ClearSources();
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (var cmd in GetBaseConsoleCommands())
+				yield return cmd;
+
+			yield return new ConsoleCommand("ListRooms", "Lists the rooms", () => ListRooms());
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
+		}
+
+		private void ListRooms()
+		{
+			var table = new TableBuilder(new[] {"id", "name", "prefix"});
+
+			foreach (var kvp in m_RoomToRoomInfo)
+			{
+				table.AddRow(new []{kvp.Key.ToString(), kvp.Value[0], kvp.Value[1]});
+			}
+
+			Log(eSeverity.Debug, table.ToString());
 		}
 
 		#endregion
