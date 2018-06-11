@@ -892,20 +892,20 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ListRooms()
 		{
-			var table = new TableBuilder(new[] { "Room Id", "Room Name", "Prefix" });
+			var table = new TableBuilder("Room Id", "Room Name", "Prefix");
 
 			foreach (var kvp in m_RoomToRoomInfo)
-				table.AddRow(new[] { kvp.Key.ToString(), kvp.Value[0], kvp.Value[1] });
+				table.AddRow(kvp.Key.ToString(), kvp.Value[0], kvp.Value[1]);
 
 			Log(eSeverity.Debug, table.ToString());
 		}
 
 		private void ListBooths()
 		{
-			var table = new TableBuilder(new[] { "Booth Id", "Adapter Id" });
+			var table = new TableBuilder("Adapter Id", "Booth Id");
 
 			foreach (var kvp in m_AdapterToBooth)
-				table.AddRow(new[] { kvp.Key.Id, kvp.Value });
+				table.AddRow(kvp.Key.Id, kvp.Value);
 
 			Log(eSeverity.Debug, table.ToString());
 
@@ -913,10 +913,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ListPairs()
 		{
-			var table = new TableBuilder(new[] { "Room Id", "Booth Id" });
+			var table = new TableBuilder("Room Id", "Booth Id");
 
 			foreach (var kvp in m_RoomToBooth)
-				table.AddRow(new[] { kvp.Key, kvp.Value });
+				table.AddRow(kvp.Key, kvp.Value);
 
 			Log(eSeverity.Debug, table.ToString());
 		}
