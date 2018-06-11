@@ -9,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
@@ -569,6 +570,27 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
+		private void RemoveAdapter(ISimplInterpretationDevice device)
+		{
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				if(device == null)
+					throw new ArgumentNullException("device");
+
+				if(!m_BoothToAdapter.ContainsValue(device))
+					return;
+
+				Unsubscribe(device);
+
+				m_BoothToAdapter.RemoveValue(device);
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+		}
+
 		private void ClearAdapters()
 		{
 			m_SafeCriticalSection.Enter();
@@ -595,6 +617,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			device.OnAutoAnswerChanged += AdapterOnAutoAnswerChanged;
 			device.OnDoNotDisturbChanged += AdapterOnDoNotDisturbChanged;
 			device.OnPrivacyMuteChanged += AdapterOnPrivacyMuteChanged;
+
+			device.OnBoothIdChanged += AdapterOnBoothIdChanged;
 		}
 
 		private void Unsubscribe(ISimplInterpretationDevice device)
@@ -607,6 +631,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			device.OnAutoAnswerChanged -= AdapterOnAutoAnswerChanged;
 			device.OnDoNotDisturbChanged -= AdapterOnDoNotDisturbChanged;
 			device.OnPrivacyMuteChanged -= AdapterOnPrivacyMuteChanged;
+
+			device.OnBoothIdChanged -= AdapterOnBoothIdChanged;
 		}
 
 		private void AdapterOnSourceAdded(object sender, ConferenceSourceEventArgs args)
@@ -650,6 +676,21 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				return;
 
 			m_RpcController.CallMethod(clientId, key, args.Data);
+		}
+
+		private void AdapterOnBoothIdChanged(object sender, UShortEventArgs args)
+		{
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				RemoveAdapter(sender as ISimplInterpretationDevice);
+				AddAdapter(args.Data, sender as ISimplInterpretationDevice);
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+
 		}
 
 		#endregion

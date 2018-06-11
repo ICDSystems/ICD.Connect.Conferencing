@@ -17,19 +17,49 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
+		public event EventHandler<UShortEventArgs> OnBoothIdChanged;
+		public event EventHandler<StringEventArgs> OnLanguageChanged;
+
 		#region Private Members
 
 		private IConferenceSource m_Source;
 		private bool m_AutoAnswer;
 		private bool m_DoNotDisturb;
 		private bool m_PrivacyMute;
+		private ushort m_BoothId;
+		private string m_Language;
 
 		#endregion
 
 		#region Public Properties
 
-		public string Language { get; set; }
-		public ushort BoothId { get; set; }
+		public string Language
+		{
+			get { return m_Language; }
+			set
+			{
+				if (m_Language == value)
+					return;
+
+				m_Language = value;
+
+				OnLanguageChanged.Raise(this, new StringEventArgs(m_Language));
+			}
+		}
+
+		public ushort BoothId 
+		{ 
+			get { return m_BoothId; }
+			set
+			{
+				if(m_BoothId == value)
+					return;
+
+				m_BoothId = value;
+
+				OnBoothIdChanged.Raise(this, new UShortEventArgs(m_BoothId));
+			} 
+		}
 
 		public bool AutoAnswer
 		{

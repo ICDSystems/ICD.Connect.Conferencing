@@ -22,6 +22,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
+		event EventHandler<UShortEventArgs> OnBoothIdChanged;
+		event EventHandler<StringEventArgs> OnLanguageChanged;
+
 		SimplDialerDialCallback DialCallback { get; set; }
         SimplDialerDialTypeCallback DialTypeCallback { get; set; }
 		SimplDialerSetAutoAnswerCallback SetAutoAnswerCallback { get; set; }
