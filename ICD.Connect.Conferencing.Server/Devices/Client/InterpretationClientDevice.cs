@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
@@ -669,6 +670,26 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    addRow("Start", src.StartOrDialTime);
 		    }
 			addRow("-----", "-----");
+	    }
+
+	    /// <summary>
+	    /// Gets the child console commands.
+	    /// </summary>
+	    /// <returns></returns>
+	    public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+	    {
+		    foreach (IConsoleCommand command in GetBaseConsolCommands())
+			    yield return command;
+
+			yield return new ConsoleCommand("Connect", "Connect to the server", () => Connect());
+			yield return new ConsoleCommand("Disconnect", "Disconnect from the server", () => Disconnect());
+			yield return new ConsoleCommand("Register", "Register the room with the server", () => Register());
+			yield return new ConsoleCommand("Unregister", "Unregister the room with the server", () => Unregister());
+	    }
+
+	    private IEnumerable<IConsoleCommand> GetBaseConsolCommands()
+	    {
+		    return base.GetConsoleCommands();
 	    }
 
 	    #endregion
