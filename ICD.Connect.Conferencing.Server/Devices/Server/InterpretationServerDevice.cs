@@ -840,6 +840,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				yield return cmd;
 
 			yield return new ConsoleCommand("ListRooms", "Lists the rooms", () => ListRooms());
+			yield return new ConsoleCommand("ListBooths", "Lists the booths", () => ListBooths());
+			yield return new ConsoleCommand("ListInterpretations", "Lists the pairings between booths and rooms", () => ListPairs());
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
@@ -849,16 +851,36 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ListRooms()
 		{
-			var table = new TableBuilder(new[] {"id", "name", "prefix"});
+			var table = new TableBuilder(new[] {"Room Id", "Room Name", "Prefix"});
 
 			foreach (var kvp in m_RoomToRoomInfo)
-			{
 				table.AddRow(new[] {kvp.Key.ToString(), kvp.Value[0], kvp.Value[1]});
-			}
 
 			Log(eSeverity.Debug, table.ToString());
 		}
 
+		private void ListBooths()
+		{
+			var table = new TableBuilder(new[] {"Booth Id", "Adapter Id"});
+
+			foreach (var kvp in m_BoothToAdapter)
+				table.AddRow(new[]{kvp.Key, kvp.Value.Id});
+
+			Log(eSeverity.Debug, table.ToString());
+			
+		}
+
+		private void ListPairs()
+		{
+			var table = new TableBuilder(new[] {"Room Id","Booth Id"});
+
+			foreach(var kvp in m_RoomToBooth)
+				table.AddRow(new []{kvp.Key, kvp.Value});
+
+			Log(eSeverity.Debug, table.ToString());
+		}
+
+		/// <summary>
 		/// Gets the child console nodes.
 		/// </summary>
 		/// <returns></returns>
