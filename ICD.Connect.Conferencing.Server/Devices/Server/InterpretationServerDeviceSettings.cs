@@ -50,7 +50,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			base.ParseXml(xml);
 
 			IEnumerable<int> deviceIds = XmlUtils.ReadListFromXml(xml, WRAPPED_DEVICES_ELEMENT, WRAPPED_DEVICE_ELEMENT,
-			                                                      s => ParseDeviceToInt(s))
+																  s => XmlUtils.TryReadElementContentAsInt(s))
 			                                     .ExceptNulls();
 
 			SetDeviceIds(deviceIds);
@@ -68,14 +68,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			writer.WriteElementString(SERVER_PORT_ELEMENT, IcdXmlConvert.ToString(ServerPort));
 			writer.WriteElementString(SERVER_CLIENTS_ELEMENT, IcdXmlConvert.ToString(ServerMaxClients));
-		}
-
-		private static int? ParseDeviceToInt(string s)
-		{
-			int id;
-			bool isInt = StringUtils.TryParse(s, out id);
-
-			return isInt ? id : (int?)null;
 		}
 	}
 }
