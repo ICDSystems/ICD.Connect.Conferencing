@@ -1,0 +1,102 @@
+﻿using System;
+using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
+
+namespace ICD.Connect.Conferencing.Polycom.Devices.Components.Sleep
+{
+	public sealed class SleepComponent : AbstractPolycomComponent
+	{
+		/// <summary>
+		/// Raised when the awake state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnAwakeStateChanged;
+
+		private bool m_Awake;
+
+		/// <summary>
+		/// Gets the awake state.
+		/// </summary>
+		public bool Awake
+		{
+			get { return m_Awake; }
+			private set
+			{
+				if (value == m_Awake)
+					return;
+
+				m_Awake = value;
+
+				Codec.Log(eSeverity.Informational, "Awake set to {0}", m_Awake);
+
+				OnAwakeStateChanged.Raise(this, new BoolEventArgs(m_Awake));
+			}
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="codec"></param>
+		public SleepComponent(PolycomGroupSeriesDevice codec)
+			: base(codec)
+		{
+			Subscribe(Codec);
+
+			if (Codec.Initialized)
+				Initialize();
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void Dispose(bool disposing)
+		{
+			OnAwakeStateChanged = null;
+
+			base.Dispose(disposing);
+		}
+
+		/// <summary>
+		/// Called to initialize the component.
+		/// </summary>
+		protected override void Initialize()
+		{
+			base.Initialize();
+
+			Codec.SendCommand("sleep register");
+		}
+
+		#region Methods
+
+		/// <summary>
+		/// Puts the device to sleep.
+		/// </summary>
+		public void Sleep()
+		{
+			Codec.SendCommand("sleep");
+			Codec.Log(eSeverity.Informational, "Putting device to sleep");
+		}
+
+		/// <summary>
+		/// Wakes the device.
+		/// </summary>
+		public void Wake()
+		{
+			Codec.SendCommand("wake");
+			Codec.Log(eSeverity.Informational, "Waking device");
+		}
+
+		/// <summary>
+		/// Sets the sleep mute state.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public void SetSleepMute(bool enabled)
+		{
+			Codec.SendCommand("sleep mute {0}", enabled ? "on" : "off");
+			Codec.Log(eSeverity.Informational, "Setting sleep mute {0}", enabled ? "on" : "off");
+		}
+
+		#endregion
+	}
+}

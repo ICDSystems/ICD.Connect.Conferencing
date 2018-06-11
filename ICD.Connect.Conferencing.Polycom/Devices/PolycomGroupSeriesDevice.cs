@@ -97,7 +97,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			//Controls.Add(new PolycomCodecDirectoryControl(this, 2));
 			//Controls.Add(new PolycomCodecLayoutControl(this, 3));
 			//Controls.Add(new PolycomCodecPresentationControl(this, 4));
-			//Controls.Add(new PolycomCodecPowerControl(this, 5));
+			Controls.Add(new PolycomCodecPowerControl(this, 5));
 		}
 
 		#endregion

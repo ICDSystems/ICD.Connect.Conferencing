@@ -1,9 +1,13 @@
-﻿using ICD.Connect.Devices.Controls;
+﻿using ICD.Common.Utils.EventArguments;
+using ICD.Connect.Conferencing.Polycom.Devices.Components.Sleep;
+using ICD.Connect.Devices.Controls;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 {
 	public sealed class PolycomCodecPowerControl : AbstractPowerDeviceControl<PolycomGroupSeriesDevice>
 	{
+		private readonly SleepComponent m_SleepComponent;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -12,6 +16,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		public PolycomCodecPowerControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
+			m_SleepComponent = parent.Components.GetComponent<SleepComponent>();
+
+			Subscribe(m_SleepComponent);
+		}
+
+		/// <summary>
+		/// Override to release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void DisposeFinal(bool disposing)
+		{
+			base.DisposeFinal(disposing);
+
+			Unsubscribe(m_SleepComponent);
 		}
 
 		#region Methods
@@ -21,7 +39,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		/// </summary>
 		public override void PowerOn()
 		{
-			throw new System.NotImplementedException();
+			m_SleepComponent.Wake();
 		}
 
 		/// <summary>
@@ -29,7 +47,39 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		/// </summary>
 		public override void PowerOff()
 		{
-			throw new System.NotImplementedException();
+			m_SleepComponent.Sleep();
+		}
+
+		#endregion
+
+		#region AutoAnswer Callbacks
+
+		/// <summary>
+		/// Subscribe to the component events.
+		/// </summary>
+		/// <param name="sleepComponent"></param>
+		private void Subscribe(SleepComponent sleepComponent)
+		{
+			sleepComponent.OnAwakeStateChanged += SleepComponentOnAwakeStateChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the component events.
+		/// </summary>
+		/// <param name="sleepComponent"></param>
+		private void Unsubscribe(SleepComponent sleepComponent)
+		{
+			sleepComponent.OnAwakeStateChanged -= SleepComponentOnAwakeStateChanged;
+		}
+
+		/// <summary>
+		/// Called when the awake state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void SleepComponentOnAwakeStateChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			IsPowered = m_SleepComponent.Awake;
 		}
 
 		#endregion

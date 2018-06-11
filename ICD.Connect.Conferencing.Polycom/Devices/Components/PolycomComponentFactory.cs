@@ -7,6 +7,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Components.Mute;
+using ICD.Connect.Conferencing.Polycom.Devices.Components.Sleep;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Components
 {
@@ -20,6 +21,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Components
 			{
 				{typeof(AutoAnswerComponent), codec => new AutoAnswerComponent(codec)},
 				{typeof(MuteComponent), codec => new MuteComponent(codec)},
+				{typeof(SleepComponent), codec => new SleepComponent(codec)},
 			};
 
 		private readonly PolycomGroupSeriesDevice m_Codec;
