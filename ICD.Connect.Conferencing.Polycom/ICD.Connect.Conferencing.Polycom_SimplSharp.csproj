@@ -65,6 +65,8 @@
     <Compile Include="Devices\Components\AbstractPolycomComponent.cs" />
     <Compile Include="Devices\Components\AutoAnswer\AutoAnswerComponent.cs" />
     <Compile Include="Devices\Components\AutoAnswer\PolycomAutoAnswerEventArgs.cs" />
+    <Compile Include="Devices\Components\Content\ContentComponent.cs" />
+    <Compile Include="Devices\Components\Content\ContentVideoSourceEventArgs.cs" />
     <Compile Include="Devices\Components\Layout\PipPositionEventArgs.cs" />
     <Compile Include="Devices\Components\Layout\LayoutComponent.cs" />
     <Compile Include="Devices\Components\Mute\MuteComponent.cs" />
