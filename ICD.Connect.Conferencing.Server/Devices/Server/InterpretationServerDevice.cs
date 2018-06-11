@@ -551,13 +551,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void AddAdapter(ushort boothId, ISimplInterpretationDevice device)
 		{
+			if(boothId == 0)
+				return;
+
 			m_SafeCriticalSection.Enter();
 			try
 			{
 				if (device == null)
 					throw new ArgumentNullException("device");
 
-				if (m_BoothToAdapter.ContainsValue(device))
+				if (m_BoothToAdapter.ContainsValue(device) || m_BoothToAdapter.ContainsKey(boothId))
 					return;
 
 				m_BoothToAdapter.Add(boothId, device);
