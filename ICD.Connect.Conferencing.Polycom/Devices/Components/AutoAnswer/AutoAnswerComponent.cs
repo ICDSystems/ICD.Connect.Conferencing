@@ -43,6 +43,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer
 		public AutoAnswerComponent(PolycomGroupSeriesDevice codec)
 			: base(codec)
 		{
+			Subscribe(Codec);
+
+			if (Codec.Initialized)
+				Initialize();
 		}
 
 		/// <summary>
@@ -73,7 +77,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer
 		{
 			base.Initialize();
 
-			Codec.SendCommand("autoanswer register");
 			Codec.SendCommand("autoanswer get");
 		}
 

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer;
+using ICD.Connect.Conferencing.Polycom.Devices.Components.Mute;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 {
@@ -20,6 +22,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
 		private readonly AutoAnswerComponent m_AutoAnswerComponent;
+		private readonly MuteComponent m_MuteComponent;
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
@@ -35,7 +38,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 			: base(parent, id)
 		{
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
+			m_MuteComponent = parent.Components.GetComponent<MuteComponent>();
+
 			Subscribe(m_AutoAnswerComponent);
+			Subscribe(m_MuteComponent);
 		}
 
 		/// <summary>
@@ -50,6 +56,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_AutoAnswerComponent);
+			Unsubscribe(m_MuteComponent);
 		}
 
 		#region Methods
@@ -114,7 +121,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		/// <param name="enabled"></param>
 		public override void SetPrivacyMute(bool enabled)
 		{
-			throw new NotImplementedException();
+			m_MuteComponent.MuteNear(enabled);
 		}
 
 		#endregion
@@ -148,6 +155,38 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		{
 			AutoAnswer = m_AutoAnswerComponent.AutoAnswer == eAutoAnswer.Yes;
 			DoNotDisturb = m_AutoAnswerComponent.AutoAnswer == eAutoAnswer.DoNotDisturb;
+		}
+
+		#endregion
+
+		#region Mute Callbacks
+
+		/// <summary>
+		/// Subscribe to the component events.
+		/// </summary>
+		/// <param name="muteComponent"></param>
+		private void Subscribe(MuteComponent muteComponent)
+		{
+			muteComponent.OnMutedNearChanged += MuteComponentOnMutedNearChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the component events.
+		/// </summary>
+		/// <param name="muteComponent"></param>
+		private void Unsubscribe(MuteComponent muteComponent)
+		{
+			muteComponent.OnMutedNearChanged -= MuteComponentOnMutedNearChanged;
+		}
+
+		/// <summary>
+		/// Called when the near privacy mute state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void MuteComponentOnMutedNearChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			PrivacyMuted = m_MuteComponent.MutedNear;
 		}
 
 		#endregion

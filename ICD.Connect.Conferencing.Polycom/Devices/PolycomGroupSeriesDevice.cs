@@ -315,8 +315,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
-			if (args.Data == "Password: ")
+			if (args.Data.StartsWith("error:"))
+				Log(eSeverity.Error, args.Data);
+			
+			if (args.Data.StartsWith("Password:"))
 				SendCommand(Password);
+
+			// Intentional spacing
+			if (args.Data.StartsWith("Hi, my name is :"))
+				Initialize();
 
 			IcdConsole.PrintLine(eConsoleColor.Magenta, StringUtils.ToMixedReadableHexLiteral(args.Data));
 		}

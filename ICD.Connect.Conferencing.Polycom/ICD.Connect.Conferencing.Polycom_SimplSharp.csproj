@@ -65,6 +65,7 @@
     <Compile Include="Devices\Components\AbstractPolycomComponent.cs" />
     <Compile Include="Devices\Components\AutoAnswer\AutoAnswerComponent.cs" />
     <Compile Include="Devices\Components\AutoAnswer\PolycomAutoAnswerEventArgs.cs" />
+    <Compile Include="Devices\Components\Mute\MuteComponent.cs" />
     <Compile Include="Devices\Components\PolycomComponentFactory.cs" />
     <Compile Include="Devices\Controls\PolycomCodecDialingControl.cs" />
     <Compile Include="Devices\PolycomGroupSeriesDevice.cs" />

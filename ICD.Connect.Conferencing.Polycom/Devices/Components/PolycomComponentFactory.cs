@@ -6,6 +6,7 @@ using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer;
+using ICD.Connect.Conferencing.Polycom.Devices.Components.Mute;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Components
 {
@@ -18,6 +19,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Components
 			new Dictionary<Type, Func<PolycomGroupSeriesDevice, AbstractPolycomComponent>>
 			{
 				{typeof(AutoAnswerComponent), codec => new AutoAnswerComponent(codec)},
+				{typeof(MuteComponent), codec => new MuteComponent(codec)},
 			};
 
 		private readonly PolycomGroupSeriesDevice m_Codec;
