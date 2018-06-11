@@ -115,6 +115,9 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		/// <param name="originator"></param>
 		protected override void Subscribe(IInterpretationServerDevice originator)
 		{
+			if (originator == null)
+				return;
+
 			base.Subscribe(originator);
 
 			originator.OnInterpretationStateChanged += OriginatorOnInterpretationStateChanged;
@@ -127,6 +130,10 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		/// <param name="originator"></param>
 		protected override void Unsubscribe(IInterpretationServerDevice originator)
 		{
+			if (originator == null)
+				return;
+
+			base.Unsubscribe(originator);
 			originator.OnInterpretationStateChanged -= OriginatorOnInterpretationStateChanged;
 			originator.OnRoomAdded -= OriginatorOnRoomAdded;
 
