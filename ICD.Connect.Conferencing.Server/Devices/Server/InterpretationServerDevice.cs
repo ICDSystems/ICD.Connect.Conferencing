@@ -54,8 +54,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private readonly SafeCriticalSection m_SafeCriticalSection;
 
-		// key is booth id, value is device device for that booth.
-		private readonly Dictionary<ushort, ISimplInterpretationDevice> m_BoothToAdapter;
+		// key is interpretation device, value is booth id for that device.
+		private readonly Dictionary<ISimplInterpretationDevice, ushort> m_AdapterToBooth;
 
 		// key is guid id of source, value is the source
 		private readonly Dictionary<Guid, IConferenceSource> m_Sources;
@@ -77,7 +77,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		public InterpretationServerDevice()
 		{
 			m_RpcController = new ServerSerialRpcController(this);
-			m_BoothToAdapter = new Dictionary<ushort, ISimplInterpretationDevice>();
+			m_AdapterToBooth = new Dictionary<ISimplInterpretationDevice, ushort>();
 			m_Sources = new Dictionary<Guid, IConferenceSource>();
 			m_RoomToBooth = new Dictionary<int, ushort>();
 			m_ClientToRoom = new Dictionary<uint, int>();
@@ -139,7 +139,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			try
 			{
 				IEnumerable<ushort> usedBooths = m_RoomToBooth.Values;
-				return m_BoothToAdapter.Keys.Except(usedBooths);
+				return m_AdapterToBooth.Values.Except(usedBooths);
 			}
 			finally
 			{
@@ -158,7 +158,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				if (!m_BoothToAdapter.ContainsKey(boothId))
+				if (!m_AdapterToBooth.ContainsValue(boothId))
 					return;
 
 				if (!m_RoomToBooth.ContainsKey(roomId))
@@ -169,14 +169,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					return;
 
 				uint clientId;
-				if (!GetClientIdForAdapter(m_BoothToAdapter[boothId], out clientId))
+				if (!GetClientIdForAdapter(m_AdapterToBooth.GetKey(boothId), out clientId))
 					return;
 
 				m_RoomToBooth[roomId] = boothId;
 
 				m_RpcController.CallMethod(clientId, InterpretationClientDevice.SET_INTERPRETATION_STATE_RPC, true);
 
-				foreach (IConferenceSource source in m_BoothToAdapter[boothId].GetSources())
+				foreach (IConferenceSource source in m_AdapterToBooth.GetKey(boothId).GetSources())
 				{
 					ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
 					Guid id = m_Sources.GetKey(source);
@@ -197,7 +197,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				if (!m_BoothToAdapter.ContainsKey(boothId))
+				if (!m_AdapterToBooth.ContainsValue(boothId))
 					return;
 
 				if (!m_RoomToBooth.ContainsKey(roomId))
@@ -208,7 +208,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					return;
 
 				uint clientId;
-				if (!GetClientIdForAdapter(m_BoothToAdapter[boothId], out clientId))
+				if (!GetClientIdForAdapter(m_AdapterToBooth.GetKey(boothId), out clientId))
 					return;
 
 				m_RoomToBooth.Remove(roomId);
@@ -318,8 +318,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					return false;
 				}
 
-				ushort targetBooth = m_BoothToAdapter.Where(kvp => kvp.Value.ContainsSource(source))
-													 .Select(kvp => kvp.Key)
+				ushort targetBooth = m_AdapterToBooth.Where(kvp => kvp.Key.ContainsSource(source))
+													 .Select(kvp => kvp.Value)
 													 .FirstOrDefault();
 
 				int targetRoom;
@@ -351,7 +351,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				clientId = 0;
 
 				ushort targetBooth;
-				if (!m_BoothToAdapter.TryGetKey(device, out targetBooth))
+				if (!m_AdapterToBooth.TryGetValue(device, out targetBooth))
 				{
 					Log(eSeverity.Error, "No booth assigned to target device {0}", device.Id);
 					return false;
@@ -392,7 +392,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					return false;
 				}
 
-				if (!m_BoothToAdapter.TryGetValue(targetBooth, out device))
+				if (!m_AdapterToBooth.TryGetKey(targetBooth, out device))
 				{
 					Log(eSeverity.Error, "No booth with id {0}", targetBooth);
 					return false;
@@ -551,19 +551,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void AddAdapter(ushort boothId, ISimplInterpretationDevice device)
 		{
-			if(boothId == 0)
-				return;
-
 			m_SafeCriticalSection.Enter();
 			try
 			{
 				if (device == null)
 					throw new ArgumentNullException("device");
 
-				if (m_BoothToAdapter.ContainsValue(device) || m_BoothToAdapter.ContainsKey(boothId))
+				if (m_AdapterToBooth.ContainsKey(device))
 					return;
 
-				m_BoothToAdapter.Add(boothId, device);
+				m_AdapterToBooth.Add(device, boothId);
 
 				Subscribe(device);
 			}
@@ -578,15 +575,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				if(device == null)
+				if (device == null)
 					throw new ArgumentNullException("device");
 
-				if(!m_BoothToAdapter.ContainsValue(device))
+				if (!m_AdapterToBooth.ContainsKey(device))
 					return;
 
 				Unsubscribe(device);
 
-				m_BoothToAdapter.RemoveValue(device);
+				m_AdapterToBooth.Remove(device);
 			}
 			finally
 			{
@@ -599,10 +596,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				foreach (ISimplInterpretationDevice adapter in m_BoothToAdapter.Values.ToArray())
+				foreach (ISimplInterpretationDevice adapter in m_AdapterToBooth.Keys.ToArray())
 					Unsubscribe(adapter);
 
-				m_BoothToAdapter.Clear();
+				m_AdapterToBooth.Clear();
 			}
 			finally
 			{
@@ -815,7 +812,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_SafeCriticalSection.Execute(() => m_BoothToAdapter.AnyAndAll(adapter => adapter.Value.IsOnline));
+			return m_SafeCriticalSection.Execute(() => m_AdapterToBooth.AnyAndAll(adapter => adapter.Key.IsOnline));
 		}
 
 		#endregion
@@ -854,7 +851,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		{
 			base.CopySettingsFinal(settings);
 
-			settings.SetDeviceIds(m_BoothToAdapter.Values.Select(adapter => adapter.Id));
+			settings.SetDeviceIds(m_AdapterToBooth.Keys.Select(adapter => adapter.Id));
 			settings.ServerMaxClients = m_Server.MaxNumberOfClients;
 			settings.ServerPort = m_Server.Port;
 		}
@@ -895,31 +892,31 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ListRooms()
 		{
-			var table = new TableBuilder(new[] {"Room Id", "Room Name", "Prefix"});
+			var table = new TableBuilder(new[] { "Room Id", "Room Name", "Prefix" });
 
 			foreach (var kvp in m_RoomToRoomInfo)
-				table.AddRow(new[] {kvp.Key.ToString(), kvp.Value[0], kvp.Value[1]});
+				table.AddRow(new[] { kvp.Key.ToString(), kvp.Value[0], kvp.Value[1] });
 
 			Log(eSeverity.Debug, table.ToString());
 		}
 
 		private void ListBooths()
 		{
-			var table = new TableBuilder(new[] {"Booth Id", "Adapter Id"});
+			var table = new TableBuilder(new[] { "Booth Id", "Adapter Id" });
 
-			foreach (var kvp in m_BoothToAdapter)
-				table.AddRow(new[]{kvp.Key, kvp.Value.Id});
+			foreach (var kvp in m_AdapterToBooth)
+				table.AddRow(new[] { kvp.Key.Id, kvp.Value });
 
 			Log(eSeverity.Debug, table.ToString());
-			
+
 		}
 
 		private void ListPairs()
 		{
-			var table = new TableBuilder(new[] {"Room Id","Booth Id"});
+			var table = new TableBuilder(new[] { "Room Id", "Booth Id" });
 
-			foreach(var kvp in m_RoomToBooth)
-				table.AddRow(new []{kvp.Key, kvp.Value});
+			foreach (var kvp in m_RoomToBooth)
+				table.AddRow(new[] { kvp.Key, kvp.Value });
 
 			Log(eSeverity.Debug, table.ToString());
 		}
