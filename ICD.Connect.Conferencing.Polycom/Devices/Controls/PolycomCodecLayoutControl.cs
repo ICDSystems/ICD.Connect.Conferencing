@@ -1,9 +1,12 @@
 ﻿using ICD.Connect.Conferencing.Controls.Layout;
+using ICD.Connect.Conferencing.Polycom.Devices.Components.Layout;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 {
 	public sealed class PolycomCodecLayoutControl : AbstractConferenceLayoutControl<PolycomGroupSeriesDevice>
 	{
+		private readonly LayoutComponent m_LayoutComponent;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -12,7 +15,23 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		public PolycomCodecLayoutControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
+			m_LayoutComponent = parent.Components.GetComponent<LayoutComponent>();
+
+			Subscribe(m_LayoutComponent);
 		}
+
+		/// <summary>
+		/// Override to release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void DisposeFinal(bool disposing)
+		{
+			base.DisposeFinal(disposing);
+
+			Unsubscribe(m_LayoutComponent);
+		}
+
+		#region Methods
 
 		/// <summary>
 		/// Enables/disables the self-view window during video conference.
@@ -40,5 +59,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
 		{
 			throw new System.NotImplementedException();
 		}
+
+		#endregion
+
+		#region Layout Callbacks
+
+		private void Subscribe(LayoutComponent layoutComponent)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		private void Unsubscribe(LayoutComponent layoutComponent)
+		{
+			throw new System.NotImplementedException();
+		}
+
+		#endregion
 	}
 }

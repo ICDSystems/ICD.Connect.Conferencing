@@ -92,11 +92,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 
-			//Controls.Add(new PolycomCodecRoutingControl(this, 0));
+			Controls.Add(new PolycomCodecRoutingControl(this, 0));
 			Controls.Add(new PolycomCodecDialingControl(this, 1));
-			//Controls.Add(new PolycomCodecDirectoryControl(this, 2));
-			//Controls.Add(new PolycomCodecLayoutControl(this, 3));
-			//Controls.Add(new PolycomCodecPresentationControl(this, 4));
+			Controls.Add(new PolycomCodecDirectoryControl(this, 2));
+			Controls.Add(new PolycomCodecLayoutControl(this, 3));
+			Controls.Add(new PolycomCodecPresentationControl(this, 4));
 			Controls.Add(new PolycomCodecPowerControl(this, 5));
 		}
 
