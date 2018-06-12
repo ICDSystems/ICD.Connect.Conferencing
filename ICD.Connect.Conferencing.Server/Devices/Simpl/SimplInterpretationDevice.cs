@@ -199,7 +199,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		public IEnumerable<IConferenceSource> GetSources()
 		{
-			yield return m_Source;
+			if (m_Source != null)
+				yield return m_Source;
 		}
 
 		public bool ContainsSource(IConferenceSource source)
