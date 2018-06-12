@@ -17,8 +17,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 	public sealed class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
 	                                             ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
+		/// <summary>
+		/// Raised when the parent codec changes.
+		/// </summary>
 		public event EventHandler OnCodecChanged;
 
+		/// <summary>
+		/// Raised when the presets are changed.
+		/// </summary>
 		public event EventHandler OnPresetsChanged;
 
 		private CiscoCodecDevice m_Codec;
@@ -47,6 +53,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		#region ICameraWithPanTilt
 
+		/// <summary>
+		/// Starts rotating the camera with the given action.
+		/// </summary>
+		/// <param name="action"></param>
 		public void PanTilt(eCameraPanTiltAction action)
 		{
 			if (m_Camera == null)
@@ -90,6 +100,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		#region ICameraWithZoom
 
+		/// <summary>
+		/// Starts zooming the camera with the given action.
+		/// </summary>
+		/// <param name="action"></param>
 		public void Zoom(eCameraZoomAction action)
 		{
 			if (m_Camera == null)
@@ -121,13 +135,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		#region ICameraWithPresets
 
+		/// <summary>
+		/// Gets the maximum number of presets this camera can support.
+		/// </summary>
 		public int MaxPresets { get { return 35; } }
 
+		/// <summary>
+		/// Gets the stored camera presets.
+		/// </summary>
 		public IEnumerable<CameraPreset> GetPresets()
 		{
 			return m_CamerasComponent.GetCameraPresets(CameraId);
 		}
 
+		/// <summary>
+		/// Tells the camera to change its position to the given preset.
+		/// </summary>
+		/// <param name="presetId">The id of the preset to position to.</param>
 		public void ActivatePreset(int presetId)
 		{
 			if (m_Camera == null)
@@ -142,6 +166,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			m_Camera.ActivatePreset(presetId);
 		}
 
+		/// <summary>
+		/// Stores the cameras current position in the given preset index.
+		/// </summary>
+		/// <param name="presetId">The index to store the preset at.</param>
 		public void StorePreset(int presetId)
 		{
 			if (m_Camera == null)
@@ -160,6 +188,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		#region DeviceBase
 
+		/// <summary>
+		/// Gets the current online status of the device.
+		/// </summary>
+		/// <returns></returns>
 		protected override bool GetIsOnlineStatus()
 		{
 			return m_Codec != null && m_Codec.IsOnline;
