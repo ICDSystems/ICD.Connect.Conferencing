@@ -18,6 +18,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				{eDialProtocol.SipSpeakerphone, "sip_speakerphone"}
 			};
 
+		private static readonly BiDictionary<eDialType, string> s_TypeNames =
+			new BiDictionary<eDialType, string>
+			{
+				{eDialType.H323, "h323"},
+				{eDialType.Ip, "ip"},
+				{eDialType.Sip, "sip"},
+				{eDialType.Gateway, "gateway"}
+			};
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -46,6 +55,58 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			Codec.SendCommand("dial addressbook {0}", contactName);
 			Codec.Log(eSeverity.Informational, "Dialing addressbook contact {0}", StringUtils.ToRepresentation(contactName));
+		}
+
+		/// <summary>
+		/// Dials a video call number of type h323.
+		/// </summary>
+		/// <param name="number"></param>
+		public void DialAuto(string number)
+		{
+			if (number == null)
+				throw new ArgumentNullException("number");
+
+			number = StringUtils.Enquote(number);
+
+			Codec.SendCommand("dial auto auto {0}", number);
+			Codec.Log(eSeverity.Informational, "Dialing auto number {0}", StringUtils.ToRepresentation(number));
+		}
+
+		/// <summary>
+		/// Dials a video call number of type h323.
+		/// Use dial manual when you do not want automatic call rollover or when
+		/// the dialstring might not convey the intended transport.
+		/// </summary>
+		/// <param name="number"></param>
+		public void DialManual(string number)
+		{
+			if (number == null)
+				throw new ArgumentNullException("number");
+
+			number = StringUtils.Enquote(number);
+
+			Codec.SendCommand("dial manual auto {0}", number);
+			Codec.Log(eSeverity.Informational, "Dialing manual number {0}", StringUtils.ToRepresentation(number));
+		}
+
+		/// <summary>
+		/// Dials a video call number.
+		/// Use dial manual when you do not want automatic call rollover or when
+		/// the dialstring might not convey the intended transport.
+		/// </summary>
+		/// <param name="number"></param>
+		/// <param name="type"></param>
+		public void DialManual(string number, eDialType type)
+		{
+			if (number == null)
+				throw new ArgumentNullException("number");
+
+			number = StringUtils.Enquote(number);
+
+			string typeName = s_TypeNames.GetValue(type);
+
+			Codec.SendCommand("dial manual auto {0} {1}", number, typeName);
+			Codec.Log(eSeverity.Informational, "Dialing manual number {0} type {1}", StringUtils.ToRepresentation(number), typeName);
 		}
 
 		/// <summary>
@@ -81,9 +142,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			yield return new GenericConsoleCommand<string>("DialAddressbook", "DialAddressbook <NAME>", n => DialAddressbook(n));
 
-			string dialPhoneHelp = string.Format("DialPhone <{0}> <NUMBER>",
-			                                     StringUtils.ArrayFormat(EnumUtils.GetValues<eDialProtocol>()));
-			yield return new GenericConsoleCommand<string>("DialPhone", dialPhoneHelp, n => DialAddressbook(n));
+			string protocolValues = StringUtils.ArrayFormat(EnumUtils.GetValues<eDialProtocol>());
+			string typeValues = StringUtils.ArrayFormat(EnumUtils.GetValues<eDialType>());
+
+			yield return new GenericConsoleCommand<string>("DialAuto", "DialAuto <NUMBER>", n => DialAuto(n));
+			yield return new GenericConsoleCommand<string>("DialManual", "DialManual <NUMBER>", n => DialManual(n));
+
+			string dialManualTypeHelp = string.Format("DialManualType <NUMBER> <{0}>", typeValues);
+			yield return new GenericConsoleCommand<string, eDialType>("DialManualType", dialManualTypeHelp, (n, t) => DialManual(n, t));
+
+			string dialPhoneHelp = string.Format("DialPhone <{0}> <NUMBER>", protocolValues);
+			yield return new GenericConsoleCommand<eDialProtocol, string>("DialPhone", dialPhoneHelp, (p, n) => DialPhone(p, n));
 		}
 
 		/// <summary>

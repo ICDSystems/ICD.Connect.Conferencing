@@ -74,6 +74,7 @@
     <Compile Include="Devices\Codec\Components\Content\ContentVideoSourceEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Dial\DialComponent.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eDialProtocol.cs" />
+    <Compile Include="Devices\Codec\Components\Dial\eDialType.cs" />
     <Compile Include="Devices\Codec\Components\Layout\PipPositionEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Layout\LayoutComponent.cs" />
     <Compile Include="Devices\Codec\Components\Mute\MuteComponent.cs" />
