@@ -14,8 +14,8 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.EventArguments;
+using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
-using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
 using ICD.Connect.Protocol.Ports;
@@ -23,14 +23,11 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
-    public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>, IClientInterpretationDevice, IConnectable
+    public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>, IClientInterpretationDevice
     {
 	    #region Events
 
 	    public event EventHandler OnInterpretationActiveChanged;
-
-		[PublicAPI]
-	    public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
 	    public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 	    public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
@@ -54,19 +51,18 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		#endregion
 
 		#region Private Members
+		
+	    private readonly ClientSerialRpcController m_RpcController;
+	    private readonly Dictionary<Guid, ThinConferenceSource> m_Sources;
+		private readonly ConnectionStateManager m_ConnectionStateManager;
+	    private readonly SafeCriticalSection m_SourcesCriticalSection;
 
 		private bool m_IsConnected;
-	    private ISerialPort m_Port;
-	    private readonly ClientSerialRpcController m_RpcController;
-
-	    private readonly Dictionary<Guid, ThinConferenceSource> m_Sources;
-
-	    private readonly SafeCriticalSection m_SourcesCriticalSection;
+		private bool m_IsInterpretationActive;
 	    private bool m_PrivacyMuted;
 	    private bool m_DoNotDisturb;
 	    private bool m_AutoAnswer;
 	    private int m_RoomId;
-	    private bool m_IsInterpretationActive;
 
 	    #endregion
 
@@ -93,8 +89,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    {
 				    Log(eSeverity.Alert, "Lost Connection To Server");
 			    }
-
-			    OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
 		    }
 
 			
@@ -103,8 +97,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    public string RoomName { get; set; }
 
 		public string RoomPrefix { get; set; }
-
-		public Heartbeat Heartbeat { get; private set; }
 
 	    public bool IsInterpretationActive
 	    {
@@ -181,12 +173,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			Controls.Add(new DialerDeviceDialerControl(this, 0));
 
-			Heartbeat = new Heartbeat(this);
+			m_ConnectionStateManager = new ConnectionStateManager(this){ConfigurePort = ConfigurePort};
+			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectedStateChanged;
 	    }
 
 	    protected override void DisposeFinal(bool disposing)
 	    {
-		    OnConnectedStateChanged = null;
 		    OnSourceAdded = null;
 		    OnDoNotDisturbChanged = null;
 		    OnAutoAnswerChanged = null;
@@ -194,9 +187,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		    base.DisposeFinal(disposing);
 
-			Heartbeat.Dispose();
+		    m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
+		    m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectedStateChanged;
+			m_ConnectionStateManager.Dispose();
 
-			SetPort(null);
 		    m_RpcController.Dispose();
 	    }
 
@@ -257,26 +251,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_SourcesCriticalSection.Leave();
 			}
 			
-		}
-
-		/// <summary>
-		/// Connect the instance to the remote endpoint.
-		/// </summary>
-		public void Connect()
-		{
-			if (m_Port != null && !m_Port.IsConnected)
-				m_Port.Connect();
-		}
-
-		/// <summary>
-		/// Disconnects the instance from the remote endpoint.
-		/// </summary>
-		public void Disconnect()
-		{
-			Unregister();
-
-			if (m_Port != null && m_Port.IsConnected)
-				m_Port.Disconnect();
 		}
 
 		#endregion
@@ -439,7 +413,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, id);
+				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnCallHeld(ThinConferenceSource source)
@@ -462,7 +436,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, id);
+			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnCallResumed(ThinConferenceSource source)
@@ -485,7 +459,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, id);
+			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnCallEnded(ThinConferenceSource source)
@@ -508,7 +482,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, id);
+				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnDtmfSent(ThinConferenceSource source, string data)
@@ -531,7 +505,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, id, data);
+				m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, m_RoomId, id, data);
 		}
 
 		#endregion
@@ -543,47 +517,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// </summary>
 		/// <param name="port"></param>
 		[PublicAPI]
-	    public void SetPort(ISerialPort port)
+	    public void ConfigurePort(ISerialPort port)
 	    {
-		    if (port == m_Port)
-			    return;
-
-		    Unsubscribe(m_Port);
-
-		    m_Port = port;
-		    m_RpcController.SetPort(m_Port);
-
-		    Subscribe(m_Port);
-
-			m_Port.Connect();
+			m_RpcController.SetPort(port);
 
 		    UpdateCachedOnlineStatus();
-	    }
-
-	    /// <summary>
-	    /// Subscribe to the port events.
-	    /// </summary>
-	    /// <param name="port"></param>
-	    private void Subscribe(ISerialPort port)
-	    {
-		    if (port == null)
-			    return;
-
-		    port.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-		    port.OnConnectedStateChanged += PortOnConnectedStateChanged;
-	    }
-
-	    /// <summary>
-	    /// Unsubscribe from the port events.
-	    /// </summary>
-	    /// <param name="port"></param>
-	    private void Unsubscribe(ISerialPort port)
-	    {
-		    if (port == null)
-			    return;
-
-		    port.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
-		    port.OnConnectedStateChanged -= PortOnConnectedStateChanged;
 	    }
 
 	    /// <summary>
@@ -591,7 +529,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    /// </summary>
 	    /// <param name="sender"></param>
 	    /// <param name="args"></param>
-	    private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
+	    private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs args)
 	    {
 		    UpdateCachedOnlineStatus();
 	    }
@@ -603,7 +541,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    /// <param name="args"></param>
 	    private void PortOnConnectedStateChanged(object sender, BoolEventArgs args)
 	    {
-		    IsConnected = m_Port != null && m_Port.IsConnected;
+		    IsConnected = m_ConnectionStateManager != null && m_ConnectionStateManager.IsConnected;
 	    }
 
 		#endregion
@@ -622,18 +560,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			if (port == null)
 				Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
 
-			SetPort(port);
+			m_ConnectionStateManager.SetPort(port);
 
 			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
-
-			Heartbeat.StartMonitoring();
 	    }
 
 	    protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
 	    {
 		    base.CopySettingsFinal(settings);
 
-		    settings.Port = m_Port == null ? (int?)null : m_Port.Id;
+		    settings.Port = m_ConnectionStateManager.PortNumber;
 		    settings.Room = m_RoomId;
 	    }
 
@@ -641,9 +577,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    {
 		    base.ClearSettingsFinal();
 
-			SetPort(null);
-
-			Heartbeat.StopMonitoring();
+			ConfigurePort(null);
 	    }
 
 	    #endregion
@@ -681,8 +615,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    foreach (IConsoleCommand command in GetBaseConsolCommands())
 			    yield return command;
 
-			yield return new ConsoleCommand("Connect", "Connect to the server", () => Connect());
-			yield return new ConsoleCommand("Disconnect", "Disconnect from the server", () => Disconnect());
+			yield return new ConsoleCommand("Connect", "Connect to the server", () => m_ConnectionStateManager.Connect());
+			yield return new ConsoleCommand("Disconnect", "Disconnect from the server", () => m_ConnectionStateManager.Disconnect());
 			yield return new ConsoleCommand("Register", "Register the room with the server", () => Register());
 			yield return new ConsoleCommand("Unregister", "Unregister the room with the server", () => Unregister());
 	    }
@@ -697,9 +631,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		#region IDevice
 
 		protected override bool GetIsOnlineStatus()
-	    {
-		    return m_Port != null && m_Port.IsOnline;
-	    }
+		{
+			return m_ConnectionStateManager != null && m_ConnectionStateManager.IsOnline;
+		}
 
 	    #endregion
 	}
