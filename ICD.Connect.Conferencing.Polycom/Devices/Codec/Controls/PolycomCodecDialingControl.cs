@@ -5,6 +5,7 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
@@ -21,6 +22,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
+		private readonly DialComponent m_DialComponent;
 		private readonly AutoAnswerComponent m_AutoAnswerComponent;
 		private readonly MuteComponent m_MuteComponent;
 
@@ -37,9 +39,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public PolycomCodecDialingControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
+			m_DialComponent = parent.Components.GetComponent<DialComponent>();
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
 			m_MuteComponent = parent.Components.GetComponent<MuteComponent>();
 
+			Subscribe(m_DialComponent);
 			Subscribe(m_AutoAnswerComponent);
 			Subscribe(m_MuteComponent);
 		}
@@ -55,6 +59,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			base.DisposeFinal(disposing);
 
+			Unsubscribe(m_DialComponent);
 			Unsubscribe(m_AutoAnswerComponent);
 			Unsubscribe(m_MuteComponent);
 		}
@@ -76,7 +81,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="number"></param>
 		public override void Dial(string number)
 		{
-			throw new NotImplementedException();
+			m_DialComponent.DialAuto(number);
 		}
 
 		/// <summary>
@@ -86,7 +91,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="callType"></param>
 		public override void Dial(string number, eConferenceSourceType callType)
 		{
-			throw new NotImplementedException();
+			switch (callType)
+			{
+				case eConferenceSourceType.Audio:
+					m_DialComponent.DialPhone(eDialProtocol.Auto, number);
+					break;
+
+				case eConferenceSourceType.Video:
+					m_DialComponent.DialAuto(number);
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException("callType");
+			}
 		}
 
 		/// <summary>
@@ -122,6 +139,26 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public override void SetPrivacyMute(bool enabled)
 		{
 			m_MuteComponent.MuteNear(enabled);
+		}
+
+		#endregion
+
+		#region Dial Callbacks
+
+		/// <summary>
+		/// Subscribe to the component events.
+		/// </summary>
+		/// <param name="dialComponent"></param>
+		private void Subscribe(DialComponent dialComponent)
+		{
+		}
+
+		/// <summary>
+		/// Unsubscribe from the component events.
+		/// </summary>
+		/// <param name="dialComponent"></param>
+		private void Unsubscribe(DialComponent dialComponent)
+		{
 		}
 
 		#endregion

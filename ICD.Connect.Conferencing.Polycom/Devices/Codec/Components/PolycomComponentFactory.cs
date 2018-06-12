@@ -8,6 +8,7 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep;
@@ -25,6 +26,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 				{typeof(AutoAnswerComponent), codec => new AutoAnswerComponent(codec)},
 				{typeof(CameraComponent), codec => new CameraComponent(codec)},
 				{typeof(ContentComponent), codec => new ContentComponent(codec)},
+				{typeof(DialComponent), codec => new DialComponent(codec)},
 				{typeof(LayoutComponent), codec => new LayoutComponent(codec)},
 				{typeof(MuteComponent), codec => new MuteComponent(codec)},
 				{typeof(SleepComponent), codec => new SleepComponent(codec)},
