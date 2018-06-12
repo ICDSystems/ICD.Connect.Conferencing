@@ -1,7 +1,7 @@
 ﻿using ICD.Connect.Conferencing.Controls.Layout;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Layout;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
 	public sealed class PolycomCodecLayoutControl : AbstractConferenceLayoutControl<PolycomGroupSeriesDevice>
 	{

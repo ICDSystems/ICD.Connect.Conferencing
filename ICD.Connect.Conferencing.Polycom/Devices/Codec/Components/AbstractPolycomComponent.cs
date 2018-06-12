@@ -4,7 +4,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Components
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 {
 	public abstract class AbstractPolycomComponent : IDisposable, IConsoleNode
 	{

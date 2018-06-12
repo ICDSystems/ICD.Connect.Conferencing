@@ -1,4 +1,4 @@
-﻿namespace ICD.Connect.Conferencing.Polycom.Devices.Components.Camera
+﻿namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 {
 	public enum eCameraAction
 	{

@@ -1,8 +1,7 @@
-﻿using System;
-using ICD.Connect.Conferencing.Controls.Presentation;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Content;
+﻿using ICD.Connect.Conferencing.Controls.Presentation;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
 	public sealed class PolycomCodecPresentationControl : AbstractPresentationControl<PolycomGroupSeriesDevice>
 	{

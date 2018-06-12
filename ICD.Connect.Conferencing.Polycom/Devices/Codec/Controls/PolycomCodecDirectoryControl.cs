@@ -2,7 +2,7 @@
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
 	public sealed class PolycomCodecDirectoryControl : AbstractDirectoryControl<PolycomGroupSeriesDevice>
 	{

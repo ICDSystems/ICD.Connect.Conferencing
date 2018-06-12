@@ -4,7 +4,7 @@ using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 {
 	[KrangSettings("PolycomGroupSeries", typeof(PolycomGroupSeriesDevice))]
 	public sealed class PolycomGroupSeriesSettings : AbstractVideoConferenceDeviceSettings

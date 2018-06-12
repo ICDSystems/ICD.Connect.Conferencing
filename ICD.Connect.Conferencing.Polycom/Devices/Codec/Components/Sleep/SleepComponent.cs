@@ -3,7 +3,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Components.Sleep
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 {
 	public sealed class SleepComponent : AbstractPolycomComponent
 	{

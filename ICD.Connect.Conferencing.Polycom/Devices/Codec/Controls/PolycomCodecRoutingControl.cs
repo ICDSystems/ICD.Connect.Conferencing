@@ -5,7 +5,7 @@ using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
 	public sealed class PolycomCodecRoutingControl : AbstractVideoConferenceRouteControl<PolycomGroupSeriesDevice>
 	{

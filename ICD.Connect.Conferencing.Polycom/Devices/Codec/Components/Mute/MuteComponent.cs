@@ -6,7 +6,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Components.Mute
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 {
 	public sealed class MuteComponent : AbstractPolycomComponent
 	{

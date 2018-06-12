@@ -4,10 +4,10 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Mute;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
 	public sealed class PolycomCodecDialingControl : AbstractDialingDeviceControl<PolycomGroupSeriesDevice>
 	{

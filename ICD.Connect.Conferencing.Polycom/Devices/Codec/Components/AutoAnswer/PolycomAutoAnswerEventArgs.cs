@@ -1,6 +1,6 @@
 ﻿using ICD.Common.Utils.EventArguments;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 {
 	public enum eAutoAnswer
 	{

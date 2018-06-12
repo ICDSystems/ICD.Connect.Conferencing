@@ -4,7 +4,7 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Components.Camera
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 {
 	public sealed class CameraComponent : AbstractPolycomComponent
 	{

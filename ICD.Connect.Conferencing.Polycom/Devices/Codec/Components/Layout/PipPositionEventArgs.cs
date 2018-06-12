@@ -1,6 +1,6 @@
 ﻿using ICD.Common.Utils.EventArguments;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Components.Layout
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 {
 	public enum ePipPosition
 	{

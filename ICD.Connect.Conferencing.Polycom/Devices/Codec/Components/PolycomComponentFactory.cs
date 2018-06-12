@@ -5,14 +5,14 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.AutoAnswer;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Camera;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Content;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Layout;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Mute;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Sleep;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Components
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 {
 	public sealed class PolycomComponentFactory : IDisposable, IConsoleNode
 	{

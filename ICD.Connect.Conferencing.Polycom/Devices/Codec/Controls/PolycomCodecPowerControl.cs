@@ -1,8 +1,8 @@
 ﻿using ICD.Common.Utils.EventArguments;
-using ICD.Connect.Conferencing.Polycom.Devices.Components.Sleep;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep;
 using ICD.Connect.Devices.Controls;
 
-namespace ICD.Connect.Conferencing.Polycom.Devices.Controls
+namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
 	public sealed class PolycomCodecPowerControl : AbstractPowerDeviceControl<PolycomGroupSeriesDevice>
 	{
