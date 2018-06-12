@@ -159,7 +159,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			if (presetId < 1 || presetId > MaxPresets)
 			{
-				Logger.AddEntry(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not activated.", MaxPresets);
+				Log(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not activated.", MaxPresets);
 				return;
 			}
 
@@ -177,7 +177,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			if (presetId < 1 || presetId > MaxPresets)
 			{
-				Logger.AddEntry(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not stored.", MaxPresets);
+				Log(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not stored.", MaxPresets);
 				return;
 			}
 
@@ -225,7 +225,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			if (settings.CameraId == null)
 			{
-				Logger.AddEntry(eSeverity.Error, "No camera id set for camera: {0}", Name);
+				Log(eSeverity.Error, "No camera id set for camera: {0}", Name);
 				return;
 			}
 
