@@ -66,12 +66,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		private void Subscribe(LayoutComponent layoutComponent)
 		{
-			throw new System.NotImplementedException();
 		}
 
 		private void Unsubscribe(LayoutComponent layoutComponent)
 		{
-			throw new System.NotImplementedException();
 		}
 
 		#endregion
