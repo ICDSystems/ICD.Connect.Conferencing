@@ -886,35 +886,35 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			return base.GetConsoleCommands();
 		}
 
-		private void ListRooms()
+		private string ListRooms()
 		{
 			var table = new TableBuilder("Room Id", "Room Name", "Prefix");
 
 			foreach (var kvp in m_RoomToRoomInfo)
 				table.AddRow(kvp.Key.ToString(), kvp.Value[0], kvp.Value[1]);
 
-			Log(eSeverity.Debug, table.ToString());
+			return(table.ToString());
 		}
 
-		private void ListBooths()
+		private string ListBooths()
 		{
 			var table = new TableBuilder("Adapter Id", "Booth Id");
 
 			foreach (var kvp in m_AdapterToBooth)
 				table.AddRow(kvp.Key.Id, kvp.Value);
 
-			Log(eSeverity.Debug, table.ToString());
+			return(table.ToString());
 
 		}
 
-		private void ListPairs()
+		private string ListPairs()
 		{
 			var table = new TableBuilder("Room Id", "Booth Id");
 
 			foreach (var kvp in m_RoomToBooth)
 				table.AddRow(kvp.Key, kvp.Value);
 
-			Log(eSeverity.Debug, table.ToString());
+			return(table.ToString());
 		}
 
 		/// <summary>
