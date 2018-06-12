@@ -206,8 +206,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		protected override void ClearSettingsFinal()
 		{
-			OnCodecChanged = null;
-
 			base.ClearSettingsFinal();
 
 			CameraId = 0;
