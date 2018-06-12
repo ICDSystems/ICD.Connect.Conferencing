@@ -9,7 +9,6 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
-using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
@@ -161,18 +160,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				if (!m_AdapterToBooth.ContainsValue(boothId))
 					return;
 
-				if (!m_RoomToBooth.ContainsKey(roomId))
+				// No change
+				if (m_RoomToBooth.ContainsKey(roomId) && m_RoomToBooth[roomId] == boothId)
 					return;
 
-				// No change
-				if (m_RoomToBooth[roomId] == boothId)
-					return;
+				m_RoomToBooth[roomId] = boothId;
 
 				uint clientId;
 				if (!GetClientIdForAdapter(m_AdapterToBooth.GetKey(boothId), out clientId))
 					return;
-
-				m_RoomToBooth[roomId] = boothId;
 
 				m_RpcController.CallMethod(clientId, InterpretationClientDevice.SET_INTERPRETATION_STATE_RPC, true);
 
