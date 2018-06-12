@@ -62,6 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ObfuscationSettings.cs" />
+    <Compile Include="Devices\Camera\PolycomGroupSeriesCameraDevice.cs" />
+    <Compile Include="Devices\Camera\PolycomGroupSeriesCameraDevicePowerControl.cs" />
+    <Compile Include="Devices\Camera\PolycomGroupSeriesCameraSettings.cs" />
     <Compile Include="Devices\Codec\Components\AbstractPolycomComponent.cs" />
     <Compile Include="Devices\Codec\Components\AutoAnswer\AutoAnswerComponent.cs" />
     <Compile Include="Devices\Codec\Components\AutoAnswer\PolycomAutoAnswerEventArgs.cs" />
@@ -94,6 +97,10 @@
     <ProjectReference Include="..\..\ICD.Connect.API\ICD.Connect.API\ICD.Connect.API_SimplSharp.csproj">
       <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
       <Name>ICD.Connect.API_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_SimplSharp.csproj">
+      <Project>{B13D593D-8BBF-4E20-ABD8-47C6095E7D3E}</Project>
+      <Name>ICD.Connect.Cameras_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Devices\ICD.Connect.Devices\ICD.Connect.Devices_SimplSharp.csproj">
       <Project>{FD46A717-5836-4B73-ADD0-2706639DA8ED}</Project>
