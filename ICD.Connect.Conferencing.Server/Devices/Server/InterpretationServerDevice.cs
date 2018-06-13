@@ -166,20 +166,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				m_RoomToBooth[roomId] = boothId;
 
-				uint clientId;
-				if (!GetClientIdForAdapter(m_AdapterToBooth.GetKey(boothId), out clientId))
-					return;
-
-				m_RpcController.CallMethod(clientId, InterpretationClientDevice.SET_INTERPRETATION_STATE_RPC, true);
-
-				foreach (IConferenceSource source in m_AdapterToBooth.GetKey(boothId).GetSources())
-				{
-					ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
-					Guid id = m_Sources.GetKey(source);
-					m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
-				}
-
-				OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, true));
+				TransmitInterpretationState(roomId, boothId);
 			}
 			finally
 			{
@@ -402,6 +389,32 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
+		private void TransmitInterpretationState(int roomId, ushort boothId)
+		{
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				uint clientId;
+				if (!GetClientIdForAdapter(m_AdapterToBooth.GetKey(boothId), out clientId))
+					return;
+
+				m_RpcController.CallMethod(clientId, InterpretationClientDevice.SET_INTERPRETATION_STATE_RPC, true);
+
+				foreach (IConferenceSource source in m_AdapterToBooth.GetKey(boothId).GetSources())
+				{
+					ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
+					Guid id = m_Sources.GetKey(source);
+					m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
+				}
+
+				OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, true));
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+		}
+
 		#endregion
 
 		#region RPCs
@@ -412,9 +425,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
+				// this room was previously connected, retransmit the requisite info instead of adding a new room.
 				if (m_ClientToRoom.ContainsKey(clientId))
 				{
-					Log(eSeverity.Error, "Failed to register room - already registered");
+					TransmitInterpretationState(roomId, GetBoothId(roomId));
 					return;
 				}
 
