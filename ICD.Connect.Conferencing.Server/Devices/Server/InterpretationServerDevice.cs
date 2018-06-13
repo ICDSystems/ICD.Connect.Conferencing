@@ -167,6 +167,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				m_RoomToBooth[roomId] = boothId;
 
 				TransmitInterpretationState(roomId, boothId);
+
+				OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, true));
 			}
 			finally
 			{
@@ -406,8 +408,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					Guid id = m_Sources.GetKey(source);
 					m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
 				}
-
-				OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, true));
 			}
 			finally
 			{
