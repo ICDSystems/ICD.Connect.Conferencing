@@ -7,6 +7,7 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices.SPlusShims;
+using ICD.Connect.Settings.SPlusShims.EventArguments;
 #if SIMPLSHARP
 using ICDPlatformString = Crestron.SimplSharp.SimplSharpString;
 #else
@@ -18,9 +19,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 	public sealed class SimplInterpretationShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
 	{
-
-		public delegate void SPlusDialerShimSetLanguageCallback(ICDPlatformString language);
-		public delegate void SPlusDialerShimSetBoothIdCallback(ushort boothId);
 
 		public delegate void SPlusDialerShimDialCallback(ICDPlatformString number);
 		public delegate void SPlusDialerShimSetAutoAnswerCallback(ushort enabled);
@@ -36,25 +34,25 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		#region Events
 		//Events for S+
 		[PublicAPI("S+")]
-		public event EventHandler<StringEventArgs> OnLanguageChanged;
+		public event EventHandler<SPlusStringEventArgs> OnLanguageChanged;
 
 		[PublicAPI("S+")]
-		public event EventHandler<UShortEventArgs> OnBoothIdChanged;
+		public event EventHandler<SPlusUShortEventArgs> OnBoothIdChanged;
 
 		[PublicAPI("S+")]
-		public event EventHandler<UShortEventArgs> OnAutoAnswerChanged;
+		public event EventHandler<SPlusUShortEventArgs> OnAutoAnswerChanged;
 
 		[PublicAPI("S+")]
-		public event EventHandler<UShortEventArgs> OnDoNotDisturbChanged;
+		public event EventHandler<SPlusUShortEventArgs> OnDoNotDisturbChanged;
 
 		[PublicAPI("S+")]
-		public event EventHandler<UShortEventArgs> OnPrivacyMuteChanged;
+		public event EventHandler<SPlusUShortEventArgs> OnPrivacyMuteChanged;
 
 		[PublicAPI("S+")]
-		public event EventHandler<UShortEventArgs> OnHoldChanged;
+		public event EventHandler<SPlusUShortEventArgs> OnHoldChanged;
 
 		[PublicAPI("S+")]
-		public event EventHandler<StringEventArgs> OnDtmfSent;
+		public event EventHandler<SPlusStringEventArgs> OnDtmfSent;
 
 		[PublicAPI("S+")]
 		public event EventHandler OnCallEnded;
@@ -119,7 +117,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 				originator.Language = value;
 
-				OnLanguageChanged.Raise(this, new StringEventArgs(originator.Language));
+				OnLanguageChanged.Raise(this, new SPlusStringEventArgs(originator.Language));
 			}
 		}
 
@@ -142,7 +140,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 				originator.BoothId = value;
 
-				OnBoothIdChanged.Raise(this, new UShortEventArgs(originator.BoothId));
+				OnBoothIdChanged.Raise(this, new SPlusUShortEventArgs(originator.BoothId));
 			}
 		}
 
@@ -165,7 +163,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 				originator.AutoAnswer = value.ToBool();
 
-				OnAutoAnswerChanged.Raise(this, new UShortEventArgs(originator.AutoAnswer.ToUShort()));
+				OnAutoAnswerChanged.Raise(this, new SPlusUShortEventArgs(originator.AutoAnswer.ToUShort()));
 			}
 		}
 
@@ -188,7 +186,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 				originator.DoNotDisturb = value.ToBool();
 
-				OnDoNotDisturbChanged.Raise(this, new UShortEventArgs(originator.DoNotDisturb.ToUShort()));
+				OnDoNotDisturbChanged.Raise(this, new SPlusUShortEventArgs(originator.DoNotDisturb.ToUShort()));
 			}
 		}
 
@@ -211,7 +209,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 				originator.PrivacyMute = value.ToBool();
 
-				OnPrivacyMuteChanged.Raise(this, new UShortEventArgs(originator.PrivacyMute.ToUShort()));
+				OnPrivacyMuteChanged.Raise(this, new SPlusUShortEventArgs(originator.PrivacyMute.ToUShort()));
 			}
 		}
 
@@ -234,7 +232,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				else
 					m_Source.Status = eConferenceSourceStatus.Connected;
 
-				OnHoldChanged.Raise(this, new UShortEventArgs(value));
+				OnHoldChanged.Raise(this, new SPlusUShortEventArgs(value));
 			}
 		}
 		
@@ -283,7 +281,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		[PublicAPI("S+")]
 		public void DtmfSent(string data)
 		{
-			OnDtmfSent.Raise(this, new StringEventArgs(data));
+			OnDtmfSent.Raise(this, new SPlusStringEventArgs(data));
 		}
 
 		#endregion
