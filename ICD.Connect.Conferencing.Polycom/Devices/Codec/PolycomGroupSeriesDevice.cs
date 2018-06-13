@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -35,13 +36,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
+		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
+		private readonly PolycomComponentFactory m_Components;
 		private readonly ISerialBuffer m_SerialBuffer;
-
-		private bool m_Initialized;
-
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
-		private readonly PolycomComponentFactory m_Components;
+		private bool m_Initialized;
 
 		#region Properties
 
@@ -82,6 +82,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
+			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
 			m_Components = new PolycomComponentFactory(this);
 
 			m_SerialBuffer = new MultiDelimiterSerialBuffer('\r', '\n');
@@ -223,6 +224,25 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				SendCommand(command);
 		}
 
+		/// <summary>
+		/// Registers the callback for handling feedback starting with the given word
+		/// </summary>
+		/// <param name="word"></param>
+		/// <param name="callback"></param>
+		public void RegisterFeedback(string word, Action<string> callback)
+		{
+			if (word == null)
+				throw new ArgumentNullException("word");
+
+			if (callback == null)
+				throw new ArgumentNullException("callback");
+
+			if (!m_FeedbackHandlers.ContainsKey(word))
+				m_FeedbackHandlers.Add(word, new IcdHashSet<Action<string>>());
+
+			m_FeedbackHandlers[word].Add(callback);
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -315,17 +335,65 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
-			if (args.Data.StartsWith("error:"))
-				Log(eSeverity.Error, args.Data);
-			
-			if (args.Data.StartsWith("Password:"))
+			string data = args.Data;
+
+			if (data.StartsWith("error:"))
+				Log(eSeverity.Error, data);
+
+			if (data.StartsWith("Password:"))
 				SendCommand(Password);
 
 			// Intentional spacing
-			if (args.Data.StartsWith("Hi, my name is :"))
+			if (data.StartsWith("Hi, my name is :"))
 				Initialize();
 
-			IcdConsole.PrintLine(eConsoleColor.Magenta, StringUtils.ToMixedReadableHexLiteral(args.Data));
+			IcdConsole.PrintLine(eConsoleColor.Magenta, StringUtils.ToMixedReadableHexLiteral(data));
+
+			string word = GetFirstWord(data);
+			if (word == null)
+				return;
+
+			IcdHashSet<Action<string>> handlers;
+			if (!m_FeedbackHandlers.TryGetValue(word, out handlers))
+				return;
+
+			foreach (Action<string> handler in handlers.ToArray(handlers.Count))
+			{
+				try
+				{
+					handler(data);
+				}
+				catch (Exception)
+				{
+					Log(eSeverity.Error, "Failed to handle feedback {0}", StringUtils.ToRepresentation(data));
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets the first word from the given response data
+		/// 
+		/// E.g.
+		///		"autoanswer no"
+		/// returns
+		///		"autoanswer"
+		/// 
+		/// and
+		///		"notification:callstatus:outgoing:3..."
+		/// returns
+		///		"notification"
+		/// </summary>
+		/// <param name="data"></param>
+		/// <returns></returns>
+		[CanBeNull]
+		private string GetFirstWord(string data)
+		{
+			if (data == null)
+				throw new ArgumentNullException("data");
+
+			int index = data.IndexOfAny(new[] {' ', ':'});
+
+			return index < 0 ? null : data.Substring(0, index);
 		}
 
 		#endregion

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -10,6 +12,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 {
 	public sealed class AutoAnswerComponent : AbstractPolycomComponent
 	{
+		private static readonly BiDictionary<eAutoAnswer, string> s_AutoAnswerNames =
+			new BiDictionary<eAutoAnswer, string>
+			{
+				{eAutoAnswer.No, "no"},
+				{eAutoAnswer.Yes, "yes"},
+				{eAutoAnswer.DoNotDisturb, "donotdisturb"}
+			};
+
 		/// <summary>
 		/// Raised when the auto-answer mode changes.
 		/// </summary>
@@ -45,6 +55,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 		{
 			Subscribe(Codec);
 
+			Codec.RegisterFeedback("autoanswer", HandleAutoAnswerState);
+
 			if (Codec.Initialized)
 				Initialize();
 		}
@@ -66,8 +78,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 		/// <param name="mode"></param>
 		public void SetAutoAnswer(eAutoAnswer mode)
 		{
-			Codec.SendCommand("autoanswer {0}", mode.ToString().ToLower());
-			Codec.Log(eSeverity.Informational, "Setting Auto Answer {0}", mode);
+			string name = s_AutoAnswerNames.GetValue(mode);
+
+			Codec.SendCommand("autoanswer {0}", name);
+			Codec.Log(eSeverity.Informational, "Setting Auto Answer {0}", name);
 		}
 
 		/// <summary>
@@ -78,6 +92,22 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 			base.Initialize();
 
 			Codec.SendCommand("autoanswer get");
+		}
+
+		/// <summary>
+		/// Called when we get an autoanswer feedback message.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleAutoAnswerState(string data)
+		{
+			string[] split = data.Split();
+			string result = split.Skip(1).FirstOrDefault();
+			if (result == null)
+				return;
+
+			eAutoAnswer mode;
+			if (s_AutoAnswerNames.TryGetKey(result, out mode))
+				AutoAnswer = mode;
 		}
 
 		#region Console
