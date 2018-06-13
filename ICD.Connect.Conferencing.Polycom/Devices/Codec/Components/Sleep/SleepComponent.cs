@@ -42,6 +42,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		{
 			Subscribe(Codec);
 
+			Codec.RegisterFeedback("listen", HandleListen);
+
 			if (Codec.Initialized)
 				Initialize();
 		}
@@ -65,6 +67,24 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 			base.Initialize();
 
 			Codec.SendCommand("sleep register");
+		}
+
+		/// <summary>
+		/// Handles listen messages from the device.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleListen(string data)
+		{
+			switch (data)
+			{
+				case "listen going to sleep":
+					Awake = false;
+					break;
+
+				case "listen waking up":
+					Awake = true;
+					break;
+			}
 		}
 
 		#region Methods
