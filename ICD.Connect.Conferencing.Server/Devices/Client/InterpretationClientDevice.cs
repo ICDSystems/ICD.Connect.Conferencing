@@ -593,6 +593,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    base.BuildConsoleStatus(addRow);
 
 		    var sources = GetSources();
+		    addRow("Interpretation Active", m_IsInterpretationActive);
 		    addRow("Remote Sources", "Count: " + sources.Count());
 		    foreach (var src in GetSources())
 		    {
@@ -619,7 +620,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			yield return new ConsoleCommand("Disconnect", "Disconnect from the server", () => m_ConnectionStateManager.Disconnect());
 			yield return new ConsoleCommand("Register", "Register the room with the server", () => Register());
 			yield return new ConsoleCommand("Unregister", "Unregister the room with the server", () => Unregister());
-	    }
+		}
 
 	    private IEnumerable<IConsoleCommand> GetBaseConsolCommands()
 	    {
