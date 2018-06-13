@@ -58,6 +58,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		#region Methods
 
 		/// <summary>
+		/// Answers the incoming video call.
+		/// </summary>
+		public void AnswerVideo()
+		{
+			Codec.SendCommand("answer video");
+			Codec.Log(eSeverity.Informational, "Answering incoming video call");
+		}
+
+		/// <summary>
 		/// Dials the contact with the given name.
 		/// </summary>
 		/// <param name="contactName"></param>
