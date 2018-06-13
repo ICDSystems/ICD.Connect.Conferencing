@@ -74,6 +74,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		{
 			Subscribe(Codec);
 
+			Codec.RegisterFeedback("mute", HandleMute);
+
 			if (Codec.Initialized)
 				Initialize();
 		}
@@ -90,6 +92,47 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 			Codec.SendCommand("mute near get");
 			Codec.SendCommand("mute far get");
+		}
+
+		/// <summary>
+		/// Handles mute messages from the device.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleMute(string data)
+		{
+			// mute near on
+			// mute far off
+
+			string[] split = data.Split();
+			if (split.Length != 3)
+				return;
+
+			bool muted;
+
+			switch (split[2])
+			{
+				case "on":
+					muted = true;
+					break;
+
+				case "off":
+					muted = false;
+					break;
+
+				default:
+					return;
+			}
+
+			switch (split[1])
+			{
+				case "near":
+					MutedNear = muted;
+					break;
+
+				case "far":
+					MutedFar = muted;
+					break;
+			}
 		}
 
 		#region Methods
