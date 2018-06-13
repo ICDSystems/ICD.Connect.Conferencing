@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -44,6 +45,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		{
 			Subscribe(Codec);
 
+			Codec.RegisterFeedback("Control", HandleControl);
+			Codec.RegisterFeedback("vcbutton", HandleVcButton);
+
 			if (Codec.Initialized)
 				Initialize();
 		}
@@ -68,6 +72,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 
 			Codec.SendCommand("vcbutton register");
 			Codec.SendCommand("vcbutton get");
+			Codec.SendCommand("vcbutton source get");
 		}
 
 		#region Methods
@@ -92,6 +97,70 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Handles control messages from the device.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleControl(string data)
+		{
+			// Control event: vcbutton source 4
+			// Control event: vcbutton play
+			// Control event: vcbutton stop
+			// Control event: vcbutton farplay
+
+			string[] split = data.Split();
+			if (split.Length < 4)
+				return;
+
+			if (split[1] != "event:" || split[2] != "vcbutton")
+				return;
+
+			switch (split[3])
+			{
+				case "source":
+					int address;
+					if (StringUtils.TryParse(split[4], out address))
+						ContentVideoSource = address;
+					break;
+
+				case "stop":
+					ContentVideoSource = null;
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Handles vcbutton messages from the device.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleVcButton(string data)
+		{
+			// vcbutton source get 1
+			// vcbutton source get none
+			// vcbutton source get succeeded
+			// vcbutton play 7
+			// vcbutton play succeeded
+			// vcbutton play failed
+
+			string[] split = data.Split();
+			if (split.Length != 4)
+				return;
+
+			if (split[1] != "source" || split[2] != "get")
+				return;
+
+			string result = split[3];
+			if (result == "none")
+			{
+				ContentVideoSource = null;
+				return;
+			}
+
+			int address;
+			if (StringUtils.TryParse(result, out address))
+				ContentVideoSource = address;
+		}
 
 		#region Console
 
