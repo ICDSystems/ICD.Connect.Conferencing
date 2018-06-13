@@ -19,9 +19,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 	public sealed class SimplInterpretationShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
 	{
 
-		public delegate void SPlusDialerShimSetLanguageCallback(ICDPlatformString language);
-		public delegate void SPlusDialerShimSetBoothIdCallback(ushort boothId);
-
 		public delegate void SPlusDialerShimDialCallback(ICDPlatformString number);
 		public delegate void SPlusDialerShimSetAutoAnswerCallback(ushort enabled);
 		public delegate void SPlusDialerShimSetDoNotDisturbCallback(ushort enabled);

@@ -18,6 +18,7 @@ using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
 using ICD.Connect.Protocol.Network.Tcp;
 using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings.SPlusShims.EventArguments;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
@@ -655,7 +656,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			RemoveSource(args.Data);
 		}
 
-		private void AdapterOnAutoAnswerChanged(object sender, BoolEventArgs args)
+		private void AdapterOnAutoAnswerChanged(object sender, SPlusBoolEventArgs args)
 		{
 			const string key = InterpretationClientDevice.SET_CACHED_AUTO_ANSWER_STATE;
 
@@ -666,7 +667,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_RpcController.CallMethod(clientId, key, args.Data);
 		}
 
-		private void AdapterOnDoNotDisturbChanged(object sender, BoolEventArgs args)
+		private void AdapterOnDoNotDisturbChanged(object sender, SPlusBoolEventArgs args)
 		{
 			const string key = InterpretationClientDevice.SET_CACHED_DO_NOT_DISTURB_STATE;
 
@@ -677,7 +678,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_RpcController.CallMethod(clientId, key, args.Data);
 		}
 
-		private void AdapterOnPrivacyMuteChanged(object sender, BoolEventArgs args)
+		private void AdapterOnPrivacyMuteChanged(object sender, SPlusBoolEventArgs args)
 		{
 			const string key = InterpretationClientDevice.SET_CACHED_PRIVACY_MUTE_STATE;
 
@@ -688,7 +689,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_RpcController.CallMethod(clientId, key, args.Data);
 		}
 
-		private void AdapterOnBoothIdChanged(object sender, UShortEventArgs args)
+		private void AdapterOnBoothIdChanged(object sender, SPlusUShortEventArgs args)
 		{
 			m_SafeCriticalSection.Enter();
 			try
