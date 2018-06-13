@@ -40,6 +40,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				Initialize();
 		}
 
+		/// <summary>
+		/// Called to initialize the component.
+		/// </summary>
+		protected override void Initialize()
+		{
+			base.Initialize();
+
+			Codec.SendCommand("callstate register");
+			Codec.SendCommand("notify callstatus");
+			Codec.SendCommand("notify linestatus");
+
+			Codec.SendCommand("callinfo all");
+			Codec.SendCommand("callstate get");
+		}
+
 		#region Methods
 
 		/// <summary>

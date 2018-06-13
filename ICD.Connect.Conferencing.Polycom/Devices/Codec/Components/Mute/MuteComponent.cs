@@ -86,6 +86,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 			base.Initialize();
 
 			Codec.SendCommand("mute register");
+			Codec.SendCommand("notify mutestatus");
 
 			Codec.SendCommand("mute near get");
 			Codec.SendCommand("mute far get");
