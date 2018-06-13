@@ -64,12 +64,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		#region Callbacks
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSetLanguageCallback SetLanguageCallback { get; set; }
-
-		[PublicAPI("S+")]
-		public SPlusDialerShimSetBoothIdCallback SetBoothIdCallback { get; set; }
-
-		[PublicAPI("S+")]
 		public SPlusDialerShimDialCallback DialCallback { get; set; }
 
 		[PublicAPI("S+")]
