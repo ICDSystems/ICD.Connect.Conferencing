@@ -43,8 +43,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 			base.Initialize();
 
 			Codec.SendCommand("notify vidsourcechanges");
-
-			Codec.SendCommand("camera get");
 		}
 
 		#region Methods
