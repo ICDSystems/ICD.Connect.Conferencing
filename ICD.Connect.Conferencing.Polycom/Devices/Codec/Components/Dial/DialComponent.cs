@@ -164,6 +164,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
+			yield return new ConsoleCommand("AnswerVideo", "Answers the incoming video call", () => AnswerVideo());
+
 			yield return new GenericConsoleCommand<string>("DialAddressbook", "DialAddressbook <NAME>", n => DialAddressbook(n));
 
 			string protocolValues = StringUtils.ArrayFormat(EnumUtils.GetValues<eDialProtocol>());
