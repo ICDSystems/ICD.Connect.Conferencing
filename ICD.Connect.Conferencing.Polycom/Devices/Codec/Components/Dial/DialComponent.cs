@@ -27,6 +27,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				{eDialType.Gateway, "gateway"}
 			};
 
+		private readonly Dictionary<int, CallState> m_CallStates;
+		private readonly SafeCriticalSection m_CallStatesSection;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -34,7 +37,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public DialComponent(PolycomGroupSeriesDevice codec)
 			: base(codec)
 		{
+			m_CallStates = new Dictionary<int, CallState>();
+			m_CallStatesSection = new SafeCriticalSection();
+
 			Subscribe(Codec);
+
+			Codec.RegisterFeedback("cs", HandleCallState);
+			Codec.RegisterFeedback("active", HandleActiveCall);
+			Codec.RegisterFeedback("cleared", HandleClearedCall);
+			Codec.RegisterFeedback("ended", HandleEndedCall);
+			Codec.RegisterFeedback("callinfo", HandleCallInfo);
+			Codec.RegisterFeedback("notification", HandleNotification);
 
 			if (Codec.Initialized)
 				Initialize();
@@ -50,6 +63,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			Codec.SendCommand("callstate register");
 			Codec.SendCommand("notify callstatus");
 			Codec.SendCommand("notify linestatus");
+			Codec.SendCommand("listen video");
 
 			Codec.SendCommand("callinfo all");
 			Codec.SendCommand("callstate get");
@@ -149,6 +163,122 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			Codec.SendCommand("dial phone {0} {1}", protocolName, number);
 			Codec.Log(eSeverity.Informational, "Dialing phone number {0} {1}", protocolName, StringUtils.ToRepresentation(number));
+		}
+
+		#endregion
+
+		#region Feedback
+
+		/// <summary>
+		/// Called when we get a cs feedback message.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleCallState(string data)
+		{
+			// cs: call[34] chan[0] dialstr[192.168.1.103] state[ALLOCATED]
+			// cs: call[34] chan[0] dialstr[192.168.1.103] state[RINGING]
+			// cs: call[34] chan[0] dialstr[192.168.1.103] state[COMPLETE]
+
+			int callId = CallState.GetCallIdFromCallState(data);
+			UpdateCallState(callId, cs => cs.SetCallState(data));
+		}
+
+		/// <summary>
+		/// Called when we get an active feedback message.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleActiveCall(string data)
+		{
+			// active: call[34] speed [384]
+
+			int callId = CallState.GetCallIdFromActiveCall(data);
+			UpdateCallState(callId, cs => cs.SetActiveCall(data));
+		}
+
+		/// <summary>
+		/// Called when we get a cleared feedback message.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleClearedCall(string data)
+		{
+			// cleared: call[34]
+
+			int callId = CallState.GetCallIdFromClearedCall(data);
+			UpdateCallState(callId, cs => cs.SetClearedCall(data));
+		}
+
+		/// <summary>
+		/// Called when we get an ended feedback message.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleEndedCall(string data)
+		{
+			// ended: call[34]
+
+			int callId = CallState.GetCallIdFromEndedCall(data);
+			UpdateCallState(callId, cs => cs.SetEndedCall(data));
+		}
+
+		/// <summary>
+		/// Called when we get a callinfo feedback message.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleCallInfo(string data)
+		{
+			// callinfo begin
+			// callinfo:43:Polycom Group Series Demo:192.168.1.101:384:connected:notmuted:outgoing:videocall
+			// callinfo:36:192.168.1.102:256:connected:muted:outgoing:videocall
+			// callinfo end
+
+			int callId = CallState.GetCallIdFromCallInfo(data);
+			UpdateCallState(callId, cs => cs.SetCallInfo(data));
+		}
+
+		/// <summary>
+		/// Called when we get a notification feedback message.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleNotification(string data)
+		{
+			if (data.StartsWith("notification:callstatus:"))
+			{
+				// notification:callstatus:outgoing:34:Polycom Group Series Demo:192.168.1.101:connected:384:0:videocall
+				int callId = CallState.GetCallIdFromCallStatus(data);
+				UpdateCallState(callId, cs => cs.SetCallStatus(data));
+			}
+			else if (data.StartsWith("notification:callstatus:"))
+			{
+				// notification:linestatus:outgoing:32:0:0:disconnected
+				int callId = CallState.GetCallIdFromLineStatus(data);
+				UpdateCallState(callId, cs => cs.SetLineStatus(data));
+			}
+		}
+
+		/// <summary>
+		/// Performs the given update action for the call state with the given id.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="update"></param>
+		private void UpdateCallState(int id, Action<CallState> update)
+		{
+			m_CallStatesSection.Enter();
+
+			try
+			{
+				CallState callState;
+				if (!m_CallStates.TryGetValue(id, out callState))
+					callState = new CallState();
+
+				update(callState);
+
+				m_CallStates.Remove(id);
+				if (callState.Connected)
+					m_CallStates[callState.CallId] = callState;
+			}
+			finally
+			{
+				m_CallStatesSection.Leave();
+			}
 		}
 
 		#endregion

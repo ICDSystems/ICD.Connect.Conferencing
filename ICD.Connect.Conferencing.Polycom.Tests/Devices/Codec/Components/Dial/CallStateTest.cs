@@ -18,6 +18,11 @@ namespace ICD.Connect.Conferencing.Polycom.Tests.Devices.Codec.Components.Dial
 			Assert.Inconclusive();
 		}
 
+		public void SetCallStatus(string callStatus)
+		{
+			Assert.Inconclusive();
+		}
+
 		public void SetLineStatus(string lineStatus)
 		{
 			Assert.Inconclusive();
@@ -36,10 +41,34 @@ namespace ICD.Connect.Conferencing.Polycom.Tests.Devices.Codec.Components.Dial
 			Assert.AreEqual(expected, CallState.GetCallIdFromCallState(callState));
 		}
 
+		[TestCase("notification:callstatus:outgoing:34:Polycom Group Series Demo:192.168.1.101:connected:384:0:videocall", 34)]
+		public static void GetCallIdFromCallStatusTest(string callStatus, int expected)
+		{
+			Assert.AreEqual(expected, CallState.GetCallIdFromCallStatus(callStatus));
+		}
+
 		[TestCase("notification:linestatus:outgoing:32:0:0:disconnected", 32)]
 		public static void GetCallIdFromLineStatusTest(string lineStatus, int expected)
 		{
 			Assert.AreEqual(expected, CallState.GetCallIdFromLineStatus(lineStatus));
+		}
+
+		[TestCase("active: call[34] speed [384]", 34)]
+		public static void GetCallIdFromActiveCallTest(string activeCall, int expected)
+		{
+			Assert.AreEqual(expected, CallState.GetCallIdFromActiveCall(activeCall));
+		}
+
+		[TestCase("cleared: call[34]", 34)]
+		public static void GetCallIdFromClearedCallTest(string clearedCall, int expected)
+		{
+			Assert.AreEqual(expected, CallState.GetCallIdFromClearedCall(clearedCall));
+		}
+
+		[TestCase("ended: call[34]", 34)]
+		public static void GetCallIdFromEndedCallTest(string endedCall, int expected)
+		{
+			Assert.AreEqual(expected, CallState.GetCallIdFromEndedCall(endedCall));
 		}
 
 		#endregion
