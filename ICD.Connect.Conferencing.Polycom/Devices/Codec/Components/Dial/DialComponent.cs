@@ -98,6 +98,34 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		}
 
 		/// <summary>
+		/// Disconnects the given video call.
+		/// </summary>
+		/// <param name="callId"></param>
+		public void HangupVideo(int callId)
+		{
+			Codec.SendCommand("hangup video {0}", callId);
+			Codec.Log(eSeverity.Informational, "Disconnecting video call {0}", callId);
+		}
+
+		/// <summary>
+		/// Disconnects all active calls.
+		/// </summary>
+		public void HangupAll()
+		{
+			Codec.SendCommand("hangup all");
+			Codec.Log(eSeverity.Informational, "Disconnecting all active calls");
+		}
+
+		/// <summary>
+		/// Disconnects all active video calls.
+		/// </summary>
+		public void HangupAllVideo()
+		{
+			Codec.SendCommand("hangup video");
+			Codec.Log(eSeverity.Informational, "Disconnecting all active video calls");
+		}
+
+		/// <summary>
 		/// Dials the contact with the given name.
 		/// </summary>
 		/// <param name="contactName"></param>
@@ -314,6 +342,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				yield return command;
 
 			yield return new ConsoleCommand("AnswerVideo", "Answers the incoming video call", () => AnswerVideo());
+			yield return new GenericConsoleCommand<int>("HangupVideo", "HangupVideo <CALL>", c => HangupVideo(c));
+			yield return new ConsoleCommand("HangupAll", "Disconnects all active calls", () => HangupAll());
+			yield return new ConsoleCommand("HangupAllVideo", "Disconnects all active video calls", () => HangupAllVideo());
 
 			yield return new GenericConsoleCommand<string>("DialAddressbook", "DialAddressbook <NAME>", n => DialAddressbook(n));
 
