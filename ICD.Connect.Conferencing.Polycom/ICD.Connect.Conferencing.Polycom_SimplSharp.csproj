@@ -80,6 +80,7 @@
     <Compile Include="Devices\Codec\Components\Dial\eDialType.cs" />
     <Compile Include="Devices\Codec\Components\Layout\PipPositionEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Layout\LayoutComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Layout\SelfViewEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Mute\MuteComponent.cs" />
     <Compile Include="Devices\Codec\Components\PolycomComponentFactory.cs" />
     <Compile Include="Devices\Codec\Components\Sleep\SleepComponent.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -13,6 +14,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 	{
 		// You cannot specify a monitor in release 4.2. This parameter is required, but ignored.
 		private const string MONITOR = "monitor1";
+
+		private const string SELFVIEW_REGEX = @"systemsetting selfview (?'selfview'\S+)";
 
 		private static readonly BiDictionary<ePipPosition, string> s_SerialMap =
 			new BiDictionary<ePipPosition, string>
@@ -28,12 +31,28 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			{ePipPosition.FullScreen, "full_screen"}
 		};
 
+		private static readonly BiDictionary<eSelfView, string> s_SelfViewMap =
+			new BiDictionary<eSelfView, string>
+			{
+				{eSelfView.On, "on"},
+				{eSelfView.Off, "off"},
+				{eSelfView.Auto, "auto"},
+			};
+
 		/// <summary>
 		/// Raised when the PIP position changes.
 		/// </summary>
-		public event EventHandler<PipPositionEventArgs> OnPipPositionChanged; 
+		public event EventHandler<PipPositionEventArgs> OnPipPositionChanged;
+
+		/// <summary>
+		/// Raised when the self view mode changes.
+		/// </summary>
+		public event EventHandler<SelfViewEventArgs> OnSelfViewChanged; 
 
 		private ePipPosition m_PipPosition;
+		private eSelfView m_SelfView;
+
+		#region Properties
 
 		/// <summary>
 		/// Gets the PIP position.
@@ -58,6 +77,30 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 		}
 
 		/// <summary>
+		/// Gets the self view mode.
+		/// </summary>
+		public eSelfView SelfView
+		{
+			get
+			{
+				return m_SelfView;
+			}
+			private set
+			{
+				if (value == m_SelfView)
+					return;
+
+				m_SelfView = value;
+
+				Codec.Log(eSeverity.Informational, "SelfView set to {0}", m_SelfView);
+
+				OnSelfViewChanged.Raise(this, new SelfViewEventArgs(m_SelfView));
+			}
+		}
+
+		#endregion
+
+		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
@@ -65,6 +108,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			: base(codec)
 		{
 			Subscribe(Codec);
+
+			codec.RegisterFeedback("systemsetting", HandleSystemSetting);
 
 			if (Codec.Initialized)
 				Initialize();
@@ -89,7 +134,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			base.Initialize();
 
 			Codec.SendCommand("configlayout {0} get", MONITOR);
+			Codec.SendCommand("systemsetting get selfview", MONITOR);
 		}
+
+		#region Methods
 
 		/// <summary>
 		/// Sets the Self View location.
@@ -103,6 +151,37 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			Codec.Log(eSeverity.Informational, "Setting PIP position {0}", pip);
 		}
 
+		/// <summary>
+		/// Sets the self view mode.
+		/// </summary>
+		/// <param name="selfView"></param>
+		public void SetSelfView(eSelfView selfView)
+		{
+			string name = s_SelfViewMap.GetValue(selfView);
+
+			Codec.SendCommand("systemsetting selfview {0}", name);
+			Codec.Log(eSeverity.Informational, "Setting SelfView {0}", name);
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Handle systemsetting events.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleSystemSetting(string data)
+		{
+			Match match = Regex.Match(data, SELFVIEW_REGEX);
+			if (!match.Success)
+				return;
+
+			string name = match.Groups["selfview"].Value;
+
+			eSelfView selfView;
+			if (s_SelfViewMap.TryGetKey(name, out selfView))
+				SelfView = selfView;
+		}
+
 		#region Console
 
 		/// <summary>
@@ -114,8 +193,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			string pipHelp = string.Format("<{0}>", StringUtils.ArrayFormat(EnumUtils.GetValues<ePipPosition>()));
+			string pipHelp = string.Format("SetPipPosition <{0}>", StringUtils.ArrayFormat(EnumUtils.GetValues<ePipPosition>()));
 			yield return new GenericConsoleCommand<ePipPosition>("SetPipPosition", pipHelp, p => SetPipPosition(p));
+
+			string selfViewHelp = string.Format("SetSelfView <{0}>", StringUtils.ArrayFormat(EnumUtils.GetValues<eSelfView>()));
+			yield return new GenericConsoleCommand<eSelfView>("SetSelfView", selfViewHelp, s => SetSelfView(s));
 		}
 
 		/// <summary>

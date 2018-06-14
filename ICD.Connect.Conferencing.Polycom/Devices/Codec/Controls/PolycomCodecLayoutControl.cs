@@ -1,4 +1,5 @@
-﻿using ICD.Connect.Conferencing.Controls.Layout;
+﻿using System;
+using ICD.Connect.Conferencing.Controls.Layout;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
@@ -39,7 +40,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="enabled"></param>
 		public override void SetSelfViewEnabled(bool enabled)
 		{
-			throw new System.NotImplementedException();
+			m_LayoutComponent.SetSelfView(enabled ? eSelfView.On : eSelfView.Off);
 		}
 
 		/// <summary>
@@ -48,7 +49,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="enabled"></param>
 		public override void SetSelfViewFullScreenEnabled(bool enabled)
 		{
-			throw new System.NotImplementedException();
 		}
 
 		/// <summary>
@@ -57,19 +57,41 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="mode"></param>
 		public override void SetLayoutMode(eLayoutMode mode)
 		{
-			throw new System.NotImplementedException();
 		}
 
 		#endregion
 
 		#region Layout Callbacks
 
+		/// <summary>
+		/// Subscribe to the layout component events.
+		/// </summary>
+		/// <param name="layoutComponent"></param>
 		private void Subscribe(LayoutComponent layoutComponent)
 		{
+			layoutComponent.OnSelfViewChanged += LayoutComponentOnSelfViewChanged;
 		}
 
+		/// <summary>
+		/// Unsubscribe from the layout component events.
+		/// </summary>
+		/// <param name="layoutComponent"></param>
 		private void Unsubscribe(LayoutComponent layoutComponent)
 		{
+			layoutComponent.OnSelfViewChanged += LayoutComponentOnSelfViewChanged;
+		}
+
+		/// <summary>
+		/// Called when the selfview mode changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="selfViewEventArgs"></param>
+		private void LayoutComponentOnSelfViewChanged(object sender, SelfViewEventArgs selfViewEventArgs)
+		{
+			eSelfView selfView = m_LayoutComponent.SelfView;
+
+			// Assume "auto" is "enabled"
+			SelfViewEnabled = selfView != eSelfView.Off;
 		}
 
 		#endregion
