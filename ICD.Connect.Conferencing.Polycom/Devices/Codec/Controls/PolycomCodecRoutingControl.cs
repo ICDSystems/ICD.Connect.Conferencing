@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Utils.Services;
 using ICD.Connect.Conferencing.Controls.Routing;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
+using ICD.Connect.Routing.RoutingGraphs;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
@@ -26,6 +30,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public override event EventHandler<TransmissionStateEventArgs> OnActiveTransmissionStateChanged;
 
 		private readonly CameraComponent m_CameraComponent;
+		private readonly ContentComponent m_ContentComponent;
 
 		/// <summary>
 		/// Constructor.
@@ -36,8 +41,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			: base(parent, id)
 		{
 			m_CameraComponent = parent.Components.GetComponent<CameraComponent>();
+			m_ContentComponent = parent.Components.GetComponent<ContentComponent>();
 
 			Subscribe(m_CameraComponent);
+			Subscribe(m_ContentComponent);
 		}
 
 		/// <summary>
@@ -53,6 +60,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_CameraComponent);
+			Unsubscribe(m_ContentComponent);
 		}
 
 		#region Methods
@@ -63,7 +71,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
-			throw new System.NotImplementedException();
+			return
+				ServiceProvider.GetService<IRoutingGraph>()
+				               .Connections
+				               .GetChildren()
+				               .Where(c => c.Destination.Device == Parent.Id && c.Destination.Control == Id)
+				               .Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
 		}
 
 		/// <summary>
@@ -102,7 +115,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetOutputs()
 		{
-			throw new System.NotImplementedException();
+			return
+				ServiceProvider.GetService<IRoutingGraph>()
+				               .Connections
+				               .GetChildren()
+				               .Where(c => c.Source.Device == Parent.Id && c.Source.Control == Id)
+				               .Select(c => new ConnectorInfo(c.Source.Address, c.ConnectionType));
 		}
 
 		/// <summary>
@@ -128,6 +146,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="cameraComponent"></param>
 		private void Subscribe(CameraComponent cameraComponent)
 		{
+			cameraComponent.OnActiveNearCameraChanged += CameraComponentOnActiveNearCameraChanged;
 		}
 
 		/// <summary>
@@ -135,6 +154,47 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		/// <param name="cameraComponent"></param>
 		private void Unsubscribe(CameraComponent cameraComponent)
+		{
+			cameraComponent.OnActiveNearCameraChanged -= CameraComponentOnActiveNearCameraChanged;
+		}
+
+		/// <summary>
+		/// Called when the active camera changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void CameraComponentOnActiveNearCameraChanged(object sender, ActiveCameraEventArgs eventArgs)
+		{
+		}
+
+		#endregion
+
+		#region ContentComponent Callbacks
+
+		/// <summary>
+		/// Subscribe to the content component events.
+		/// </summary>
+		/// <param name="contentComponent"></param>
+		private void Subscribe(ContentComponent contentComponent)
+		{
+			contentComponent.OnContentVideoSourceChanged += ContentComponentOnContentVideoSourceChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the content component events.
+		/// </summary>
+		/// <param name="contentComponent"></param>
+		private void Unsubscribe(ContentComponent contentComponent)
+		{
+			contentComponent.OnContentVideoSourceChanged -= ContentComponentOnContentVideoSourceChanged;
+		}
+
+		/// <summary>
+		/// Called when the presentation video source changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void ContentComponentOnContentVideoSourceChanged(object sender, ContentVideoSourceEventArgs eventArgs)
 		{
 		}
 

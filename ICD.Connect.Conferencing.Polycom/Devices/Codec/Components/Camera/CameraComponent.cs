@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 
@@ -8,6 +11,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 {
 	public sealed class CameraComponent : AbstractPolycomComponent
 	{
+		private const string NOTIFICATION_REGEX =
+			@"notification:vidsourcechange:(?'near'[^:]+):(?'camera'[^:]+):(?'name'[^:]+):(?'mode'[^:]+)";
+
 		private const int CAMERA_EXTENT = 50000;
 
 		private static readonly BiDictionary<eCameraAction, string> s_ActionNames =
@@ -21,6 +27,32 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 				{eCameraAction.ZoomOut, "zoom-"},
 				{eCameraAction.Stop, "stop"}
 			};
+
+		/// <summary>
+		/// Raised when the active near camera changes.
+		/// </summary>
+		public event EventHandler<ActiveCameraEventArgs> OnActiveNearCameraChanged;
+
+		private int? m_ActiveNearCamera;
+
+		/// <summary>
+		/// Gets the active near camera.
+		/// </summary>
+		public int? ActiveNearCamera
+		{
+			get { return m_ActiveNearCamera; }
+			private set
+			{
+				if (value == m_ActiveNearCamera)
+					return;
+
+				m_ActiveNearCamera = value;
+
+				Codec.Log(eSeverity.Informational, "ActiveNearCamera set to {0}", m_ActiveNearCamera);
+
+				OnActiveNearCameraChanged.Raise(this, new ActiveCameraEventArgs(m_ActiveNearCamera));
+			}
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -184,22 +216,30 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 
 		/// <summary>
 		/// Handles notification messages from the device.
+		/// 
+		/// notification:vidsourcechange:[near or far]:[camera index]:[cameraname]:[people or content]
+		/// notification:vidsourcechange:near:6:ppcip:content
+		/// notification:vidsourcechange:near:none:none:content
 		/// </summary>
 		/// <param name="data"></param>
 		private void HandleNotification(string data)
 		{
-			string[] split = data.Split(':');
-			
-			// notification:vidsourcechange:<near or far>:<camera index>:<cameraname>:<people or content>
-			// notification:vidsourcechange:near:6:ppcip:content
-			// notification:vidsourcechange:near:none:none:content
-			if (split.Length != 6 || split[1] != "vidsourcechange")
+			Match match = Regex.Match(data, NOTIFICATION_REGEX);
+			if (!match.Success)
 				return;
 
-			string location = split[2];
-			string index = split[3];
-			string name = split[4];
-			string type = split[5];
+			bool near = match.Groups["near"].Value == "near";
+			string camera = match.Groups["camera"].Value;
+			//string name = match.Groups["name"].Value;
+			//string mode = match.Groups["near"].Value;
+
+			if (!near)
+				return;
+
+			if (camera == "none")
+				ActiveNearCamera = null;
+			else
+				ActiveNearCamera = int.Parse(camera);
 		}
 
 		#region Console
