@@ -191,8 +191,6 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			}
 		}
 
-		public DateTime StartOrDialTime { get { return Start ?? DialTime; } }
-
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
