@@ -161,8 +161,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 		public DateTime DialTime { get; private set; }
 
-		public DateTime StartOrDialTime { get { return Start ?? DialTime; } }
-
 		/// <summary>
 		/// Call Id
 		/// </summary>
