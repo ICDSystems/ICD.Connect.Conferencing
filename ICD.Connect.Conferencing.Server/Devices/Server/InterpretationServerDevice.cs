@@ -166,7 +166,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				m_RoomToBooth[roomId] = boothId;
 
-				TransmitInterpretationState(roomId, boothId);
+				TransmitInterpretationState(boothId);
 
 				OnInterpretationStateChanged.Raise(this, new InterpretationStateEventArgs(roomId, boothId, true));
 			}
@@ -391,7 +391,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		private void TransmitInterpretationState(int roomId, ushort boothId)
+		private void TransmitInterpretationState(ushort boothId)
 		{
 			m_SafeCriticalSection.Enter();
 			try
@@ -402,9 +402,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				m_RpcController.CallMethod(clientId, InterpretationClientDevice.SET_INTERPRETATION_STATE_RPC, true);
 
-				foreach (IConferenceSource source in m_AdapterToBooth.GetKey(boothId).GetSources())
+				var adapter = m_AdapterToBooth.GetKey(boothId);
+
+				foreach (IConferenceSource source in adapter.GetSources())
 				{
 					ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
+					sourceState.Language = adapter.Language;
 					Guid id = m_Sources.GetKey(source);
 					m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
 				}
@@ -428,7 +431,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				// this room was previously connected, retransmit the requisite info instead of adding a new room.
 				if (m_ClientToRoom.ContainsKey(clientId))
 				{
-					TransmitInterpretationState(roomId, GetBoothId(roomId));
+					TransmitInterpretationState(GetBoothId(roomId));
 					return;
 				}
 
