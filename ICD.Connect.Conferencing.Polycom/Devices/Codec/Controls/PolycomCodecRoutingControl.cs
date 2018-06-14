@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Connect.Conferencing.Controls.Routing;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
@@ -24,6 +25,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		public override event EventHandler<TransmissionStateEventArgs> OnActiveTransmissionStateChanged;
 
+		private readonly CameraComponent m_CameraComponent;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -32,6 +35,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public PolycomCodecRoutingControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
+			m_CameraComponent = parent.Components.GetComponent<CameraComponent>();
+
+			Subscribe(m_CameraComponent);
 		}
 
 		/// <summary>
@@ -45,6 +51,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			OnActiveTransmissionStateChanged = null;
 
 			base.DisposeFinal(disposing);
+
+			Unsubscribe(m_CameraComponent);
 		}
 
 		#region Methods
@@ -85,7 +93,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="address"></param>
 		public override void SetCameraInput(int address)
 		{
-			throw new System.NotImplementedException();
+			m_CameraComponent.SetNearCameraAsVideoSource(address);
 		}
 
 		/// <summary>
@@ -108,6 +116,26 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public override bool GetActiveTransmissionState(int output, eConnectionType type)
 		{
 			throw new System.NotImplementedException();
+		}
+
+		#endregion
+
+		#region CameraComponent Callbacks
+
+		/// <summary>
+		/// Subscribe to the camera component events.
+		/// </summary>
+		/// <param name="cameraComponent"></param>
+		private void Subscribe(CameraComponent cameraComponent)
+		{
+		}
+
+		/// <summary>
+		/// Unsubscribe from the camera component events.
+		/// </summary>
+		/// <param name="cameraComponent"></param>
+		private void Unsubscribe(CameraComponent cameraComponent)
+		{
 		}
 
 		#endregion
