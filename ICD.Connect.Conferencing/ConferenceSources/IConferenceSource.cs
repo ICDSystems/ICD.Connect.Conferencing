@@ -118,6 +118,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		void Answer();
 
 		/// <summary>
+		/// Rejects the incoming source.
+		/// </summary>
+		void Reject();
+
+		/// <summary>
 		/// Holds the source.
 		/// </summary>
 		void Hold();
