@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
@@ -22,14 +26,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
+		private readonly BiDictionary<int, ThinConferenceSource> m_Sources;
+		private readonly SafeCriticalSection m_SourcesSection;
+
 		private readonly DialComponent m_DialComponent;
 		private readonly AutoAnswerComponent m_AutoAnswerComponent;
 		private readonly MuteComponent m_MuteComponent;
+
+		#region Properties
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
+
+		#endregion
 
 		/// <summary>
 		/// Constructor.
@@ -39,6 +50,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public PolycomCodecDialingControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
+			m_Sources = new BiDictionary<int, ThinConferenceSource>();
+			m_SourcesSection = new SafeCriticalSection();
+
 			m_DialComponent = parent.Components.GetComponent<DialComponent>();
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
 			m_MuteComponent = parent.Components.GetComponent<MuteComponent>();
@@ -62,6 +76,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			Unsubscribe(m_DialComponent);
 			Unsubscribe(m_AutoAnswerComponent);
 			Unsubscribe(m_MuteComponent);
+
+			RemoveSources();
 		}
 
 		#region Methods
@@ -72,7 +88,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IEnumerable<IConferenceSource> GetSources()
 		{
-			throw new NotImplementedException();
+			return m_SourcesSection.Execute(() => m_Sources.Values.ToArray(m_Sources.Count));
 		}
 
 		/// <summary>
@@ -143,7 +159,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		#endregion
 
-		#region Dial Callbacks
+		#region Dial Component Callbacks
 
 		/// <summary>
 		/// Subscribe to the component events.
@@ -151,6 +167,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="dialComponent"></param>
 		private void Subscribe(DialComponent dialComponent)
 		{
+			dialComponent.OnCallStatesChanged += DialComponentOnCallStatesChanged;
 		}
 
 		/// <summary>
@@ -159,11 +176,257 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="dialComponent"></param>
 		private void Unsubscribe(DialComponent dialComponent)
 		{
+			dialComponent.OnCallStatesChanged -= DialComponentOnCallStatesChanged;
+		}
+
+		/// <summary>
+		/// Called when a call state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void DialComponentOnCallStatesChanged(object sender, EventArgs eventArgs)
+		{
+			Dictionary<int, CallStatus> statuses = m_DialComponent.GetCallStatuses().ToDictionary(s => s.CallId);
+
+			m_SourcesSection.Enter();
+
+			try
+			{
+				// Clear out sources that are no longer online
+				IcdHashSet<int> remove =
+					m_Sources.Where(kvp => !statuses.ContainsKey(kvp.Key))
+					         .Select(kvp => kvp.Key)
+					         .ToIcdHashSet();
+				RemoveSources(remove);
+
+				// Update new/existing sources
+				foreach (KeyValuePair<int, CallStatus> kvp in statuses)
+				{
+					if (m_Sources.ContainsKey(kvp.Key))
+						UpdateSource(kvp.Value);
+					else
+						CreateSource(kvp.Value);
+				}
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
+		}
+
+		/// <summary>
+		/// Removes all of the current sources.
+		/// </summary>
+		private void RemoveSources()
+		{
+			m_SourcesSection.Enter();
+
+			try
+			{
+				RemoveSources(m_Sources.Keys.ToArray(m_Sources.Count));
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
+		}
+
+		/// <summary>
+		/// Removes all of the sources with the given ids.
+		/// </summary>
+		private void RemoveSources(IEnumerable<int> ids)
+		{
+			if (ids == null)
+				throw new ArgumentNullException("ids");
+
+			foreach (int id in ids)
+				RemoveSource(id);
+		}
+
+		/// <summary>
+		/// Removes the source with the given id.
+		/// </summary>
+		/// <param name="id"></param>
+		private void RemoveSource(int id)
+		{
+			ThinConferenceSource source;
+
+			m_SourcesSection.Enter();
+
+			try
+			{
+				if (!m_Sources.ContainsKey(id))
+					return;
+
+				source = m_Sources.GetValue(id);
+				source.Status = eConferenceSourceStatus.Disconnected;
+
+				SourceUnsubscribe(source);
+				Unsubscribe(source);
+
+				m_Sources.RemoveKey(id);
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
+
+			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(source));
+		}
+
+		/// <summary>
+		/// Creates a source for the given call status.
+		/// </summary>
+		/// <param name="callStatus"></param>
+		private void CreateSource(CallStatus callStatus)
+		{
+			if (callStatus == null)
+				throw new ArgumentNullException("callStatus");
+
+			ThinConferenceSource source;
+
+			m_SourcesSection.Enter();
+
+			try
+			{
+				if (m_Sources.ContainsKey(callStatus.CallId))
+					return;
+
+				source = new ThinConferenceSource();
+				m_Sources.Add(callStatus.CallId, source);
+
+				UpdateSource(callStatus);
+
+				SourceSubscribe(source);
+				Subscribe(source);
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
+
+			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
+		}
+
+		/// <summary>
+		/// Updates the source matching the given call status.
+		/// </summary>
+		/// <param name="callStatus"></param>
+		private void UpdateSource(CallStatus callStatus)
+		{
+			if (callStatus == null)
+				throw new ArgumentNullException("callStatus");
+
+			ThinConferenceSource source = m_SourcesSection.Execute(() => m_Sources.GetDefault(callStatus.CallId, null));
+			if (source == null)
+				return;
+
+			source.Name = callStatus.FarSiteName;
+			source.Number = callStatus.FarSiteNumber;
+			source.Status = GetStatus(callStatus.State);
+			source.Direction = callStatus.Outgoing ? eConferenceSourceDirection.Outgoing : eConferenceSourceDirection.Incoming;
+			//source.AnswerState = callStatus.
+			//source.Start =
+			//source.End =
+			//source.DialTime =
+		}
+
+		/// <summary>
+		/// Gets the status value for the given state.
+		/// </summary>
+		/// <param name="state"></param>
+		/// <returns></returns>
+		private static eConferenceSourceStatus GetStatus(eCallState state)
+		{
+			switch (state)
+			{
+				case eCallState.Unknown:
+					return eConferenceSourceStatus.Undefined;
+				case eCallState.Allocated:
+					return eConferenceSourceStatus.Connecting;
+				case eCallState.Ringing:
+					return eConferenceSourceStatus.Ringing;
+				case eCallState.Connected:
+					return eConferenceSourceStatus.Connecting;
+				case eCallState.Complete:
+					return eConferenceSourceStatus.Connecting;
+				default:
+					throw new ArgumentOutOfRangeException("state");
+			}
 		}
 
 		#endregion
 
-		#region AutoAnswer Callbacks
+		#region Source Callbacks
+
+		/// <summary>
+		/// Subscribe to the source events.
+		/// </summary>
+		/// <param name="source"></param>
+		private void Subscribe(ThinConferenceSource source)
+		{
+			source.AnswerCallback = AnswerCallback;
+			source.RejectCallback = RejectCallback;
+			source.HoldCallback = HoldCallback;
+			source.ResumeCallback = ResumeCallback;
+			source.SendDtmfCallback = SendDtmfCallback;
+			source.HangupCallback = HangupCallback;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the source events.
+		/// </summary>
+		/// <param name="source"></param>
+		private void Unsubscribe(ThinConferenceSource source)
+		{
+			source.AnswerCallback = null;
+			source.RejectCallback = null;
+			source.HoldCallback = null;
+			source.ResumeCallback = null;
+			source.SendDtmfCallback = null;
+			source.HangupCallback = null;
+		}
+
+		private void HangupCallback(ThinConferenceSource sender)
+		{
+			int id = GetIdForSource(sender);
+
+			m_DialComponent.HangupVideo(id);
+		}
+
+		private void SendDtmfCallback(ThinConferenceSource sender, string data)
+		{
+			data.ForEach(c => m_DialComponent.Gendial(c));
+		}
+
+		private void ResumeCallback(ThinConferenceSource sender)
+		{
+			throw new NotImplementedException();
+		}
+
+		private void HoldCallback(ThinConferenceSource sender)
+		{
+			throw new NotImplementedException();
+		}
+
+		private void RejectCallback(ThinConferenceSource sender)
+		{
+			HangupCallback(sender);
+		}
+
+		private void AnswerCallback(ThinConferenceSource sender)
+		{
+			m_DialComponent.AnswerVideo();
+		}
+
+		private int GetIdForSource(ThinConferenceSource source)
+		{
+			return m_SourcesSection.Execute(() => m_Sources.GetKey(source));
+		}
+
+		#endregion
+
+		#region AutoAnswer Component Callbacks
 
 		/// <summary>
 		/// Subscribe to the component events.
@@ -196,7 +459,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		#endregion
 
-		#region Mute Callbacks
+		#region Mute Component Callbacks
 
 		/// <summary>
 		/// Subscribe to the component events.
