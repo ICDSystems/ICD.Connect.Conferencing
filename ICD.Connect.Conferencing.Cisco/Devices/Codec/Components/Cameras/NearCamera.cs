@@ -10,6 +10,34 @@ using ICD.Connect.Cameras;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 {
+	public enum eCameraPan
+	{
+		[UsedImplicitly] Left,
+		[UsedImplicitly] Right,
+		[UsedImplicitly] Stop
+	}
+
+	public enum eCameraTilt
+	{
+		[UsedImplicitly] Down,
+		[UsedImplicitly] Up,
+		[UsedImplicitly] Stop
+	}
+
+	public enum eCameraZoom
+	{
+		[UsedImplicitly] In,
+		[UsedImplicitly] Out,
+		[UsedImplicitly] Stop
+	}
+
+	public enum eCameraFocus
+	{
+		[UsedImplicitly] Far,
+		[UsedImplicitly] Near,
+		[UsedImplicitly] Stop
+	}
+
 	/// <summary>
 	/// NearCamera provides functionality for controlling a local camera.
 	/// </summary>
@@ -301,46 +329,4 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 		#endregion
 	}
-// Ignore missing comment warning.
-#pragma warning disable 1591
-	public enum eCameraPan
-	{
-		[UsedImplicitly]
-		Left,
-		[UsedImplicitly]
-		Right,
-		[UsedImplicitly]
-		Stop
-	}
-
-	public enum eCameraTilt
-	{
-		[UsedImplicitly]
-		Down,
-		[UsedImplicitly]
-		Up,
-		[UsedImplicitly]
-		Stop
-	}
-
-	public enum eCameraZoom
-	{
-		[UsedImplicitly]
-		In,
-		[UsedImplicitly]
-		Out,
-		[UsedImplicitly]
-		Stop
-	}
-
-	public enum eCameraFocus
-	{
-		[UsedImplicitly]
-		Far,
-		[UsedImplicitly]
-		Near,
-		[UsedImplicitly]
-		Stop
-	}
-#pragma warning restore 1591
 }
