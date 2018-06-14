@@ -1,5 +1,4 @@
-﻿using System;
-using ICD.Connect.Conferencing.Controls.Layout;
+﻿using ICD.Connect.Conferencing.Controls.Layout;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls

@@ -101,7 +101,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 		/// Subscribes to the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected virtual void Subscribe(PolycomGroupSeriesDevice codec)
+		protected void Subscribe(PolycomGroupSeriesDevice codec)
 		{
 			if (codec == null)
 				return;
@@ -114,7 +114,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 		/// Unsubscribes from the codec events.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected virtual void Unsubscribe(PolycomGroupSeriesDevice codec)
+		protected void Unsubscribe(PolycomGroupSeriesDevice codec)
 		{
 			if (codec == null)
 				return;

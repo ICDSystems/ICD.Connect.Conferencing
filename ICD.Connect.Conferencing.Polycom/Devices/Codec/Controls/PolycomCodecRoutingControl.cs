@@ -86,7 +86,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
-			throw new System.NotImplementedException();
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -97,7 +97,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <returns></returns>
 		public override bool GetSignalDetectedState(int input, eConnectionType type)
 		{
-			throw new System.NotImplementedException();
+			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -133,7 +133,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <returns></returns>
 		public override bool GetActiveTransmissionState(int output, eConnectionType type)
 		{
-			throw new System.NotImplementedException();
+			throw new NotImplementedException();
 		}
 
 		#endregion
