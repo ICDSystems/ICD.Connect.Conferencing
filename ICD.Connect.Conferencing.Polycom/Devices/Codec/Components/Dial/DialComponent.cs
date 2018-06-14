@@ -33,7 +33,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				{eDialType.Gateway, "gateway"}
 			};
 
-		private readonly Dictionary<int, CallState> m_CallStates;
+		private readonly Dictionary<int, CallStatus> m_CallStates;
 		private readonly SafeCriticalSection m_CallStatesSection;
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public DialComponent(PolycomGroupSeriesDevice codec)
 			: base(codec)
 		{
-			m_CallStates = new Dictionary<int, CallState>();
+			m_CallStates = new Dictionary<int, CallStatus>();
 			m_CallStatesSection = new SafeCriticalSection();
 
 			Subscribe(Codec);
@@ -196,7 +196,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			// cs: call[34] chan[0] dialstr[192.168.1.103] state[RINGING]
 			// cs: call[34] chan[0] dialstr[192.168.1.103] state[COMPLETE]
 
-			int callId = CallState.GetCallIdFromCallState(data);
+			int callId = CallStatus.GetCallIdFromCallState(data);
 			UpdateCallState(callId, cs => cs.SetCallState(data));
 		}
 
@@ -208,7 +208,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		{
 			// active: call[34] speed [384]
 
-			int callId = CallState.GetCallIdFromActiveCall(data);
+			int callId = CallStatus.GetCallIdFromActiveCall(data);
 			UpdateCallState(callId, cs => cs.SetActiveCall(data));
 		}
 
@@ -220,7 +220,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		{
 			// cleared: call[34]
 
-			int callId = CallState.GetCallIdFromClearedCall(data);
+			int callId = CallStatus.GetCallIdFromClearedCall(data);
 			UpdateCallState(callId, cs => cs.SetClearedCall(data));
 		}
 
@@ -232,7 +232,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		{
 			// ended: call[34]
 
-			int callId = CallState.GetCallIdFromEndedCall(data);
+			int callId = CallStatus.GetCallIdFromEndedCall(data);
 			UpdateCallState(callId, cs => cs.SetEndedCall(data));
 		}
 
@@ -247,7 +247,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			// callinfo:36:192.168.1.102:256:connected:muted:outgoing:videocall
 			// callinfo end
 
-			int callId = CallState.GetCallIdFromCallInfo(data);
+			int callId = CallStatus.GetCallIdFromCallInfo(data);
 			UpdateCallState(callId, cs => cs.SetCallInfo(data));
 		}
 
@@ -260,13 +260,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (data.StartsWith("notification:callstatus:"))
 			{
 				// notification:callstatus:outgoing:34:Polycom Group Series Demo:192.168.1.101:connected:384:0:videocall
-				int callId = CallState.GetCallIdFromCallStatus(data);
+				int callId = CallStatus.GetCallIdFromCallStatus(data);
 				UpdateCallState(callId, cs => cs.SetCallStatus(data));
 			}
 			else if (data.StartsWith("notification:callstatus:"))
 			{
 				// notification:linestatus:outgoing:32:0:0:disconnected
-				int callId = CallState.GetCallIdFromLineStatus(data);
+				int callId = CallStatus.GetCallIdFromLineStatus(data);
 				UpdateCallState(callId, cs => cs.SetLineStatus(data));
 			}
 		}
@@ -276,21 +276,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// </summary>
 		/// <param name="id"></param>
 		/// <param name="update"></param>
-		private void UpdateCallState(int id, Action<CallState> update)
+		private void UpdateCallState(int id, Action<CallStatus> update)
 		{
 			m_CallStatesSection.Enter();
 
 			try
 			{
-				CallState callState;
-				if (!m_CallStates.TryGetValue(id, out callState))
-					callState = new CallState();
+				CallStatus callStatus;
+				if (!m_CallStates.TryGetValue(id, out callStatus))
+					callStatus = new CallStatus();
 
-				update(callState);
+				update(callStatus);
 
 				m_CallStates.Remove(id);
-				if (callState.Connected)
-					m_CallStates[callState.CallId] = callState;
+				if (callStatus.Connected)
+					m_CallStates[callStatus.CallId] = callStatus;
 			}
 			finally
 			{

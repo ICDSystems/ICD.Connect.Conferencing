@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using ICD.Common.Utils.Collections;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 {
-	public sealed class CallState
+	public sealed class CallStatus
 	{
 		private const string CALL_INFO_REGEX =
 			@"callinfo:(?'call'\d+):((?'name'[^:]+):)?(?'number'[^:]+):(?'speed'[^:]+):(?'connected'[^:]+):(?'muted'[^:]+):(?'outgoing'[^:]+):(?'video'[^:]+)";
@@ -20,6 +21,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		private const string ACTIVE_CALL_REGEX = @"active: call\[(?'call'\d+)\] speed \[(?'speed'[^]]+)\]";
 		private const string ENDED_CALL_REGEX = @"ended: call\[(?'call'\d+)\]";
 		private const string CLEARED_CALL_REGEX = @"cleared: call\[(?'call'\d+)\]";
+
+		private static readonly BiDictionary<eCallState, string> s_CallStateNames =
+			new BiDictionary<eCallState, string>
+			{
+				{eCallState.Allocated, "ALLOCATED"},
+				{eCallState.Ringing, "RINGING"},
+				{eCallState.Connected, "CONNECTED"},
+				{eCallState.Complete, "COMPLETE"}
+			};
 
 		#region Properties
 
@@ -42,6 +52,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public string Speed { get; set; }
 
 		public bool VideoCall { get; set; }
+
+		public eCallState State { get; set; }
 
 		#endregion
 
@@ -96,7 +108,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			ChannelId = int.Parse(match.Groups["chan"].Value);
 			FarSiteNumber = match.Groups["dialstr"].Value;
 
-			// State = match.Groups["state"].Value;
+			string stateName = match.Groups["state"].Value;
+
+			eCallState state;
+			State = s_CallStateNames.TryGetKey(stateName, out state) ? state : eCallState.Unknown;
 		}
 
 		/// <summary>
@@ -234,7 +249,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (callInfo == null)
 				throw new ArgumentNullException("callInfo");
 
-			CallState instance = new CallState();
+			CallStatus instance = new CallStatus();
 			instance.SetCallInfo(callInfo);
 
 			return instance.CallId;
@@ -252,7 +267,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (callState == null)
 				throw new ArgumentNullException("callState");
 
-			CallState instance = new CallState();
+			CallStatus instance = new CallStatus();
 			instance.SetCallState(callState);
 
 			return instance.CallId;
@@ -271,7 +286,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			CallState instance = new CallState();
+			CallStatus instance = new CallStatus();
 			instance.SetCallStatus(callStatus);
 
 			return instance.CallId;
@@ -290,7 +305,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (lineStatus == null)
 				throw new ArgumentNullException("lineStatus");
 
-			CallState instance = new CallState();
+			CallStatus instance = new CallStatus();
 			instance.SetLineStatus(lineStatus);
 
 			return instance.CallId;
@@ -308,7 +323,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (activeCall == null)
 				throw new ArgumentNullException("activeCall");
 
-			CallState instance = new CallState();
+			CallStatus instance = new CallStatus();
 			instance.SetActiveCall(activeCall);
 
 			return instance.CallId;
@@ -326,7 +341,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (clearedCall == null)
 				throw new ArgumentNullException("clearedCall");
 
-			CallState instance = new CallState();
+			CallStatus instance = new CallStatus();
 			instance.SetClearedCall(clearedCall);
 
 			return instance.CallId;
@@ -344,7 +359,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (endedCall == null)
 				throw new ArgumentNullException("endedCall");
 
-			CallState instance = new CallState();
+			CallStatus instance = new CallStatus();
 			instance.SetEndedCall(endedCall);
 
 			return instance.CallId;

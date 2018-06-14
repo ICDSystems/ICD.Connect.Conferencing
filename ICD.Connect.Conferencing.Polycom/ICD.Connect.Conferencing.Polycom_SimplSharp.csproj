@@ -73,8 +73,9 @@
     <Compile Include="Devices\Codec\Components\Camera\eCameraAction.cs" />
     <Compile Include="Devices\Codec\Components\Content\ContentComponent.cs" />
     <Compile Include="Devices\Codec\Components\Content\ContentVideoSourceEventArgs.cs" />
-    <Compile Include="Devices\Codec\Components\Dial\CallState.cs" />
+    <Compile Include="Devices\Codec\Components\Dial\CallStatus.cs" />
     <Compile Include="Devices\Codec\Components\Dial\DialComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Dial\eCallState.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eDialProtocol.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eDialType.cs" />
     <Compile Include="Devices\Codec\Components\Layout\PipPositionEventArgs.cs" />
