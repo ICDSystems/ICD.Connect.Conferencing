@@ -403,16 +403,19 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				m_RpcController.CallMethod(clientId, InterpretationClientDevice.SET_INTERPRETATION_STATE_RPC, true);
 
-				var adapter = m_AdapterToBooth.GetKey(boothId);
+				IEnumerable<ISimplInterpretationDevice> adapters = m_AdapterToBooth.GetKeys(boothId);
 
-				foreach (IConferenceSource source in adapter.GetSources())
+				foreach (ISimplInterpretationDevice adapter in adapters)
 				{
-					ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
-					sourceState.Language = adapter.Language;
-					Guid id = m_Sources.GetKey(source);
-					m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
+					foreach (IConferenceSource source in adapter.GetSources())
+					{
+						ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
+						sourceState.Language = adapter.Language;
+						Guid id = m_Sources.GetKey(source);
+						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
+					}
 				}
-			}
+		}
 			finally
 			{
 				m_SafeCriticalSection.Leave();
