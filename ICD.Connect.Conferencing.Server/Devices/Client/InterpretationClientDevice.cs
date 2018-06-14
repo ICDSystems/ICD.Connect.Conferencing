@@ -339,7 +339,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			    var src = m_Sources[id];
 
-			    src.Name = sourceState.Name;
+			    src.Name = string.Format("({0}) {1}", sourceState.Language, sourceState.Name);
 			    src.Number = sourceState.Number;
 			    src.Status = sourceState.Status;
 			    src.AnswerState = sourceState.AnswerState;
