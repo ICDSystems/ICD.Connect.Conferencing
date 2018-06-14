@@ -33,7 +33,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				{eDialType.Gateway, "gateway"}
 			};
 
-		private readonly Dictionary<int, CallStatus> m_CallStates;
+		private readonly IcdOrderedDictionary<int, CallStatus> m_CallStates;
 		private readonly SafeCriticalSection m_CallStatesSection;
 
 		/// <summary>
@@ -43,7 +43,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public DialComponent(PolycomGroupSeriesDevice codec)
 			: base(codec)
 		{
-			m_CallStates = new Dictionary<int, CallStatus>();
+			m_CallStates = new IcdOrderedDictionary<int, CallStatus>();
 			m_CallStatesSection = new SafeCriticalSection();
 
 			Subscribe(Codec);
@@ -87,6 +87,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		}
 
 		#region Methods
+
+		/// <summary>
+		/// Returns the active call statuses.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<CallStatus> GetCallStatuses()
+		{
+			return m_CallStatesSection.Execute(() => m_CallStates.Values.ToArray(m_CallStates.Count));
+		}
 
 		/// <summary>
 		/// Answers the incoming video call.
@@ -208,6 +217,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			Codec.SendCommand("dial phone {0} {1}", protocolName, number);
 			Codec.Log(eSeverity.Informational, "Dialing phone number {0} {1}", protocolName, StringUtils.ToRepresentation(number));
+		}
+
+		/// <summary>
+		/// Generates the DTMF dialing tone.
+		/// </summary>
+		/// <param name="tone"></param>
+		public void Gendial(char tone)
+		{
+			Codec.SendCommand("gendial {0}", tone);
+			Codec.Log(eSeverity.Informational, "Sending DTMF {0}", tone);
 		}
 
 		#endregion
@@ -359,6 +378,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			string dialPhoneHelp = string.Format("DialPhone <{0}> <NUMBER>", protocolValues);
 			yield return new GenericConsoleCommand<eDialProtocol, string>("DialPhone", dialPhoneHelp, (p, n) => DialPhone(p, n));
+
+			yield return new GenericConsoleCommand<char>("Gendial", "Gendial <CHAR>", c => Gendial(c));
 		}
 
 		/// <summary>
