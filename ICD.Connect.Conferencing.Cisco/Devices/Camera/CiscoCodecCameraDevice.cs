@@ -51,6 +51,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			Controls.Add(new CiscoCodecCameraDevicePowerControl(this, 4));
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		protected override void DisposeFinal(bool disposing)
+		{
+			OnCodecChanged = null;
+			OnPresetsChanged = null;
+
+			base.DisposeFinal(disposing);
+		}
+
 		#region ICameraWithPanTilt
 
 		/// <summary>
