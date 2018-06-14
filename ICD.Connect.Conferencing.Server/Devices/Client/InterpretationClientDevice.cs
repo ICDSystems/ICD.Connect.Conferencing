@@ -542,6 +542,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    private void PortOnConnectedStateChanged(object sender, BoolEventArgs args)
 	    {
 		    IsConnected = m_ConnectionStateManager != null && m_ConnectionStateManager.IsConnected;
+
+		    if (IsConnected)
+			    return;
+
+		    IsInterpretationActive = false;
+		    ClearSources();
 	    }
 
 		#endregion
