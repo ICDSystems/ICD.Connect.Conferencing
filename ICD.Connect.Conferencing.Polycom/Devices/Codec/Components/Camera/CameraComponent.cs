@@ -31,6 +31,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		{
 			Subscribe(Codec);
 
+			Codec.RegisterFeedback("notification", HandleNotification);
+
 			if (Codec.Initialized)
 				Initialize();
 		}
@@ -43,6 +45,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 			base.Initialize();
 
 			Codec.SendCommand("notify vidsourcechanges");
+			Codec.SendCommand("preset register");
 		}
 
 		#region Methods
@@ -137,7 +140,67 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 			Codec.Log(eSeverity.Informational, "Setting near camera invert {0}", inverted ? "on" : "off");
 		}
 
+		/// <summary>
+		/// Applies the given preset to the near camera.
+		/// </summary>
+		/// <param name="preset"></param>
+		public void GoNearCamreaPreset(int preset)
+		{
+			Codec.SendCommand("preset near go {0}", preset);
+			Codec.Log(eSeverity.Informational, "Applying near camera preset {0}", preset);
+		}
+
+		/// <summary>
+		/// Applies the given preset to the far camera.
+		/// </summary>
+		/// <param name="preset"></param>
+		public void GoFarCameraPreset(int preset)
+		{
+			Codec.SendCommand("preset far go {0}", preset);
+			Codec.Log(eSeverity.Informational, "Applying far camera preset {0}", preset);
+		}
+
+		/// <summary>
+		/// Stores the near camera position as the given preset.
+		/// </summary>
+		/// <param name="preset"></param>
+		public void SetNearCameraPreset(int preset)
+		{
+			Codec.SendCommand("preset near set {0}", preset);
+			Codec.Log(eSeverity.Informational, "Storing near camera preset {0}", preset);
+		}
+
+		/// <summary>
+		/// Stores the far camera position as the given preset.
+		/// </summary>
+		/// <param name="preset"></param>
+		public void SetFarCameraPreset(int preset)
+		{
+			Codec.SendCommand("preset far set {0}", preset);
+			Codec.Log(eSeverity.Informational, "Storing far camera preset {0}", preset);
+		}
+
 		#endregion
+
+		/// <summary>
+		/// Handles notification messages from the device.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleNotification(string data)
+		{
+			string[] split = data.Split(':');
+			
+			// notification:vidsourcechange:<near or far>:<camera index>:<cameraname>:<people or content>
+			// notification:vidsourcechange:near:6:ppcip:content
+			// notification:vidsourcechange:near:none:none:content
+			if (split.Length != 6 || split[1] != "vidsourcechange")
+				return;
+
+			string location = split[2];
+			string index = split[3];
+			string name = split[4];
+			string type = split[5];
+		}
 
 		#region Console
 
@@ -154,12 +217,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 
 			yield return new GenericConsoleCommand<eCameraAction>("MoveNear", string.Format("MoveNear <{0}>", moveValues), m => MoveNear(m));
 			yield return new GenericConsoleCommand<eCameraAction>("MoveFar", string.Format("MoveFar <{0}>", moveValues), m => MoveFar(m));
+			
 			yield return new GenericConsoleCommand<int>("SetNearCameraAsVideoSource", "SetNearCameraAsVideoSource <CAMERA>", c => SetNearCameraAsVideoSource(c));
 			yield return new GenericConsoleCommand<int>("SetFarCameraAsVideoSource", "SetFarCameraAsVideoSource <CAMERA>", c => SetFarCameraAsVideoSource(c));
+			
 			yield return new GenericConsoleCommand<float, float, float>("SetNearCameraPosition", "SetNearCameraPosition <PAN> <TILT> <ZOOM>", (x, y, z) => SetNearCameraPosition(x, y, z));
+			
 			yield return new GenericConsoleCommand<int>("SetNearCameraForPeople", "SetNearCameraForPeople <CAMERA>", c => SetNearCameraForPeople(c));
 			yield return new GenericConsoleCommand<int>("SetNearCameraForContent", "SetNearCameraForContent <CAMERA>", c => SetNearCameraForContent(c));
 			yield return new GenericConsoleCommand<bool>("SetNearCameraInverted", "SetNearCameraInverted <true/false>", i => SetNearCameraInverted(i));
+
+			yield return new GenericConsoleCommand<int>("GoNearCamreaPreset", "GoNearCamreaPreset <PRESET>", p => GoNearCamreaPreset(p));
+			yield return new GenericConsoleCommand<int>("GoFarCameraPreset", "GoFarCameraPreset <PRESET>", p => GoFarCameraPreset(p));
+			yield return new GenericConsoleCommand<int>("SetNearCameraPreset", "SetNearCameraPreset <PRESET>", p => SetNearCameraPreset(p));
+			yield return new GenericConsoleCommand<int>("SetFarCameraPreset", "SetFarCameraPreset <PRESET>", p => SetFarCameraPreset(p));
 		}
 
 		/// <summary>

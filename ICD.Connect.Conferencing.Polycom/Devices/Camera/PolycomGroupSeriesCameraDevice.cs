@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -13,17 +15,34 @@ using ICD.Connect.Settings.Core;
 namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 {
 	public sealed class PolycomGroupSeriesCameraDevice : AbstractCameraDevice<PolycomGroupSeriesCameraSettings>,
-	                                                     ICameraWithPanTilt, ICameraWithZoom
+	                                                     ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
 	{
 		/// <summary>
 		/// Raised when the parent codec device changes.
 		/// </summary>
 		public event EventHandler OnCodecChanged;
 
+		/// <summary>
+		/// Polycom provides no feedback for preset change.
+		/// </summary>
+		public event EventHandler OnPresetsChanged;
+
 		private PolycomGroupSeriesDevice m_Codec;
 		private CameraComponent m_CameraComponent;
 
 		#region Properties
+
+		/// <summary>
+		/// Gets the maximum number of presets this camera can support.
+		/// </summary>
+		public int MaxPresets
+		{
+			get
+			{
+				// TODO - This camera actually supports 0-99 inclusive for a total of 100, need to improve presets interface
+				return 99;
+			}
+		}
 
 		/// <summary>
 		/// Gets the id for the camera being controlled.
@@ -40,7 +59,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 			Controls.Add(new GenericCameraRouteSourceControl<PolycomGroupSeriesCameraDevice>(this, 0));
 			Controls.Add(new PanTiltControl<PolycomGroupSeriesCameraDevice>(this, 1));
 			Controls.Add(new ZoomControl<PolycomGroupSeriesCameraDevice>(this, 2));
+			Controls.Add(new PresetControl<PolycomGroupSeriesCameraDevice>(this, 3));
 			Controls.Add(new PolycomGroupSeriesCameraDevicePowerControl(this, 4));
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		protected override void DisposeFinal(bool disposing)
+		{
+			OnCodecChanged = null;
+			OnPresetsChanged = null;
+
+			base.DisposeFinal(disposing);
 		}
 
 		#region Methods
@@ -135,6 +166,32 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 				default:
 					throw new ArgumentOutOfRangeException("action");
 			}
+		}
+
+		/// <summary>
+		/// Gets the stored camera presets.
+		/// </summary>
+		public IEnumerable<CameraPreset> GetPresets()
+		{
+			return Enumerable.Range(0, 100).Select(i => new CameraPreset(i, string.Format("Preset {0}", i)));
+		}
+
+		/// <summary>
+		/// Tells the camera to change its position to the given preset.
+		/// </summary>
+		/// <param name="presetId">The id of the preset to position to.</param>
+		public void ActivatePreset(int presetId)
+		{
+			m_CameraComponent.GoNearCamreaPreset(presetId);
+		}
+
+		/// <summary>
+		/// Stores the cameras current position in the given preset index.
+		/// </summary>
+		/// <param name="presetId">The index to store the preset at.</param>
+		public void StorePreset(int presetId)
+		{
+			m_CameraComponent.SetNearCameraPreset(presetId);
 		}
 
 		#endregion
