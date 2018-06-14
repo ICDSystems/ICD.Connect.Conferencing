@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 
@@ -9,6 +10,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 {
 	public sealed class DialComponent : AbstractPolycomComponent
 	{
+		/// <summary>
+		/// Raised when a call state is added, removed or updated.
+		/// </summary>
+		public event EventHandler OnCallStatesChanged; 
+
 		private static readonly BiDictionary<eDialProtocol, string> s_ProtocolNames =
 			new BiDictionary<eDialProtocol, string>
 			{
@@ -51,6 +57,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			if (Codec.Initialized)
 				Initialize();
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void Dispose(bool disposing)
+		{
+			OnCallStatesChanged = null;
+
+			base.Dispose(disposing);
 		}
 
 		/// <summary>
@@ -279,6 +296,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			{
 				m_CallStatesSection.Leave();
 			}
+
+			OnCallStatesChanged.Raise(this);
 		}
 
 		#endregion
