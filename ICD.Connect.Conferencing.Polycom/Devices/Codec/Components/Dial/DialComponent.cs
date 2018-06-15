@@ -160,7 +160,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			number = StringUtils.Enquote(number);
 
-			Codec.SendCommand("dial auto auto {0}", number);
+			Codec.SendCommand("dial auto {0}", number);
 			Codec.Log(eSeverity.Informational, "Dialing auto number {0}", StringUtils.ToRepresentation(number));
 		}
 
@@ -177,7 +177,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			number = StringUtils.Enquote(number);
 
-			Codec.SendCommand("dial manual auto {0}", number);
+			Codec.SendCommand("dial manual {0}", number);
 			Codec.Log(eSeverity.Informational, "Dialing manual number {0}", StringUtils.ToRepresentation(number));
 		}
 
@@ -197,7 +197,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			string typeName = s_TypeNames.GetValue(type);
 
-			Codec.SendCommand("dial manual auto {0} {1}", number, typeName);
+			Codec.SendCommand("dial manual {0} {1}", number, typeName);
 			Codec.Log(eSeverity.Informational, "Dialing manual number {0} type {1}", StringUtils.ToRepresentation(number), typeName);
 		}
 
