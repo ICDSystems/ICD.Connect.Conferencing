@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -10,6 +11,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 {
 	public sealed class MuteComponent : AbstractPolycomComponent
 	{
+		private const string MUTE_REGEX = @"mute (?'near'near|far) (?'on'on|off)";
+		private const string VIDEO_MUTE_REGEX = @"videomute near (?'on'on|off)";
+
 		/// <summary>
 		/// Raised when the near privacy mute state changes.
 		/// </summary>
@@ -20,8 +24,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnMutedFarChanged;
 
+		/// <summary>
+		/// Raised when the video mute state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnVideoMutedChanged;
+
 		private bool m_MutedNear;
 		private bool m_MutedFar;
+		private bool m_VideoMuted;
 
 		#region Properties
 
@@ -63,6 +73,25 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 			}
 		}
 
+		/// <summary>
+		/// Gets the video muted state.
+		/// </summary>
+		public bool VideoMuted
+		{
+			get { return m_VideoMuted; }
+			private set
+			{
+				if (value == m_VideoMuted)
+					return;
+
+				m_VideoMuted = value;
+
+				Codec.Log(eSeverity.Informational, "VideoMuted set to {0}", m_VideoMuted);
+
+				OnVideoMutedChanged.Raise(this, new BoolEventArgs(m_VideoMuted));
+			}
+		}
+
 		#endregion
 
 		/// <summary>
@@ -75,9 +104,23 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 			Subscribe(Codec);
 
 			Codec.RegisterFeedback("mute", HandleMute);
+			Codec.RegisterFeedback("videomute", HandleVideoMute);
 
 			if (Codec.Initialized)
 				Initialize();
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected override void Dispose(bool disposing)
+		{
+			OnMutedNearChanged = null;
+			OnMutedFarChanged = null;
+			OnVideoMutedChanged = null;
+
+			base.Dispose(disposing);
 		}
 
 		/// <summary>
@@ -92,6 +135,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 			Codec.SendCommand("mute near get");
 			Codec.SendCommand("mute far get");
+			Codec.SendCommand("videomute near get");
 		}
 
 		/// <summary>
@@ -103,36 +147,33 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 			// mute near on
 			// mute far off
 
-			string[] split = data.Split();
-			if (split.Length != 3)
+			Match match = Regex.Match(data, MUTE_REGEX);
+			if (!match.Success)
 				return;
 
-			bool muted;
+			bool muted = match.Groups["on"].Value == "on";
+			bool near = match.Groups["near"].Value == "near";
 
-			switch (split[2])
-			{
-				case "on":
-					muted = true;
-					break;
+			if (near)
+				MutedNear = muted;
+			else
+				MutedFar = muted;
+		}
 
-				case "off":
-					muted = false;
-					break;
+		/// <summary>
+		/// Handles video mute messages from the device.
+		/// </summary>
+		/// <param name="data"></param>
+		private void HandleVideoMute(string data)
+		{
+			// videomute near on
+			// videomute near off
 
-				default:
-					return;
-			}
+			Match match = Regex.Match(data, VIDEO_MUTE_REGEX);
+			if (!match.Success)
+				return;
 
-			switch (split[1])
-			{
-				case "near":
-					MutedNear = muted;
-					break;
-
-				case "far":
-					MutedFar = muted;
-					break;
-			}
+			VideoMuted = match.Groups["on"].Value == "on";
 		}
 
 		#region Methods
@@ -155,6 +196,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		{
 			Codec.SendCommand("mute far {0}", mute ? "on" : "off");
 			Codec.Log(eSeverity.Informational, "Setting far mute {0}", mute ? "on" : "off");
+		}
+
+		/// <summary>
+		/// Enables/disables muting transmission of local video to far site. 
+		/// </summary>
+		/// <param name="mute"></param>
+		public void MuteVideo(bool mute)
+		{
+			Codec.SendCommand("mutevideo near {0}", mute ? "on" : "off");
+			Codec.Log(eSeverity.Informational, "Setting near video mute {0}", mute ? "on" : "off");
 		}
 
 		/// <summary>
@@ -190,6 +241,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 			yield return new GenericConsoleCommand<bool>("MuteNear", "MuteNear <true/false>", m => MuteNear(m));
 			yield return new GenericConsoleCommand<bool>("MuteFar", "MuteFar <true/false>", m => MuteFar(m));
+			yield return new GenericConsoleCommand<bool>("MuteVideo", "MuteVideo <true/false>", m => MuteVideo(m));
 			yield return new ConsoleCommand("MuteNearToggle", "", () => ToggleMuteNear());
 			yield return new ConsoleCommand("MuteFarToggle", "", () => ToggleMuteFar());
 		}
