@@ -51,7 +51,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				Start = source.Start,
 				End = source.End,
 				DialTime = source.DialTime,
-				StartOrDialTime = source.StartOrDialTime
+				StartOrDialTime = source.GetStartOrDialTime()
 			};
 		}
 	}

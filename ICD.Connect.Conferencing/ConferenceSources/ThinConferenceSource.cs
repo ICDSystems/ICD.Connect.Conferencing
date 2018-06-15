@@ -191,8 +191,6 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			}
 		}
 
-		public DateTime StartOrDialTime { get { return Start ?? DialTime; } }
-
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
@@ -205,13 +203,25 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 		#endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		public ThinConferenceSource()
 		{
 			DialTime = IcdEnvironment.GetLocalTime();
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		public void Dispose()
 		{
+			OnAnswerStateChanged = null;
+			OnStatusChanged = null;
+			OnNameChanged = null;
+			OnNumberChanged = null;
+			OnSourceTypeChanged = null;
+
 			AnswerCallback = null;
 			RejectCallback = null;
 			HoldCallback = null;
@@ -284,7 +294,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		{
 			ThinConferenceSourceSendDtmfCallback handler = SendDtmfCallback;
 			if (handler != null)
-				handler(this, data);
+				handler(this, data ?? string.Empty);
 		}
 
 		/// <summary>

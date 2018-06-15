@@ -608,7 +608,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    addRow("Number", src.Number);
 			    addRow("Status", src.Status);
 			    addRow("State", src.AnswerState);
-			    addRow("Start", src.StartOrDialTime);
+			    addRow("Start", src.GetStartOrDialTime());
 		    }
 			addRow("-----", "-----");
 	    }
