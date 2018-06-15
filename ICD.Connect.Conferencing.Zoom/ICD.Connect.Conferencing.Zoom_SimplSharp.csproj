@@ -73,6 +73,7 @@
     <Compile Include="Component\ZoomFolder.cs" />
     <Compile Include="Component\ZoomRoomCall.cs" />
     <Compile Include="Controls\ZoomDialingDeviceControl.cs" />
+    <Compile Include="Controls\ZoomRoomDirectoryControl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Responses\BookingsListResultResponse.cs" />
     <Compile Include="Responses\CallConnectErrorResponse.cs" />

@@ -1,4 +1,5 @@
-﻿using ICD.Connect.Conferencing.Directory.Tree;
+﻿using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Directory.Tree;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Component
@@ -15,15 +16,10 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 			return false;
 		}
 
-		public void AddOrUpdateContact(ZoomContact contact)
+		protected override bool AddContact(IContact contact, bool raise)
 		{
-			//int index = m_CachedContacts.FindIndex(c => c is ZoomContact && (c as ZoomContact).JoinId == contact.JoinId );
-			//if (index < 0)
-			//    AddContact(contact, true);
-			//else
-			//{
-			//    m_CachedContacts[index] = contact;
-			//}
+			
+			return base.AddContact(contact, raise);
 		}
 	}
 }
