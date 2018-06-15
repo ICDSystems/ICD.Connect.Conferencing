@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -12,6 +13,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 {
 	public sealed class AutoAnswerComponent : AbstractPolycomComponent
 	{
+		private const string AUTOANSWER_REGEX = @"autoanswer (?'mode'yes|no|donotdisturb)";
+
 		private static readonly BiDictionary<eAutoAnswer, string> s_AutoAnswerNames =
 			new BiDictionary<eAutoAnswer, string>
 			{
@@ -100,13 +103,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 		/// <param name="data"></param>
 		private void HandleAutoAnswerState(string data)
 		{
-			string[] split = data.Split();
-			string result = split.Skip(1).FirstOrDefault();
-			if (result == null)
+			Match match = Regex.Match(data, AUTOANSWER_REGEX);
+			if (!match.Success)
 				return;
 
+			string modeName = match.Groups["mode"].Value;
+
 			eAutoAnswer mode;
-			if (s_AutoAnswerNames.TryGetKey(result, out mode))
+			if (s_AutoAnswerNames.TryGetKey(modeName, out mode))
 				AutoAnswer = mode;
 		}
 
