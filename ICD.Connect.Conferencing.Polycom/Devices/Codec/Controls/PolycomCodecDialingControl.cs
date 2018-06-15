@@ -33,6 +33,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private readonly AutoAnswerComponent m_AutoAnswerComponent;
 		private readonly MuteComponent m_MuteComponent;
 
+		private bool m_RequestedPrivacyMute;
+		private bool m_RequestedHold;
+
 		#region Properties
 
 		/// <summary>
@@ -154,10 +157,26 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="enabled"></param>
 		public override void SetPrivacyMute(bool enabled)
 		{
-			m_MuteComponent.MuteNear(enabled);
+			m_RequestedPrivacyMute = enabled;
+
+			UpdateMute();
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Enforces the near/far/video mute states on the device to match requested values.
+		/// </summary>
+		private void UpdateMute()
+		{
+			bool videoMute = m_RequestedHold;
+			bool farMute = m_RequestedHold;
+			bool nearMute = m_RequestedHold || m_RequestedPrivacyMute;
+
+			m_MuteComponent.MuteVideo(videoMute);
+			m_MuteComponent.MuteFar(farMute);
+			m_MuteComponent.MuteNear(nearMute);
+		}
 
 		#region Dial Component Callbacks
 
@@ -265,6 +284,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				Unsubscribe(source);
 
 				m_Sources.RemoveKey(id);
+
+				// Leave hold state when out of calls
+				if (m_Sources.Count == 0)
+				{
+					m_RequestedPrivacyMute = false;
+					UpdateMute();
+				}
 			}
 			finally
 			{
@@ -401,12 +427,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		private void ResumeCallback(ThinConferenceSource sender)
 		{
-			throw new NotImplementedException();
+			m_RequestedHold = false;
+
+			UpdateMute();
 		}
 
 		private void HoldCallback(ThinConferenceSource sender)
 		{
-			throw new NotImplementedException();
+			m_RequestedHold = true;
+
+			UpdateMute();
 		}
 
 		private void RejectCallback(ThinConferenceSource sender)
@@ -455,6 +485,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			AutoAnswer = m_AutoAnswerComponent.AutoAnswer == eAutoAnswer.Yes;
 			DoNotDisturb = m_AutoAnswerComponent.AutoAnswer == eAutoAnswer.DoNotDisturb;
+
+			UpdateMute();
 		}
 
 		#endregion
@@ -468,6 +500,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void Subscribe(MuteComponent muteComponent)
 		{
 			muteComponent.OnMutedNearChanged += MuteComponentOnMutedNearChanged;
+			muteComponent.OnMutedFarChanged += MuteComponentOnMutedFarChanged;
+			muteComponent.OnVideoMutedChanged += MuteComponentOnVideoMutedChanged;
 		}
 
 		/// <summary>
@@ -477,6 +511,28 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void Unsubscribe(MuteComponent muteComponent)
 		{
 			muteComponent.OnMutedNearChanged -= MuteComponentOnMutedNearChanged;
+			muteComponent.OnMutedFarChanged -= MuteComponentOnMutedFarChanged;
+			muteComponent.OnVideoMutedChanged -= MuteComponentOnVideoMutedChanged;
+		}
+
+		/// <summary>
+		/// Called when the video mute state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void MuteComponentOnVideoMutedChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateMute();
+		}
+
+		/// <summary>
+		/// Called when the far mute state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void MuteComponentOnMutedFarChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateMute();
 		}
 
 		/// <summary>
@@ -487,6 +543,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void MuteComponentOnMutedNearChanged(object sender, BoolEventArgs boolEventArgs)
 		{
 			PrivacyMuted = m_MuteComponent.MutedNear;
+
+			UpdateMute();
 		}
 
 		#endregion
