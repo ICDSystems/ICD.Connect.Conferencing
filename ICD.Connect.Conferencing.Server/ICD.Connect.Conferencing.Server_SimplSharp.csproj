@@ -70,20 +70,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Devices\Client\IClientInterpretationDevice.cs" />
-    <Compile Include="Devices\Simpl\Server\IInterpretationServerDevice.cs" />
+    <Compile Include="Devices\Server\IInterpretationServerDevice.cs" />
+    <Compile Include="Devices\Server\InterpretationRoomInfoArgs.cs" />
+    <Compile Include="Devices\Server\InterpretationStateEventArgs.cs" />
     <Compile Include="KrangPlugin.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Devices\Client\InterpretationClientDevice.cs" />
     <Compile Include="Devices\Client\InterpretationClientDeviceSettings.cs" />
-    <Compile Include="Devices\Simpl\Server\InterpretationServerDevice.cs" />
-    <Compile Include="Devices\Simpl\Server\InterpretationServerDeviceSettings.cs" />
+    <Compile Include="Devices\Server\InterpretationServerDevice.cs" />
+    <Compile Include="Devices\Server\InterpretationServerDeviceSettings.cs" />
     <Compile Include="Devices\Simpl\ISimplInterpretationDevice.cs" />
     <Compile Include="Devices\Simpl\ISimplInterpretationDeviceSettings.cs" />
-    <Compile Include="SimplShims\SPlusInterpretationServerShim.cs" />
+    <Compile Include="SimplShims\InterpretationServerShim.cs" />
     <Compile Include="Devices\Simpl\SimplInterpretationDevice.cs" />
     <Compile Include="Devices\Simpl\SimplInterpretationDeviceSettings.cs" />
-    <Compile Include="SimplShims\SPlusInterpreterShim.cs" />
+    <Compile Include="SimplShims\SimplInterpretationShim.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>

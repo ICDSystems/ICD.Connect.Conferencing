@@ -10,9 +10,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 {
 	public enum eConferenceSourceDirection
 	{
-		Undefined,
-		Incoming,
-		Outgoing
+		Undefined = 0,
+		Incoming = 1,
+		Outgoing = 2
 	}
 
 	/// <summary>
@@ -20,11 +20,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 	/// </summary>
 	public enum eConferenceSourceAnswerState
 	{
-		[UsedImplicitly] Unknown,
-		[UsedImplicitly] Unanswered,
-		Ignored,
-		Autoanswered,
-		Answered
+		[UsedImplicitly] Unknown = 0,
+		[UsedImplicitly] Unanswered = 1,
+		Ignored = 2,
+		Autoanswered = 3,
+		Answered = 4
 	}
 
 	/// <summary>
