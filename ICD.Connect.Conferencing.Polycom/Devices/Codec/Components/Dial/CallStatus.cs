@@ -19,7 +19,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		private const string LINE_STATUS_REGEX =
 			@"notification:linestatus:(?'direction'[^:]+)(:(?'number'[^:]*))?:(?'callId'\d+):(?'lineId'\d+):(?'channelId'\d+):(?'status'[^:]+)";
 
-		private const string ACTIVE_CALL_REGEX = @"active: call\[(?'call'\d+)\] speed \[(?'speed'[^]]+)\]";
+		private const string ACTIVE_CALL_REGEX = @"active: call\[(?'call'\d+)\] speed\[(?'speed'[^]]+)\]";
 		private const string ENDED_CALL_REGEX = @"ended: call\[(?'call'\d+)\]";
 		private const string CLEARED_CALL_REGEX = @"cleared: call\[(?'call'\d+)\]";
 
