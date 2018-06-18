@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
-using ICD.Connect.API.Commands;
-using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
@@ -15,7 +13,7 @@ using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 {
-	public sealed class PolycomComponentFactory : IDisposable, IConsoleNode
+	public sealed class PolycomComponentFactory : IDisposable
 	{
 		private readonly IcdHashSet<AbstractPolycomComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
@@ -33,20 +31,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 			};
 
 		private readonly PolycomGroupSeriesDevice m_Codec;
-
-		#region Properties
-
-		/// <summary>
-		/// Gets the name of the node.
-		/// </summary>
-		public string ConsoleName { get { return "Components"; } }
-
-		/// <summary>
-		/// Gets the help information for the node.
-		/// </summary>
-		public string ConsoleHelp { get { return string.Empty; } }
-
-		#endregion
 
 		/// <summary>
 		/// Constructor.
@@ -130,35 +114,5 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 				m_ComponentsSection.Leave();
 			}
 		}
-
-		#region Console
-
-		/// <summary>
-		/// Gets the child console nodes.
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
-			return GetComponents().OrderBy(c => c.GetType().Name).Cast<IConsoleNodeBase>();
-		}
-
-		/// <summary>
-		/// Calls the delegate for each console status item.
-		/// </summary>
-		/// <param name="addRow"></param>
-		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-		}
-
-		/// <summary>
-		/// Gets the child console commands.
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<IConsoleCommand> GetConsoleCommands()
-		{
-			yield break;
-		}
-
-		#endregion
 	}
 }

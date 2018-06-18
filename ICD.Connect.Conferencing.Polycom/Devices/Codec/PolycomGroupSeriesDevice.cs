@@ -459,7 +459,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			yield return m_Components;
+			yield return ConsoleNodeGroup.IndexNodeMap("Components", m_Components.GetComponents()
+			                                                                     .OrderBy(c => c.GetType().Name)
+			                                                                     .Cast<IConsoleNodeBase>());
 		}
 
 		/// <summary>
