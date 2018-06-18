@@ -94,9 +94,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			
 		}
 
-	    public string RoomName { get; set; }
+	    public string RoomName { get; private set; }
 
-		public string RoomPrefix { get; set; }
+		public string RoomPrefix { get; private set; }
 
 	    public bool IsInterpretationActive
 	    {
@@ -195,6 +195,24 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    }
 
 		#region	Public Methods
+
+	    public void SetRoomNameIfNullOrEmpty(string name)
+	    {
+			// Only allow the room name to be set externally if an override isn't provided in settings.
+		    if (string.IsNullOrEmpty(RoomName))
+		    {
+			    RoomName = name;
+		    }
+	    }
+
+	    public void SetRoomPrefixIfNullOrEmpty(string prefix)
+	    {
+		    // Only allow the room prefix to be set externally if an override isn't provided in settings.
+		    if (string.IsNullOrEmpty(RoomPrefix))
+		    {
+			    RoomPrefix = prefix;
+		    }
+	    }
 
 	    public void Register()
 	    {
@@ -569,6 +587,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_ConnectionStateManager.SetPort(port);
 
 			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
+
+			RoomName = settings.RoomName;
+
+			RoomPrefix = settings.RoomPrefix;
 	    }
 
 	    protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
