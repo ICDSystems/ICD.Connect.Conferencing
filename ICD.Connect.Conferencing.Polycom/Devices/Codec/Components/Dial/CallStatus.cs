@@ -37,9 +37,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			new BiDictionary<eConnectionState, string>
 			{
 				{eConnectionState.Opened, "opened"},
+				{eConnectionState.Ringing, "ringing"},
 				{eConnectionState.Connecting, "connecting"},
 				{eConnectionState.Connected, "connected"},
-				{eConnectionState.Inactive, "inactive"}
+				{eConnectionState.Inactive, "inactive"},
+				{eConnectionState.Disconnecting, "disconnecting"},
+				{eConnectionState.Disconnected, "disconnected"},
 			};
 
 		#region Properties

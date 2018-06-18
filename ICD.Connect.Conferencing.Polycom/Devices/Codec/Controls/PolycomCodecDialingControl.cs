@@ -345,39 +345,107 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (source == null)
 				return;
 
-			source.Name = callStatus.FarSiteName;
+			// Prevents overriding a resolved name with a number when the call disconnects
+			if (callStatus.FarSiteName != callStatus.FarSiteNumber)
+				source.Name = callStatus.FarSiteName;
+
 			source.Number = callStatus.FarSiteNumber;
-			source.Status = GetStatus(callStatus.State);
 			source.Direction = callStatus.Outgoing ? eConferenceSourceDirection.Outgoing : eConferenceSourceDirection.Incoming;
-			//source.AnswerState = callStatus.
-			//source.Start =
-			//source.End =
-			//source.DialTime =
+
+			UpdateStatus(source, callStatus.ConnectionState);
+
+			if (source.GetIsOnline())
+			{
+				source.Start = source.Start ?? IcdEnvironment.GetLocalTime();
+
+				if (source.AnswerState == default(eConferenceSourceAnswerState))
+					source.AnswerState = eConferenceSourceAnswerState.Answered;
+			}
+			else
+			{
+				if (source.Start != null)
+					source.End = source.End ?? IcdEnvironment.GetLocalTime();
+			}
 		}
 
 		/// <summary>
-		/// Gets the status value for the given state.
+		/// Updates the source status based on the given connection state.
 		/// </summary>
-		/// <param name="state"></param>
+		/// <param name="source"></param>
+		/// <param name="connectionState"></param>
 		/// <returns></returns>
-		private static eConferenceSourceStatus GetStatus(eCallState state)
+		private static void UpdateStatus(ThinConferenceSource source, eConnectionState connectionState)
 		{
-			switch (state)
+			if (source == null)
+				throw new ArgumentNullException("source");
+
+			eConferenceSourceStatus newStatus = GetStatus(connectionState);
+			eConferenceSourceStatus oldStatus = source.Status;
+
+			if (!StatusFlickerDetected(oldStatus, newStatus))
+				source.Status = newStatus;
+		}
+
+		/// <summary>
+		/// Line status and call status conflict a little
+		/// For example Connecting may return to Ringing, Connected may return to Connecting.
+		/// This is possibly a race condition on the Polycom side.
+		///
+		/// For now I'm adding some simple checks to prevent the source status from flickering.
+		/// Maybe this is better solved with a state machine, I dunno.
+		/// </summary>
+		/// <param name="oldStatus"></param>
+		/// <param name="newStatus"></param>
+		/// <returns></returns>
+		private static bool StatusFlickerDetected(eConferenceSourceStatus oldStatus, eConferenceSourceStatus newStatus)
+		{
+			switch (newStatus)
 			{
-				case eCallState.Unknown:
+				case eConferenceSourceStatus.Ringing:
+					if (oldStatus == eConferenceSourceStatus.Connecting)
+						return true;
+					break;
+
+				case eConferenceSourceStatus.Connecting:
+					if (oldStatus == eConferenceSourceStatus.Connected)
+						return true;
+					break;
+
+				case eConferenceSourceStatus.Disconnecting:
+					if (oldStatus == eConferenceSourceStatus.Disconnected)
+						return true;
+					break;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Gets the source status based on the given connection state.
+		/// </summary>
+		/// <param name="connectionState"></param>
+		/// <returns></returns>
+		private static eConferenceSourceStatus GetStatus(eConnectionState connectionState)
+		{
+			switch (connectionState)
+			{
+				case eConnectionState.Unknown:
 					return eConferenceSourceStatus.Undefined;
-				case eCallState.Allocated:
-					return eConferenceSourceStatus.Connecting;
-				case eCallState.Ringing:
+				case eConnectionState.Opened:
+				case eConnectionState.Ringing:
 					return eConferenceSourceStatus.Ringing;
-				case eCallState.Connecting:
+				case eConnectionState.Connecting:
 					return eConferenceSourceStatus.Connecting;
-				case eCallState.Connected:
+				case eConnectionState.Connected:
 					return eConferenceSourceStatus.Connected;
-				case eCallState.Complete:
-					return eConferenceSourceStatus.Connected;
+				case eConnectionState.Inactive:
+					return eConferenceSourceStatus.Idle;
+				case eConnectionState.Disconnecting:
+					return eConferenceSourceStatus.Disconnecting;
+				case eConnectionState.Disconnected:
+					return eConferenceSourceStatus.Disconnected;
 				default:
-					throw new ArgumentOutOfRangeException("state");
+					throw new ArgumentOutOfRangeException("connectionState");
 			}
 		}
 

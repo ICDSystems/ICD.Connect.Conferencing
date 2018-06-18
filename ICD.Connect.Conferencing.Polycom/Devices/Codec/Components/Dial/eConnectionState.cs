@@ -4,8 +4,11 @@
 	{
 		Unknown,
 		Opened,
+		Ringing,
 		Connecting,
 		Connected,
-		Inactive
+		Inactive,
+		Disconnecting,
+		Disconnected
 	}
 }
