@@ -1,12 +1,11 @@
 ﻿namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 {
-	public enum eCallState
+	public enum eConnectionState
 	{
 		Unknown,
-		Allocated,
-		Ringing,
+		Opened,
 		Connecting,
 		Connected,
-		Complete
+		Inactive
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
@@ -16,7 +17,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			@"notification:callstatus:(?'direction'[^:]+):(?'call'[^:]+):(?'name'[^:]+):(?'number'[^:]+):(?'connected'[^:]+):(?'speed'[^:]+):[^:]+:(?'type'[^:]+)";
 
 		private const string LINE_STATUS_REGEX =
-			@"notification:linestatus:(?'direction'[^:]+):(?'callId'[^:]+):(?'lineId'[^:]+):(?'channelId'[^:]+):(?'status'[^:]+)";
+			@"notification:linestatus:(?'direction'[^:]+)(:(?'number'[^:]*))?:(?'callId'\d+):(?'lineId'\d+):(?'channelId'\d+):(?'status'[^:]+)";
 
 		private const string ACTIVE_CALL_REGEX = @"active: call\[(?'call'\d+)\] speed \[(?'speed'[^]]+)\]";
 		private const string ENDED_CALL_REGEX = @"ended: call\[(?'call'\d+)\]";
@@ -27,8 +28,18 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			{
 				{eCallState.Allocated, "ALLOCATED"},
 				{eCallState.Ringing, "RINGING"},
+				{eCallState.Connecting, "CONNECTING"},
 				{eCallState.Connected, "CONNECTED"},
 				{eCallState.Complete, "COMPLETE"}
+			};
+
+		private static readonly BiDictionary<eConnectionState, string> s_ConnectionStateNames =
+			new BiDictionary<eConnectionState, string>
+			{
+				{eConnectionState.Opened, "opened"},
+				{eConnectionState.Connecting, "connecting"},
+				{eConnectionState.Connected, "connected"},
+				{eConnectionState.Inactive, "inactive"}
 			};
 
 		#region Properties
@@ -43,8 +54,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 		public string FarSiteNumber { get; set; }
 
-		public bool Connected { get; set; }
-
 		public bool Muted { get; set; }
 
 		public bool Outgoing { get; set; }
@@ -55,9 +64,55 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 		public eCallState State { get; set; }
 
+		public eConnectionState ConnectionState { get; set; }
+
 		#endregion
 
 		#region Methods
+
+		/// <summary>
+		/// Gets a string representation for this instance.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			ReprBuilder builder = new ReprBuilder(this);
+
+			if (CallId != 0)
+				builder.AppendProperty("CallId", CallId);
+
+			if (LineId != 0)
+				builder.AppendProperty("LineId", LineId);
+
+			if (ChannelId != 0)
+				builder.AppendProperty("ChannelId", LineId);
+
+			if (!string.IsNullOrEmpty(FarSiteName))
+				builder.AppendProperty("FarSiteName", FarSiteName);
+
+			if (!string.IsNullOrEmpty(FarSiteNumber))
+				builder.AppendProperty("FarSiteNumber", FarSiteNumber);
+
+			if (ConnectionState != eConnectionState.Unknown)
+				builder.AppendProperty("ConnectionState", ConnectionState);
+
+			if (Muted)
+				builder.AppendProperty("Muted", Muted);
+
+			if (Outgoing)
+				builder.AppendProperty("Outgoing", Outgoing);
+
+			if (!string.IsNullOrEmpty(Speed))
+				builder.AppendProperty("Speed", Speed);
+
+			if (VideoCall)
+				builder.AppendProperty("VideoCall", VideoCall);
+
+			if (State != eCallState.Unknown)
+				builder.AppendProperty("State", State);
+
+			return builder.ToString();
+		}
 
 		/// <summary>
 		/// Updates the call state with the given call info data.
@@ -81,8 +136,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			FarSiteNumber = match.Groups["number"].Value;
 			Speed = match.Groups["speed"].Value;
 
+			string stateName = match.Groups["connected"].Value;
+			
+			eConnectionState state;
+			ConnectionState = s_ConnectionStateNames.TryGetKey(stateName, out state) ? state : eConnectionState.Unknown;
+
 			// Polycom documentation doesn't give us an exhaustive list of these, but they seem boolean?
-			Connected = match.Groups["connected"].Value == "connected";
 			Muted = match.Groups["muted"].Value == "muted";
 			Outgoing = match.Groups["outgoing"].Value == "outgoing";
 			VideoCall = match.Groups["video"].Value == "videocall";
@@ -136,9 +195,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			FarSiteNumber = match.Groups["number"].Value;
 			Speed = match.Groups["speed"].Value;
 
+			string stateName = match.Groups["connected"].Value;
+
+			eConnectionState state;
+			ConnectionState = s_ConnectionStateNames.TryGetKey(stateName, out state) ? state : eConnectionState.Unknown;
+
 			// Polycom documentation doesn't give us an exhaustive list of these, but they seem boolean?
 			Outgoing = match.Groups["direction"].Value == "outgoing";
-			Connected = match.Groups["connected"].Value == "connected";
 			VideoCall = match.Groups["type"].Value == "videocall";
 		}
 
@@ -159,13 +222,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (!match.Success)
 				throw new ArgumentException("Unable to parse line status", "lineStatus");
 
+			FarSiteNumber = match.Groups["number"].Value;
+
 			CallId = int.Parse(match.Groups["callId"].Value);
 			LineId = int.Parse(match.Groups["lineId"].Value);
 			ChannelId = int.Parse(match.Groups["channelId"].Value);
 
+			string stateName = match.Groups["status"].Value;
+
+			eConnectionState state;
+			ConnectionState = s_ConnectionStateNames.TryGetKey(stateName, out state) ? state : eConnectionState.Unknown;
+
 			// Polycom documentation doesn't give us an exhaustive list of these, but they seem boolean?
 			Outgoing = match.Groups["direction"].Value == "outgoing";
-			Connected = match.Groups["status"].Value == "connected";
 		}
 
 		/// <summary>
@@ -187,7 +256,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			CallId = int.Parse(match.Groups["call"].Value);
 			Speed = match.Groups["speed"].Value;
 
-			Connected = true;
+			ConnectionState = eConnectionState.Connected;
 		}
 
 		/// <summary>
@@ -208,7 +277,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			CallId = int.Parse(match.Groups["call"].Value);
 
-			Connected = false;
+			ConnectionState = eConnectionState.Inactive;
 		}
 
 		/// <summary>
@@ -229,7 +298,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			CallId = int.Parse(match.Groups["call"].Value);
 
-			Connected = false;
+			ConnectionState = eConnectionState.Inactive;
 		}
 
 		#endregion

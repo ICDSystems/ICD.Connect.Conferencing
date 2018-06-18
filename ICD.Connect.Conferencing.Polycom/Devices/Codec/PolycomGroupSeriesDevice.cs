@@ -363,9 +363,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				{
 					handler(data);
 				}
-				catch (Exception)
+				catch (Exception e)
 				{
-					Log(eSeverity.Error, "Failed to handle feedback {0}", StringUtils.ToRepresentation(data));
+					Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", StringUtils.ToRepresentation(data), e.Message);
 				}
 			}
 		}

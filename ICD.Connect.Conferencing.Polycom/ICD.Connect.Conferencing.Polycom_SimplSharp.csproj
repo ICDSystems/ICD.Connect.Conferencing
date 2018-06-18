@@ -76,6 +76,7 @@
     <Compile Include="Devices\Codec\Components\Dial\CallStatus.cs" />
     <Compile Include="Devices\Codec\Components\Dial\DialComponent.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eCallState.cs" />
+    <Compile Include="Devices\Codec\Components\Dial\eConnectionState.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eDialProtocol.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eDialType.cs" />
     <Compile Include="Devices\Codec\Components\Layout\PipPositionEventArgs.cs" />

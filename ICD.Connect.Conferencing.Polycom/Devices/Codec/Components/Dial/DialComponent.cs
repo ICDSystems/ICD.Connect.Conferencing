@@ -310,7 +310,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				int callId = CallStatus.GetCallIdFromCallStatus(data);
 				UpdateCallState(callId, cs => cs.SetCallStatus(data));
 			}
-			else if (data.StartsWith("notification:callstatus:"))
+			else if (data.StartsWith("notification:linestatus:"))
 			{
 				// notification:linestatus:outgoing:32:0:0:disconnected
 				int callId = CallStatus.GetCallIdFromLineStatus(data);
@@ -336,7 +336,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				update(callStatus);
 
 				m_CallStates.Remove(id);
-				if (callStatus.Connected)
+				
+				if (callStatus.ConnectionState != eConnectionState.Inactive)
 					m_CallStates[callStatus.CallId] = callStatus;
 			}
 			finally

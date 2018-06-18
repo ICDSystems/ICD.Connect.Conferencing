@@ -189,22 +189,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		}
 
 		/// <summary>
-		/// Enables/disables far end mute.
-		/// </summary>
-		/// <param name="mute"></param>
-		public void MuteFar(bool mute)
-		{
-			Codec.SendCommand("mute far {0}", mute ? "on" : "off");
-			Codec.Log(eSeverity.Informational, "Setting far mute {0}", mute ? "on" : "off");
-		}
-
-		/// <summary>
 		/// Enables/disables muting transmission of local video to far site. 
 		/// </summary>
 		/// <param name="mute"></param>
 		public void MuteVideo(bool mute)
 		{
-			Codec.SendCommand("mutevideo near {0}", mute ? "on" : "off");
+			Codec.SendCommand("videomute near {0}", mute ? "on" : "off");
 			Codec.Log(eSeverity.Informational, "Setting near video mute {0}", mute ? "on" : "off");
 		}
 
@@ -240,7 +230,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 				yield return command;
 
 			yield return new GenericConsoleCommand<bool>("MuteNear", "MuteNear <true/false>", m => MuteNear(m));
-			yield return new GenericConsoleCommand<bool>("MuteFar", "MuteFar <true/false>", m => MuteFar(m));
 			yield return new GenericConsoleCommand<bool>("MuteVideo", "MuteVideo <true/false>", m => MuteVideo(m));
 			yield return new ConsoleCommand("MuteNearToggle", "", () => ToggleMuteNear());
 			yield return new ConsoleCommand("MuteFarToggle", "", () => ToggleMuteFar());

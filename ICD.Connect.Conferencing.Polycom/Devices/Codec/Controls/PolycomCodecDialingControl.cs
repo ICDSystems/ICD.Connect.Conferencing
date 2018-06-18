@@ -170,11 +170,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void UpdateMute()
 		{
 			bool videoMute = m_RequestedHold;
-			bool farMute = m_RequestedHold;
 			bool nearMute = m_RequestedHold || m_RequestedPrivacyMute;
 
 			m_MuteComponent.MuteVideo(videoMute);
-			m_MuteComponent.MuteFar(farMute);
 			m_MuteComponent.MuteNear(nearMute);
 		}
 
@@ -372,10 +370,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 					return eConferenceSourceStatus.Connecting;
 				case eCallState.Ringing:
 					return eConferenceSourceStatus.Ringing;
+				case eCallState.Connecting:
+					return eConferenceSourceStatus.Connecting;
 				case eCallState.Connected:
-					return eConferenceSourceStatus.Connecting;
+					return eConferenceSourceStatus.Connected;
 				case eCallState.Complete:
-					return eConferenceSourceStatus.Connecting;
+					return eConferenceSourceStatus.Connected;
 				default:
 					throw new ArgumentOutOfRangeException("state");
 			}
@@ -500,7 +500,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void Subscribe(MuteComponent muteComponent)
 		{
 			muteComponent.OnMutedNearChanged += MuteComponentOnMutedNearChanged;
-			muteComponent.OnMutedFarChanged += MuteComponentOnMutedFarChanged;
 			muteComponent.OnVideoMutedChanged += MuteComponentOnVideoMutedChanged;
 		}
 
@@ -511,7 +510,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void Unsubscribe(MuteComponent muteComponent)
 		{
 			muteComponent.OnMutedNearChanged -= MuteComponentOnMutedNearChanged;
-			muteComponent.OnMutedFarChanged -= MuteComponentOnMutedFarChanged;
 			muteComponent.OnVideoMutedChanged -= MuteComponentOnVideoMutedChanged;
 		}
 
@@ -521,16 +519,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="sender"></param>
 		/// <param name="boolEventArgs"></param>
 		private void MuteComponentOnVideoMutedChanged(object sender, BoolEventArgs boolEventArgs)
-		{
-			UpdateMute();
-		}
-
-		/// <summary>
-		/// Called when the far mute state changes.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="boolEventArgs"></param>
-		private void MuteComponentOnMutedFarChanged(object sender, BoolEventArgs boolEventArgs)
 		{
 			UpdateMute();
 		}
