@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -37,6 +38,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
 		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
+		private readonly Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>> m_RangeFeedbackHandlers;
 		private readonly PolycomComponentFactory m_Components;
 		private readonly ISerialBuffer m_SerialBuffer;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
@@ -83,6 +85,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		public PolycomGroupSeriesDevice()
 		{
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
+			m_RangeFeedbackHandlers = new Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>>();
 			m_Components = new PolycomComponentFactory(this);
 
 			m_SerialBuffer = new MultiDelimiterSerialBuffer('\r', '\n');
@@ -241,6 +244,33 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				m_FeedbackHandlers.Add(word, new IcdHashSet<Action<string>>());
 
 			m_FeedbackHandlers[word].Add(callback);
+		}
+
+		/// <summary>
+		/// Registers the callback for handling a range of feedback
+		/// 
+		/// E.g.
+		/// 	callinfo begin
+		/// 	callinfo:43:Polycom Group Series Demo:192.168.1.101:384:connected:
+		/// 	notmuted:outgoing:videocallcallinfo:36:192.168.1.102:256:connected:muted:outgoing:videocall
+		/// 	callinfo end
+		/// 
+		/// Calls the callback for the items between the start and end
+		/// </summary>
+		/// <param name="word"></param>
+		/// <param name="callback"></param>
+		public void RegisterRangeFeedback(string word, Action<IEnumerable<string>> callback)
+		{
+			if (word == null)
+				throw new ArgumentNullException("word");
+
+			if (callback == null)
+				throw new ArgumentNullException("callback");
+
+			if (!m_RangeFeedbackHandlers.ContainsKey(word))
+				m_RangeFeedbackHandlers.Add(word, new IcdHashSet<Action<IEnumerable<string>>>());
+
+			m_RangeFeedbackHandlers[word].Add(callback);
 		}
 
 		#endregion

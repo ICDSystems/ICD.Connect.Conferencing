@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -52,8 +53,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			Codec.RegisterFeedback("active", HandleActiveCall);
 			Codec.RegisterFeedback("cleared", HandleClearedCall);
 			Codec.RegisterFeedback("ended", HandleEndedCall);
-			Codec.RegisterFeedback("callinfo", HandleCallInfo);
 			Codec.RegisterFeedback("notification", HandleNotification);
+
+			Codec.RegisterRangeFeedback("callinfo", HandleCallRangeInfo);
 
 			if (Codec.Initialized)
 				Initialize();
@@ -284,18 +286,31 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		}
 
 		/// <summary>
-		/// Called when we get a callinfo feedback message.
+		/// Called when we get a range of callinfo feedback messages.
 		/// </summary>
-		/// <param name="data"></param>
-		private void HandleCallInfo(string data)
+		/// <param name="range"></param>
+		private void HandleCallRangeInfo(IEnumerable<string> range)
 		{
 			// callinfo begin
 			// callinfo:43:Polycom Group Series Demo:192.168.1.101:384:connected:notmuted:outgoing:videocall
 			// callinfo:36:192.168.1.102:256:connected:muted:outgoing:videocall
 			// callinfo end
 
-			int callId = CallStatus.GetCallIdFromCallInfo(data);
-			UpdateCallState(callId, cs => cs.SetCallInfo(data));
+			IcdHashSet<int> ids = new IcdHashSet<int>();
+
+			foreach (string data in range)
+			{
+				int callId = CallStatus.GetCallIdFromCallInfo(data);
+				string data1 = data;
+
+				UpdateCallState(callId, cs => cs.SetCallInfo(data1));
+
+				ids.Add(callId);
+			}
+
+			// Remove any calls that are no longer in the list
+			IEnumerable<int> remove = m_CallStatesSection.Execute(() => m_CallStates.Keys.Except(ids).ToArray());
+			RemoveCallStatuses(remove);
 		}
 
 		/// <summary>
@@ -335,6 +350,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 				update(callStatus);
 
+				IcdConsole.PrintLine(eConsoleColor.Yellow, "{0}", callStatus);
+
 				m_CallStates.Remove(id);
 				
 				if (callStatus.ConnectionState != eConnectionState.Inactive)
@@ -346,6 +363,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			}
 
 			OnCallStatesChanged.Raise(this);
+		}
+
+		/// <summary>
+		/// Removes the call states with the given ids.
+		/// </summary>
+		/// <param name="ids"></param>
+		private void RemoveCallStatuses(IEnumerable<int> ids)
+		{
+			bool changed =
+				m_CallStatesSection.Execute(() => ids.Aggregate(false, (current, id) => current || m_CallStates.Remove(id)));
+
+			if (changed)
+				OnCallStatesChanged.Raise(this);
 		}
 
 		#endregion
