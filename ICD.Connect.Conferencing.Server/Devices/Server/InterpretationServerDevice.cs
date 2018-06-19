@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -12,7 +11,7 @@ using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
-using ICD.Connect.Devices;
+using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
@@ -23,7 +22,7 @@ using ICD.Connect.Settings.SPlusShims.EventArguments;
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	[PublicAPI]
-	public sealed class InterpretationServerDevice : AbstractDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
+	public sealed class InterpretationServerDevice : AbstractSimplDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
 	{
 		public event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
 		public event EventHandler<InterpretationRoomInfoArgs> OnRoomAdded;
@@ -824,10 +823,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ServerOnSocketStateChange(object sender, SocketStateEventArgs args)
 		{
-			UpdateCachedOnlineStatus();
+			UpdateCachedIsOnlineStatus();
 		}
 
-		protected override bool GetIsOnlineStatus()
+		private void UpdateCachedIsOnlineStatus()
+		{
+			IsOnline = GetAreAdaptersOnlineStatus();
+		}
+
+		private bool GetAreAdaptersOnlineStatus()
 		{
 			return m_SafeCriticalSection.Execute(() => m_AdapterToBooth.AnyAndAll(adapter => adapter.Key.IsOnline));
 		}

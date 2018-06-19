@@ -4,7 +4,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
 	public interface IClientInterpretationDevice : IInterpretationDevice
 	{
-		string RoomName { get; set; }
-		string RoomPrefix { get; set; }
+		string RoomName { get; }
+		string RoomPrefix { get; }
+
+		void SetRoomNameIfNullOrEmpty(string name);
+		void SetRoomPrefixIfNullOrEmpty(string prefix);
 	}
 }

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
-using ICD.Connect.Devices;
+using ICD.Connect.Devices.Simpl;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
-	public interface IInterpretationServerDevice : IDevice
+	public interface IInterpretationServerDevice : ISimplDevice
 	{
 		event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
 		event EventHandler<InterpretationRoomInfoArgs> OnRoomAdded;
