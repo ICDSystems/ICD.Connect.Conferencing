@@ -1,5 +1,6 @@
 ﻿using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
 using ICD.Connect.Settings.Attributes.SettingsProperties;
@@ -11,6 +12,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string PASSWORD_ELEMENT = "Password";
+		private const string ADDRESSBOOK_TYPE_ELEMENT = "AddressbookType";
 
 		private const string DEFAULT_PASSWORD = "admin";
 
@@ -34,6 +36,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		}
 
 		/// <summary>
+		/// Determines which addressbook to use with directory.
+		/// </summary>
+		public eAddressbookType AddressbookType { get; set; }
+
+		/// <summary>
 		/// Writes property elements to xml.
 		/// </summary>
 		/// <param name="writer"></param>
@@ -43,6 +50,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PASSWORD_ELEMENT, Password);
+			writer.WriteElementString(ADDRESSBOOK_TYPE_ELEMENT, IcdXmlConvert.ToString(AddressbookType));
 		}
 
 		/// <summary>
@@ -55,6 +63,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 			Password = XmlUtils.TryReadChildElementContentAsString(xml, PASSWORD_ELEMENT);
+			AddressbookType = XmlUtils.TryReadChildElementContentAsEnum<eAddressbookType>(xml, ADDRESSBOOK_TYPE_ELEMENT, true) ??
+			                  eAddressbookType.Global;
 		}
 	}
 }

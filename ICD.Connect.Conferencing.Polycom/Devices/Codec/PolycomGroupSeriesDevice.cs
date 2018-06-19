@@ -10,6 +10,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
@@ -69,6 +70,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
 			}
 		}
+
+		/// <summary>
+		/// Gets the addressbook to use with the directory.
+		/// </summary>
+		public eAddressbookType AddressbookType { get; private set; }
 
 		/// <summary>
 		/// Provides the components attached to this codec.
@@ -440,6 +446,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
 			settings.Password = Password;
+			settings.AddressbookType = AddressbookType;
 		}
 
 		/// <summary>
@@ -450,6 +457,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.ClearSettingsFinal();
 
 			Password = null;
+			AddressbookType = eAddressbookType.Global;
+
 			SetPort(null);
 		}
 
@@ -463,6 +472,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.ApplySettingsFinal(settings, factory);
 
 			Password = settings.Password;
+			AddressbookType = settings.AddressbookType;
 
 			ISerialPort port = null;
 

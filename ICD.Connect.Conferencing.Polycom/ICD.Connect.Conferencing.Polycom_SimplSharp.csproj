@@ -66,6 +66,9 @@
     <Compile Include="Devices\Camera\PolycomGroupSeriesCameraDevicePowerControl.cs" />
     <Compile Include="Devices\Camera\PolycomGroupSeriesCameraSettings.cs" />
     <Compile Include="Devices\Codec\Components\AbstractPolycomComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Addressbook\AddressbookComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Addressbook\eAddressbookType.cs" />
+    <Compile Include="Devices\Codec\Components\Addressbook\RootFolder.cs" />
     <Compile Include="Devices\Codec\Components\AutoAnswer\AutoAnswerComponent.cs" />
     <Compile Include="Devices\Codec\Components\AutoAnswer\PolycomAutoAnswerEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Camera\ActiveCameraEventArgs.cs" />

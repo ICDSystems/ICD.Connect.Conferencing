@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
@@ -21,6 +22,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 		private static readonly Dictionary<Type, Func<PolycomGroupSeriesDevice, AbstractPolycomComponent>> s_Factories =
 			new Dictionary<Type, Func<PolycomGroupSeriesDevice, AbstractPolycomComponent>>
 			{
+				{typeof(AddressbookComponent), codec => new AddressbookComponent(codec)},
 				{typeof(AutoAnswerComponent), codec => new AutoAnswerComponent(codec)},
 				{typeof(CameraComponent), codec => new CameraComponent(codec)},
 				{typeof(ContentComponent), codec => new ContentComponent(codec)},

@@ -1,6 +1,7 @@
 ﻿using System;
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
@@ -11,6 +12,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		public override event EventHandler OnCleared;
 
+		private readonly AddressbookComponent m_AddressbookComponent;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -19,6 +22,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public PolycomCodecDirectoryControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
+			m_AddressbookComponent = parent.Components.GetComponent<AddressbookComponent>();
+
+			Subscribe(m_AddressbookComponent);
 		}
 
 		/// <summary>
@@ -30,7 +36,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			OnCleared = null;
 
 			base.DisposeFinal(disposing);
+
+			Unsubscribe(m_AddressbookComponent);
 		}
+
+		#region Methods
 
 		/// <summary>
 		/// Gets the root folder for the directory.
@@ -57,5 +67,27 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			throw new NotImplementedException();
 		}
+
+		#endregion
+
+		#region Addressbook Component Callbacks
+
+		/// <summary>
+		/// Subscribe to the addressbook component events.
+		/// </summary>
+		/// <param name="addressbookComponent"></param>
+		private void Subscribe(AddressbookComponent addressbookComponent)
+		{
+		}
+
+		/// <summary>
+		/// Unsubscribe from the addressbook component events.
+		/// </summary>
+		/// <param name="addressbookComponent"></param>
+		private void Unsubscribe(AddressbookComponent addressbookComponent)
+		{
+		}
+
+		#endregion
 	}
 }
