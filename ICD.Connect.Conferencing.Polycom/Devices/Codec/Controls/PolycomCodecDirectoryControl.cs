@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IDirectoryFolder GetRoot()
 		{
-			throw new NotImplementedException();
+			return m_AddressbookComponent.GetRoot();
 		}
 
 		/// <summary>
@@ -56,7 +56,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		public override void Clear()
 		{
-			throw new NotImplementedException();
+			m_AddressbookComponent.Clear();
 		}
 
 		/// <summary>
@@ -65,7 +65,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="folder"></param>
 		public override void PopulateFolder(IDirectoryFolder folder)
 		{
-			throw new NotImplementedException();
+			m_AddressbookComponent.PopulateFolder(folder);
 		}
 
 		#endregion

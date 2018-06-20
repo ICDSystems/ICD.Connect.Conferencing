@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 {
@@ -128,6 +129,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			return EnumUtils.GetValues<eAddressbookType>().Select(type => GetRoot(type));
 		}
 
+		/// <summary>
+		/// Begin caching the child elements of the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		public void PopulateFolder(IDirectoryFolder folder)
+		{
+			throw new NotImplementedException();
+		}
+
 		#endregion
 
 		/// <summary>
@@ -142,7 +152,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			for (char c = 'a'; c <= 'z'; c++)
 				yield return c;
 
-			foreach (char c in new char[] {'-', '/', ';', '@', ',', '.', '\\'})
+			foreach (char c in new [] {'-', '/', ';', '@', ',', '.', '\\'})
 				yield return c;
 		}
 
@@ -158,7 +168,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 				return;
 
 			IContact contact = ParseContact(data);
-			GetRoot(eAddressbookType.Local).AddContact(contact);
+			AddContact(eAddressbookType.Local, contact);
 		}
 
 		private void HandleGlobalDir(string data)
@@ -167,18 +177,61 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			// gaddrbook 1. "ConfRoom" sip_spd:Auto sip_num:confroom@profoundtech.onmicrosoft.com
 			// gaddrbook letter C done
 
-			if (data.EndsWith(" done"))
+			if (data.EndsWith(" done") || data.EndsWith(" none"))
 				return;
 
 			IContact contact = ParseContact(data);
-			GetRoot(eAddressbookType.Global).AddContact(contact);
+			AddContact(eAddressbookType.Global, contact);
 		}
 
+		/// <summary>
+		/// Parses the contact data into a contact instance.
+		/// </summary>
+		/// <param name="data"></param>
+		/// <returns></returns>
 		private static IContact ParseContact(string data)
 		{
 			Match match = Regex.Match(data, CONTACT_REGEX);
+			if (!match.Success)
+				throw new FormatException("Failed to parse contact");
 
-			throw new NotImplementedException();
+			IContactMethod[] contactMethods =
+			{
+				new ContactMethod(match.Groups["number"].Value) 
+			};
+
+			return new Contact(match.Groups["name"].Value, contactMethods);
+		}
+
+		/// <summary>
+		/// Adds the contact to the directory tree.
+		/// </summary>
+		/// <param name="addressbookType"></param>
+		/// <param name="contact"></param>
+		private void AddContact(eAddressbookType addressbookType, IContact contact)
+		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
+			string lastName = contact.Name
+			                         .Split()
+			                         .FirstOrDefault(s => !string.IsNullOrEmpty(s));
+
+			if (string.IsNullOrEmpty(lastName))
+				return;
+
+			char letter = lastName.First();
+
+			RootFolder root = GetRoot(addressbookType);
+			IDirectoryFolder folder = root.GetFolders().FirstOrDefault(f => f.Name == letter.ToString());
+
+			if (folder == null)
+			{
+				folder = new DirectoryFolder(letter.ToString());
+				root.AddFolder(folder);
+			}
+
+			folder.AddContact(contact);
 		}
 
 		#region Console
