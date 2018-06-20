@@ -373,6 +373,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		{
 			string data = args.Data;
 
+			// SSH
+			if (data.StartsWith("-> "))
+				data = data.Substring(3);
+
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
