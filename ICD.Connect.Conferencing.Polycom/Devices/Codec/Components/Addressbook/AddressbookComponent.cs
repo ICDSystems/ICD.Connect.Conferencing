@@ -221,12 +221,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 			string lastName = contact.Name
 			                         .Split()
+			                         .Reverse()
 			                         .FirstOrDefault(s => !string.IsNullOrEmpty(s));
 
 			if (string.IsNullOrEmpty(lastName))
 				return;
 
 			char letter = lastName.First();
+			letter = char.ToUpper(letter);
 
 			RootFolder root = GetRoot(addressbookType);
 			IDirectoryFolder folder = root.GetFolders().FirstOrDefault(f => f.Name == letter.ToString());
