@@ -167,6 +167,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (data.EndsWith(" done"))
 				return;
 
+			if (data.StartsWith("addrbook all"))
+				return;
+
 			IContact contact = ParseContact(data);
 			AddContact(eAddressbookType.Local, contact);
 		}
@@ -178,6 +181,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			// gaddrbook letter C done
 
 			if (data.EndsWith(" done") || data.EndsWith(" none"))
+				return;
+
+			if (data.StartsWith("gaddrbook letter "))
 				return;
 
 			IContact contact = ParseContact(data);
