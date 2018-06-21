@@ -141,12 +141,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			if (port != null)
-			{
-				port.DebugRx = eDebugMode.MixedAsciiHex;
-				port.DebugTx = eDebugMode.MixedAsciiHex;
-			}
-
 			m_ConnectionStateManager.SetPort(port);
 		}
 
@@ -386,8 +380,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			// Intentional spacing
 			if (data.StartsWith("Hi, my name is :"))
 				Initialize();
-
-			IcdConsole.PrintLine(eConsoleColor.Magenta, StringUtils.ToMixedReadableHexLiteral(data));
 
 			string word = GetFirstWord(data);
 			if (word == null)
