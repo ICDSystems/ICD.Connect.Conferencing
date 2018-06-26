@@ -101,6 +101,13 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		bool AddContacts(IEnumerable<IContact> contacts);
 
 		/// <summary>
+		/// Returns true if this folder contains the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		/// <returns></returns>
+		bool ContainsFolder(IDirectoryFolder folder);
+
+		/// <summary>
 		/// Gets this IFolder and all child folders recursively.
 		/// </summary>
 		/// <returns></returns>

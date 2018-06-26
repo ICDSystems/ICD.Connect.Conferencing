@@ -60,11 +60,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		{
 			base.Initialize();
 
-			Codec.SendCommand("addrbook all");
-
-			// "gaddrbook all" isn't working on my test unit :(
-			foreach (char c in GetValidAddressbookLetters())
-				Codec.SendCommand("gaddrbook letter {0}", c);
+			PopulateLocalAddressbook();
+			PopulateGlobalAddressbook();
 		}
 
 		#region Methods
@@ -135,10 +132,59 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// <param name="folder"></param>
 		public void PopulateFolder(IDirectoryFolder folder)
 		{
-			throw new NotImplementedException();
+			if (folder == null)
+				throw new ArgumentNullException("folder");
+
+			RootFolder root = folder as RootFolder;
+			if (root != null)
+			{
+				switch (root.Type)
+				{
+					case eAddressbookType.Local:
+						PopulateLocalAddressbook();
+						return;
+					case eAddressbookType.Global:
+						PopulateGlobalAddressbook();
+						return;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
+			}
+
+			root = GetRoots().First(r => r.ContainsFolder(folder));
+
+			switch (root.Type)
+			{
+				case eAddressbookType.Local:
+					Codec.SendCommand("addrbook letter {0}", folder.Name);
+					break;
+				case eAddressbookType.Global:
+					Codec.SendCommand("gaddrbook letter {0}", folder.Name);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Sends commands to the system to pull down the local addressbook.
+		/// </summary>
+		private void PopulateLocalAddressbook()
+		{
+			Codec.SendCommand("addrbook all");
+		}
+
+		/// <summary>
+		/// Sends commands to the system to pull down the global addressbook.
+		/// </summary>
+		private void PopulateGlobalAddressbook()
+		{
+			// "gaddrbook all" isn't working on my test unit :(
+			foreach (char c in GetValidAddressbookLetters())
+				Codec.SendCommand("gaddrbook letter {0}", c);
+		}
 
 		/// <summary>
 		/// Gets the addressbook letters that are valid for the "gaddrbook letter {0}" command.

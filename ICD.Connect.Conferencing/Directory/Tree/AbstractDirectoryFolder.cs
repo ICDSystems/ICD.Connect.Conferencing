@@ -196,6 +196,19 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		}
 
 		/// <summary>
+		/// Returns true if this folder contains the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		/// <returns></returns>
+		public bool ContainsFolder(IDirectoryFolder folder)
+		{
+			if (folder == null)
+				throw new ArgumentNullException("folder");
+
+			return m_FoldersSection.Execute(() => m_CachedFolders.ContainsKey(folder.Name));
+		}
+
+		/// <summary>
 		/// Gets this IFolder and all child folders recursively.
 		/// </summary>
 		/// <returns></returns>
