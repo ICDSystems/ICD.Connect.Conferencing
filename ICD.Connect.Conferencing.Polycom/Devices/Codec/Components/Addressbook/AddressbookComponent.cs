@@ -135,6 +135,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (folder == null)
 				throw new ArgumentNullException("folder");
 
+			// Prevent spamming the device with directory requests
+			if (folder.ChildCount > 0)
+				return;
+
 			RootFolder root = folder as RootFolder;
 			if (root != null)
 			{
