@@ -70,9 +70,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		{
 			base.Initialize();
 
-			Codec.SendCommand("vcbutton register");
-			Codec.SendCommand("vcbutton get");
-			Codec.SendCommand("vcbutton source get");
+			Codec.EnqueueCommand("vcbutton register");
+			Codec.EnqueueCommand("vcbutton get");
+			Codec.EnqueueCommand("vcbutton source get");
 		}
 
 		#region Methods
@@ -83,7 +83,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		/// <param name="videoSource"></param>
 		public void Play(int videoSource)
 		{
-			Codec.SendCommand("vcbutton play {0}", videoSource);
+			Codec.EnqueueCommand("vcbutton play {0}", videoSource);
 			Codec.Log(eSeverity.Informational, "Sharing content from video source {0}", videoSource);
 		}
 
@@ -92,7 +92,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		/// </summary>
 		public void Stop()
 		{
-			Codec.SendCommand("vcbutton stop");
+			Codec.EnqueueCommand("vcbutton stop");
 			Codec.Log(eSeverity.Informational, "Stopping sharing content");
 		}
 

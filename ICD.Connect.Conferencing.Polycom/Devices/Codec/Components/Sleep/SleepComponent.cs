@@ -66,7 +66,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		{
 			base.Initialize();
 
-			Codec.SendCommand("sleep register");
+			Codec.EnqueueCommand("sleep register");
 		}
 
 		/// <summary>
@@ -94,7 +94,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		/// </summary>
 		public void Sleep()
 		{
-			Codec.SendCommand("sleep");
+			Codec.EnqueueCommand("sleep");
 			Codec.Log(eSeverity.Informational, "Putting device to sleep");
 		}
 
@@ -103,7 +103,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		/// </summary>
 		public void Wake()
 		{
-			Codec.SendCommand("wake");
+			Codec.EnqueueCommand("wake");
 			Codec.Log(eSeverity.Informational, "Waking device");
 		}
 
@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		/// <param name="enabled"></param>
 		public void SetSleepMute(bool enabled)
 		{
-			Codec.SendCommand("sleep mute {0}", enabled ? "on" : "off");
+			Codec.EnqueueCommand("sleep mute {0}", enabled ? "on" : "off");
 			Codec.Log(eSeverity.Informational, "Setting sleep mute {0}", enabled ? "on" : "off");
 		}
 

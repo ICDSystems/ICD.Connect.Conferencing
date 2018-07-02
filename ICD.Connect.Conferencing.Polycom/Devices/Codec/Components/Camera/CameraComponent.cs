@@ -76,8 +76,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		{
 			base.Initialize();
 
-			Codec.SendCommand("notify vidsourcechanges");
-			Codec.SendCommand("preset register");
+			Codec.EnqueueCommand("notify vidsourcechanges");
+			Codec.EnqueueCommand("preset register");
 		}
 
 		#region Methods
@@ -90,7 +90,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		{
 			string move = s_ActionNames.GetValue(action);
 
-			Codec.SendCommand("camera near move {0}", move);
+			Codec.EnqueueCommand("camera near move {0}", move);
 			Codec.Log(eSeverity.Informational, "Performing near camera move {0}", move);
 		}
 
@@ -102,7 +102,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		{
 			string move = s_ActionNames.GetValue(action);
 
-			Codec.SendCommand("camera far move {0}", move);
+			Codec.EnqueueCommand("camera far move {0}", move);
 			Codec.Log(eSeverity.Informational, "Performing far camera move {0}", move);
 		}
 
@@ -112,7 +112,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="camera"></param>
 		public void SetNearCameraAsVideoSource(int camera)
 		{
-			Codec.SendCommand("camera near {0}", camera);
+			Codec.EnqueueCommand("camera near {0}", camera);
 			Codec.Log(eSeverity.Informational, "Setting near camera {0} as main video source", camera);
 		}
 
@@ -122,7 +122,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="camera"></param>
 		public void SetFarCameraAsVideoSource(int camera)
 		{
-			Codec.SendCommand("camera far {0}", camera);
+			Codec.EnqueueCommand("camera far {0}", camera);
 			Codec.Log(eSeverity.Informational, "Setting far camera {0} as main video source", camera);
 		}
 
@@ -138,7 +138,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 			int tiltPosition = MathUtils.Clamp((int)(tilt * CAMERA_EXTENT), -CAMERA_EXTENT, CAMERA_EXTENT);
 			int zoomPosition = MathUtils.Clamp((int)(zoom * CAMERA_EXTENT), -CAMERA_EXTENT, CAMERA_EXTENT);
 
-			Codec.SendCommand("camera near setposition {0} {1} {2}", panPosition, tiltPosition, zoomPosition);
+			Codec.EnqueueCommand("camera near setposition {0} {1} {2}", panPosition, tiltPosition, zoomPosition);
 			Codec.Log(eSeverity.Informational, "Setting near camera position pan {0} tilt {1} zoom {2}", panPosition, tiltPosition, zoomPosition);
 		}
 
@@ -148,7 +148,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="camera"></param>
 		public void SetNearCameraForPeople(int camera)
 		{
-			Codec.SendCommand("camera for-people {0}", camera);
+			Codec.EnqueueCommand("camera for-people {0}", camera);
 			Codec.Log(eSeverity.Informational, "Setting near camera {0} as for-people", camera);
 		}
 
@@ -158,7 +158,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="camera"></param>
 		public void SetNearCameraForContent(int camera)
 		{
-			Codec.SendCommand("camera for-content {0}", camera);
+			Codec.EnqueueCommand("camera for-content {0}", camera);
 			Codec.Log(eSeverity.Informational, "Setting near camera {0} as for-content", camera);
 		}
 
@@ -168,7 +168,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="inverted"></param>
 		public void SetNearCameraInverted(bool inverted)
 		{
-			Codec.SendCommand("camerainvert near {0}", inverted ? "on" : "off");
+			Codec.EnqueueCommand("camerainvert near {0}", inverted ? "on" : "off");
 			Codec.Log(eSeverity.Informational, "Setting near camera invert {0}", inverted ? "on" : "off");
 		}
 
@@ -178,7 +178,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="preset"></param>
 		public void GoNearCamreaPreset(int preset)
 		{
-			Codec.SendCommand("preset near go {0}", preset);
+			Codec.EnqueueCommand("preset near go {0}", preset);
 			Codec.Log(eSeverity.Informational, "Applying near camera preset {0}", preset);
 		}
 
@@ -188,7 +188,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="preset"></param>
 		public void GoFarCameraPreset(int preset)
 		{
-			Codec.SendCommand("preset far go {0}", preset);
+			Codec.EnqueueCommand("preset far go {0}", preset);
 			Codec.Log(eSeverity.Informational, "Applying far camera preset {0}", preset);
 		}
 
@@ -198,7 +198,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="preset"></param>
 		public void SetNearCameraPreset(int preset)
 		{
-			Codec.SendCommand("preset near set {0}", preset);
+			Codec.EnqueueCommand("preset near set {0}", preset);
 			Codec.Log(eSeverity.Informational, "Storing near camera preset {0}", preset);
 		}
 
@@ -208,7 +208,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// <param name="preset"></param>
 		public void SetFarCameraPreset(int preset)
 		{
-			Codec.SendCommand("preset far set {0}", preset);
+			Codec.EnqueueCommand("preset far set {0}", preset);
 			Codec.Log(eSeverity.Informational, "Storing far camera preset {0}", preset);
 		}
 

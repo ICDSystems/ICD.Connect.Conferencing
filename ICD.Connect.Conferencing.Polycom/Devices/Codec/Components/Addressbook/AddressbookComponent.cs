@@ -160,10 +160,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			switch (root.Type)
 			{
 				case eAddressbookType.Local:
-					Codec.SendCommand("addrbook letter {0}", folder.Name);
+					Codec.EnqueueCommand("addrbook letter {0}", folder.Name);
 					break;
 				case eAddressbookType.Global:
-					Codec.SendCommand("gaddrbook letter {0}", folder.Name);
+					Codec.EnqueueCommand("gaddrbook letter {0}", folder.Name);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -177,7 +177,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// </summary>
 		private void PopulateLocalAddressbook()
 		{
-			Codec.SendCommand("addrbook all");
+			Codec.EnqueueCommand("addrbook all");
 		}
 
 		/// <summary>
@@ -187,7 +187,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		{
 			// "gaddrbook all" isn't working on my test unit :(
 			foreach (char c in GetValidAddressbookLetters())
-				Codec.SendCommand("gaddrbook letter {0}", c);
+				Codec.EnqueueCommand("gaddrbook letter {0}", c);
 		}
 
 		/// <summary>

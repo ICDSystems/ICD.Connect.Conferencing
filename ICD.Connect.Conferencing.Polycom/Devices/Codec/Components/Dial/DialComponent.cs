@@ -79,13 +79,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		{
 			base.Initialize();
 
-			Codec.SendCommand("callstate register");
-			Codec.SendCommand("notify callstatus");
-			Codec.SendCommand("notify linestatus");
-			Codec.SendCommand("listen video");
+			Codec.EnqueueCommand("callstate register");
+			Codec.EnqueueCommand("notify callstatus");
+			Codec.EnqueueCommand("notify linestatus");
+			Codec.EnqueueCommand("listen video");
 
-			Codec.SendCommand("callinfo all");
-			Codec.SendCommand("callstate get");
+			Codec.EnqueueCommand("callinfo all");
+			Codec.EnqueueCommand("callstate get");
 		}
 
 		#region Methods
@@ -104,7 +104,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// </summary>
 		public void AnswerVideo()
 		{
-			Codec.SendCommand("answer video");
+			Codec.EnqueueCommand("answer video");
 			Codec.Log(eSeverity.Informational, "Answering incoming video call");
 		}
 
@@ -114,7 +114,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// <param name="callId"></param>
 		public void HangupVideo(int callId)
 		{
-			Codec.SendCommand("hangup video {0}", callId);
+			Codec.EnqueueCommand("hangup video {0}", callId);
 			Codec.Log(eSeverity.Informational, "Disconnecting video call {0}", callId);
 		}
 
@@ -123,7 +123,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// </summary>
 		public void HangupAll()
 		{
-			Codec.SendCommand("hangup all");
+			Codec.EnqueueCommand("hangup all");
 			Codec.Log(eSeverity.Informational, "Disconnecting all active calls");
 		}
 
@@ -132,7 +132,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// </summary>
 		public void HangupAllVideo()
 		{
-			Codec.SendCommand("hangup video");
+			Codec.EnqueueCommand("hangup video");
 			Codec.Log(eSeverity.Informational, "Disconnecting all active video calls");
 		}
 
@@ -147,7 +147,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			contactName = StringUtils.Enquote(contactName);
 
-			Codec.SendCommand("dial addressbook {0}", contactName);
+			Codec.EnqueueCommand("dial addressbook {0}", contactName);
 			Codec.Log(eSeverity.Informational, "Dialing addressbook contact {0}", StringUtils.ToRepresentation(contactName));
 		}
 
@@ -162,7 +162,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			number = StringUtils.Enquote(number);
 
-			Codec.SendCommand("dial auto {0}", number);
+			Codec.EnqueueCommand("dial auto {0}", number);
 			Codec.Log(eSeverity.Informational, "Dialing auto number {0}", StringUtils.ToRepresentation(number));
 		}
 
@@ -179,7 +179,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			number = StringUtils.Enquote(number);
 
-			Codec.SendCommand("dial manual {0}", number);
+			Codec.EnqueueCommand("dial manual {0}", number);
 			Codec.Log(eSeverity.Informational, "Dialing manual number {0}", StringUtils.ToRepresentation(number));
 		}
 
@@ -199,7 +199,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			string typeName = s_TypeNames.GetValue(type);
 
-			Codec.SendCommand("dial manual {0} {1}", number, typeName);
+			Codec.EnqueueCommand("dial manual {0} {1}", number, typeName);
 			Codec.Log(eSeverity.Informational, "Dialing manual number {0} type {1}", StringUtils.ToRepresentation(number), typeName);
 		}
 
@@ -217,7 +217,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			string protocolName = s_ProtocolNames.GetValue(protocol);
 
-			Codec.SendCommand("dial phone {0} {1}", protocolName, number);
+			Codec.EnqueueCommand("dial phone {0} {1}", protocolName, number);
 			Codec.Log(eSeverity.Informational, "Dialing phone number {0} {1}", protocolName, StringUtils.ToRepresentation(number));
 		}
 
@@ -227,7 +227,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// <param name="tone"></param>
 		public void Gendial(char tone)
 		{
-			Codec.SendCommand("gendial {0}", tone);
+			Codec.EnqueueCommand("gendial {0}", tone);
 			Codec.Log(eSeverity.Informational, "Sending DTMF {0}", tone);
 		}
 

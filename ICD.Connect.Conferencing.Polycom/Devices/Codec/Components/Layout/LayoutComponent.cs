@@ -133,8 +133,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 		{
 			base.Initialize();
 
-			Codec.SendCommand("configlayout {0} get", MONITOR);
-			Codec.SendCommand("systemsetting get selfview", MONITOR);
+			Codec.EnqueueCommand("configlayout {0} get", MONITOR);
+			Codec.EnqueueCommand("systemsetting get selfview", MONITOR);
 		}
 
 		#region Methods
@@ -147,7 +147,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 		{
 			string pip = s_SerialMap.GetValue(position);
 
-			Codec.SendCommand("configlayout {0} {1}", MONITOR, pip);
+			Codec.EnqueueCommand("configlayout {0} {1}", MONITOR, pip);
 			Codec.Log(eSeverity.Informational, "Setting PIP position {0}", pip);
 		}
 
@@ -159,7 +159,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 		{
 			string name = s_SelfViewMap.GetValue(selfView);
 
-			Codec.SendCommand("systemsetting selfview {0}", name);
+			Codec.EnqueueCommand("systemsetting selfview {0}", name);
 			Codec.Log(eSeverity.Informational, "Setting SelfView {0}", name);
 		}
 

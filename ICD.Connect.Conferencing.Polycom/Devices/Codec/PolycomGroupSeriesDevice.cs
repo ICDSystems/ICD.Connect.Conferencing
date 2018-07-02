@@ -29,6 +29,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private const string END_OF_LINE = "\x0D\x0A";
 
 		/// <summary>
+		/// The number of milliseconds to wait between sending commands.
+		/// </summary>
+		private const long RATE_LIMIT_MS = 300;
+
+		/// <summary>
 		/// Raised when the class initializes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
@@ -40,6 +45,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
 		private readonly Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>> m_RangeFeedbackHandlers;
+
+		private readonly RateLimitedEventQueue<string> m_CommandQueue; 
+
 		private readonly PolycomComponentFactory m_Components;
 		private readonly ISerialBuffer m_SerialBuffer;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
@@ -92,6 +100,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		{
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
 			m_RangeFeedbackHandlers = new Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>>();
+
+			m_CommandQueue = new RateLimitedEventQueue<string>
+			{
+				BetweenMilliseconds = RATE_LIMIT_MS
+			};
+			m_CommandQueue.OnItemDequeued += CommandQueueOnItemDequeued;
+
 			m_Components = new PolycomComponentFactory(this);
 
 			m_SerialBuffer = new MultiDelimiterSerialBuffer('\r', '\n');
@@ -125,6 +140,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Unsubscribe(m_SerialBuffer);
 
 			base.DisposeFinal(disposing);
+
+			m_CommandQueue.Dispose();
 
 			m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
@@ -189,9 +206,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// Send command.
 		/// </summary>
 		/// <param name="command"></param>
-		public void SendCommand(string command)
+		public void EnqueueCommand(string command)
 		{
-			SendCommand(command, null);
+			EnqueueCommand(command, null);
 		}
 
 		/// <summary>
@@ -199,32 +216,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		/// <param name="command"></param>
 		/// <param name="args"></param>
-		public void SendCommand(string command, params object[] args)
+		public void EnqueueCommand(string command, params object[] args)
 		{
 			if (args != null)
 				command = string.Format(command, args);
 
-			if (!m_ConnectionStateManager.IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with Codec");
-				return;
-			}
-
-			m_ConnectionStateManager.Send(command + END_OF_LINE);
-		}
-
-		/// <summary>
-		/// Sends commands.
-		/// </summary>
-		/// <param name="commands"></param>
-		[PublicAPI]
-		public void SendCommands(params string[] commands)
-		{
-			if (commands == null)
-				throw new ArgumentNullException("commands");
-
-			foreach (string command in commands)
-				SendCommand(command);
+			m_CommandQueue.Enqueue(command);
 		}
 
 		/// <summary>
@@ -294,6 +291,31 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Initialized = true;
 		}
 
+		/// <summary>
+		/// Called to send the next command to the device.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void CommandQueueOnItemDequeued(object sender, GenericEventArgs<string> eventArgs)
+		{
+			SendCommand(eventArgs.Data);
+		}
+
+		/// <summary>
+		/// Send command.
+		/// </summary>
+		/// <param name="command"></param>
+		private void SendCommand(string command)
+		{
+			if (!m_ConnectionStateManager.IsConnected)
+			{
+				Log(eSeverity.Critical, "Unable to communicate with Codec");
+				return;
+			}
+
+			m_ConnectionStateManager.Send(command + END_OF_LINE);
+		}
+
 		#endregion
 
 		#region Port Callbacks
@@ -316,6 +338,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs args)
 		{
 			m_SerialBuffer.Clear();
+			m_CommandQueue.Clear();
 
 			if (!args.Data)
 			{
@@ -375,7 +398,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				Log(eSeverity.Error, data);
 
 			if (data.StartsWith("Password:"))
-				SendCommand(Password);
+				EnqueueCommand(Password);
 
 			// Intentional spacing
 			if (data.StartsWith("Hi, my name is :"))
