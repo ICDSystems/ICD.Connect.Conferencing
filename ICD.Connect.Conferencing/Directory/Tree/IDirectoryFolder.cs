@@ -57,11 +57,11 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		IDirectoryFolder[] GetFolders();
 
 		/// <summary>
-		/// Gets the cached folder at the given index.
+		/// Gets the cached folder with the given name.
 		/// </summary>
-		/// <param name="index"></param>
+		/// <param name="name"></param>
 		/// <returns></returns>
-		IDirectoryFolder GetFolder(int index);
+		IDirectoryFolder GetFolder(string name);
 
 		/// <summary>
 		/// Gets the cached contacts.
@@ -70,11 +70,11 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		IContact[] GetContacts();
 
 		/// <summary>
-		/// Gets the cached contact at the given index.
+		/// Gets the cached contact with the given name.
 		/// </summary>
-		/// <param name="index"></param>
+		/// <param name="name"></param>
 		/// <returns></returns>
-		IContact GetContact(int index);
+		IContact GetContact(string name);
 
 		/// <summary>
 		/// Caches the folder.
@@ -99,6 +99,13 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		/// <param name="contacts"></param>
 		bool AddContacts(IEnumerable<IContact> contacts);
+
+		/// <summary>
+		/// Returns true if this folder contains the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		/// <returns></returns>
+		bool ContainsFolder(IDirectoryFolder folder);
 
 		/// <summary>
 		/// Gets this IFolder and all child folders recursively.

@@ -7,7 +7,6 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Devices;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.Controls;
@@ -17,7 +16,7 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 {
 	public abstract class AbstractVideoConferenceRouteControl<TParent> :
 		AbstractRouteDestinationControl<TParent>, IVideoConferenceRouteControl
-		where TParent : IDeviceBase
+		where TParent : IVideoConferenceDevice
 	{
 		/// <summary>
 		/// Raised when the device starts/stops actively transmitting on an output.
@@ -78,14 +77,20 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// </summary>
 		/// <param name="address"></param>
 		/// <returns></returns>
-		public abstract eCodecInputType GetCodecInputType(int address);
+		public eCodecInputType GetCodecInputType(int address)
+		{
+			return Parent.InputTypes.GetInputType(address);
+		}
 
 		/// <summary>
 		/// Gets the input addresses with the given codec input type.
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public abstract IEnumerable<int> GetCodecInputs(eCodecInputType type);
+		public IEnumerable<int> GetCodecInputs(eCodecInputType type)
+		{
+			return Parent.InputTypes.GetInputs(type);
+		}
 
 		/// <summary>
 		/// Sets the input address to use for the camera feed.

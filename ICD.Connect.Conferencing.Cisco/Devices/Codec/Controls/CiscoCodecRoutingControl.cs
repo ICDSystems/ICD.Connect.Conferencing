@@ -6,7 +6,6 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors;
 using ICD.Connect.Conferencing.Controls.Routing;
-using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
@@ -65,35 +64,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			base.DisposeFinal(disposing);
 		}
 
-		/// <summary>
-		/// Gets the codec input type for the input with the given address.
-		/// </summary>
-		/// <param name="address"></param>
-		/// <returns></returns>
-		public override eCodecInputType GetCodecInputType(int address)
-		{
-			return Parent.InputTypes.GetInputType(address);
-		}
-
-		/// <summary>
-		/// Gets the input addresses with the given codec input type.
-		/// </summary>
-		/// <param name="type"></param>
-		/// <returns></returns>
-		public override IEnumerable<int> GetCodecInputs(eCodecInputType type)
-		{
-			return Parent.InputTypes.GetInputs(type);
-		}
-
-		/// <summary>
-		/// Sets the input address to use for the camera feed.
-		/// </summary>
-		/// <param name="address"></param>
-		public override void SetCameraInput(int address)
-		{
-			Parent.Components.GetComponent<VideoComponent>().SetMainVideoSourceByConnectorId(address);
-		}
-
 		#region Methods
 
 		/// <summary>
@@ -124,6 +94,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			return VideoComponent.GetVideoOutputConnectors()
 			                     .Where(IsPresentationOutput)
 			                     .Select(c => c.ConnectorId);
+		}
+
+		/// <summary>
+		/// Sets the input address to use for the camera feed.
+		/// </summary>
+		/// <param name="address"></param>
+		public override void SetCameraInput(int address)
+		{
+			Parent.Components.GetComponent<VideoComponent>().SetMainVideoSourceByConnectorId(address);
 		}
 
 		/// <summary>

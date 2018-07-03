@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Conferencing.Comparers;
 using ICD.Connect.Conferencing.Contacts;
 
 namespace ICD.Connect.Conferencing.Directory.Tree
@@ -17,8 +19,8 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		public event EventHandler OnContentsChanged;
 
-		private readonly List<IDirectoryFolder> m_CachedFolders;
-		private readonly List<IContact> m_CachedContacts;
+		private readonly IcdOrderedDictionary<string, IDirectoryFolder> m_CachedFolders;
+		private readonly IcdOrderedDictionary<string, IContact> m_CachedContacts;
 
 		private readonly SafeCriticalSection m_FoldersSection;
 		private readonly SafeCriticalSection m_ContactsSection;
@@ -45,16 +47,6 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		public int ChildCount { get { return FolderCount + ContactCount; } }
 
-		protected virtual IComparer<IContact> ContactComparer
-		{
-			get { return BaseContactComparer.Instance; }
-		}
-
-		protected virtual IComparer<IDirectoryFolder> FolderComparer
-		{
-			get { return BaseFolderComparer.Instance; }
-		}
-
 		#endregion
 
 		#region Constructors
@@ -64,8 +56,8 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		protected AbstractDirectoryFolder()
 		{
-			m_CachedFolders = new List<IDirectoryFolder>();
-			m_CachedContacts = new List<IContact>();
+			m_CachedFolders = new IcdOrderedDictionary<string, IDirectoryFolder>(StringComparer.Ordinal);
+			m_CachedContacts = new IcdOrderedDictionary<string, IContact>(ContactNameComparer.Instance);
 
 			m_FoldersSection = new SafeCriticalSection();
 			m_ContactsSection = new SafeCriticalSection();
@@ -99,19 +91,19 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// Gets the cached folders.
 		/// </summary>
 		/// <returns></returns>
-		public virtual IDirectoryFolder[] GetFolders()
+		public IDirectoryFolder[] GetFolders()
 		{
-			return m_FoldersSection.Execute(() => m_CachedFolders.ToArray());
+			return m_FoldersSection.Execute(() => m_CachedFolders.Values.ToArray(m_CachedFolders.Count));
 		}
 
 		/// <summary>
-		/// Gets the cached folder at the given index.
+		/// Gets the cached folder with the given name.
 		/// </summary>
-		/// <param name="index"></param>
+		/// <param name="name"></param>
 		/// <returns></returns>
-		public virtual IDirectoryFolder GetFolder(int index)
+		public IDirectoryFolder GetFolder(string name)
 		{
-			return m_FoldersSection.Execute(() => m_CachedFolders[index]);
+			return m_FoldersSection.Execute(() => m_CachedFolders[name]);
 		}
 
 		/// <summary>
@@ -120,17 +112,17 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IContact[] GetContacts()
 		{
-			return m_ContactsSection.Execute(() => m_CachedContacts.ToArray());
+			return m_ContactsSection.Execute(() => m_CachedContacts.Values.ToArray(m_CachedContacts.Count));
 		}
 
 		/// <summary>
 		/// Gets the cached contact.
 		/// </summary>
-		/// <param name="index"></param>
+		/// <param name="name"></param>
 		/// <returns></returns>
-		public IContact GetContact(int index)
+		public IContact GetContact(string name)
 		{
-			return m_ContactsSection.Execute(() => m_CachedContacts[index]);
+			return m_ContactsSection.Execute(() => m_CachedContacts[name]);
 		}
 
 		/// <summary>
@@ -140,6 +132,12 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <param name="contacts"></param>
 		public bool AddChildren(IEnumerable<IDirectoryFolder> folders, IEnumerable<IContact> contacts)
 		{
+			if (folders == null)
+				throw new ArgumentNullException("folders");
+
+			if (contacts == null)
+				throw new ArgumentNullException("contacts");
+
 			bool output = AddFolders(folders, false);
 			output |= AddContacts(contacts, false);
 
@@ -155,6 +153,9 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <param name="folder"></param>
 		public bool AddFolder(IDirectoryFolder folder)
 		{
+			if (folder == null)
+				throw new ArgumentNullException("folder");
+
 			return AddFolder(folder, true);
 		}
 
@@ -164,6 +165,9 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <param name="folders"></param>
 		public bool AddFolders(IEnumerable<IDirectoryFolder> folders)
 		{
+			if (folders == null)
+				throw new ArgumentNullException("folders");
+
 			return AddFolders(folders, true);
 		}
 
@@ -173,6 +177,9 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <param name="contact"></param>
 		public bool AddContact(IContact contact)
 		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
 			return AddContact(contact, true);
 		}
 
@@ -182,7 +189,23 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <param name="contacts"></param>
 		public bool AddContacts(IEnumerable<IContact> contacts)
 		{
+			if (contacts == null)
+				throw new ArgumentNullException("contacts");
+
 			return AddContacts(contacts, true);
+		}
+
+		/// <summary>
+		/// Returns true if this folder contains the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		/// <returns></returns>
+		public bool ContainsFolder(IDirectoryFolder folder)
+		{
+			if (folder == null)
+				throw new ArgumentNullException("folder");
+
+			return m_FoldersSection.Execute(() => m_CachedFolders.ContainsKey(folder.Name));
 		}
 
 		/// <summary>
@@ -215,6 +238,9 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <param name="raise"></param>
 		private bool AddFolders(IEnumerable<IDirectoryFolder> folders, bool raise)
 		{
+			if (folders == null)
+				throw new ArgumentNullException("folders");
+
 			bool output = false;
 
 			foreach (IDirectoryFolder folder in folders)
@@ -226,16 +252,19 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 			return output;
 		}
 
-		protected virtual bool AddFolder(IDirectoryFolder folder, bool raise)
+		private bool AddFolder(IDirectoryFolder folder, bool raise)
 		{
+			if (folder == null)
+				throw new ArgumentNullException("folder");
+
 			m_FoldersSection.Enter();
 
 			try
 			{
-				if (m_CachedFolders.Contains(folder))
+				if (m_CachedFolders.ContainsKey(folder.Name))
 					return false;
 
-				m_CachedFolders.AddSorted(folder, FolderComparer);
+				m_CachedFolders.Add(folder.Name, folder);
 			}
 			finally
 			{
@@ -254,6 +283,9 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <param name="raise"></param>
 		private bool AddContacts(IEnumerable<IContact> contacts, bool raise)
 		{
+			if (contacts == null)
+				throw new ArgumentNullException("contacts");
+
 			bool output = false;
 
 			foreach (IContact contact in contacts)
@@ -267,14 +299,17 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 
 		protected virtual bool AddContact(IContact contact, bool raise)
 		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
 			m_ContactsSection.Enter();
 
 			try
 			{
-				if (m_CachedContacts.Contains(contact))
+				if (m_CachedContacts.ContainsKey(contact.Name))
 					return false;
 
-				m_CachedContacts.AddSorted(contact, ContactComparer);
+				m_CachedContacts.Add(contact.Name, contact);
 			}
 			finally
 			{
@@ -287,41 +322,5 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		}
 
 		#endregion
-	}
-
-	public sealed class BaseFolderComparer : IComparer<IDirectoryFolder>
-	{
-		private static BaseFolderComparer s_Instance;
-
-		public static BaseFolderComparer Instance { get { return s_Instance = s_Instance ?? new BaseFolderComparer(); } }
-
-		public int Compare(IDirectoryFolder x, IDirectoryFolder y)
-		{
-			if (x == null)
-				throw new ArgumentNullException("x");
-
-			if (y == null)
-				throw new ArgumentNullException("y");
-
-			return string.Compare(x.Name, y.Name, StringComparison.Ordinal);
-		}
-	}
-
-	internal sealed class BaseContactComparer : IComparer<IContact>
-	{
-		private static BaseContactComparer s_Instance;
-
-		public static BaseContactComparer Instance { get { return s_Instance = s_Instance ?? new BaseContactComparer(); } }
-
-		public int Compare(IContact x, IContact y)
-		{
-			if (x == null)
-				throw new ArgumentNullException("x");
-
-			if (y == null)
-				throw new ArgumentNullException("y");
-
-			return string.Compare(x.Name, y.Name, StringComparison.Ordinal);
-		}
 	}
 }

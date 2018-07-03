@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
@@ -30,12 +28,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// </summary>
 		public virtual ePhonebookType PhonebookType
 		{
-			get { return (FolderId.StartsWith("local")) ? ePhonebookType.Local : ePhonebookType.Corporate; }
-		}
-
-		protected override IComparer<IContact> ContactComparer
-		{
-			get { return CiscoContactComparer.Instance; }
+			get { return FolderId.StartsWith("local") ? ePhonebookType.Local : ePhonebookType.Corporate; }
 		}
 
 		#endregion
@@ -71,54 +64,5 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		}
 
 		#endregion
-
-		#region Protected Methods
-
-		protected override bool AddFolder(IDirectoryFolder folder, bool raise)
-		{
-			AbstractCiscoFolder abstractCiscoFolder = folder as AbstractCiscoFolder;
-			if (abstractCiscoFolder == null || abstractCiscoFolder.PhonebookType != PhonebookType)
-				return false;
-
-			return base.AddFolder(folder, raise);
-		}
-
-		protected override bool AddContact(IContact contact, bool raise)
-		{
-			CiscoContact ciscoContact = contact as CiscoContact;
-			if (ciscoContact == null || ciscoContact.PhonebookType != PhonebookType)
-				return false;
-
-			return base.AddContact(contact, raise);
-		}
-
-		#endregion
-	}
-
-	internal sealed class CiscoContactComparer : IComparer<IContact>
-	{
-		private static CiscoContactComparer s_Instance;
-
-		public static CiscoContactComparer Instance { get { return s_Instance = s_Instance ?? new CiscoContactComparer(); } }
-
-		public int Compare(IContact x, IContact y)
-		{
-			if (x == null)
-				throw new ArgumentNullException("x");
-
-			if (y == null)
-				throw new ArgumentNullException("y");
-
-			CiscoContact ciscoX = x as CiscoContact;
-			CiscoContact ciscoY = y as CiscoContact;
-			if (ciscoX == null || ciscoY == null)
-				throw new InvalidOperationException(string.Format("{0} cannot compare types {1} and {2}",
-					GetType().Name, x.GetType().Name, y.GetType().Name));
-
-			int surname = string.Compare(ciscoX.LastName, ciscoY.LastName, StringComparison.Ordinal);
-			return surname != 0
-					   ? surname
-					   : string.Compare(ciscoX.FirstName, ciscoY.FirstName, StringComparison.Ordinal);
-		}
 	}
 }
