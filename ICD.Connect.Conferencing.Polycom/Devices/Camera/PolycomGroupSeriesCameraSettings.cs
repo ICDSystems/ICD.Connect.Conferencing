@@ -38,7 +38,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 			base.ParseXml(xml);
 
 			CodecId = XmlUtils.TryReadChildElementContentAsInt(xml, CODEC_ID_ELEMENT);
-			CameraId = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_ID_ELEMENT);
+			CameraId = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_ID_ELEMENT) ?? 1;
 		}
 	}
 }
