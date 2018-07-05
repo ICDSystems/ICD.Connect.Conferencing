@@ -174,7 +174,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		[PublicAPI]
 		public static void ConfigureComPort(IComPort port)
 		{
-			port.SetComPortSpec(eComBaudRates.ComspecBaudRate115200,
+			port.SetComPortSpec(eComBaudRates.ComspecBaudRate9600,
 			                    eComDataBits.ComspecDataBits8,
 			                    eComParityType.ComspecParityNone,
 			                    eComStopBits.ComspecStopBits1,
