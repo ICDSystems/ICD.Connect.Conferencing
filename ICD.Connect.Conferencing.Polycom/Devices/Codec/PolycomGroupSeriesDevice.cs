@@ -284,14 +284,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		}
 
 		/// <summary>
-		/// Initialize the device.
-		/// </summary>
-		private void Initialize()
-		{
-			Initialized = true;
-		}
-
-		/// <summary>
 		/// Called to send the next command to the device.
 		/// </summary>
 		/// <param name="sender"></param>
@@ -394,15 +386,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (data.StartsWith("-> "))
 				data = data.Substring(3);
 
+			if (string.IsNullOrEmpty(data))
+				return;
+
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
 			if (data.StartsWith("Password:"))
 				EnqueueCommand(Password);
-
-			// Intentional spacing
-			if (data.StartsWith("Hi, my name is :"))
-				Initialize();
+			else
+				Initialized = true;
 
 			string word = GetFirstWord(data);
 			if (word == null)
