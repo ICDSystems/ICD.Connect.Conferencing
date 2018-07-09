@@ -54,22 +54,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		}
 
 		/// <summary>
+		/// Deconstructor.
+		/// </summary>
+		~CiscoComponentFactory()
+		{
+			Dispose(false);
+		}
+
+		#region Methods
+
+		/// <summary>
 		/// Release resources.
 		/// </summary>
 		public void Dispose()
 		{
-			m_ComponentsSection.Enter();
-
-			try
-			{
-				foreach (AbstractCiscoComponent component in m_Components)
-					component.Dispose();
-				m_Components.Clear();
-			}
-			finally
-			{
-				m_ComponentsSection.Leave();
-			}
+			Dispose(true);
 		}
 
 		/// <summary>
@@ -102,6 +101,28 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		public IEnumerable<AbstractCiscoComponent> GetComponents()
 		{
 			return m_ComponentsSection.Execute(() => m_Components.ToArray());
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		private void Dispose(bool disposing)
+		{
+			m_ComponentsSection.Enter();
+
+			try
+			{
+				foreach (AbstractCiscoComponent component in m_Components)
+					component.Dispose();
+				m_Components.Clear();
+			}
+			finally
+			{
+				m_ComponentsSection.Leave();
+			}
 		}
 	}
 }

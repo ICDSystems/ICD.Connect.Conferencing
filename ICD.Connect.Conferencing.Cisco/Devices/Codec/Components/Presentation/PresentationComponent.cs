@@ -140,14 +140,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 		/// <summary>
 		/// Release resources.
 		/// </summary>
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
 			OnPresentationPositionChanged = null;
 			OnPresentationViewChanged = null;
+			OnPresentationModeChanged = null;
 			OnPresentationsChanged = null;
 			OnPresentationStopped = null;
 
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		/// <summary>

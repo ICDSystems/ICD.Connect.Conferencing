@@ -10,9 +10,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 {
 	public enum eConferenceSourceDirection
 	{
-		Undefined,
-		Incoming,
-		Outgoing
+		Undefined = 0,
+		Incoming = 1,
+		Outgoing = 2
 	}
 
 	/// <summary>
@@ -20,11 +20,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 	/// </summary>
 	public enum eConferenceSourceAnswerState
 	{
-		[UsedImplicitly] Unknown,
-		[UsedImplicitly] Unanswered,
-		Ignored,
-		Autoanswered,
-		Answered
+		[UsedImplicitly] Unknown = 0,
+		[UsedImplicitly] Unanswered = 1,
+		Ignored = 2,
+		Autoanswered = 3,
+		Answered = 4
 	}
 
 	/// <summary>
@@ -101,8 +101,6 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 		DateTime DialTime { get; }
 
-		DateTime StartOrDialTime { get; }
-
 		/// <summary>
 		/// Gets the remote camera.
 		/// </summary>
@@ -116,6 +114,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// Answers the incoming source.
 		/// </summary>
 		void Answer();
+
+		/// <summary>
+		/// Rejects the incoming source.
+		/// </summary>
+		void Reject();
 
 		/// <summary>
 		/// Holds the source.
@@ -291,6 +294,19 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		/// <summary>
+		/// Gets the start time, falls through to dial time if no start time specified.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static DateTime GetStartOrDialTime(this IConferenceSource extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			return extends.Start ?? extends.DialTime;
 		}
 	}
 }

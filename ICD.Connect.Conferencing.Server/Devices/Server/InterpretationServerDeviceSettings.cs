@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
@@ -8,7 +7,7 @@ using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.Network.Tcp;
 using ICD.Connect.Settings.Attributes;
 
-namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
+namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	[KrangSettings("InterpretationServer", typeof(InterpretationServerDevice))]
 	public sealed class InterpretationServerDeviceSettings : AbstractSimplDeviceSettings
@@ -50,7 +49,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 			base.ParseXml(xml);
 
 			IEnumerable<int> deviceIds = XmlUtils.ReadListFromXml(xml, WRAPPED_DEVICES_ELEMENT, WRAPPED_DEVICE_ELEMENT,
-			                                                      s => ParseDeviceToInt(s))
+																  s => XmlUtils.TryReadElementContentAsInt(s))
 			                                     .ExceptNulls();
 
 			SetDeviceIds(deviceIds);
@@ -68,14 +67,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl.Server
 
 			writer.WriteElementString(SERVER_PORT_ELEMENT, IcdXmlConvert.ToString(ServerPort));
 			writer.WriteElementString(SERVER_CLIENTS_ELEMENT, IcdXmlConvert.ToString(ServerMaxClients));
-		}
-
-		private static int? ParseDeviceToInt(string s)
-		{
-			int id;
-			bool isInt = StringUtils.TryParse(s, out id);
-
-			return isInt ? id : (int?)null;
 		}
 	}
 }

@@ -84,14 +84,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <summary>
 		/// Release resources.
 		/// </summary>
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
 			OnCleared = null;
 			OnResultParsed = null;
 
 			m_ParseAsyncHandle = null;
 
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		/// <summary>

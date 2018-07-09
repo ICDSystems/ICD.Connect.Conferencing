@@ -42,9 +42,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		}
 
 		/// <summary>
+		/// Deconstructor.
+		/// </summary>
+		~AbstractCiscoComponent()
+		{
+			Dispose(false);
+		}
+
+		/// <summary>
 		/// Release resources.
 		/// </summary>
-		public virtual void Dispose()
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected virtual void Dispose(bool disposing)
 		{
 			Unsubscribe(Codec);
 		}

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Simpl;
+using ICD.Connect.Settings.SPlusShims.EventArguments;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
@@ -18,9 +18,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
-		event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
-		event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
-		event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
+		event EventHandler<SPlusBoolEventArgs> OnAutoAnswerChanged;
+		event EventHandler<SPlusBoolEventArgs> OnDoNotDisturbChanged;
+		event EventHandler<SPlusBoolEventArgs> OnPrivacyMuteChanged;
+
+		event EventHandler<SPlusUShortEventArgs> OnBoothIdChanged;
+		event EventHandler<SPlusStringEventArgs> OnLanguageChanged;
 
 		SimplDialerDialCallback DialCallback { get; set; }
         SimplDialerDialTypeCallback DialTypeCallback { get; set; }

@@ -62,12 +62,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <summary>
 		/// Release resources.
 		/// </summary>
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
 			OnCamerasChanged = null;
 			OnPresetsChanged = null;
 
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		#endregion

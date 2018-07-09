@@ -27,6 +27,8 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		public DateTime DialTime { get; private set; }
 		[PublicAPI, JsonProperty]
 		public DateTime StartOrDialTime { get; private set; }
+		[PublicAPI, JsonProperty]
+		public string Language { get; set; }
 
 		[JsonConstructor]
 		public ConferenceSourceState()
@@ -49,7 +51,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				Start = source.Start,
 				End = source.End,
 				DialTime = source.DialTime,
-				StartOrDialTime = source.StartOrDialTime
+				StartOrDialTime = source.GetStartOrDialTime()
 			};
 		}
 	}

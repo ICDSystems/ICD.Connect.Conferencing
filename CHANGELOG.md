@@ -5,11 +5,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+ - Default camera IDs to 1 when deserializing settings and no ID is specified
+
+## [9.0.0] - 2018-07-02
 ### Added
- - Added video conferencing abstractions and interfaces for devices and controls
+ - Added Polycom Group Series conferencing device
+ - Added Polycom camera device
+ 
+### Changed
+ - CiscoCodec console improvements
+ - Phonebook directory/folder improvements
+
+## [8.0.0] - 2018-06-19
+### Added
+ - Added video conferencing abstractions and interfaces for devices and controls 
+ - Added functionality to S+ InterpretationServerShim to support S+ requirements
+ - Added console commands to InterpretationServerDevice
 
 ### Changed
  - Cisco codec driver overhaul to use new abstractions
+ - Changed data type for booth ID on interpretation devices to be ushort
+ - Fixed potential thread-unsafety in interpretation server
+ - ConnectionStateManager now used to maintain RPC connection for InterpretationClient/Server
+ - Fixed language setting not propegating to client from server
+ - Fixed major issue where only the first adapter for the InterpretationServerDevice would be utilied/transmitted to client
+ - Fixed issue where disconnections wouldn't clear the calls from the client, causing them to duplicate when reconnected
 
 ## [7.1.0] - 2018-06-04
 ### Changed
