@@ -354,7 +354,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 				if (callStatus.ConnectionState == eConnectionState.Disconnected)
 					m_CallStates.Remove(id);
-				else if (callStatus.ConnectionState != eConnectionState.Inactive)
+				else if (callStatus.ConnectionState != eConnectionState.Inactive &&
+					callStatus.ConnectionState != eConnectionState.Disconnecting)
 					m_CallStates[callStatus.CallId] = callStatus;
 			}
 			finally
