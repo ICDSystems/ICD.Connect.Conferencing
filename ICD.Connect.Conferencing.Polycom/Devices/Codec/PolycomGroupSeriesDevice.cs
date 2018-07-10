@@ -394,6 +394,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			if (data.StartsWith("Password:"))
 				EnqueueCommand(Password);
+			else if (data.StartsWith("Hi, my name is"))
+			{
+				// Re-initialize every time we see the welcome message
+				Initialized = false;
+				Initialized = true;
+			}
 			else
 				Initialized = true;
 
