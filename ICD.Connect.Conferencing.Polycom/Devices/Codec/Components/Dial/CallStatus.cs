@@ -45,6 +45,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				{eConnectionState.Disconnected, "disconnected"},
 			};
 
+		private eConnectionState m_ConnectionState;
+
 		#region Properties
 
 		public int CallId { get; set; }
@@ -67,7 +69,50 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 		public eCallState State { get; set; }
 
-		public eConnectionState ConnectionState { get; set; }
+		public eConnectionState ConnectionState
+		{
+			get { return m_ConnectionState; }
+			set
+			{
+				// Line status and call status conflict a little
+				// For example Connecting may return to Ringing, Connected may return to Connecting.
+				// This is possibly a race condition on the Polycom side.
+				//
+				// For now I'm adding some simple checks to prevent the source status from flickering.
+				// Maybe this is better solved with a state machine, I dunno.
+					switch (value)
+					{
+						case eConnectionState.Unknown:
+							break;
+						case eConnectionState.Opened:
+							break;
+						case eConnectionState.Ringing:
+							if (m_ConnectionState == eConnectionState.Connecting)
+								return;
+							break;
+						case eConnectionState.Connecting:
+							if (m_ConnectionState == eConnectionState.Connected)
+								return;
+							break;
+						case eConnectionState.Connected:
+							break;
+						case eConnectionState.Inactive:
+							if (m_ConnectionState == eConnectionState.Disconnected)
+								return;
+							break;
+						case eConnectionState.Disconnecting:
+							if (m_ConnectionState == eConnectionState.Disconnected)
+								return;
+							break;
+						case eConnectionState.Disconnected:
+							break;
+						default:
+							throw new ArgumentOutOfRangeException("value");
+					}
+
+				m_ConnectionState = value;
+			}
+		}
 
 		#endregion
 

@@ -285,7 +285,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 			if (folder == null)
 			{
-				folder = new DirectoryFolder(letter.ToString());
+				string folderName = string.Format("Search by letter: {0}", letter);
+				folder = new DirectoryFolder(folderName);
+
 				root.AddFolder(folder);
 			}
 

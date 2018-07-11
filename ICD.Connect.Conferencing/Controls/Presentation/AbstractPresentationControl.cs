@@ -33,7 +33,8 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 
 				m_PresentationActive = value;
 
-				Log(eSeverity.Informational, "PresentationActiveInput set to {0}", m_PresentationActive);
+				Log(eSeverity.Informational, "PresentationActiveInput set to {0}",
+				    m_PresentationActive == null ? "NULL" : m_PresentationActive.ToString());
 
 				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
 			}
