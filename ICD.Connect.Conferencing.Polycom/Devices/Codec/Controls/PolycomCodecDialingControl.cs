@@ -370,6 +370,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			source.Direction = callStatus.Outgoing ? eConferenceSourceDirection.Outgoing : eConferenceSourceDirection.Incoming;
 
 			source.Status = GetStatus(callStatus.ConnectionState);
+			source.SourceType = callStatus.VideoCall ? eConferenceSourceType.Video : eConferenceSourceType.Audio;
 
 			if (source.GetIsOnline())
 			{
