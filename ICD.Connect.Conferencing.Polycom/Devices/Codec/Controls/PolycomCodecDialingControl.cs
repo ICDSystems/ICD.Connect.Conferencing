@@ -227,6 +227,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 						case eConnectionState.Unknown:
 							break;
 
+						// Ignore inactive state, it's muddled around disconnected/disconnecting
+						case eConnectionState.Inactive:
+							break;
+
 						case eConnectionState.Opened:
 						case eConnectionState.Ringing:
 						case eConnectionState.Connecting:
@@ -235,7 +239,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 							CreateSource(kvp.Value);
 							break;
 
-						case eConnectionState.Inactive:
 						case eConnectionState.Disconnected:
 							RemoveSource(kvp.Key);
 							break;
