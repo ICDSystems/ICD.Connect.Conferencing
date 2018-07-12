@@ -15,13 +15,41 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		private const string CONTACT_REGEX =
 			@"addrbook \d+. ""(?'name'[^""]*)""( (?'speedprot'[^_]+)_spd:(?'speed'[^\s]*))? (?'prot'[^_]+)_num:(?'number'[^\s]*)( (?'extprot'[^_]+)_ext:(?'ext'\d+)?)?";
 
+		private const string GADDRBOOK_DONE_REGEX =
+			@"gaddrbook letter (?'letter'\S) (done|none)";
+
 		/// <summary>
 		/// Called when the cache is cleared.
 		/// </summary>
 		public event EventHandler OnCleared;
 
+		/// <summary>
+		/// Chains addressbook letters, A->B, B->C, etc
+		/// </summary>
+		private static Dictionary<char, char> s_NextChar; 
+
 		private readonly Dictionary<eAddressbookType, RootFolder> m_RootsCache;
 		private readonly SafeCriticalSection m_RootsSection;
+
+		/// <summary>
+		/// Static Constructor.
+		/// </summary>
+		static AddressbookComponent()
+		{
+			s_NextChar = new Dictionary<char, char>();
+
+			char last = default(char);
+			bool first = true;
+
+			foreach (char letter in GetValidAddressbookLetters())
+			{
+				if (!first)
+					s_NextChar[last] = letter;
+
+				last = letter;
+				first = false;
+			}
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -186,8 +214,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		private void PopulateGlobalAddressbook()
 		{
 			// "gaddrbook all" isn't working on my test unit :(
-			foreach (char c in GetValidAddressbookLetters())
-				Codec.EnqueueCommand("gaddrbook letter {0}", c);
+			// We enqueue the first letter and then we'll enqueue
+			// the next when a response is returned.
+			PopulateGlobalAddressbook(GetValidAddressbookLetters().First());
+		}
+
+		/// <summary>
+		/// Sends commands to the system to pull down the global addressbook.
+		/// </summary>
+		private void PopulateGlobalAddressbook(char letter)
+		{
+			Codec.EnqueueCommand("gaddrbook letter {0}", letter);
 		}
 
 		/// <summary>
@@ -199,7 +236,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			for (char c = '0'; c <= '9'; c++)
 				yield return c;
 
-			for (char c = 'a'; c <= 'z'; c++)
+			for (char c = 'A'; c <= 'Z'; c++)
 				yield return c;
 
 			foreach (char c in new [] {'-', '/', ';', '@', ',', '.', '\\'})
@@ -230,8 +267,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			// gaddrbook 1. "ConfRoom" sip_spd:Auto sip_num:confroom@profoundtech.onmicrosoft.com
 			// gaddrbook letter C done
 
+			// Enqueue the next letter
 			if (data.EndsWith(" done") || data.EndsWith(" none"))
+			{
+				Match match = Regex.Match(data, GADDRBOOK_DONE_REGEX);
+				if (match.Success)
+				{
+					char letter = match.Groups["letter"].Value.First();
+					if (s_NextChar.ContainsKey(letter))
+						PopulateGlobalAddressbook(s_NextChar[letter]);
+				}
+
 				return;
+			}
 
 			if (data.StartsWith("gaddrbook letter "))
 				return;
