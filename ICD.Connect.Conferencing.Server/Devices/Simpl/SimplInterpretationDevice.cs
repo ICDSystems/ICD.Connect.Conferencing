@@ -173,14 +173,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		public void AddShimSource(IConferenceSource source)
 		{
-			if (m_Source == null)
-				SetShimSource(source);
+			SetShimSource(source);
 		}
 
 		public void RemoveShimSource(IConferenceSource source)
 		{
-			if (m_Source == source)
-				SetShimSource(null);
+			SetShimSource(null);
 		}
 
 		private void SetShimSource(IConferenceSource source)
