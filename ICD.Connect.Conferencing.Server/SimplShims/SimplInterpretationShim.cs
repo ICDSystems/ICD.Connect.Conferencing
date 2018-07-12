@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
@@ -253,6 +255,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			}
 			else
 			{
+				Originator.RemoveShimSource(m_Source);
 				Unsubscribe(m_Source);
 				m_Source = new ThinConferenceSource
 				{
@@ -428,6 +431,29 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			SPlusDialerShimEndCallCallback handler = EndCallCallback;
 			if (handler != null)
 				handler();
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
+
+			var source = m_Source;
+			if (source != null)
+				yield return source;
+		}
+
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		#endregion
