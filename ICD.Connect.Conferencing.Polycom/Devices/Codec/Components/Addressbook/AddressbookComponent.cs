@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 	public sealed class AddressbookComponent : AbstractPolycomComponent
 	{
 		private const string CONTACT_REGEX =
-			@"addrbook \d+. ""(?'name'[^""]*)""( (?'speedprot'[^_]+)_spd:(?'speed'[^\s]*))? (?'prot'[^_]+)_num:(?'number'[^\s]*)( (?'extprot'[^_]+)_ext:(?'ext'\d+)?)?";
+			@"addrbook \d+\. ""(?'name'[^""]*)""( ((?'speedprot'[^_]+)_)?spd:(?'speed'[^\s]*))? ((?'prot'[^_]+)_)?num:(?'number'[^\s]*)( ((?'extprot'[^_]+)_)?ext:(?'ext'\d+)?)?";
 
 		private const string GADDRBOOK_DONE_REGEX =
 			@"gaddrbook letter (?'letter'\S) (done|none)";
