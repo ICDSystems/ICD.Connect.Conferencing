@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// <summary>
 		/// Chains addressbook letters, A->B, B->C, etc
 		/// </summary>
-		private static Dictionary<char, char> s_NextChar; 
+		private static readonly Dictionary<char, char> s_NextChar; 
 
 		private readonly Dictionary<eAddressbookType, RootFolder> m_RootsCache;
 		private readonly SafeCriticalSection m_RootsSection;
