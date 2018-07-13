@@ -55,6 +55,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		event EventHandler<InCallEventArgs> OnInCallChanged;
 
+		/// <summary>
+		/// Raises when the conference adds or removes a source.
+		/// </summary>
+		event EventHandler OnConferenceSourceAddedOrRemoved;
+
 		#endregion
 
 		#region Properties
@@ -189,6 +194,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void ClearDialingProviders();
 
 		#endregion
+
+
 	}
 
 	/// <summary>

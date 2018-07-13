@@ -299,6 +299,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				foreach (ThinConferenceSource src in m_Sources.Values)
 				{
 					Unsubscribe(src);
+					IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-ClearSources-OnSourceRemoved");
 					OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(src));
 				}
 
@@ -373,7 +374,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    {
 					var control = Controls.GetControl<DialerDeviceDialerControl>();
 				    if (control != null)
-						OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
+				    {
+						IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnSourceAdded");
+					    OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
+				    }
 			    }
 
 			    if (sourceState.Status != eConferenceSourceStatus.Disconnected)
@@ -383,6 +387,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    Unsubscribe(sourceToRemove);
 			    m_Sources.Remove(id);
 
+				IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnSourceRemoved");
 				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
 		    }
 		    finally

@@ -27,6 +27,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
+		public event EventHandler OnConferenceSourceAddedOrRemoved;
 
 		public event EventHandler<ConferenceSourceEventArgs> OnRecentSourceAdded;
 		public event EventHandler<ConferenceSourceStatusEventArgs> OnActiveSourceStatusChanged;
@@ -500,6 +501,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					break;
 			}
 
+			IcdConsole.PrintLine(eConsoleColor.Magenta, string.Format("ConferenceManager-UpdateIsInCall-InACall: {0}", inCall));
+
 			IsInCall = inCall;
 		}
 
@@ -576,22 +579,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="args"></param>
 		private void ProviderOnSourceAdded(object sender, ConferenceSourceEventArgs args)
 		{
+			IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-ProviderOnSourceAdded-AddSource");
 			AddSource(args.Data);
 		}
 
 		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
 		{
+			IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-ProviderOnSourceRemoved-RemoveSource");
 			RemoveSource(args.Data);
-		}
-
-		/// <summary>
-		/// Called when a provider removes a source from the conference
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
-		{
-			UpdateIsInCall();
 		}
 
 		/// <summary>
@@ -625,6 +620,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_SourcesSection.Enter();
 			try
 			{
+				IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-AddSource-Actually adding the source to the conf manager here");
 				m_ActiveConference.AddSource(source);
 			}
 			finally
@@ -660,17 +656,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (m_ActiveConference == null || !m_ActiveConference.ContainsSource(source))
 				return;
 
+			Unsubscribe(source);
+
 			m_SourcesSection.Enter();
 			try
 			{
+				IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-RemoveSource-ActuallyRemovingTheSourceHere");
 				m_ActiveConference.RemoveSource(source);
 			}
 			finally
 			{
 				m_SourcesSection.Leave();
 			}
-
-			Unsubscribe(source);
 
 			UpdateIsInCall();
 		}
@@ -689,6 +686,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged += ConferenceOnStatusChanged;
+			conference.OnSourcesChanged += ConferenceOnSourcesChanged;
 		}
 
 		/// <summary>
@@ -701,6 +699,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged -= ConferenceOnStatusChanged;
+			conference.OnSourcesChanged -= ConferenceOnSourcesChanged;
 
 			// Unsubscribe from the sources.
 			foreach (IConferenceSource source in conference.GetSources())
@@ -718,6 +717,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			if (args.Data == eConferenceStatus.Disconnected)
 				ActiveConference = null;
+		}
+
+		private void ConferenceOnSourcesChanged(object sender, EventArgs eventArgs)
+		{
+			OnConferenceSourceAddedOrRemoved.Raise(this, EventArgs.Empty);
 		}
 
 		#endregion
