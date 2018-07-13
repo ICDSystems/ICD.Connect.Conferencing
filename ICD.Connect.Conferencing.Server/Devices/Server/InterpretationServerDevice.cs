@@ -658,7 +658,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void AdapterOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
 		{
-			RemoveSource(args.Data);
+			var adapter = sender as SimplInterpretationDevice;
+			RemoveSource(args.Data, adapter);
 		}
 
 		private void AdapterOnAutoAnswerChanged(object sender, SPlusBoolEventArgs args)
@@ -731,10 +732,67 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void RemoveSource(IConferenceSource source)
 		{
-			if (!m_Sources.ContainsValue(source))
-				return;
+			m_SafeCriticalSection.Enter();
 
-			m_SafeCriticalSection.Execute(() => m_Sources.RemoveAllValues(source));
+			try
+			{
+				if (!m_Sources.ContainsValue(source))
+					return;
+
+				Guid id = m_Sources.GetKey(source);
+
+				uint clientId;
+				if (!GetClientIdForSource(id, out clientId))
+					return;
+
+				const string key = InterpretationClientDevice.REMOVE_CACHED_SOURCE;
+				m_RpcController.CallMethod(clientId, key, id);
+
+				m_Sources.RemoveAllValues(source);
+
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+
+			Unsubscribe(source);
+		}
+
+		/// <summary>
+		/// Removes the source, speficying the adapter (used to look up a source the adapter has already removed)
+		/// todo: un-jank this
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="adapter"></param>
+		private void RemoveSource(IConferenceSource source, SimplInterpretationDevice adapter)
+		{
+			if (adapter == null)
+				throw new ArgumentNullException("adapter");
+
+			m_SafeCriticalSection.Enter();
+
+			try
+			{
+				if (!m_Sources.ContainsValue(source))
+					return;
+
+				Guid id = m_Sources.GetKey(source);
+
+				uint clientId;
+				if (!GetClientIdForAdapter(adapter, out clientId))
+					return;
+
+				const string key = InterpretationClientDevice.REMOVE_CACHED_SOURCE;
+				m_RpcController.CallMethod(clientId, key, id);
+
+				m_Sources.RemoveAllValues(source);
+
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
 
 			Unsubscribe(source);
 		}

@@ -47,6 +47,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
 
 	    public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
+	    public const string REMOVE_CACHED_SOURCE = "RemovedCachedSource";
 
 		#endregion
 
@@ -340,6 +341,26 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			DoNotDisturb = state;
 		}
+
+	    [Rpc(REMOVE_CACHED_SOURCE), UsedImplicitly]
+	    private void RemoveCachedSource(Guid id)
+	    {
+		    m_SourcesCriticalSection.Enter();
+
+		    try
+		    {
+			    var sourceToRemove = m_Sources[id];
+			    Unsubscribe(sourceToRemove);
+			    m_Sources.Remove(id);
+
+			    IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-RemoveCachedSource-OnSourceRemoved");
+			    OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
+		    }
+		    finally
+		    {
+			    m_SourcesCriticalSection.Leave();
+		    }
+	    }
 
 	    [Rpc(UPDATE_CACHED_SOURCE_STATE), UsedImplicitly]
 	    private void UpdateCachedSourceState(Guid id, ConferenceSourceState sourceState)
