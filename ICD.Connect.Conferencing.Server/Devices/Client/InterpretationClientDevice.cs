@@ -296,8 +296,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_SourcesCriticalSection.Enter();
 			try
 			{
-				foreach (var src in m_Sources.Values)
+				foreach (ThinConferenceSource src in m_Sources.Values)
+				{
 					Unsubscribe(src);
+					OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(src));
+				}
 
 				m_Sources.Clear();
 			}
