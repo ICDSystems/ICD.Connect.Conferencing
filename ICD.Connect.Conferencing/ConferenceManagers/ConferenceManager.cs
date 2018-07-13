@@ -582,7 +582,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs e)
+		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
 		{
 			UpdateIsInCall();
 		}
