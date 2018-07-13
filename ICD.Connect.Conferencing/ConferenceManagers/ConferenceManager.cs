@@ -721,7 +721,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		private void ConferenceOnSourcesChanged(object sender, EventArgs eventArgs)
 		{
-			OnConferenceSourceAddedOrRemoved.Raise(this, EventArgs.Empty);
+			OnConferenceSourceAddedOrRemoved.Raise(this);
 		}
 
 		#endregion
