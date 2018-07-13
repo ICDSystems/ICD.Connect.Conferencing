@@ -393,7 +393,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				Log(eSeverity.Error, data);
 
 			if (data.StartsWith("Password:"))
-				EnqueueCommand(Password);
+				SendCommand(Password);
 			else if (data.StartsWith("Hi, my name is"))
 			{
 				// Re-initialize every time we see the welcome message
