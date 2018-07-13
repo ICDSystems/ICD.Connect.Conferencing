@@ -39,6 +39,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly IcdHashSet<IDialingDeviceControl> m_FeedbackProviders; 
 
 		private readonly SafeCriticalSection m_RecentConferencesSection;
+		private readonly SafeCriticalSection m_SourcesSection;
 		private readonly SafeCriticalSection m_RecentSourcesSection;
 		private readonly SafeCriticalSection m_SourceTypeToProviderSection;
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
@@ -157,6 +158,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_FeedbackProviders = new IcdHashSet<IDialingDeviceControl>();
 
 			m_RecentConferencesSection = new SafeCriticalSection();
+			m_SourcesSection = new SafeCriticalSection();
 			m_RecentSourcesSection = new SafeCriticalSection();
 			m_SourceTypeToProviderSection = new SafeCriticalSection();
 			m_FeedbackProviderSection = new SafeCriticalSection();
@@ -609,7 +611,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (m_ActiveConference.ContainsSource(source))
 				return;
 
-			m_ActiveConference.AddSource(source);
+			
+			m_SourcesSection.Enter();
+			try
+			{
+				m_ActiveConference.AddSource(source);
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
 
 			m_RecentSourcesSection.Enter();
 
@@ -636,16 +647,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="source"></param>
 		private void RemoveSource(IConferenceSource source)
 		{
-			if (!this.GetIsActiveConferenceOnline())
-			{
-				ActiveConference = new Conference();
-				AddConference(ActiveConference);
-			}
-
-			if (m_ActiveConference.ContainsSource(source))
+			if (m_ActiveConference == null || !m_ActiveConference.ContainsSource(source))
 				return;
 
-			m_ActiveConference.RemoveSource(source);
+			m_SourcesSection.Enter();
+			try
+			{
+				m_ActiveConference.RemoveSource(source);
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
 
 			Unsubscribe(source);
 
