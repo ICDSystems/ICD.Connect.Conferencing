@@ -190,10 +190,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 			m_Source = source;
 
-			if (oldSource != null)
+			if (m_Source == null)
 				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(oldSource));
-
-			if (m_Source != null)
+			else
 				OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(m_Source));
 		}
 
