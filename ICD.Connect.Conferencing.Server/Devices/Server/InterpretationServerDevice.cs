@@ -725,6 +725,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Execute(() => m_Sources.Add(newId, source));
 
 			Subscribe(source);
+
+			SourceOnPropertyChanged(source, EventArgs.Empty);
 		}
 
 		private void RemoveSource(IConferenceSource source)
