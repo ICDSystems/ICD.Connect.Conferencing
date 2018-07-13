@@ -515,6 +515,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded += ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved += ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged += ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged += ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged += ProviderOnPrivacyMuteChanged;
@@ -530,6 +531,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded -= ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved -= ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged -= ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged -= ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged -= ProviderOnPrivacyMuteChanged;
@@ -573,6 +575,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private void ProviderOnSourceAdded(object sender, ConferenceSourceEventArgs args)
 		{
 			AddSource(args.Data);
+		}
+
+		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
+		{
+			RemoveSource(args.Data);
 		}
 
 		/// <summary>
@@ -621,6 +628,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			UpdateIsInCall();
 
 			OnRecentSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
+		}
+
+		/// <summary>
+		/// removes the source from the active conference.
+		/// </summary>
+		/// <param name="source"></param>
+		private void RemoveSource(IConferenceSource source)
+		{
+			if (!this.GetIsActiveConferenceOnline())
+			{
+				ActiveConference = new Conference();
+				AddConference(ActiveConference);
+			}
+
+			if (m_ActiveConference.ContainsSource(source))
+				return;
+
+			m_ActiveConference.RemoveSource(source);
+
+			Unsubscribe(source);
+
+			UpdateIsInCall();
 		}
 
 		#endregion
