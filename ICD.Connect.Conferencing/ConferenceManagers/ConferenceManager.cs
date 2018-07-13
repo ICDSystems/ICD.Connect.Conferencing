@@ -515,6 +515,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded += ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved += ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged += ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged += ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged += ProviderOnPrivacyMuteChanged;
@@ -530,6 +531,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded -= ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved -= ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged -= ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged -= ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged -= ProviderOnPrivacyMuteChanged;
@@ -573,6 +575,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private void ProviderOnSourceAdded(object sender, ConferenceSourceEventArgs args)
 		{
 			AddSource(args.Data);
+		}
+
+		/// <summary>
+		/// Called when a provider removes a source from the conference
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs e)
+		{
+			UpdateIsInCall();
 		}
 
 		/// <summary>
