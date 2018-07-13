@@ -581,7 +581,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Called when a provider removes a source from the conference
 		/// </summary>
 		/// <param name="sender"></param>
-		/// <param name="e"></param>
+		/// <param name="args"></param>
 		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
 		{
 			UpdateIsInCall();
