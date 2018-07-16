@@ -298,6 +298,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			{
 				foreach (ThinConferenceSource src in m_Sources.Values)
 				{
+					src.Status = eConferenceSourceStatus.Disconnected;
 					Unsubscribe(src);
 					IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-ClearSources-OnSourceRemoved");
 					OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(src));
