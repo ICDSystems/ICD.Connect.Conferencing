@@ -57,6 +57,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		#region Properties
 
 		/// <summary>
+		/// Username for loggin into the device
+		/// </summary>
+		[PublicAPI]
+		public string Username { get; set; }
+
+		/// <summary>
 		/// Password for logging in to the device.
 		/// </summary>
 		[PublicAPI]
@@ -392,7 +398,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
-			if (data.StartsWith("Password:"))
+			if (data.StartsWith("Username:"))
+				SendCommand(Username);
+			else if (data.StartsWith("Password:"))
 				SendCommand(Password);
 			else if (data.StartsWith("Hi, my name is"))
 			{
@@ -463,6 +471,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
+			settings.Username = Username;
 			settings.Password = Password;
 			settings.AddressbookType = AddressbookType;
 		}
@@ -474,6 +483,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		{
 			base.ClearSettingsFinal();
 
+			Username = null;
 			Password = null;
 			AddressbookType = eAddressbookType.Global;
 
@@ -489,6 +499,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		{
 			base.ApplySettingsFinal(settings, factory);
 
+			Username = settings.Username;
 			Password = settings.Password;
 			AddressbookType = settings.AddressbookType;
 
