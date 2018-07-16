@@ -225,6 +225,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		}
 
 		/// <summary>
+		/// Send command.
+		/// </summary>
+		/// <param name="command"></param>
+		public void SendCommand(string command)
+		{
+			if (!m_ConnectionStateManager.IsConnected)
+			{
+				Log(eSeverity.Critical, "Unable to communicate with Codec");
+				return;
+			}
+
+			m_ConnectionStateManager.Send(command + END_OF_LINE);
+		}
+
+		/// <summary>
 		/// Registers the callback for handling feedback starting with the given word
 		/// </summary>
 		/// <param name="word"></param>
@@ -291,21 +306,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private void CommandQueueOnItemDequeued(object sender, GenericEventArgs<string> eventArgs)
 		{
 			SendCommand(eventArgs.Data);
-		}
-
-		/// <summary>
-		/// Send command.
-		/// </summary>
-		/// <param name="command"></param>
-		private void SendCommand(string command)
-		{
-			if (!m_ConnectionStateManager.IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with Codec");
-				return;
-			}
-
-			m_ConnectionStateManager.Send(command + END_OF_LINE);
 		}
 
 		#endregion
