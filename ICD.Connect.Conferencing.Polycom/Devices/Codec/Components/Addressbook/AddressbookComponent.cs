@@ -97,8 +97,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 			PopulateLocalAddressbook();
 
-			if (!m_PopulatingGlobalRoot)
-				PopulateGlobalAddressbook();
+			//if (!m_PopulatingGlobalRoot)
+			//	PopulateGlobalAddressbook();
 		}
 
 		#region Methods
