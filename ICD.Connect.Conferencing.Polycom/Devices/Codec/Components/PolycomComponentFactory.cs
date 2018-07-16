@@ -5,6 +5,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
@@ -24,6 +25,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 			{
 				{typeof(AddressbookComponent), codec => new AddressbookComponent(codec)},
 				{typeof(AutoAnswerComponent), codec => new AutoAnswerComponent(codec)},
+				{typeof(ButtonComponent), codec => new ButtonComponent(codec)},
 				{typeof(CameraComponent), codec => new CameraComponent(codec)},
 				{typeof(ContentComponent), codec => new ContentComponent(codec)},
 				{typeof(DialComponent), codec => new DialComponent(codec)},

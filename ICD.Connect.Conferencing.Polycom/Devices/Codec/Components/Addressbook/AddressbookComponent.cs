@@ -32,6 +32,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		private readonly SafeCriticalSection m_RootsSection;
 
 		/// <summary>
+		/// True while we are looping through the letter entries for global directories
+		/// </summary>
+		private bool m_PopulatingGlobalRoot;
+
+		/// <summary>
 		/// Static Constructor.
 		/// </summary>
 		static AddressbookComponent()
@@ -88,8 +93,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		{
 			base.Initialize();
 
+			m_PopulatingGlobalRoot = false;
+
 			PopulateLocalAddressbook();
-			PopulateGlobalAddressbook();
+
+			if (!m_PopulatingGlobalRoot)
+				PopulateGlobalAddressbook();
 		}
 
 		#region Methods
@@ -99,6 +108,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// </summary>
 		public void Clear()
 		{
+			m_PopulatingGlobalRoot = false;
+
 			m_RootsSection.Enter();
 
 			try
@@ -175,11 +186,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 					case eAddressbookType.Local:
 						PopulateLocalAddressbook();
 						return;
+						/*
 					case eAddressbookType.Global:
-						PopulateGlobalAddressbook();
+						if (!m_PopulatingGlobalRoot)
+							PopulateGlobalAddressbook();
 						return;
+						 */
 					default:
-						throw new ArgumentOutOfRangeException();
+						throw new NotSupportedException();
 				}
 			}
 
@@ -190,15 +204,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 				case eAddressbookType.Local:
 					Codec.EnqueueCommand("addrbook letter {0}", folder.Name);
 					break;
+				/*
 				case eAddressbookType.Global:
-					Codec.EnqueueCommand("gaddrbook letter {0}", folder.Name);
+					if (!m_PopulatingGlobalRoot)
+						PopulateGlobalAddressbook(folder.Name.First());
 					break;
+				 */
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new NotSupportedException();
 			}
 		}
 
 		#endregion
+
+		#region Private Methods
 
 		/// <summary>
 		/// Sends commands to the system to pull down the local addressbook.
@@ -213,6 +232,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// </summary>
 		private void PopulateGlobalAddressbook()
 		{
+			throw new NotSupportedException();
+
+			m_PopulatingGlobalRoot = true;
+
 			// "gaddrbook all" isn't working on my test unit :(
 			// We enqueue the first letter and then we'll enqueue
 			// the next when a response is returned.
@@ -224,6 +247,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// </summary>
 		private void PopulateGlobalAddressbook(char letter)
 		{
+			throw new NotSupportedException();
+
+			m_PopulatingGlobalRoot = true;
+
 			Codec.EnqueueCommand("gaddrbook letter {0}", letter);
 		}
 
@@ -263,6 +290,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 		private void HandleGlobalDir(string data)
 		{
+			// Not supported
+			return;
+
 			// gaddrbook 0. "Chris VanLuvanee" sip_spd:Auto sip_num:chris.van@profoundtech.onmicrosoft.com
 			// gaddrbook 1. "ConfRoom" sip_spd:Auto sip_num:confroom@profoundtech.onmicrosoft.com
 			// gaddrbook letter C done
@@ -276,6 +306,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 					char letter = match.Groups["letter"].Value.First();
 					if (s_NextChar.ContainsKey(letter))
 						PopulateGlobalAddressbook(s_NextChar[letter]);
+					else
+						m_PopulatingGlobalRoot = false;
 				}
 
 				return;
@@ -317,15 +349,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			string lastName = contact.Name
-			                         .Split()
-			                         .Reverse()
-			                         .FirstOrDefault(s => !string.IsNullOrEmpty(s));
-
-			if (string.IsNullOrEmpty(lastName))
+			if (string.IsNullOrEmpty(contact.Name))
 				return;
 
-			char letter = lastName.First();
+			char letter = contact.Name.First();
 			letter = char.ToUpper(letter);
 
 			RootFolder root = GetRoot(addressbookType);
@@ -341,6 +368,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 			folder.AddContact(contact);
 		}
+
+		#endregion
 
 		#region Console
 
