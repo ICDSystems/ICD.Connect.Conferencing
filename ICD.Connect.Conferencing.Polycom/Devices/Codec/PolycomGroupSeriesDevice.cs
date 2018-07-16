@@ -490,7 +490,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.ApplySettingsFinal(settings, factory);
 
 			Password = settings.Password;
-			AddressbookType = settings.AddressbookType;
+
+			// TODO - Global addressbook not supported
+			AddressbookType = eAddressbookType.Local;//settings.AddressbookType;
 
 			ISerialPort port = null;
 

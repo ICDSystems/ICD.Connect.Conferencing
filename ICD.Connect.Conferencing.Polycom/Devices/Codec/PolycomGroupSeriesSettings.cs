@@ -38,7 +38,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <summary>
 		/// Determines which addressbook to use with directory.
 		/// </summary>
-		public eAddressbookType AddressbookType { get; set; }
+		public eAddressbookType AddressbookType
+		{
+			get
+			{
+				// TODO - Global addressbook not supported
+				return eAddressbookType.Local;
+			}
+// ReSharper disable once ValueParameterNotUsed
+			set { }
+		}
 
 		/// <summary>
 		/// Writes property elements to xml.
