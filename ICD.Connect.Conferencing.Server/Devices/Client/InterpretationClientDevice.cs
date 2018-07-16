@@ -350,6 +350,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    try
 		    {
 			    var sourceToRemove = m_Sources[id];
+				sourceToRemove.Status = eConferenceSourceStatus.Disconnected;
 			    Unsubscribe(sourceToRemove);
 			    m_Sources.Remove(id);
 
