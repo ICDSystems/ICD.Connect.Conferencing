@@ -343,6 +343,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
 			}
+			else
+			{
+				if (m_ConnectionStateManager.Port is IComPort)
+					SendCommand("exit");
+			}
 
 			OnConnectedStateChanged.Raise(this, new BoolEventArgs(args.Data));
 		}
