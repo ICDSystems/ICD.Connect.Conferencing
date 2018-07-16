@@ -1,4 +1,5 @@
 ﻿using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.Services.Logging;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button
 {
@@ -135,6 +136,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button
 		public void PressButton(eDigit button)
 		{
 			string name = s_DigitNames.GetValue(button);
+
+			Codec.Log(eSeverity.Informational, "Pressing button {0}", name);
 			Codec.SendCommand("button " + name);
 		}
 
@@ -145,6 +148,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button
 		public void PressButton(eDPad button)
 		{
 			string name = s_DPadNames.GetValue(button);
+
+			Codec.Log(eSeverity.Informational, "Pressing button {0}", name);
 			Codec.SendCommand("button " + name);
 		}
 
@@ -155,6 +160,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button
 		public void PressButton(eCall button)
 		{
 			string name = s_CallNames.GetValue(button);
+
+			Codec.Log(eSeverity.Informational, "Pressing button {0}", name);
 			Codec.SendCommand("button " + name);
 		}
 
@@ -165,6 +172,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button
 		public void PressButton(eVolume button)
 		{
 			string name = s_VolumeNames.GetValue(button);
+
+			Codec.Log(eSeverity.Informational, "Pressing button {0}", name);
 			Codec.SendCommand("button " + name);
 		}
 
@@ -175,6 +184,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button
 		public void PressButton(eMisc button)
 		{
 			string name = s_MiscNames.GetValue(button);
+
+			Codec.Log(eSeverity.Informational, "Pressing button {0}", name);
 			Codec.SendCommand("button " + name);
 		}
 	}
