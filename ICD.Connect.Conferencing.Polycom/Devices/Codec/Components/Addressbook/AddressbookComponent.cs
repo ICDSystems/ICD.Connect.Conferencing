@@ -200,6 +200,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 		#endregion
 
+		#region Private Methods
+
 		/// <summary>
 		/// Sends commands to the system to pull down the local addressbook.
 		/// </summary>
@@ -317,15 +319,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			string lastName = contact.Name
-			                         .Split()
-			                         .Reverse()
-			                         .FirstOrDefault(s => !string.IsNullOrEmpty(s));
-
-			if (string.IsNullOrEmpty(lastName))
+			if (string.IsNullOrEmpty(contact.Name))
 				return;
 
-			char letter = lastName.First();
+			char letter = contact.Name.First();
 			letter = char.ToUpper(letter);
 
 			RootFolder root = GetRoot(addressbookType);
@@ -341,6 +338,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 			folder.AddContact(contact);
 		}
+
+		#endregion
 
 		#region Console
 
