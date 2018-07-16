@@ -408,8 +408,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				Initialized = false;
 				Initialized = true;
 			}
-			else
-				Initialized = true;
+			else if (!Initialized)
+				return;
 
 			string word = GetFirstWord(data);
 			if (word == null)
