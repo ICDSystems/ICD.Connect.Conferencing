@@ -13,7 +13,6 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Devices;
-using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
@@ -569,6 +568,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_RpcController.SetPort(port);
 
 		    UpdateCachedOnlineStatus();
+
+			if(m_ConnectionStateManager.IsConnected)
+				Register();
 	    }
 
 	    /// <summary>
