@@ -431,10 +431,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
+				ushort boothId = GetBoothId(roomId);
 				// this room was previously connected, retransmit the requisite info instead of adding a new room.
-				if (m_ClientToRoom.ContainsKey(clientId))
+				if (m_ClientToRoom.ContainsKey(clientId) && boothId != 0)
 				{
-					TransmitInterpretationState(GetBoothId(roomId));
+					TransmitInterpretationState(boothId);
 					return;
 				}
 
