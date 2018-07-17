@@ -356,6 +356,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			letter = char.ToUpper(letter);
 
 			RootFolder root = GetRoot(addressbookType);
+
+			/*
 			IDirectoryFolder folder = root.GetFolders().FirstOrDefault(f => f.Name == letter.ToString());
 
 			if (folder == null)
@@ -364,9 +366,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 				folder = new DirectoryFolder(folderName);
 
 				root.AddFolder(folder);
-			}
+			}*/
 
-			folder.AddContact(contact);
+			root.AddContact(contact);
 		}
 
 		#endregion
