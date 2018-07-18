@@ -235,5 +235,18 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 					throw new ArgumentOutOfRangeException();
 			}
 		}
+
+		/// <summary>
+		/// Gets the start time, falls through to dial time if no start time specified.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static DateTime GetStartOrDialTime(this IConferenceSource extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			return extends.Start ?? extends.DialTime;
+		}
 	}
 }

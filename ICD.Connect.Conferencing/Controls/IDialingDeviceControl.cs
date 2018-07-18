@@ -19,6 +19,16 @@ namespace ICD.Connect.Conferencing.Controls
 		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 
 		/// <summary>
+		/// Raised when a source is removed from the dialing component.
+		/// </summary>
+		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+
+		/// <summary>
+		/// Raised when a source property changes.
+		/// </summary>
+		event EventHandler<ConferenceSourceEventArgs> OnSourceChanged;
+
+		/// <summary>
 		/// Raised when the Do Not Disturb state changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;

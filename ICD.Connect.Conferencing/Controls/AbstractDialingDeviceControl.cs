@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -8,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
@@ -17,10 +19,34 @@ namespace ICD.Connect.Conferencing.Controls
 	public abstract class AbstractDialingDeviceControl<T> : AbstractDeviceControl<T>, IDialingDeviceControl
 		where T : IDeviceBase
 	{
+		/// <summary>
+		/// Raised when a source is added to the dialing component.
+		/// </summary>
 		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 
+		/// <summary>
+		/// Raised when a source is removed from the dialing component.
+		/// </summary>
+		public abstract event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+
+		/// <summary>
+		/// Raised when a source property changes.
+		/// </summary>
+		public event EventHandler<ConferenceSourceEventArgs> OnSourceChanged;
+
+		/// <summary>
+		/// Raised when the Do Not Disturb state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
+
+		/// <summary>
+		/// Raised when the Auto Answer state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
+
+		/// <summary>
+		/// Raised when the microphones mute state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		private readonly SafeCriticalSection m_StateSection;
@@ -49,7 +75,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_AutoAnswer = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} AutoAnswer set to {1}", this, m_AutoAnswer);
+					Log(eSeverity.Informational, "AutoAnswer set to {0}", m_AutoAnswer);
 				}
 				finally
 				{
@@ -78,7 +104,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_PrivacyMuted = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} PrivacyMuted set to {1}", this, m_PrivacyMuted);
+					Log(eSeverity.Informational, "PrivacyMuted set to {0}", m_PrivacyMuted);
 				}
 				finally
 				{
@@ -107,7 +133,7 @@ namespace ICD.Connect.Conferencing.Controls
 
 					m_DoNotDisturb = value;
 
-					Logger.AddEntry(eSeverity.Informational, "{0} DoNotDisturb set to {1}", this, m_DoNotDisturb);
+					Log(eSeverity.Informational, "DoNotDisturb set to {0}", m_DoNotDisturb);
 				}
 				finally
 				{
@@ -170,6 +196,21 @@ namespace ICD.Connect.Conferencing.Controls
 		/// <param name="callType"></param>
 		public abstract void Dial(string number, eConferenceSourceType callType);
 
+		public virtual void Dial(IContact contact)
+		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
+			if (!contact.GetContactMethods().Any())
+				throw new InvalidOperationException(string.Format("No contact methods for contact {0}", contact.Name));
+
+			string number = contact.GetContactMethods().FirstOrDefault(cm => !string.IsNullOrEmpty(cm.Number)).Number;
+			if (number == null)
+				throw new InvalidOperationException(string.Format("No contact methods for contact {0} have a valid number", contact.Name));
+
+			Dial(number);
+		}
+
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.
 		/// </summary>
@@ -190,29 +231,42 @@ namespace ICD.Connect.Conferencing.Controls
 
 		#endregion
 
+		#region Source Events
+
+		/// <summary>
+		/// Subscribes to the source events in order to re-raise OnSourceChanged event.
+		/// </summary>
+		/// <param name="source"></param>
+		protected void SourceSubscribe(IConferenceSource source)
+		{
+			source.OnAnswerStateChanged += SourceOnPropertyChanged;
+			source.OnNameChanged += SourceOnPropertyChanged;
+			source.OnNumberChanged += SourceOnPropertyChanged;
+			source.OnSourceTypeChanged += SourceOnPropertyChanged;
+			source.OnStatusChanged += SourceOnPropertyChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribes from the source events to stop re-raising OnSourceChanged event.
+		/// </summary>
+		/// <param name="source"></param>
+		protected void SourceUnsubscribe(IConferenceSource source)
+		{
+			source.OnAnswerStateChanged -= SourceOnPropertyChanged;
+			source.OnNameChanged -= SourceOnPropertyChanged;
+			source.OnNumberChanged -= SourceOnPropertyChanged;
+			source.OnSourceTypeChanged -= SourceOnPropertyChanged;
+			source.OnStatusChanged -= SourceOnPropertyChanged;
+		}
+
+		private void SourceOnPropertyChanged(object sender, EventArgs args)
+		{
+			OnSourceChanged.Raise(this, new ConferenceSourceEventArgs(sender as IConferenceSource));
+		}
+
+		#endregion
+
 		#region Console
-
-		/// <summary>
-		/// Gets the child console nodes.
-		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
-			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-				yield return node;
-
-			yield return
-				ConsoleNodeGroup.IndexNodeMap("Sources", "The conference sources being tracked by this dialer", GetSources());
-		}
-
-		/// <summary>
-		/// Workaround for "unverifiable code" warning.
-		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
-		{
-			return base.GetConsoleNodes();
-		}
 
 		/// <summary>
 		/// Gets the child console commands.
@@ -223,10 +277,8 @@ namespace ICD.Connect.Conferencing.Controls
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<string>("Dial", "Dial <NUMBER>", s => Dial(s));
-			yield return new GenericConsoleCommand<bool>("SetDoNotDisturb", "SetDoNotDisturb <true/false>", b => SetDoNotDisturb(b));
-			yield return new GenericConsoleCommand<bool>("SetAutoAnswer", "SetAutoAnswer <true/false>", b => SetAutoAnswer(b));
-			yield return new GenericConsoleCommand<bool>("SetPrivacyMute", "SetPrivacyMute <true/false>", b => SetPrivacyMute(b));
+			foreach (IConsoleCommand command in DialingDeviceControlConsole.GetConsoleCommands(this))
+				yield return command;
 		}
 
 		/// <summary>
@@ -246,10 +298,29 @@ namespace ICD.Connect.Conferencing.Controls
 		{
 			base.BuildConsoleStatus(addRow);
 
-			addRow("AutoAnswer", m_AutoAnswer);
-			addRow("PrivacyMuted", m_PrivacyMuted);
-			addRow("DoNotDisturb", m_DoNotDisturb);
-			addRow("Supports", Supports);
+			DialingDeviceControlConsole.BuildConsoleStatus(this, addRow);
+		}
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
+
+			foreach (IConsoleNodeBase node in DialingDeviceControlConsole.GetConsoleNodes(this))
+				yield return node;
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		#endregion
