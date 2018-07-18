@@ -50,6 +50,25 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#endregion
 
+		#region RPC Constants
+
+		public const string REGISTER_ROOM_RPC = "RegisterRoom";
+		public const string UNREGISTER_ROOM_RPC = "UnregisterRoom";
+
+		public const string DIAL_RPC = "Dial";
+		public const string DIAL_TYPE_RPC = "DialType";
+		public const string PRIVACY_MUTE_RPC = "PrivacyMute";
+		public const string AUTO_ANSWER_RPC = "AutoAnswer";
+		public const string DO_NOT_DISTURB_RPC = "DoNotDisturb";
+
+		public const string ANSWER_RPC = "Answer";
+		public const string HOLD_ENABLE_RPC = "HoldEnable";
+		public const string HOLD_RESUME_RPC = "HoldResume";
+		public const string SEND_DTMF_RPC = "SendDTMF";
+		public const string END_CALL_RPC = "EndCall";
+
+		#endregion
+
 		#region Private Members
 		
 	    private readonly ClientSerialRpcController m_RpcController;
@@ -217,43 +236,43 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    public void Register()
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_RoomId, RoomName, RoomPrefix);
+				m_RpcController.CallMethod(REGISTER_ROOM_RPC, m_RoomId, RoomName, RoomPrefix);
 	    }
 
 	    public void Unregister()
 	    {
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.UNREGISTER_ROOM_RPC, m_RoomId);
+				m_RpcController.CallMethod(UNREGISTER_ROOM_RPC, m_RoomId);
 	    }
 
 	    public void Dial(string number)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_RPC, m_RoomId, number);
+				m_RpcController.CallMethod(DIAL_RPC, m_RoomId, number);
 	    }
 
 	    public void Dial(string number, eConferenceSourceType callType)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_TYPE_RPC, m_RoomId, number, callType);
+				m_RpcController.CallMethod(DIAL_TYPE_RPC, m_RoomId, number, callType);
 	    }
 
 		public void SetPrivacyMute(bool enabled)
 	    {
 		    if(IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.PRIVACY_MUTE_RPC, m_RoomId, enabled);
+				m_RpcController.CallMethod(PRIVACY_MUTE_RPC, m_RoomId, enabled);
 	    }
 
 		public void SetAutoAnswer(bool enabled)
 		{
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.AUTO_ANSWER_RPC, m_RoomId, enabled);
+				m_RpcController.CallMethod(AUTO_ANSWER_RPC, m_RoomId, enabled);
 		}
 
 	    public void SetDoNotDisturb(bool enabled)
 	    {
 		    if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DO_NOT_DISTURB_RPC, m_RoomId, enabled);
+				m_RpcController.CallMethod(DO_NOT_DISTURB_RPC, m_RoomId, enabled);
 	    }
 
 		[PublicAPI]
@@ -394,25 +413,26 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		private void Subscribe(ThinConferenceSource source)
 		{
-			source.AnswerCallback += SourceOnCallAnswered;
-			source.HoldCallback += SourceOnCallHeld;
-			source.ResumeCallback += SourceOnCallResumed;
-			source.SendDtmfCallback += SourceOnDtmfSent;
-			source.HangupCallback += SourceOnCallEnded;
+			source.OnAnswerCallback += SourceOnCallAnswered;
+			source.OnHoldCallback += SourceOnCallHeld;
+			source.OnResumeCallback += SourceOnCallResumed;
+			source.OnSendDtmfCallback += SourceOnDtmfSent;
+			source.OnHangupCallback += SourceOnCallEnded;
 	    }
 		
 	    private void Unsubscribe(ThinConferenceSource source)
 	    {
-			source.AnswerCallback = null;
-			source.HoldCallback = null;
-			source.ResumeCallback = null;
-			source.SendDtmfCallback = null;
-			source.HangupCallback = null;
+			source.OnAnswerCallback -= SourceOnCallAnswered;
+			source.OnHoldCallback -= SourceOnCallHeld;
+			source.OnResumeCallback -= SourceOnCallResumed;
+			source.OnSendDtmfCallback -= SourceOnDtmfSent;
+			source.OnHangupCallback -= SourceOnCallEnded;
 		    
 		}
 
-		private void SourceOnCallAnswered(ThinConferenceSource source)
+		private void SourceOnCallAnswered(object sender, EventArgs eventArgs)
 		{
+			ThinConferenceSource source = sender as ThinConferenceSource;
 			if (source == null)
 				return;
 			
@@ -431,11 +451,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, m_RoomId, id);
+				m_RpcController.CallMethod(ANSWER_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnCallHeld(ThinConferenceSource source)
+		private void SourceOnCallHeld(object sender, EventArgs eventArgs)
 	    {
+			ThinConferenceSource source = sender as ThinConferenceSource;
 			if (source == null)
 			    return;
 
@@ -454,11 +475,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, m_RoomId, id);
+			    m_RpcController.CallMethod(HOLD_ENABLE_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnCallResumed(ThinConferenceSource source)
+		private void SourceOnCallResumed(object sender, EventArgs eventArgs)
 	    {
+			ThinConferenceSource source = sender as ThinConferenceSource;
 			if (source == null)
 			    return;
 
@@ -477,11 +499,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, m_RoomId, id);
+			    m_RpcController.CallMethod(HOLD_RESUME_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnCallEnded(ThinConferenceSource source)
+		private void SourceOnCallEnded(object sender, EventArgs eventArgs)
 		{
+			ThinConferenceSource source = sender as ThinConferenceSource;
 			if (source == null)
 				return;
 
@@ -500,11 +523,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, m_RoomId, id);
+				m_RpcController.CallMethod(END_CALL_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnDtmfSent(ThinConferenceSource source, string data)
+		private void SourceOnDtmfSent(object sender, StringEventArgs stringEventArgs)
 	    {
+			ThinConferenceSource source = sender as ThinConferenceSource;
 			if (source == null)
 			    return;
 			
@@ -523,7 +547,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 		    if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, m_RoomId, id, data);
+				m_RpcController.CallMethod(SEND_DTMF_RPC, m_RoomId, id, stringEventArgs.Data);
 		}
 
 		#endregion
@@ -630,7 +654,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    addRow("Number", src.Number);
 			    addRow("Status", src.Status);
 			    addRow("State", src.AnswerState);
-			    addRow("Start", src.GetStartOrDialTime());
+			    //addRow("Start", src.GetStartOrDialTime());
 		    }
 			addRow("-----", "-----");
 	    }

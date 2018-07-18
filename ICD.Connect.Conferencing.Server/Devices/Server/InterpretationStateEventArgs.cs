@@ -15,9 +15,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[PublicAPI]
 		public bool Active { get; set; }
 
-		[PublicAPI("S+")]
-		public ushort ActiveSPlus { get { return Active.ToUShort(); }}
-
 		public InterpretationStateEventArgs(int roomId, ushort boothId, bool active)
 		{
 			RoomId = roomId;

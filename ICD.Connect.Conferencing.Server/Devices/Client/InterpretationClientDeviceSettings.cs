@@ -1,4 +1,5 @@
-﻿using ICD.Common.Properties;
+﻿using System;
+using ICD.Common.Properties;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Ports;
@@ -7,9 +8,11 @@ using ICD.Connect.Settings.Attributes.SettingsProperties;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
-	[KrangSettings("InterpretationClient", typeof(InterpretationClientDevice))]
+	[KrangSettings(FACTORY_NAME)]
 	public sealed class InterpretationClientDeviceSettings : AbstractDeviceSettings
 	{
+		private const string FACTORY_NAME = "InterpretationClient";
+
 		private const string PORT_ELEMENT = "Port";
 		private const string ROOM_ID_ELEMENT = "Room";
 		private const string ROOM_NAME_ELEMENT = "RoomName";
@@ -36,6 +39,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			writer.WriteElementString(ROOM_NAME_ELEMENT, IcdXmlConvert.ToString(RoomName));
 			writer.WriteElementString(ROOM_PREFIX_ELEMENT, IcdXmlConvert.ToString(RoomPrefix));
 		}
+
+		/// <summary>
+		/// Gets the originator factory name.
+		/// </summary>
+		public override string FactoryName { get { return FACTORY_NAME; } }
+
+		/// <summary>
+		/// Gets the type of the originator for this settings instance.
+		/// </summary>
+		public override Type OriginatorType { get { return typeof(InterpretationClientDevice); } }
 
 		public override void ParseXml(string xml)
 		{
