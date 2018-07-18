@@ -54,6 +54,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		event EventHandler<InCallEventArgs> OnInCallChanged;
 
+		/// <summary>
+		/// Raises when the conference adds or removes a source.
+		/// </summary>
+		event EventHandler OnConferenceSourceAddedOrRemoved;
+
 		#endregion
 
 		#region Properties
@@ -166,6 +171,20 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
 		bool DeregisterDialingProvider(eConferenceSourceType sourceType);
+
+		/// <summary>
+		/// Registers the dialing component, for feedback only.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
+
+		/// <summary>
+		/// Deregisters the dialing componet from the feedback only list.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		bool DeregisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
 
 		/// <summary>
 		/// Deregisters all of the dialing components.
