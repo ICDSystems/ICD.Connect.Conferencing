@@ -311,7 +311,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			try
 			{
 				foreach (var src in m_Sources.Values)
+				{
+					src.Status = eConferenceSourceStatus.Disconnected;
 					Unsubscribe(src);
+					OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(src));
+				}
 
 				m_Sources.Clear();
 			}
@@ -579,6 +583,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_RpcController.SetPort(port);
 
 		    UpdateCachedOnlineStatus();
+
+			if(m_ConnectionStateManager.IsConnected)
+				Register();
 	    }
 
 	    /// <summary>
