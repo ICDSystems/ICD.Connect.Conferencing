@@ -45,10 +45,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
 
 	    public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
-
-		#endregion
-
-		#region RPC Constants
+	    public const string REMOVE_CACHED_SOURCE = "RemoveCachedSource";
 
 		public const string REGISTER_ROOM_RPC = "RegisterRoom";
 		public const string UNREGISTER_ROOM_RPC = "UnregisterRoom";
@@ -405,6 +402,26 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    }
 		}
 
+		[Rpc(REMOVE_CACHED_SOURCE), UsedImplicitly]
+	    private void RemoveCachedSource(Guid id)
+	    {
+		    m_SourcesCriticalSection.Enter();
+
+		    try
+		    {
+			    var sourceToRemove = m_Sources[id];
+				sourceToRemove.Status = eConferenceSourceStatus.Disconnected;
+			    Unsubscribe(sourceToRemove);
+			    m_Sources.Remove(id);
+
+			    IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-RemoveCachedSource-OnSourceRemoved");
+			    OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
+		    }
+		    finally
+		    {
+			    m_SourcesCriticalSection.Leave();
+		    }
+	    }
 		#endregion
 
 		#region Sources
