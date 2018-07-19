@@ -288,7 +288,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// <summary>
 		/// Updates the call state with the given active call data.
 		/// 
-		/// active: call[34] speed [384]
+		/// active: call[34] speed[384]
 		/// </summary>
 		/// <param name="activeCall"></param>
 		public void SetActiveCall(string activeCall)

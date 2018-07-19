@@ -53,7 +53,7 @@ namespace ICD.Connect.Conferencing.Polycom.Tests.Devices.Codec.Components.Dial
 			Assert.AreEqual(expected, CallStatus.GetCallIdFromLineStatus(lineStatus));
 		}
 
-		[TestCase("active: call[34] speed [384]", 34)]
+		[TestCase("active: call[34] speed[384]", 34)]
 		public static void GetCallIdFromActiveCallTest(string activeCall, int expected)
 		{
 			Assert.AreEqual(expected, CallStatus.GetCallIdFromActiveCall(activeCall));
