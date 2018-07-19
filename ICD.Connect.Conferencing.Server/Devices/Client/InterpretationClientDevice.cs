@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
 
 	    public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
-	    public const string REMOVE_CACHED_SOURCE = "RemovedCachedSource";
+	    public const string REMOVE_CACHED_SOURCE = "RemoveCachedSource";
 
 		#endregion
 
