@@ -252,6 +252,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				m_Source.AnswerState = (eConferenceSourceAnswerState)answerState;
 				m_Source.Direction = (eConferenceSourceDirection)direction;
 				m_Source.Status = (eConferenceSourceStatus)status;
+				m_Source.SourceType = eConferenceSourceType.Audio;
 			}
 			else
 			{
@@ -264,7 +265,8 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					AnswerState = (eConferenceSourceAnswerState)answerState,
 					Direction = (eConferenceSourceDirection)direction,
 					Status = (eConferenceSourceStatus)status,
-					Start = IcdEnvironment.GetLocalTime()
+					Start = IcdEnvironment.GetLocalTime(),
+					SourceType = eConferenceSourceType.Audio
 				};
 				Subscribe(m_Source);
 

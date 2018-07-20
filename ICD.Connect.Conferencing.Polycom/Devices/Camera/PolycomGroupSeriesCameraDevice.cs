@@ -117,24 +117,22 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 			if (m_CameraComponent == null)
 				return;
 
-			m_CameraComponent.SetNearCameraAsVideoSource(CameraId);
-
 			switch (action)
 			{
 				case eCameraPanTiltAction.Left:
-					m_CameraComponent.MoveNear(eCameraAction.Left);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.Left);
 					break;
 				case eCameraPanTiltAction.Right:
-					m_CameraComponent.MoveNear(eCameraAction.Right);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.Right);
 					break;
 				case eCameraPanTiltAction.Up:
-					m_CameraComponent.MoveNear(eCameraAction.Up);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.Up);
 					break;
 				case eCameraPanTiltAction.Down:
-					m_CameraComponent.MoveNear(eCameraAction.Down);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.Down);
 					break;
 				case eCameraPanTiltAction.Stop:
-					m_CameraComponent.MoveNear(eCameraAction.Stop);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.Stop);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException("action");
@@ -150,18 +148,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 			if (m_CameraComponent == null)
 				return;
 
-			m_CameraComponent.SetNearCameraAsVideoSource(CameraId);
-
 			switch (action)
 			{
 				case eCameraZoomAction.ZoomIn:
-					m_CameraComponent.MoveNear(eCameraAction.ZoomIn);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.ZoomIn);
 					break;
 				case eCameraZoomAction.ZoomOut:
-					m_CameraComponent.MoveNear(eCameraAction.ZoomOut);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.ZoomOut);
 					break;
 				case eCameraZoomAction.Stop:
-					m_CameraComponent.MoveNear(eCameraAction.Stop);
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.Stop);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException("action");
@@ -182,7 +178,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// <param name="presetId">The id of the preset to position to.</param>
 		public void ActivatePreset(int presetId)
 		{
-			m_CameraComponent.GoNearCamreaPreset(presetId);
+			m_CameraComponent.GoNearCameraPreset(CameraId, presetId);
 		}
 
 		/// <summary>
@@ -191,7 +187,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// <param name="presetId">The index to store the preset at.</param>
 		public void StorePreset(int presetId)
 		{
-			m_CameraComponent.SetNearCameraPreset(presetId);
+			m_CameraComponent.SetNearCameraPreset(CameraId, presetId);
 		}
 
 		#endregion

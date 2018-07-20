@@ -95,6 +95,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		}
 
 		/// <summary>
+		/// Moves the near camera with the given action.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="action"></param>
+		public void MoveNear(int cameraId, eCameraAction action)
+		{
+			string move = s_ActionNames.GetValue(action);
+
+			Codec.EnqueueCommand("camera near {0}\r\ncamera near move {1}", cameraId, move);
+			Codec.Log(eSeverity.Informational, "Performing near camera {0} move {1}", cameraId, move);
+		}
+
+		/// <summary>
 		/// Moves the far camera with the given action.
 		/// </summary>
 		/// <param name="action"></param>
@@ -176,10 +189,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		/// Applies the given preset to the near camera.
 		/// </summary>
 		/// <param name="preset"></param>
-		public void GoNearCamreaPreset(int preset)
+		public void GoNearCameraPreset(int preset)
 		{
 			Codec.EnqueueCommand("preset near go {0}", preset);
 			Codec.Log(eSeverity.Informational, "Applying near camera preset {0}", preset);
+		}
+
+		/// <summary>
+		/// Applies the given preset to the near camera.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="preset"></param>
+		public void GoNearCameraPreset(int cameraId, int preset)
+		{
+			Codec.EnqueueCommand("camera near {0}\r\npreset near go {1}", cameraId, preset);
+			Codec.Log(eSeverity.Informational, "Applying near camera {0} preset {1}", cameraId, preset);
 		}
 
 		/// <summary>
@@ -200,6 +224,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		{
 			Codec.EnqueueCommand("preset near set {0}", preset);
 			Codec.Log(eSeverity.Informational, "Storing near camera preset {0}", preset);
+		}
+
+		/// <summary>
+		/// Stores the near camera position as the given preset.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="preset"></param>
+		public void SetNearCameraPreset(int cameraId, int preset)
+		{
+			Codec.EnqueueCommand("camera near {0}\r\npreset near set {1}", cameraId, preset);
+			Codec.Log(eSeverity.Informational, "Storing near camera {0} preset {1}", cameraId, preset);
 		}
 
 		/// <summary>
@@ -267,7 +302,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 			yield return new GenericConsoleCommand<int>("SetNearCameraForContent", "SetNearCameraForContent <CAMERA>", c => SetNearCameraForContent(c));
 			yield return new GenericConsoleCommand<bool>("SetNearCameraInverted", "SetNearCameraInverted <true/false>", i => SetNearCameraInverted(i));
 
-			yield return new GenericConsoleCommand<int>("GoNearCamreaPreset", "GoNearCamreaPreset <PRESET>", p => GoNearCamreaPreset(p));
+			yield return new GenericConsoleCommand<int>("GoNearCameraPreset", "GoNearCameraPreset <PRESET>", p => GoNearCameraPreset(p));
 			yield return new GenericConsoleCommand<int>("GoFarCameraPreset", "GoFarCameraPreset <PRESET>", p => GoFarCameraPreset(p));
 			yield return new GenericConsoleCommand<int>("SetNearCameraPreset", "SetNearCameraPreset <PRESET>", p => SetNearCameraPreset(p));
 			yield return new GenericConsoleCommand<int>("SetFarCameraPreset", "SetFarCameraPreset <PRESET>", p => SetFarCameraPreset(p));

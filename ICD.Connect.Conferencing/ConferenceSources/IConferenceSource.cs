@@ -177,7 +177,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		}
 
 		/// <summary>
-		/// Returns true if the source is actively online.
+		/// Returns true if the source is connected.
 		/// </summary>
 		/// <param name="extends"></param>
 		public static bool GetIsOnline(this IConferenceSource extends)
@@ -201,6 +201,38 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				case eConferenceSourceStatus.EarlyMedia:
 				case eConferenceSourceStatus.Preserved:
 				case eConferenceSourceStatus.RemotePreserved:
+					return true;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		/// <summary>
+		/// Returns true if the source is active.
+		/// </summary>
+		/// <param name="extends"></param>
+		public static bool GetIsActive(this IConferenceSource extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			switch (extends.Status)
+			{
+				case eConferenceSourceStatus.Undefined:
+				case eConferenceSourceStatus.Disconnected:
+				case eConferenceSourceStatus.Idle:
+					return false;
+
+				case eConferenceSourceStatus.Connected:
+				case eConferenceSourceStatus.OnHold:
+				case eConferenceSourceStatus.EarlyMedia:
+				case eConferenceSourceStatus.Preserved:
+				case eConferenceSourceStatus.RemotePreserved:
+				case eConferenceSourceStatus.Dialing:
+				case eConferenceSourceStatus.Connecting:
+				case eConferenceSourceStatus.Ringing:
+				case eConferenceSourceStatus.Disconnecting:
 					return true;
 
 				default:

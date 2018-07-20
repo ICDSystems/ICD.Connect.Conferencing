@@ -352,9 +352,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 				IcdConsole.PrintLine(eConsoleColor.Yellow, "{0}", callStatus);
 
-				m_CallStates.Remove(id);
-				
-				if (callStatus.ConnectionState != eConnectionState.Inactive)
+				if (callStatus.ConnectionState == eConnectionState.Disconnected)
+					m_CallStates.Remove(id);
+				else if (callStatus.ConnectionState != eConnectionState.Inactive &&
+					callStatus.ConnectionState != eConnectionState.Disconnecting)
 					m_CallStates[callStatus.CallId] = callStatus;
 			}
 			finally

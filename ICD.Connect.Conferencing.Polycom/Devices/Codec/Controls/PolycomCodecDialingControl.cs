@@ -221,8 +221,28 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				{
 					if (m_Sources.ContainsKey(kvp.Key))
 						UpdateSource(kvp.Value);
-					else
-						CreateSource(kvp.Value);
+
+					switch (kvp.Value.ConnectionState)
+					{
+						case eConnectionState.Unknown:
+							break;
+
+						// Ignore inactive state, it's muddled around disconnected/disconnecting
+						case eConnectionState.Inactive:
+							break;
+
+						case eConnectionState.Opened:
+						case eConnectionState.Ringing:
+						case eConnectionState.Connecting:
+						case eConnectionState.Connected:
+						case eConnectionState.Disconnecting:
+							CreateSource(kvp.Value);
+							break;
+
+						case eConnectionState.Disconnected:
+							RemoveSource(kvp.Key);
+							break;
+					}
 				}
 			}
 			finally
@@ -352,7 +372,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			source.Number = callStatus.FarSiteNumber;
 			source.Direction = callStatus.Outgoing ? eConferenceSourceDirection.Outgoing : eConferenceSourceDirection.Incoming;
 
-			UpdateStatus(source, callStatus.ConnectionState);
+			source.Status = GetStatus(callStatus.ConnectionState);
+			source.SourceType = callStatus.VideoCall ? eConferenceSourceType.Video : eConferenceSourceType.Audio;
 
 			if (source.GetIsOnline())
 			{
@@ -366,58 +387,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				if (source.Start != null)
 					source.End = source.End ?? IcdEnvironment.GetLocalTime();
 			}
-		}
-
-		/// <summary>
-		/// Updates the source status based on the given connection state.
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="connectionState"></param>
-		/// <returns></returns>
-		private static void UpdateStatus(ThinConferenceSource source, eConnectionState connectionState)
-		{
-			if (source == null)
-				throw new ArgumentNullException("source");
-
-			eConferenceSourceStatus newStatus = GetStatus(connectionState);
-			eConferenceSourceStatus oldStatus = source.Status;
-
-			if (!StatusFlickerDetected(oldStatus, newStatus))
-				source.Status = newStatus;
-		}
-
-		/// <summary>
-		/// Line status and call status conflict a little
-		/// For example Connecting may return to Ringing, Connected may return to Connecting.
-		/// This is possibly a race condition on the Polycom side.
-		///
-		/// For now I'm adding some simple checks to prevent the source status from flickering.
-		/// Maybe this is better solved with a state machine, I dunno.
-		/// </summary>
-		/// <param name="oldStatus"></param>
-		/// <param name="newStatus"></param>
-		/// <returns></returns>
-		private static bool StatusFlickerDetected(eConferenceSourceStatus oldStatus, eConferenceSourceStatus newStatus)
-		{
-			switch (newStatus)
-			{
-				case eConferenceSourceStatus.Ringing:
-					if (oldStatus == eConferenceSourceStatus.Connecting)
-						return true;
-					break;
-
-				case eConferenceSourceStatus.Connecting:
-					if (oldStatus == eConferenceSourceStatus.Connected)
-						return true;
-					break;
-
-				case eConferenceSourceStatus.Disconnecting:
-					if (oldStatus == eConferenceSourceStatus.Disconnected)
-						return true;
-					break;
-			}
-
-			return false;
 		}
 
 		/// <summary>

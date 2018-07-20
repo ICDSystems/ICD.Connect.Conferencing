@@ -392,6 +392,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    src.Direction = sourceState.Direction;
 			    src.End = sourceState.End;
 			    src.Start = sourceState.Start;
+			    src.SourceType = sourceState.SourceType;
 
 			    if (added)
 			    {

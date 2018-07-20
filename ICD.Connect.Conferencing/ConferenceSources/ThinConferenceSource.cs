@@ -47,6 +47,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		private DateTime? m_End;
 		private DateTime m_DialTime;
 		private eConferenceSourceDirection m_Direction;
+		private eConferenceSourceType m_SourceType;
 
 		#region Properties
 
@@ -194,7 +195,19 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
-		eConferenceSourceType IConferenceSource.SourceType { get { return eConferenceSourceType.Audio; } }
+		public eConferenceSourceType SourceType
+		{
+			get { return m_SourceType; }
+			set
+			{
+				if (value == m_SourceType)
+					return;
+
+				m_SourceType = value;
+
+				Log(eSeverity.Informational, "SourceType set to {0}", m_SourceType);
+			}
+		}
 
 		/// <summary>
 		/// Gets the remote camera.

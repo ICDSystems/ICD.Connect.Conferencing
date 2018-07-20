@@ -13,15 +13,48 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 	public sealed class AddressbookComponent : AbstractPolycomComponent
 	{
 		private const string CONTACT_REGEX =
-			@"addrbook \d+. ""(?'name'[^""]*)""( (?'speedprot'[^_]+)_spd:(?'speed'[^\s]*))? (?'prot'[^_]+)_num:(?'number'[^\s]*)( (?'extprot'[^_]+)_ext:(?'ext'\d+)?)?";
+			@"addrbook \d+\. ""(?'name'[^""]*)""( ((?'speedprot'[^_]+)_)?spd:(?'speed'[^\s]*))? ((?'prot'[^_]+)_)?num:(?'number'[^\s]*)( ((?'extprot'[^_]+)_)?ext:(?'ext'\d+)?)?";
+
+		private const string GADDRBOOK_DONE_REGEX =
+			@"gaddrbook letter (?'letter'\S) (done|none)";
 
 		/// <summary>
 		/// Called when the cache is cleared.
 		/// </summary>
 		public event EventHandler OnCleared;
 
+		/// <summary>
+		/// Chains addressbook letters, A->B, B->C, etc
+		/// </summary>
+		private static readonly Dictionary<char, char> s_NextChar; 
+
 		private readonly Dictionary<eAddressbookType, RootFolder> m_RootsCache;
 		private readonly SafeCriticalSection m_RootsSection;
+
+		/// <summary>
+		/// True while we are looping through the letter entries for global directories
+		/// </summary>
+		private bool m_PopulatingGlobalRoot;
+
+		/// <summary>
+		/// Static Constructor.
+		/// </summary>
+		static AddressbookComponent()
+		{
+			s_NextChar = new Dictionary<char, char>();
+
+			char last = default(char);
+			bool first = true;
+
+			foreach (char letter in GetValidAddressbookLetters())
+			{
+				if (!first)
+					s_NextChar[last] = letter;
+
+				last = letter;
+				first = false;
+			}
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -60,8 +93,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		{
 			base.Initialize();
 
+			m_PopulatingGlobalRoot = false;
+
 			PopulateLocalAddressbook();
-			PopulateGlobalAddressbook();
+
+			//if (!m_PopulatingGlobalRoot)
+			//	PopulateGlobalAddressbook();
 		}
 
 		#region Methods
@@ -71,6 +108,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// </summary>
 		public void Clear()
 		{
+			m_PopulatingGlobalRoot = false;
+
 			m_RootsSection.Enter();
 
 			try
@@ -147,11 +186,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 					case eAddressbookType.Local:
 						PopulateLocalAddressbook();
 						return;
+						/*
 					case eAddressbookType.Global:
-						PopulateGlobalAddressbook();
+						if (!m_PopulatingGlobalRoot)
+							PopulateGlobalAddressbook();
 						return;
+						 */
 					default:
-						throw new ArgumentOutOfRangeException();
+						throw new NotSupportedException();
 				}
 			}
 
@@ -162,15 +204,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 				case eAddressbookType.Local:
 					Codec.EnqueueCommand("addrbook letter {0}", folder.Name);
 					break;
+				/*
 				case eAddressbookType.Global:
-					Codec.EnqueueCommand("gaddrbook letter {0}", folder.Name);
+					if (!m_PopulatingGlobalRoot)
+						PopulateGlobalAddressbook(folder.Name.First());
 					break;
+				 */
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new NotSupportedException();
 			}
 		}
 
 		#endregion
+
+		#region Private Methods
 
 		/// <summary>
 		/// Sends commands to the system to pull down the local addressbook.
@@ -185,9 +232,26 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// </summary>
 		private void PopulateGlobalAddressbook()
 		{
+			throw new NotSupportedException();
+
+			m_PopulatingGlobalRoot = true;
+
 			// "gaddrbook all" isn't working on my test unit :(
-			foreach (char c in GetValidAddressbookLetters())
-				Codec.EnqueueCommand("gaddrbook letter {0}", c);
+			// We enqueue the first letter and then we'll enqueue
+			// the next when a response is returned.
+			PopulateGlobalAddressbook(GetValidAddressbookLetters().First());
+		}
+
+		/// <summary>
+		/// Sends commands to the system to pull down the global addressbook.
+		/// </summary>
+		private void PopulateGlobalAddressbook(char letter)
+		{
+			throw new NotSupportedException();
+
+			m_PopulatingGlobalRoot = true;
+
+			Codec.EnqueueCommand("gaddrbook letter {0}", letter);
 		}
 
 		/// <summary>
@@ -199,7 +263,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			for (char c = '0'; c <= '9'; c++)
 				yield return c;
 
-			for (char c = 'a'; c <= 'z'; c++)
+			for (char c = 'A'; c <= 'Z'; c++)
 				yield return c;
 
 			foreach (char c in new [] {'-', '/', ';', '@', ',', '.', '\\'})
@@ -226,12 +290,28 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 		private void HandleGlobalDir(string data)
 		{
+			// Not supported
+			return;
+
 			// gaddrbook 0. "Chris VanLuvanee" sip_spd:Auto sip_num:chris.van@profoundtech.onmicrosoft.com
 			// gaddrbook 1. "ConfRoom" sip_spd:Auto sip_num:confroom@profoundtech.onmicrosoft.com
 			// gaddrbook letter C done
 
+			// Enqueue the next letter
 			if (data.EndsWith(" done") || data.EndsWith(" none"))
+			{
+				Match match = Regex.Match(data, GADDRBOOK_DONE_REGEX);
+				if (match.Success)
+				{
+					char letter = match.Groups["letter"].Value.First();
+					if (s_NextChar.ContainsKey(letter))
+						PopulateGlobalAddressbook(s_NextChar[letter]);
+					else
+						m_PopulatingGlobalRoot = false;
+				}
+
 				return;
+			}
 
 			if (data.StartsWith("gaddrbook letter "))
 				return;
@@ -269,28 +349,29 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			string lastName = contact.Name
-			                         .Split()
-			                         .Reverse()
-			                         .FirstOrDefault(s => !string.IsNullOrEmpty(s));
-
-			if (string.IsNullOrEmpty(lastName))
+			if (string.IsNullOrEmpty(contact.Name))
 				return;
 
-			char letter = lastName.First();
+			char letter = contact.Name.First();
 			letter = char.ToUpper(letter);
 
 			RootFolder root = GetRoot(addressbookType);
+
+			/*
 			IDirectoryFolder folder = root.GetFolders().FirstOrDefault(f => f.Name == letter.ToString());
 
 			if (folder == null)
 			{
-				folder = new DirectoryFolder(letter.ToString());
-				root.AddFolder(folder);
-			}
+				string folderName = string.Format("Search by letter: {0}", letter);
+				folder = new DirectoryFolder(folderName);
 
-			folder.AddContact(contact);
+				root.AddFolder(folder);
+			}*/
+
+			root.AddContact(contact);
 		}
+
+		#endregion
 
 		#region Console
 

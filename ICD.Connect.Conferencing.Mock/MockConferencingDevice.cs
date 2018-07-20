@@ -140,7 +140,8 @@ namespace ICD.Connect.Conferencing.Mock
 					Direction = eConferenceSourceDirection.Outgoing,
 					Number = number,
 					Name = "Mock Call To: " + number,
-					Status = eConferenceSourceStatus.Connected
+					Status = eConferenceSourceStatus.Connected,
+					SourceType = type
 				};
 
 			m_Sources.Add(source);
