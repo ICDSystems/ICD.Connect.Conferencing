@@ -370,7 +370,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				source.Name = callStatus.FarSiteName;
 
 			source.Number = callStatus.FarSiteNumber;
-			source.Direction = callStatus.Outgoing ? eConferenceSourceDirection.Outgoing : eConferenceSourceDirection.Incoming;
+
+			bool? outgoing = callStatus.Outgoing;
+			if (outgoing == null)
+				source.Direction = eConferenceSourceDirection.Undefined;
+			else
+				source.Direction = (bool)outgoing ? eConferenceSourceDirection.Outgoing : eConferenceSourceDirection.Incoming;
 
 			source.Status = GetStatus(callStatus.ConnectionState);
 			source.SourceType = callStatus.VideoCall ? eConferenceSourceType.Video : eConferenceSourceType.Audio;

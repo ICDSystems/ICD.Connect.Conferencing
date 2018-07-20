@@ -61,7 +61,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 		public bool Muted { get; set; }
 
-		public bool Outgoing { get; set; }
+		public bool? Outgoing { get; set; }
 
 		public string Speed { get; set; }
 
@@ -147,7 +147,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (Muted)
 				builder.AppendProperty("Muted", Muted);
 
-			if (Outgoing)
+			if (Outgoing != null)
 				builder.AppendProperty("Outgoing", Outgoing);
 
 			if (!string.IsNullOrEmpty(Speed))
@@ -281,8 +281,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			eConnectionState state;
 			ConnectionState = s_ConnectionStateNames.TryGetKey(stateName, out state) ? state : eConnectionState.Unknown;
 
-			// Polycom documentation doesn't give us an exhaustive list of these, but they seem boolean?
-			Outgoing = match.Groups["direction"].Value == "outgoing";
+			// NOTE - Don't use line status for call direction, incoming calls show as "outgoing". Brillant!
 		}
 
 		/// <summary>
