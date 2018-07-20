@@ -403,9 +403,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
-			if (data.StartsWith("Username:"))
+			if (data.ToLower().StartsWith("username:"))
 				SendCommand(Username);
-			else if (data.StartsWith("Password:"))
+			else if (data.ToLower().StartsWith("password:"))
 				SendCommand(Password);
 			else if (data.StartsWith("Hi, my name is"))
 			{
