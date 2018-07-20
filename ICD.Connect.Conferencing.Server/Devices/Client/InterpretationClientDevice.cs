@@ -412,7 +412,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    m_SourcesCriticalSection.Enter();
 
 		    try
-		    {
+			{
+				if(!m_Sources.ContainsKey(id))
+					return;
+
 			    var sourceToRemove = m_Sources[id];
 				sourceToRemove.Status = eConferenceSourceStatus.Disconnected;
 			    Unsubscribe(sourceToRemove);
