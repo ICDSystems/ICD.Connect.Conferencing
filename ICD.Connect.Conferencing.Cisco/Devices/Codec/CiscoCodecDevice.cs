@@ -262,12 +262,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			if (args != null)
 				command = string.Format(command, args);
 
-			if (!m_ConnectionStateManager.IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with Codec");
-				return;
-			}
-
 			m_ConnectionStateManager.Send(command + END_OF_LINE);
 		}
 

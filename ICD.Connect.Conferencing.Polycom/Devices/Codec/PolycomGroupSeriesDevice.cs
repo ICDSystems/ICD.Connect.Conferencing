@@ -236,12 +236,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="command"></param>
 		public void SendCommand(string command)
 		{
-			if (!m_ConnectionStateManager.IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with Codec");
-				return;
-			}
-
 			m_ConnectionStateManager.Send(command + END_OF_LINE);
 		}
 
