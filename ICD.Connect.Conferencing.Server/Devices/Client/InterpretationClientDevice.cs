@@ -648,6 +648,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		    settings.Port = m_ConnectionStateManager.PortNumber;
 		    settings.Room = m_RoomId;
+		    settings.RoomName = RoomName;
+		    settings.RoomPrefix = RoomPrefix;
 	    }
 
 	    protected override void ClearSettingsFinal()
