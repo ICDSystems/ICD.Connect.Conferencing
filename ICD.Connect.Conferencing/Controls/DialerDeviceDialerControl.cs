@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.EventArguments;
 
-namespace ICD.Connect.Conferencing.Controls.Dialing
+namespace ICD.Connect.Conferencing.Controls
 {
 	public sealed class DialerDeviceDialerControl : AbstractDialingDeviceControl<IDialerDevice> 
 	{
@@ -34,15 +33,13 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private void ParentOnSourceAdded(object sender, ConferenceSourceEventArgs eventArgs)
 		{
 			SourceSubscribe(eventArgs.Data);
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnSourceAdded-OnSourceAdded");
-			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs));
+			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs.Data));
 		}
 
 		private void ParentOnSourceRemoved(object sender, ConferenceSourceEventArgs eventArgs)
 		{
 			SourceUnsubscribe(eventArgs.Data);
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnSourceRemoved-OnSourceRemoved");
-			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs));
+			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs.Data));
 		}
 
 		private void ParentOnPrivacyMuteChanged(object sender, BoolEventArgs eventArgs)

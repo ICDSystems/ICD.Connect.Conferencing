@@ -13,7 +13,6 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Devices;
-using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
@@ -47,6 +46,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
 
 	    public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
+	    public const string REMOVE_CACHED_SOURCE = "RemoveCachedSource";
 
 		#endregion
 
@@ -289,15 +289,18 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			Logger.AddEntry(severity, message);
 		}
 
-
-
 		private void ClearSources()
 		{
 			m_SourcesCriticalSection.Enter();
 			try
 			{
-				foreach (var src in m_Sources.Values)
+				foreach (ThinConferenceSource src in m_Sources.Values)
+				{
+					src.Status = eConferenceSourceStatus.Disconnected;
 					Unsubscribe(src);
+					IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-ClearSources-OnSourceRemoved");
+					OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(src));
+				}
 
 				m_Sources.Clear();
 			}
@@ -337,6 +340,30 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			DoNotDisturb = state;
 		}
 
+	    [Rpc(REMOVE_CACHED_SOURCE), UsedImplicitly]
+	    private void RemoveCachedSource(Guid id)
+	    {
+		    m_SourcesCriticalSection.Enter();
+
+		    try
+		    {
+				if(!m_Sources.ContainsKey(id))
+					return;
+
+			    var sourceToRemove = m_Sources[id];
+				sourceToRemove.Status = eConferenceSourceStatus.Disconnected;
+			    Unsubscribe(sourceToRemove);
+			    m_Sources.Remove(id);
+
+			    IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-RemoveCachedSource-OnSourceRemoved");
+			    OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
+		    }
+		    finally
+		    {
+			    m_SourcesCriticalSection.Leave();
+		    }
+	    }
+
 	    [Rpc(UPDATE_CACHED_SOURCE_STATE), UsedImplicitly]
 	    private void UpdateCachedSourceState(Guid id, ConferenceSourceState sourceState)
 	    {
@@ -371,7 +398,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    {
 					var control = Controls.GetControl<DialerDeviceDialerControl>();
 				    if (control != null)
-						OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
+				    {
+						IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnSourceAdded");
+					    OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
+				    }
 			    }
 
 			    if (sourceState.Status != eConferenceSourceStatus.Disconnected)
@@ -381,6 +411,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    Unsubscribe(sourceToRemove);
 			    m_Sources.Remove(id);
 
+				IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnSourceRemoved");
 				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
 		    }
 		    finally
@@ -541,6 +572,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_RpcController.SetPort(port);
 
 		    UpdateCachedOnlineStatus();
+
+			if(m_ConnectionStateManager.IsConnected)
+				Register();
 	    }
 
 	    /// <summary>
