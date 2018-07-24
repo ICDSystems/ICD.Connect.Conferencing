@@ -300,6 +300,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Gets the registered feedback dialing providers.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IDialingDeviceControl> GetFeedbackDialingProviders()
+		{
+			return m_FeedbackProviderSection.Execute(() => m_FeedbackProviders.ToArray());
+		}
+
+		/// <summary>
 		/// Registers the dialing provider.
 		/// </summary>
 		/// <param name="sourceType"></param>
@@ -373,7 +382,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					return false;
 
 				m_FeedbackProviders.Add(dialingControl);
-				UpdateProvider(dialingControl);
+				UpdateFeedbackProvider(dialingControl);
 
 				Subscribe(dialingControl);
 			}
@@ -448,6 +457,21 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			foreach (IDialingDeviceControl provider in GetDialingProviders())
 				UpdateProvider(provider);
+
+			foreach (IDialingDeviceControl provider in GetFeedbackDialingProviders())
+				UpdateFeedbackProvider(provider);
+		}
+
+		/// <summary>
+		/// Updates the feedback dialing provider to match the state of the conference manager.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		private void UpdateFeedbackProvider(IDialingDeviceControl dialingControl)
+		{
+			bool privacyMute = PrivacyMuted;
+
+			if (dialingControl.PrivacyMuted != privacyMute)
+				dialingControl.SetPrivacyMute(privacyMute);
 		}
 
 		/// <summary>
