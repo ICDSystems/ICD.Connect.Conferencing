@@ -11,11 +11,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 	public sealed class PolycomGroupSeriesSettings : AbstractVideoConferenceDeviceSettings
 	{
 		private const string PORT_ELEMENT = "Port";
+		private const string USERNAME_ELEMENT = "Username";
 		private const string PASSWORD_ELEMENT = "Password";
 		private const string ADDRESSBOOK_TYPE_ELEMENT = "AddressbookType";
 
+		private const string DEFAULT_USERNAME = "admin";
 		private const string DEFAULT_PASSWORD = "admin";
 
+		private string m_Username;
 		private string m_Password;
 
 		/// <summary>
@@ -23,6 +26,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
+
+		public string Username
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(m_Username))
+					m_Username = DEFAULT_USERNAME;
+				return m_Username;
+			}
+			set { m_Username = value; }
+		}
 
 		public string Password
 		{
@@ -38,7 +52,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <summary>
 		/// Determines which addressbook to use with directory.
 		/// </summary>
-		public eAddressbookType AddressbookType { get; set; }
+		public eAddressbookType AddressbookType
+		{
+			get
+			{
+				// TODO - Global addressbook not supported
+				return eAddressbookType.Local;
+			}
+// ReSharper disable once ValueParameterNotUsed
+			set { }
+		}
 
 		/// <summary>
 		/// Writes property elements to xml.
@@ -49,6 +72,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.WriteElements(writer);
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
+			writer.WriteElementString(USERNAME_ELEMENT, Username);
 			writer.WriteElementString(PASSWORD_ELEMENT, Password);
 			writer.WriteElementString(ADDRESSBOOK_TYPE_ELEMENT, IcdXmlConvert.ToString(AddressbookType));
 		}
@@ -62,6 +86,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.ParseXml(xml);
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
+			Username = XmlUtils.TryReadChildElementContentAsString(xml, USERNAME_ELEMENT);
 			Password = XmlUtils.TryReadChildElementContentAsString(xml, PASSWORD_ELEMENT);
 			AddressbookType = XmlUtils.TryReadChildElementContentAsEnum<eAddressbookType>(xml, ADDRESSBOOK_TYPE_ELEMENT, true) ??
 			                  eAddressbookType.Global;

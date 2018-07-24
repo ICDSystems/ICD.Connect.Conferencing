@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Changed
  - Default camera IDs to 1 when deserializing settings and no ID is specified
+ - Fixed issues with multiple Polycom conference sources being created
+ - ThinConferenceSource SourceTypes specified
+ - Reduced spamming Polycom with addressbook commands
 
 ## [9.0.0] - 2018-07-02
 ### Added

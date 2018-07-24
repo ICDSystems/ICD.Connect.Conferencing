@@ -57,6 +57,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		#region Properties
 
 		/// <summary>
+		/// Username for loggin into the device
+		/// </summary>
+		[PublicAPI]
+		public string Username { get; set; }
+
+		/// <summary>
 		/// Password for logging in to the device.
 		/// </summary>
 		[PublicAPI]
@@ -225,6 +231,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		}
 
 		/// <summary>
+		/// Send command.
+		/// </summary>
+		/// <param name="command"></param>
+		public void SendCommand(string command)
+		{
+			if (!m_ConnectionStateManager.IsConnected)
+			{
+				Log(eSeverity.Critical, "Unable to communicate with Codec");
+				return;
+			}
+
+			m_ConnectionStateManager.Send(command + END_OF_LINE);
+		}
+
+		/// <summary>
 		/// Registers the callback for handling feedback starting with the given word
 		/// </summary>
 		/// <param name="word"></param>
@@ -293,21 +314,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			SendCommand(eventArgs.Data);
 		}
 
-		/// <summary>
-		/// Send command.
-		/// </summary>
-		/// <param name="command"></param>
-		private void SendCommand(string command)
-		{
-			if (!m_ConnectionStateManager.IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with Codec");
-				return;
-			}
-
-			m_ConnectionStateManager.Send(command + END_OF_LINE);
-		}
-
 		#endregion
 
 		#region Port Callbacks
@@ -336,6 +342,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			{
 				Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
+			}
+			else
+			{
+				if (m_ConnectionStateManager.Port is IComPort)
+					SendCommand("exit");
 			}
 
 			OnConnectedStateChanged.Raise(this, new BoolEventArgs(args.Data));
@@ -392,16 +403,18 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
-			if (data.StartsWith("Password:"))
-				EnqueueCommand(Password);
+			if (data.StartsWith("Username:"))
+				SendCommand(Username);
+			else if (data.StartsWith("Password:"))
+				SendCommand(Password);
 			else if (data.StartsWith("Hi, my name is"))
 			{
 				// Re-initialize every time we see the welcome message
 				Initialized = false;
 				Initialized = true;
 			}
-			else
-				Initialized = true;
+			else if (!Initialized)
+				return;
 
 			string word = GetFirstWord(data);
 			if (word == null)
@@ -463,6 +476,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
+			settings.Username = Username;
 			settings.Password = Password;
 			settings.AddressbookType = AddressbookType;
 		}
@@ -474,6 +488,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		{
 			base.ClearSettingsFinal();
 
+			Username = null;
 			Password = null;
 			AddressbookType = eAddressbookType.Global;
 
@@ -489,8 +504,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		{
 			base.ApplySettingsFinal(settings, factory);
 
+			Username = settings.Username;
 			Password = settings.Password;
-			AddressbookType = settings.AddressbookType;
+
+			// TODO - Global addressbook not supported
+			AddressbookType = eAddressbookType.Local;//settings.AddressbookType;
 
 			ISerialPort port = null;
 

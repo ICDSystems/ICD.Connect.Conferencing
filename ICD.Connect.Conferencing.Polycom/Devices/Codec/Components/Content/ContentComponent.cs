@@ -30,7 +30,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 
 				m_ContentVideoSource = value;
 
-				Codec.Log(eSeverity.Informational, "MutedFar set to {0}", m_ContentVideoSource);
+				Codec.Log(eSeverity.Informational, "ContentVideoSource set to {0}", m_ContentVideoSource);
 
 				OnContentVideoSourceChanged.Raise(this, new ContentVideoSourceEventArgs(m_ContentVideoSource));
 			}

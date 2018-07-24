@@ -71,6 +71,7 @@
     <Compile Include="Devices\Codec\Components\Addressbook\RootFolder.cs" />
     <Compile Include="Devices\Codec\Components\AutoAnswer\AutoAnswerComponent.cs" />
     <Compile Include="Devices\Codec\Components\AutoAnswer\PolycomAutoAnswerEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Button\ButtonComponent.cs" />
     <Compile Include="Devices\Codec\Components\Camera\ActiveCameraEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Camera\CameraComponent.cs" />
     <Compile Include="Devices\Codec\Components\Camera\eCameraAction.cs" />
