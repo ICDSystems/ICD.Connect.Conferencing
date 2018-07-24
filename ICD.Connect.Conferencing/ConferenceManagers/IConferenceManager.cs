@@ -194,8 +194,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void ClearDialingProviders();
 
 		#endregion
-
-
 	}
 
 	/// <summary>
