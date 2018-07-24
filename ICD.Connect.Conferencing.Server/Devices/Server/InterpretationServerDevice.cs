@@ -890,8 +890,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				ISimplInterpretationDevice adapter;
 				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source,
 				                                                                     GetAdapterForClientId(clientId, out adapter)
-					                                                                     ? null
-					                                                                     : adapter.Language);
+					                                                                     ? adapter.Language
+					                                                                     : null);
 
 				const string key = InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE;
 				m_RpcController.CallMethod(clientId, key, id, sourceState);
