@@ -611,10 +611,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    IsConnected = m_ConnectionStateManager != null && m_ConnectionStateManager.IsConnected;
 
 		    if (IsConnected)
-		    {
-				Register();
 			    return;
-		    }
 
 		    IsInterpretationActive = false;
 		    ClearSources();
