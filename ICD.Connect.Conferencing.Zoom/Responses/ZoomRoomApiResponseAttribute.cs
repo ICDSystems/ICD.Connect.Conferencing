@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
+using ICD.Common.Properties;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	[AttributeUsage(AttributeTargets.Class)]
+	[MeansImplicitUse]
 	public class ZoomRoomApiResponseAttribute : Attribute
 	{
 		public string ResponseKey { get; private set; }

@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp;
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
-using ICD.Connect.Conferencing.Zoom.Component;
+using ICD.Connect.Conferencing.Zoom.Components;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls

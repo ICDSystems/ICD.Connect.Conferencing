@@ -9,11 +9,12 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Zoom.Models;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
-namespace ICD.Connect.Conferencing.Zoom.Component
+namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class ZoomRoomCall : IConferenceSource
+	public sealed class CallComponent : AbstractZoomRoomComponent, IConferenceSource
 	{
 		private bool m_CameraMute;
 		private bool m_MicrophoneMute;
@@ -94,8 +95,6 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 
 		public string CallerJoinId { get; private set; }
 
-		public ZoomRoom ZoomRoom { get; private set; }
-
 		public bool CameraMute
 		{
 			get { return m_CameraMute; }
@@ -124,10 +123,8 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 
 		#region Constructors
 
-		public ZoomRoomCall(IncomingCall call, ZoomRoom zoomRoom)
+		public CallComponent(IncomingCall call, ZoomRoom zoomRoom) : base(zoomRoom)
 		{
-			ZoomRoom = zoomRoom;
-
 			CallerJoinId = call.CallerJoinId;
 			Start = IcdEnvironment.GetLocalTime();
 			Name = call.CallerName;
@@ -139,10 +136,11 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 			Subscribe(ZoomRoom);
 		}
 
-		public ZoomRoomCall(ZoomRoom zoomRoom)
+		public CallComponent(ZoomRoom zoomRoom) : base(zoomRoom)
 		{
 			Direction = eConferenceSourceDirection.Outgoing;
-			ZoomRoom = zoomRoom;
+
+			Subscribe(ZoomRoom);
 		}
 
 		#endregion
@@ -154,10 +152,16 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 			ZoomRoom.SendCommand("zCommand Call Accept callerJid: {0}", CallerJoinId);
 		}
 
+		public void Reject()
+		{
+			ZoomRoom.SendCommand("zCommand Call Reject callerJid: {0}", CallerJoinId);
+		}
+
 		public void Hold()
 		{
 			if (Status == eConferenceSourceStatus.OnHold)
 				return;
+
 			ZoomRoom.SendCommand("zConfiguration Call Microphone mute: on");
 			ZoomRoom.SendCommand("zConfiguration Call Camera mute: on");
 		}
@@ -166,6 +170,7 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 		{
 			if (Status != eConferenceSourceStatus.OnHold)
 				return;
+
 			ZoomRoom.SendCommand("zConfiguration Call Microphone mute: off");
 			ZoomRoom.SendCommand("zConfiguration Call Camera mute: off");
 		}
@@ -245,35 +250,36 @@ namespace ICD.Connect.Conferencing.Zoom.Component
 
 		#endregion
 
-		#region IConsoleNode Members
-
-		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IEnumerable<IConsoleCommand> GetConsoleCommands()
-		{
-			throw new NotImplementedException();
-		}
-
-		#endregion
-
-		#region IConsoleNodeBase Members
+		#region Console Node
 
 		public string ConsoleName
 		{
-			get { throw new NotImplementedException(); }
+			get { return Name; }
 		}
 
 		public string ConsoleHelp
 		{
-			get { throw new NotImplementedException(); }
+			get { return "Zoom Room Call"; }
 		}
 
 		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
-			throw new NotImplementedException();
+			yield break;
+		}
+
+		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			addRow("Name", Name);
+			addRow("Number", Number);
+			addRow("Start Time", StartOrDialTime);
+			addRow("Direction", Direction);
+			addRow("Status", Status);
+			addRow("Caller Join Id", CallerJoinId);
+		}
+
+		public IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			yield break;
 		}
 
 		#endregion

@@ -1,31 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-using Crestron.SimplSharp.CrestronIO;
-using Crestron.SimplSharp.Reflection;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.IO;
-using ICD.Common.Utils.Json;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.Zoom.Component;
+using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Responses;
-using ICD.Connect.Devices;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
-using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
-	public sealed class ZoomRoom : AbstractDevice<ZoomRoomSettings>, IConnectable
+	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>, IConnectable
 	{
 		/// <summary>
 		/// Wrapper callback for responses that casts to the appropriate type.
@@ -101,7 +93,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 		}
 
-		public ZoomRoomCall CurrentCall { get; private set; }
+		public CallComponent CurrentCall { get; private set; }
 
 		/// <summary>
 		/// Gets the help information for the node.
@@ -253,7 +245,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="path"></param>
 		public void RegisterResponseCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
 		{
-			var wrappedCallback = new ResponseCallback((zr, resp) => callback(zr, (T) resp));
+			var wrappedCallback = WrapCallback(callback);
 
 			m_ResponseCallbacksSection.Execute(() =>
 			{
@@ -268,33 +260,34 @@ namespace ICD.Connect.Conferencing.Zoom
 			});
 		}
 
+		private static ResponseCallback WrapCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
+		{
+			// separate static method to prevent lambda capture context wackiness
+			return (zr, resp) => callback(zr, (T)resp);
+		}
+
 		/// <summary>
 		/// Unregisters callbacks registered via RegisterResponseCallback.
 		/// </summary>
 		/// <param name="callback"></param>
-		/// <param name="path"></param>
-		/// <returns></returns>
 		[PublicAPI]
-		public bool UnregisterResponseCallback<T>(ResponseCallback<T> callback) where T: AbstractZoomRoomResponse
+		public void UnregisterResponseCallback<T>(ResponseCallback<T> callback) where T: AbstractZoomRoomResponse
 		{
-			if (!IsConnected)
-				return false;
-
 			m_ResponseCallbacksSection.Enter();
 
 			try
 			{
 				Type key = typeof (T);
 				if (!m_ResponseCallbacks.ContainsKey(key))
-					return false;
+					return;
 
 				List<ResponseCallbackPair> callbackList = m_ResponseCallbacks[key];
 				ResponseCallbackPair callbackToRemove = callbackList.SingleOrDefault(c => c.ActualCallback.Equals(callback));
 
 				if (callbackToRemove == null)
-					return false;
-
-				return callbackList.Remove(callbackToRemove);
+					return;
+				
+				callbackList.Remove(callbackToRemove);
 			}
 			finally
 			{
@@ -450,10 +443,5 @@ namespace ICD.Connect.Conferencing.Zoom
 		}
 
 		#endregion
-
-		public void Log(eSeverity severity, string format, params object[] data)
-		{
-			Log(severity, string.Format(format, data));
-		}
 	}
 }

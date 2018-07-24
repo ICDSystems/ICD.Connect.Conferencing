@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ICD.Connect.Conferencing.Contacts;
+﻿using ICD.Connect.Conferencing.Zoom.Models;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
@@ -34,70 +33,5 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		[JsonProperty("Updated Contact")]
 		public ZoomContact Contact { get; private set; }
-	}
-
-	public sealed class ZoomContact : IContact
-	{
-		/// <summary>
-		/// Use this ID when inviting the user, or when accepting / rejecting a user who is joining the conversation
-		/// </summary>
-		[JsonProperty("jid")]
-		public string JoinId { get; private set; }
-
-		[JsonProperty("screenName")]
-		public string ScreenName { get; private set; }
-
-		[JsonProperty("firstName")]
-		public string FirstName { get; private set; }
-
-		[JsonProperty("lastName")]
-		public string LastName { get; private set; }
-
-		/// <summary>
-		/// Phone number of the user (typically empty)
-		/// </summary>
-		[JsonProperty("phoneNumber")]
-		public string PhoneNumber { get; private set; }
-
-		[JsonProperty("email")]
-		public string Email { get; private set; }
-
-		/// <summary>
-		/// URL pointing to the image of the user
-		/// </summary>
-		[JsonProperty("avatarURL")]
-		public string AvatarUrl { get; private set; }
-
-		/// <summary>
-		/// State of the Phonebook contact. PRESENCE_BUSY means "in a meeting", and PRESENCE_DND means "do not disturb"
-		/// </summary>
-		[JsonProperty("presence")]
-		public eContactPresence Presence { get; private set; }
-
-		/// <summary>
-		/// Index of user in the phonebook, I think?
-		/// Returned for an Updated Contact response, but not a Phonebook List response.
-		/// </summary>
-		[JsonProperty("index")]
-		public int? Index { get; private set; }
-
-		public string Name
-		{
-			get { return string.Format("{0} {1}", FirstName, LastName); }
-		}
-
-		public IEnumerable<IContactMethod> GetContactMethods()
-		{
-			yield return new ContactMethod(JoinId);
-		}
-	}
-
-	public enum eContactPresence
-	{
-		PRESENCE_OFFLINE,
-		PRESENCE_ONLINE,
-		PRESENCE_AWAY,
-		PRESENCE_DND,
-		PRESENCE_BUSY
 	}
 }

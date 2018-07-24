@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Crestron.SimplSharp;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Zoom.Models;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls

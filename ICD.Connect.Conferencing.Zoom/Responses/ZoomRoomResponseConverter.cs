@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
+#if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
-using ICD.Common.Utils;
+#else
+using System.Reflection;
+#endif
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -31,7 +33,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 
 		public override void WriteJson(JsonWriter writer, AbstractZoomRoomResponse value, JsonSerializer serializer)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		/// <summary>
