@@ -35,7 +35,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		{
 		}
 
-		public static ConferenceSourceState FromSource(IConferenceSource source)
+		public static ConferenceSourceState FromSource(IConferenceSource source, string language)
 		{
 			if (source == null)
 				throw new ArgumentNullException("source");
@@ -51,7 +51,8 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				Start = source.Start,
 				End = source.End,
 				DialTime = source.DialTime,
-				StartOrDialTime = source.GetStartOrDialTime()
+				StartOrDialTime = source.GetStartOrDialTime(),
+				Language = language
 			};
 		}
 	}

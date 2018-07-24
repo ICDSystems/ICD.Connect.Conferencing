@@ -363,6 +363,41 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
+		private bool GetAdapterForClientId(uint clientId, out ISimplInterpretationDevice device)
+		{
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				device = null;
+
+				int room;
+				if (!m_ClientToRoom.TryGetValue(clientId, out room))
+				{
+					Log(eSeverity.Error, "No Room assigned to Client {0}", clientId);
+					return false;
+				}
+
+				ushort booth;
+				if (!m_RoomToBooth.TryGetValue(room, out booth))
+				{
+					Log(eSeverity.Error, "No Booth assigned to Room {0}", room);
+					return false;
+				}
+
+				if (!m_AdapterToBooth.TryGetKey(booth, out device))
+				{
+					Log(eSeverity.Error, "No Adapter is assigned to booth {0}", booth);
+					return false;
+				}
+
+				return true;
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+		}
+
 		private bool GetAdapterForRoom(int roomId, out ISimplInterpretationDevice device)
 		{
 			m_SafeCriticalSection.Enter();
@@ -408,8 +443,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				{
 					foreach (IConferenceSource source in adapter.GetSources())
 					{
-						ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
-						sourceState.Language = adapter.Language;
+						ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, adapter.Language);
 						Guid id = m_Sources.GetKey(source);
 						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
 					}
@@ -852,7 +886,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				if (!GetClientIdForSource(id, out clientId))
 					return;
 
-				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
+
+				ISimplInterpretationDevice adapter;
+				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source,
+				                                                                     GetAdapterForClientId(clientId, out adapter)
+					                                                                     ? null
+					                                                                     : adapter.Language);
 
 				const string key = InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE;
 				m_RpcController.CallMethod(clientId, key, id, sourceState);
