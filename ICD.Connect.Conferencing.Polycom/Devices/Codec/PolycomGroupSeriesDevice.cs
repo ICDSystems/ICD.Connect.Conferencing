@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <summary>
 		/// End of line string.
 		/// </summary>
-		private const string END_OF_LINE = " \r";
+		private const string END_OF_LINE = "\r";
 
 		/// <summary>
 		/// The number of milliseconds to wait between sending commands.
