@@ -432,6 +432,39 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
+		private bool GetAdaptersForRoom(int roomId, out IcdHashSet<ISimplInterpretationDevice> devices)
+		{
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				devices = null;
+
+				ushort targetBooth;
+				if (!m_RoomToBooth.TryGetValue(roomId, out targetBooth))
+				{
+					Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
+					return false;
+				}
+
+				ISimplInterpretationDevice device;
+				if (!m_AdapterToBooth.TryGetKey(targetBooth, out device))
+				{
+					Log(eSeverity.Error, "No booth with id {0}", targetBooth);
+					return false;
+				}
+
+				devices = new IcdHashSet<ISimplInterpretationDevice>();
+				foreach (var kvp in m_AdapterToBooth.Where(kvp => kvp.Value == targetBooth))
+					devices.Add(kvp.Key);
+
+				return true;
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+		} 
+
 		private void TransmitInterpretationState(ushort boothId)
 		{
 			m_SafeCriticalSection.Enter();
@@ -531,24 +564,33 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[Rpc(AUTO_ANSWER_RPC), UsedImplicitly]
 		public void SetAutoAnswer(uint clientId, int roomId, bool enabled)
 		{
-			ISimplInterpretationDevice device;
-			if (GetAdapterForRoom(roomId, out device))
+			IcdHashSet<ISimplInterpretationDevice> devices;
+			if (!GetAdaptersForRoom(roomId, out devices))
+				return;
+
+			foreach (var device in devices)
 				device.SetAutoAnswer(enabled);
 		}
 
 		[Rpc(DO_NOT_DISTURB_RPC), UsedImplicitly]
 		public void SetDoNotDisturb(uint clientId, int roomId, bool enabled)
 		{
-			ISimplInterpretationDevice device;
-			if (GetAdapterForRoom(roomId, out device))
+			IcdHashSet<ISimplInterpretationDevice> devices;
+			if (!GetAdaptersForRoom(roomId, out devices))
+				return;
+
+			foreach (var device in devices)
 				device.SetDoNotDisturb(enabled);
 		}
 
 		[Rpc(PRIVACY_MUTE_RPC), UsedImplicitly]
 		public void SetPrivacyMute(uint clientId, int roomId, bool enabled)
 		{
-			ISimplInterpretationDevice device;
-			if (GetAdapterForRoom(roomId, out device))
+			IcdHashSet<ISimplInterpretationDevice> devices;
+			if (!GetAdaptersForRoom(roomId, out devices))
+				return;
+
+			foreach(var device in devices)
 				device.SetPrivacyMute(enabled);
 		}
 
