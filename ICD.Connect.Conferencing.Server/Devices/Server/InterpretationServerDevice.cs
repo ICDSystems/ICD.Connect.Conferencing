@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -363,12 +364,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		private bool GetAdapterForClientId(uint clientId, out ISimplInterpretationDevice device)
+		private bool GetAdaptersForClientId(uint clientId, out IcdHashSet<ISimplInterpretationDevice> devices)
 		{
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				device = null;
+				devices = null;
 
 				int room;
 				if (!m_ClientToRoom.TryGetValue(clientId, out room))
@@ -384,11 +385,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					return false;
 				}
 
+				ISimplInterpretationDevice device;
 				if (!m_AdapterToBooth.TryGetKey(booth, out device))
 				{
 					Log(eSeverity.Error, "No Adapter is assigned to booth {0}", booth);
 					return false;
 				}
+
+				devices = new IcdHashSet<ISimplInterpretationDevice>();
+				foreach (var kvp in m_AdapterToBooth.Where(kvp => kvp.Value == booth))
+					devices.Add(kvp.Key);
 
 				return true;
 			}
@@ -886,12 +892,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				if (!GetClientIdForSource(id, out clientId))
 					return;
 
+				IcdHashSet<ISimplInterpretationDevice> adapters;
+				bool hasAdapter = GetAdaptersForClientId(clientId, out adapters);
 
-				ISimplInterpretationDevice adapter;
-				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source,
-				                                                                     GetAdapterForClientId(clientId, out adapter)
-					                                                                     ? adapter.Language
-					                                                                     : null);
+				ISimplInterpretationDevice targetAdapter = adapters.First(a => a.ContainsSource(source));
+
+				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, hasAdapter
+					                                                                             ? targetAdapter.Language
+					                                                                             : null);
 
 				const string key = InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE;
 				m_RpcController.CallMethod(clientId, key, id, sourceState);
