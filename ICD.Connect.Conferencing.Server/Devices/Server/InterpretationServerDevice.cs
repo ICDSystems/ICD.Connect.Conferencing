@@ -893,11 +893,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					return;
 
 				IcdHashSet<ISimplInterpretationDevice> adapters;
-				bool hasAdapter = GetAdaptersForClientId(clientId, out adapters);
+				GetAdaptersForClientId(clientId, out adapters);
 
-				ISimplInterpretationDevice targetAdapter = adapters.First(a => a.ContainsSource(source));
+				ISimplInterpretationDevice targetAdapter = adapters.FirstOrDefault(a => a.ContainsSource(source));
 
-				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, hasAdapter
+				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, targetAdapter != null
 					                                                                             ? targetAdapter.Language
 					                                                                             : null);
 
