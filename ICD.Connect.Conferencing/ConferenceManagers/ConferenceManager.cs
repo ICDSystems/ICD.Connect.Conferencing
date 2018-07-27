@@ -500,8 +500,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					break;
 			}
 
-			IcdConsole.PrintLine(eConsoleColor.Magenta, string.Format("ConferenceManager-UpdateIsInCall-InACall: {0}", inCall));
-
 			IsInCall = inCall;
 		}
 
