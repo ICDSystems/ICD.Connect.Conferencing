@@ -8,13 +8,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 	public sealed class CallStatus
 	{
 		private const string CALL_INFO_REGEX =
-			@"callinfo:(?'call'\d+):((?'name'[^:]+):)?(?'number'[^:]+):(?'speed'[^:]+):(?'connected'[^:]+):(?'muted'[^:]+):(?'outgoing'[^:]+):(?'video'[^:]+)";
+			@"callinfo:(?'call'\d+):((?'name'[^:]*):)?(?'number'[^:]+):(?'speed'[^:]+):(?'connected'[^:]+):(?'muted'[^:]+):(?'outgoing'[^:]+):(?'video'[^:]+)";
 
 		private const string CALL_STATE_REGEX =
 			@"cs: call\[(?'call'\d+)\] chan\[(?'chan'\d+)\] dialstr\[(?'dialstr'.+)\] state\[(?'state'.+)\]";
 
 		private const string CALL_STATUS_REGEX =
-			@"notification:callstatus:(?'direction'[^:]+):(?'call'[^:]+):(?'name'[^:]+):(?'number'[^:]+):(?'connected'[^:]+):(?'speed'[^:]+):[^:]+:(?'type'[^:]+)";
+			@"notification:callstatus:(?'direction'[^:]+):(?'call'[^:]+):(?'name'[^:]*):(?'number'[^:]+):(?'connected'[^:]+):(?'speed'[^:]+):[^:]+:(?'type'[^:]+)";
 
 		private const string LINE_STATUS_REGEX =
 			@"notification:linestatus:(?'direction'[^:]+)(:(?'number'[^:]*))?:(?'callId'\d+):(?'lineId'\d+):(?'channelId'\d+):(?'status'[^:]+)";
