@@ -576,13 +576,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="args"></param>
 		private void ProviderOnSourceAdded(object sender, ConferenceSourceEventArgs args)
 		{
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-ProviderOnSourceAdded-AddSource");
 			AddSource(args.Data);
 		}
 
 		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
 		{
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-ProviderOnSourceRemoved-RemoveSource");
 			RemoveSource(args.Data);
 		}
 
@@ -616,7 +614,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_SourcesSection.Enter();
 			try
 			{
-				IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-AddSource-Actually adding the source to the conf manager here");
 				m_ActiveConference.AddSource(source);
 			}
 			finally
@@ -657,7 +654,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_SourcesSection.Enter();
 			try
 			{
-				IcdConsole.PrintLine(eConsoleColor.Magenta, "ConferenceManager-RemoveSource-ActuallyRemovingTheSourceHere");
 				m_ActiveConference.RemoveSource(source);
 			}
 			finally
