@@ -21,6 +21,11 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 {
+	/// <summary>
+	/// Model - RealPresence Group 500
+	/// Hardware Version - 9
+	/// System Software - Release-6.1.6.1-460003
+	/// </summary>
 	public sealed class PolycomGroupSeriesDevice : AbstractVideoConferenceDevice<PolycomGroupSeriesSettings>
 	{
 		/// <summary>
