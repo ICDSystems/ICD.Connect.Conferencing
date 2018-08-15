@@ -350,7 +350,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 				update(callStatus);
 
-				IcdConsole.PrintLine(eConsoleColor.Yellow, "{0}", callStatus);
+				//IcdConsole.PrintLine(eConsoleColor.Yellow, "{0}", callStatus);
 
 				if (callStatus.ConnectionState == eConnectionState.Disconnected)
 					m_CallStates.Remove(id);

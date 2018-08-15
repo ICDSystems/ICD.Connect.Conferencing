@@ -8,13 +8,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 	public sealed class CallStatus
 	{
 		private const string CALL_INFO_REGEX =
-			@"callinfo:(?'call'\d+):((?'name'[^:]+):)?(?'number'[^:]+):(?'speed'[^:]+):(?'connected'[^:]+):(?'muted'[^:]+):(?'outgoing'[^:]+):(?'video'[^:]+)";
+			@"callinfo:(?'call'\d+):((?'name'[^:]*):)?(?'number'[^:]+):(?'speed'[^:]+):(?'connected'[^:]+):(?'muted'[^:]+):(?'outgoing'[^:]+):(?'video'[^:]+)";
 
 		private const string CALL_STATE_REGEX =
 			@"cs: call\[(?'call'\d+)\] chan\[(?'chan'\d+)\] dialstr\[(?'dialstr'.+)\] state\[(?'state'.+)\]";
 
 		private const string CALL_STATUS_REGEX =
-			@"notification:callstatus:(?'direction'[^:]+):(?'call'[^:]+):(?'name'[^:]+):(?'number'[^:]+):(?'connected'[^:]+):(?'speed'[^:]+):[^:]+:(?'type'[^:]+)";
+			@"notification:callstatus:(?'direction'[^:]+):(?'call'[^:]+):(?'name'[^:]*):(?'number'[^:]+):(?'connected'[^:]+):(?'speed'[^:]+):[^:]+:(?'type'[^:]+)";
 
 		private const string LINE_STATUS_REGEX =
 			@"notification:linestatus:(?'direction'[^:]+)(:(?'number'[^:]*))?:(?'callId'\d+):(?'lineId'\d+):(?'channelId'\d+):(?'status'[^:]+)";
@@ -61,7 +61,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 		public bool Muted { get; set; }
 
-		public bool Outgoing { get; set; }
+		public bool? Outgoing { get; set; }
 
 		public string Speed { get; set; }
 
@@ -147,7 +147,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (Muted)
 				builder.AppendProperty("Muted", Muted);
 
-			if (Outgoing)
+			if (Outgoing != null)
 				builder.AppendProperty("Outgoing", Outgoing);
 
 			if (!string.IsNullOrEmpty(Speed))
@@ -281,14 +281,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			eConnectionState state;
 			ConnectionState = s_ConnectionStateNames.TryGetKey(stateName, out state) ? state : eConnectionState.Unknown;
 
-			// Polycom documentation doesn't give us an exhaustive list of these, but they seem boolean?
-			Outgoing = match.Groups["direction"].Value == "outgoing";
+			// NOTE - Don't use line status for call direction, incoming calls show as "outgoing". Brillant!
 		}
 
 		/// <summary>
 		/// Updates the call state with the given active call data.
 		/// 
-		/// active: call[34] speed [384]
+		/// active: call[34] speed[384]
 		/// </summary>
 		/// <param name="activeCall"></param>
 		public void SetActiveCall(string activeCall)

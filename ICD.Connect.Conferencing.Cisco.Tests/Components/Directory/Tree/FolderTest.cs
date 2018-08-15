@@ -23,9 +23,6 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
 		{
 			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
 
-			CiscoFolder notPhonebook = new CiscoFolder("NotPhonebook", "localNotPhonebookId");
-			Assert.IsFalse(parent.AddFolder(notPhonebook));
-
 			CiscoFolder child = new CiscoFolder("Child", "ChildId");
 			Assert.IsTrue(parent.AddFolder(child));
 			Assert.IsFalse(parent.AddFolder(child));
@@ -35,9 +32,6 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
 		public void AddContactTest()
 		{
 			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
-
-			CiscoContact notPhonebook = new CiscoContact("NotPhonebook", "localNotPhonebookId", "ParentId", new CiscoContactMethod[0]);
-			Assert.IsFalse(parent.AddContact(notPhonebook));
 
 			CiscoContact child = new CiscoContact("Child", "ChildId", "ParentId", new CiscoContactMethod[0]);
 			Assert.IsTrue(parent.AddContact(child));

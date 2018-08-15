@@ -53,8 +53,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		private readonly SafeCriticalSection m_FolderSection;
 		private readonly SafeCriticalSection m_RootsSection;
 
-		[UsedImplicitly] private object m_ParseAsyncHandle;
-
 		#region Constructors
 
 		/// <summary>
@@ -88,8 +86,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		{
 			OnCleared = null;
 			OnResultParsed = null;
-
-			m_ParseAsyncHandle = null;
 
 			base.Dispose(disposing);
 		}
@@ -213,7 +209,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <param name="xml"></param>
 		private void ParseSearchResultAsync(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			m_ParseAsyncHandle = ThreadingUtils.SafeInvoke(() => ParseSearchResult(resultid, xml));
+			ThreadingUtils.SafeInvoke(() => ParseSearchResult(resultid, xml));
 		}
 
 		/// <summary>
@@ -245,6 +241,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			{
 				m_FolderSection.Leave();
 			}
+
+			// Pre initialize this folder's children
+			foreach(var folder in folders)
+				Codec.SendCommand(folder.GetSearchCommand());
 
 			if (OnResultParsed != null)
 				OnResultParsed(resultId, folders.ToArray(), contacts.ToArray());

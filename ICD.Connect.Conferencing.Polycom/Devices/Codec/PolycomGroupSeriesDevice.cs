@@ -21,12 +21,17 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 {
+	/// <summary>
+	/// Model - RealPresence Group 500
+	/// Hardware Version - 9
+	/// System Software - Release-6.1.6.1-460003
+	/// </summary>
 	public sealed class PolycomGroupSeriesDevice : AbstractVideoConferenceDevice<PolycomGroupSeriesSettings>
 	{
 		/// <summary>
 		/// End of line string.
 		/// </summary>
-		private const string END_OF_LINE = "\x0D\x0A";
+		private const string END_OF_LINE = "\r";
 
 		/// <summary>
 		/// The number of milliseconds to wait between sending commands.
@@ -236,12 +241,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="command"></param>
 		public void SendCommand(string command)
 		{
-			if (!m_ConnectionStateManager.IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with Codec");
-				return;
-			}
-
 			m_ConnectionStateManager.Send(command + END_OF_LINE);
 		}
 
@@ -403,9 +402,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
-			if (data.StartsWith("Username:"))
+			if (data.ToLower().StartsWith("username:"))
 				SendCommand(Username);
-			else if (data.StartsWith("Password:"))
+			else if (data.ToLower().StartsWith("password:"))
 				SendCommand(Password);
 			else if (data.StartsWith("Hi, my name is"))
 			{

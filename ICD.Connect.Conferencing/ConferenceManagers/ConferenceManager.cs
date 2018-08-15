@@ -27,6 +27,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
+		public event EventHandler OnConferenceSourceAddedOrRemoved;
 
 		public event EventHandler<ConferenceSourceEventArgs> OnRecentSourceAdded;
 		public event EventHandler<ConferenceSourceStatusEventArgs> OnActiveSourceStatusChanged;
@@ -39,6 +40,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly IcdHashSet<IDialingDeviceControl> m_FeedbackProviders; 
 
 		private readonly SafeCriticalSection m_RecentConferencesSection;
+		private readonly SafeCriticalSection m_SourcesSection;
 		private readonly SafeCriticalSection m_RecentSourcesSection;
 		private readonly SafeCriticalSection m_SourceTypeToProviderSection;
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
@@ -157,6 +159,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_FeedbackProviders = new IcdHashSet<IDialingDeviceControl>();
 
 			m_RecentConferencesSection = new SafeCriticalSection();
+			m_SourcesSection = new SafeCriticalSection();
 			m_RecentSourcesSection = new SafeCriticalSection();
 			m_SourceTypeToProviderSection = new SafeCriticalSection();
 			m_FeedbackProviderSection = new SafeCriticalSection();
@@ -195,7 +198,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				mode = DialingPlan.DefaultSourceType;
 
 			IDialingDeviceControl dialingControl = GetDialingProvider(mode);
-
 			if (dialingControl == null)
 			{
 				Logger.AddEntry(eSeverity.Error,
@@ -329,6 +331,33 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Deregisters the dialing provider.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		public bool DeregisterDialingProvider(eConferenceSourceType sourceType)
+		{
+			m_SourceTypeToProviderSection.Enter();
+
+			try
+			{
+				if (!m_SourceTypeToProvider.ContainsKey(sourceType))
+					return false;
+
+				IDialingDeviceControl dialingControl = m_SourceTypeToProvider[sourceType];
+				m_SourceTypeToProvider.Remove(sourceType);
+
+				Unsubscribe(dialingControl);
+			}
+			finally
+			{
+				m_SourceTypeToProviderSection.Leave();
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		/// Registers the dialing component, for feedback only.
 		/// </summary>
 		/// <param name="dialingControl"></param>
@@ -352,33 +381,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			AddSources(dialingControl.GetSources());
-
-			return true;
-		}
-
-		/// <summary>
-		/// Deregisters the dialing provider.
-		/// </summary>
-		/// <param name="sourceType"></param>
-		/// <returns></returns>
-		public bool DeregisterDialingProvider(eConferenceSourceType sourceType)
-		{
-			m_SourceTypeToProviderSection.Enter();
-
-			try
-			{
-				if (!m_SourceTypeToProvider.ContainsKey(sourceType))
-					return false;
-
-				IDialingDeviceControl dialingControl = m_SourceTypeToProvider[sourceType];
-				m_SourceTypeToProvider.Remove(sourceType);
-
-				Unsubscribe(dialingControl);
-			}
-			finally
-			{
-				m_SourceTypeToProviderSection.Leave();
-			}
 
 			return true;
 		}
@@ -515,6 +517,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded += ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved += ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged += ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged += ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged += ProviderOnPrivacyMuteChanged;
@@ -530,6 +533,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded -= ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved -= ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged -= ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged -= ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged -= ProviderOnPrivacyMuteChanged;
@@ -575,6 +579,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			AddSource(args.Data);
 		}
 
+		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
+		{
+			RemoveSource(args.Data);
+		}
+
 		/// <summary>
 		/// Adds the sequence of sources to the active conference, creating a new
 		///	conference if one does not yet exist.
@@ -602,7 +611,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (m_ActiveConference.ContainsSource(source))
 				return;
 
-			m_ActiveConference.AddSource(source);
+			m_SourcesSection.Enter();
+			try
+			{
+				m_ActiveConference.AddSource(source);
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
 
 			m_RecentSourcesSection.Enter();
 
@@ -623,10 +640,33 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnRecentSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
 		}
 
+		/// <summary>
+		/// removes the source from the active conference.
+		/// </summary>
+		/// <param name="source"></param>
+		private void RemoveSource(IConferenceSource source)
+		{
+			if (m_ActiveConference == null || !m_ActiveConference.ContainsSource(source))
+				return;
+
+			Unsubscribe(source);
+
+			m_SourcesSection.Enter();
+			try
+			{
+				m_ActiveConference.RemoveSource(source);
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
+
+			UpdateIsInCall();
+		}
+
 		#endregion
 
 		#region Conference Callbacks
-
 		/// <summary>
 		/// Subscribe to the conference events.
 		/// </summary>
@@ -637,6 +677,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged += ConferenceOnStatusChanged;
+			conference.OnSourcesChanged += ConferenceOnSourcesChanged;
 		}
 
 		/// <summary>
@@ -649,6 +690,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged -= ConferenceOnStatusChanged;
+			conference.OnSourcesChanged -= ConferenceOnSourcesChanged;
 
 			// Unsubscribe from the sources.
 			foreach (IConferenceSource source in conference.GetSources())
@@ -666,6 +708,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			if (args.Data == eConferenceStatus.Disconnected)
 				ActiveConference = null;
+		}
+
+		private void ConferenceOnSourcesChanged(object sender, EventArgs eventArgs)
+		{
+			OnConferenceSourceAddedOrRemoved.Raise(this);
 		}
 
 		#endregion
