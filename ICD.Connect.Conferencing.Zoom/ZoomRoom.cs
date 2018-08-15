@@ -8,8 +8,10 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
+using ICD.Connect.Conferencing.Zoom.Controls;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Devices.EventArguments;
+using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
@@ -34,14 +36,17 @@ namespace ICD.Connect.Conferencing.Zoom
 			public object ActualCallback { get; set; }
 		}
 
+		private const string END_OF_LINE = "\n";
+
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
+
+		private readonly ConnectionStateManager m_ConnectionStateManager;
+		private readonly JsonSerialBuffer m_SerialBuffer;
 
 		private bool m_Initialized;
 		private bool m_IsConnected;
 		private ISerialPort m_Port;
-		private JsonSerialBuffer m_SerialBuffer;
-		private const string END_OF_LINE = "\n";
 
 		/// <summary>
 		/// System Configuration Commands
@@ -120,6 +125,11 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallbackPair>>();
 			m_ResponseCallbacksSection = new SafeCriticalSection();
+
+			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
+			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
+			Controls.Add(new ZoomRoomPresentationControl(this, Controls.Count));
+			Controls.Add(new ZoomRoomDialingControl(this, Controls.Count));
 		}
 		#endregion
 
