@@ -81,6 +81,9 @@
     <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
     <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
+    <Compile Include="Contacts\eOnlineState.cs" />
+    <Compile Include="Contacts\IContactWithOnlineState.cs" />
+    <Compile Include="Contacts\IContactWithSurname.cs" />
     <Compile Include="Controls\Directory\AbstractDirectoryControl.cs" />
     <Compile Include="Controls\Directory\DirectoryControlConsole.cs" />
     <Compile Include="Controls\Directory\IDirectoryControl.cs" />
