@@ -3,7 +3,7 @@ using ICD.Common.Properties;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	[MeansImplicitUse]
 	public class ZoomRoomApiResponseAttribute : Attribute
 	{

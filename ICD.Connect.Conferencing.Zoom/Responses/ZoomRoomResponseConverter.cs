@@ -14,6 +14,17 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	public sealed class ZoomRoomResponseConverter : AbstractGenericJsonConverter<AbstractZoomRoomResponse>
 	{
+#if SIMPLSHARP
+		private static CType[] s_types;
+		private static CType[] Types
+#else
+		private static Type[] s_types;
+		private static Type[] Types
+#endif
+		{
+			get { return s_types ?? (s_types = typeof (ZoomRoomResponseConverter).GetAssembly().GetTypes()); }
+		}
+
 		/// <summary>
 		/// Key to the property in the json which stores where the actual response data is stored
 		/// </summary>
@@ -51,9 +62,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 			bool synchronous = jObject[SYNCHRONOUS].ToObject<bool>();
 
 			// find concrete type that matches the json values
-			var responseType = GetType().GetAssembly().GetTypes().SingleOrDefault(t => TypeAttributeMatchesParams(t, responseKey, apiResponseType, synchronous));
-
-			return (AbstractZoomRoomResponse)serializer.Deserialize(new JTokenReader(jObject), responseType);
+			var responseType = Types.SingleOrDefault(t => TypeAttributeMatchesParams(t, responseKey, apiResponseType, synchronous));
+			if(responseType != null)
+				return (AbstractZoomRoomResponse)serializer.Deserialize(new JTokenReader(jObject), responseType);
+			return null;
 		}
 
 		/// <summary>
@@ -71,7 +83,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 #endif
 		{
 			var attributes = type.GetCustomAttributes<ZoomRoomApiResponseAttribute>();
-			return attributes != null && attributes.Any(a =>
+			return attributes.Any(a =>
 				a.ResponseKey == key &&
 				a.CommandType == responseType &&
 				a.Synchronous == synchronous);
