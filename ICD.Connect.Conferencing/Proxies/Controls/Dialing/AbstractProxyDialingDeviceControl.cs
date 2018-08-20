@@ -4,6 +4,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Proxies.Controls;
 using ICD.Connect.Devices.Proxies.Devices;
@@ -141,6 +142,11 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		public void Dial(string number, eConferenceSourceType callType)
 		{
 			CallMethod(DialingDeviceControlApi.METHOD_DIAL_TYPE, callType);
+		}
+
+		public void Dial(IContact contact)
+		{
+			CallMethod(DialingDeviceControlApi.METHOD_DIAL_CONTACT, contact);
 		}
 
 		/// <summary>

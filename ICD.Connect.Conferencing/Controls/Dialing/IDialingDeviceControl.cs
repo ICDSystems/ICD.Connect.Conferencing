@@ -4,6 +4,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Proxies.Controls.Dialing;
 using ICD.Connect.Devices.Controls;
@@ -97,6 +98,13 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <param name="callType"></param>
 		[ApiMethod(DialingDeviceControlApi.METHOD_DIAL_TYPE, DialingDeviceControlApi.HELP_METHOD_DIAL_TYPE)]
 		void Dial(string number, eConferenceSourceType callType);
+
+		/// <summary>
+		/// Dials the given contact.
+		/// </summary>
+		/// <param name="contact"></param>
+		[ApiMethod(DialingDeviceControlApi.METHOD_DIAL_CONTACT, DialingDeviceControlApi.HELP_METHOD_DIAL_CONTACT)]
+		void Dial(IContact contact);
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.
