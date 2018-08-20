@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// <summary>
 		/// Gets the ZoomRoom.
 		/// </summary>
-		public ZoomRoom ZoomRoom { get; private set; }
+		public ZoomRoom Parent { get; private set; }
 
 		/// <summary>
 		/// Gets the name of the node in the console.
@@ -32,11 +32,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="zoomRoom/param>
-		protected AbstractZoomRoomComponent(ZoomRoom zoomRoom)
+		/// <param name="parent"></param>
+		protected AbstractZoomRoomComponent(ZoomRoom parent)
 		{
-			ZoomRoom = zoomRoom;
-			Subscribe(ZoomRoom);
+			Parent = parent;
+			Subscribe(Parent);
 		}
 
 		/// <summary>
@@ -61,7 +61,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// <param name="disposing"></param>
 		private void Dispose(bool disposing)
 		{
-			Unsubscribe(ZoomRoom);
+			Unsubscribe(Parent);
 
 			DisposeFinal();
 		}
@@ -125,27 +125,27 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// <summary>
 		/// Subscribes to the ZoomRoom events.
 		/// </summary>
-		/// <param name="codec"></param>
-		private void Subscribe(ZoomRoom codec)
+		/// <param name="zoomRoom"></param>
+		private void Subscribe(ZoomRoom zoomRoom)
 		{
-			if (codec == null)
+			if (zoomRoom == null)
 				return;
 
-			codec.OnInitializedChanged += CodecOnInitializedChanged;
-			codec.OnConnectedStateChanged += CodecOnConnectionStateChanged;
+			zoomRoom.OnInitializedChanged += ZoomRoomOnInitializedChanged;
+			zoomRoom.OnConnectedStateChanged += ZoomRoomOnConnectionStateChanged;
 		}
 
 		/// <summary>
 		/// Unsubscribes from the ZoomRoom events.
 		/// </summary>
-		/// <param name="codec"></param>
-		private void Unsubscribe(ZoomRoom codec)
+		/// <param name="zoomRoom"></param>
+		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
-			if (codec == null)
+			if (zoomRoom == null)
 				return;
 
-			codec.OnInitializedChanged -= CodecOnInitializedChanged;
-			codec.OnConnectedStateChanged -= CodecOnConnectionStateChanged;
+			zoomRoom.OnInitializedChanged -= ZoomRoomOnInitializedChanged;
+			zoomRoom.OnConnectedStateChanged -= ZoomRoomOnConnectionStateChanged;
 		}
 
 		/// <summary>
@@ -153,7 +153,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void CodecOnInitializedChanged(object sender, BoolEventArgs args)
+		private void ZoomRoomOnInitializedChanged(object sender, BoolEventArgs args)
 		{
 			if (args.Data)
 				Initialize();
@@ -164,7 +164,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void CodecOnConnectionStateChanged(object sender, BoolEventArgs args)
+		private void ZoomRoomOnConnectionStateChanged(object sender, BoolEventArgs args)
 		{
 			ConnectionStatusChanged(args.Data);
 		}

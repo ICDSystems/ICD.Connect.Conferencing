@@ -1,5 +1,4 @@
-﻿using System;
-using ICD.Connect.Conferencing.Controls.Presentation;
+﻿using ICD.Connect.Conferencing.Controls.Presentation;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
 {
@@ -11,12 +10,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override void StartPresentation(int input)
 		{
-			
+			// TODO
 		}
 
 		public override void StopPresentation()
 		{
-			throw new NotImplementedException();
+			// TODO
 		}
 	}
 }

@@ -3,9 +3,9 @@ using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using Newtonsoft.Json;
 
-namespace ICD.Connect.Conferencing.Zoom.Models
+namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
-	public sealed class ZoomContact : IContact
+	public sealed class ZoomContact : IContactWithSurname, IContactWithOnlineState
 	{
 		/// <summary>
 		/// Use this ID when inviting the user, or when accepting / rejecting a user who is joining the conversation
@@ -43,6 +43,9 @@ namespace ICD.Connect.Conferencing.Zoom.Models
 		[JsonProperty("presence")]
 		public eContactPresence Presence { get; private set; }
 
+		[JsonProperty("isZoomRoom")]
+		public bool IsZoomRoom { get; private set; }
+
 		/// <summary>
 		/// Index of user in the phonebook, I think?
 		/// Returned for an Updated Contact response, but not a Phonebook List response.
@@ -58,6 +61,28 @@ namespace ICD.Connect.Conferencing.Zoom.Models
 		public IEnumerable<IContactMethod> GetContactMethods()
 		{
 			yield return new ContactMethod(JoinId);
+		}
+
+		public eOnlineState OnlineState
+		{
+			get
+			{
+				switch (Presence)
+				{
+					case eContactPresence.PRESENCE_OFFLINE:
+						return eOnlineState.Offline;
+					case eContactPresence.PRESENCE_ONLINE:
+						return eOnlineState.Online;
+					case eContactPresence.PRESENCE_BUSY:
+						return eOnlineState.Busy;
+					case eContactPresence.PRESENCE_AWAY:
+						return eOnlineState.Away;
+					case eContactPresence.PRESENCE_DND:
+						return eOnlineState.DoNotDisturb;
+					default:
+						return eOnlineState.Unknown;
+				}
+			}
 		}
 	}
 }

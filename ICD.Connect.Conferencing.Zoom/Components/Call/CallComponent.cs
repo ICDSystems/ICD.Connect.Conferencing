@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_Status = value;
-				ZoomRoom.Log(eSeverity.Informational, "Call {0} status changed: {1}", Number, StringUtils.NiceName(m_Status));
+				Parent.Log(eSeverity.Informational, "Call {0} status changed: {1}", Number, StringUtils.NiceName(m_Status));
 
 				OnStatusChanged.Raise(this, new ConferenceSourceStatusEventArgs(m_Status));
 			}
@@ -123,7 +123,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#region Constructors
 
-		public CallComponent(IncomingCall call, ZoomRoom zoomRoom) : base(zoomRoom)
+		public CallComponent(IncomingCall call, ZoomRoom parent) : base(parent)
 		{
 			CallerJoinId = call.CallerJoinId;
 			Start = IcdEnvironment.GetLocalTime();
@@ -133,14 +133,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Participants = new List<ParticipantInfo>();
 			Status = eConferenceSourceStatus.Ringing;
 
-			Subscribe(ZoomRoom);
+			Subscribe(Parent);
 		}
 
-		public CallComponent(ZoomRoom zoomRoom) : base(zoomRoom)
+		public CallComponent(ZoomRoom parent) : base(parent)
 		{
 			Direction = eConferenceSourceDirection.Outgoing;
 
-			Subscribe(ZoomRoom);
+			Subscribe(Parent);
 		}
 
 		#endregion
@@ -149,12 +149,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public void Answer()
 		{
-			ZoomRoom.SendCommand("zCommand Call Accept callerJid: {0}", CallerJoinId);
+			Parent.SendCommand("zCommand Call Accept callerJid: {0}", CallerJoinId);
 		}
 
 		public void Reject()
 		{
-			ZoomRoom.SendCommand("zCommand Call Reject callerJid: {0}", CallerJoinId);
+			Parent.SendCommand("zCommand Call Reject callerJid: {0}", CallerJoinId);
 		}
 
 		public void Hold()
@@ -162,8 +162,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			if (Status == eConferenceSourceStatus.OnHold)
 				return;
 
-			ZoomRoom.SendCommand("zConfiguration Call Microphone mute: on");
-			ZoomRoom.SendCommand("zConfiguration Call Camera mute: on");
+			Parent.SendCommand("zConfiguration Call Microphone mute: on");
+			Parent.SendCommand("zConfiguration Call Camera mute: on");
 		}
 
 		public void Resume()
@@ -171,20 +171,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			if (Status != eConferenceSourceStatus.OnHold)
 				return;
 
-			ZoomRoom.SendCommand("zConfiguration Call Microphone mute: off");
-			ZoomRoom.SendCommand("zConfiguration Call Camera mute: off");
+			Parent.SendCommand("zConfiguration Call Microphone mute: off");
+			Parent.SendCommand("zConfiguration Call Camera mute: off");
 		}
 
 		public void Hangup()
 		{
-			ZoomRoom.SendCommand("zCommand Call Leave");
+			Parent.SendCommand("zCommand Call Leave");
 			Status = eConferenceSourceStatus.Disconnecting;
-			ZoomRoom.Log(eSeverity.Debug, "Disconnecting call {0}", Name);
+			Parent.Log(eSeverity.Debug, "Disconnecting call {0}", Name);
 		}
 
 		public void SendDtmf(string data)
 		{
-			ZoomRoom.Log(eSeverity.Warning, "Zoom Room does not support sending DTMF");
+			Parent.Log(eSeverity.Warning, "Zoom Room does not support sending DTMF");
 		}
 
 		#endregion
@@ -207,7 +207,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void Subscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
-			zoomRoom.RegisterResponseCallback<ParticipantUpdateResponse>(ParticipantUpdateCallback);
+			//zoomRoom.RegisterResponseCallback<ParticipantUpdateResponse>(ParticipantUpdateCallback);
 			zoomRoom.RegisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 			zoomRoom.RegisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 		}
@@ -215,7 +215,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
-			zoomRoom.UnregisterResponseCallback<ParticipantUpdateResponse>(ParticipantUpdateCallback);
+			//zoomRoom.UnregisterResponseCallback<ParticipantUpdateResponse>(ParticipantUpdateCallback);
 			zoomRoom.UnregisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 		}
 
@@ -228,14 +228,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				CameraMute = config.Camera.Mute;
 		}
 
-		private void ParticipantUpdateCallback(ZoomRoom zoomRoom, ParticipantUpdateResponse response)
-		{
-			int index = Participants.FindIndex(p => p.UserId == response.Participant.UserId);
-			if (index >= 0)
-				Participants[index] = response.Participant;
-			else
-				Participants.Add(response.Participant);
-		}
+		//private void ParticipantUpdateCallback(ZoomRoom zoomRoom, ParticipantUpdateResponse response)
+		//{
+		//	int index = Participants.FindIndex(p => p.UserId == response.Participant.UserId);
+		//	if (index >= 0)
+		//		Participants[index] = response.Participant;
+		//	else
+		//		Participants.Add(response.Participant);
+		//}
 
 		private void DisconnectCallback(ZoomRoom zoomRoom, CallDisconnectResponse response)
 		{
@@ -279,7 +279,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
-			yield break;
+			if (Status == eConferenceSourceStatus.Ringing)
+				yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
+			else
+			{
+				yield return new ConsoleCommand("Hangup", "Hangs up the call", () => Hangup());
+				if (Status == eConferenceSourceStatus.OnHold)
+					yield return new ConsoleCommand("Resume", "Unmutes the audio and video of the call", () => Resume());
+				else
+					yield return new ConsoleCommand("Hold", "Mutes the audio and video of the call", () => Hold());
+			}
 		}
 
 		#endregion

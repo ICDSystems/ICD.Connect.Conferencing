@@ -1,52 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
 using ICD.Connect.Conferencing.Zoom.Components;
-using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Connect.Conferencing.Zoom.Components.Directory;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
 {
-	public class ZoomRoomDirectoryControl : AbstractDirectoryControl<ZoomRoom>
+	public sealed class ZoomRoomDirectoryControl : AbstractDirectoryControl<ZoomRoom>
 	{
-		private ZoomFolder m_Folder;
+		private readonly DirectoryComponent m_Component;
 
 		public ZoomRoomDirectoryControl(ZoomRoom parent, int id) : base(parent, id)
 		{
-			m_Folder = new ZoomFolder();
-			Subscribe(parent);
+			m_Component = parent.Components.GetComponent<DirectoryComponent>();
 		}
 
 		public override event EventHandler OnCleared;
 		public override IDirectoryFolder GetRoot()
 		{
-			return m_Folder;
+			return m_Component.GetRoot();
 		}
 
 		public override void Clear()
 		{
-			m_Folder.Clear();
+			m_Component.GetRoot().Clear();
+			OnCleared.Raise(this);
 		}
 
 		public override void PopulateFolder(IDirectoryFolder folder)
 		{
-			Parent.SendCommand("zCommand Phonebook List");
+			if (!(folder is ZoomFolder))
+				throw new InvalidOperationException("Cannot populate folder unless it is ZoomFolder");
+			m_Component.Populate();
 		}
-
-		#region Private Methods
-
-		private void Subscribe(ZoomRoom zoomRoom)
-		{
-			zoomRoom.RegisterResponseCallback<PhonebookListCommandResponse>(ListPhonebookCallback);
-		}
-
-		private void ListPhonebookCallback(ZoomRoom zoomRoom, PhonebookListCommandResponse response)
-		{
-			m_Folder.AddContacts(response.PhonebookListResult.Contacts);
-		}
-
-		#endregion
 	}
 }

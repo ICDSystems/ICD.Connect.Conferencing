@@ -7,19 +7,22 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Conferencing.Zoom.Components;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Controls;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol;
+using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
+using ICD.Connect.Settings.Core;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
-	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>, IConnectable
+	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>
 	{
 		/// <summary>
 		/// Wrapper callback for responses that casts to the appropriate type.
@@ -36,17 +39,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			public object ActualCallback { get; set; }
 		}
 
-		private const string END_OF_LINE = "\n";
-
-		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
-		public event EventHandler<BoolEventArgs> OnInitializedChanged;
-
-		private readonly ConnectionStateManager m_ConnectionStateManager;
-		private readonly JsonSerialBuffer m_SerialBuffer;
-
-		private bool m_Initialized;
-		private bool m_IsConnected;
-		private ISerialPort m_Port;
+		private const string END_OF_LINE = "\r\n";
 
 		/// <summary>
 		/// System Configuration Commands
@@ -57,12 +50,18 @@ namespace ICD.Connect.Conferencing.Zoom
 			"format json",
 		};
 
+		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
+		public event EventHandler<BoolEventArgs> OnInitializedChanged;
+
+		private readonly ConnectionStateManager m_ConnectionStateManager;
+		private readonly JsonSerialBuffer m_SerialBuffer;
 		private readonly Dictionary<Type, List<ResponseCallbackPair>> m_ResponseCallbacks;
 		private readonly SafeCriticalSection m_ResponseCallbacksSection;
 
-		#region Properties
+		private bool m_Initialized;
+		private bool m_IsConnected;
 
-		public Heartbeat Heartbeat { get; private set; }
+		#region Properties
 
 		/// <summary>
 		/// Device Initialized Status.
@@ -86,24 +85,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public bool IsConnected
 		{
-			get { return m_IsConnected; }
-			private set
-			{
-				if (value == m_IsConnected)
-					return;
-
-				m_IsConnected = value;
-
-				OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
-			}
+			get { return m_ConnectionStateManager.IsConnected; }
 		}
 
 		public CallComponent CurrentCall { get; private set; }
-
-		/// <summary>
-		/// Gets the help information for the node.
-		/// </summary>
-		public override string ConsoleHelp { get { return "The Zoom Room conferencing device"; } }
 
 		/// <summary>
 		/// Causes this ZoomRoom to auto-accept any incoming calls.
@@ -115,23 +100,36 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public bool DoNotDisturb { get; set; }
 
-		#endregion
+		public ZoomRoomComponentFactory Components { get; private set; }
 
-		#region Constructors
+		#endregion
 
 		public ZoomRoom()
 		{
-			Heartbeat = new Heartbeat(this);
-
 			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallbackPair>>();
 			m_ResponseCallbacksSection = new SafeCriticalSection();
+
+			m_ConnectionStateManager = new ConnectionStateManager(this);
+			Subscribe(m_ConnectionStateManager);
+
+			m_SerialBuffer = new JsonSerialBuffer();
+			Subscribe(m_SerialBuffer);
+
+			Components = new ZoomRoomComponentFactory(this);
 
 			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomPresentationControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomDialingControl(this, Controls.Count));
 		}
-		#endregion
+
+		protected override void DisposeFinal(bool disposing)
+		{
+			base.DisposeFinal(disposing);
+
+			Unsubscribe(m_SerialBuffer);
+			Unsubscribe(m_ConnectionStateManager);
+		}
 
 		#region Methods
 
@@ -141,7 +139,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <returns></returns>
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_Port != null && m_Port.IsOnline;
+			return m_ConnectionStateManager.IsOnline;
 		}
 
 		/// <summary>
@@ -151,47 +149,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			if (port == m_Port)
-				return;
-
-			if (m_Port != null)
-				Disconnect();
-
-			Unsubscribe(m_Port);
-			m_Port = port;
-			Subscribe(m_Port);
-
-			if (m_Port != null)
-				Heartbeat.StartMonitoring();
-
-			UpdateCachedOnlineStatus();
-		}
-
-		public void Connect()
-		{
-			if (m_Port == null)
-			{
-				Log(eSeverity.Critical, "Unable to connect, port is null");
-				return;
-			}
-
-			m_Port.Connect();
-			IsConnected = m_Port.IsConnected;
-
-			if (IsConnected)
-				Initialize();
-		}
-
-		public void Disconnect()
-		{
-			if (m_Port == null)
-			{
-				Log(eSeverity.Critical, "Unable to disconnect, port is null");
-				return;
-			}
-
-			m_Port.Disconnect();
-			IsConnected = m_Port.IsConnected;
+			m_ConnectionStateManager.SetPort(port);
 		}
 
 		/// <summary>
@@ -200,7 +158,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="command"></param>
 		public void SendCommand(string command)
 		{
-			SendCommand(command, null);
+			m_ConnectionStateManager.Send(command + END_OF_LINE);
 		}
 
 		/// <summary>
@@ -213,25 +171,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			if (args != null)
 				command = string.Format(command, args);
 
-			if (m_Port == null)
-			{
-				Log(eSeverity.Error, "Unable to communicate with Zoom Room - port is null");
-				return;
-			}
-
-			if (!IsConnected)
-			{
-				Log(eSeverity.Warning, "Zoom Room is disconnected, attempting reconnect");
-				Connect();
-			}
-
-			if (!IsConnected)
-			{
-				Log(eSeverity.Critical, "Unable to communicate with Zoom Room");
-				return;
-			}
-
-			m_Port.Send(command + END_OF_LINE);
+			SendCommand(command);
 		}
 
 		/// <summary>
@@ -315,8 +255,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void Initialize()
 		{
 			SendCommands(m_ConfigurationCommands);
-            SendCommand("zConfiguration Client deviceSystem: \"Krang Zoom Room Controller\"");
-            SendCommand("zConfiguration Client appVersion: {0}", GetType().GetAssembly().GetName().Version);
 			Initialized = true;
 		}
 
@@ -350,11 +288,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Subscribes to the port events.
 		/// </summary>
 		/// <param name="port"></param>
-		private void Subscribe(ISerialPort port)
+		private void Subscribe(ConnectionStateManager port)
 		{
-			if (port == null)
-				return;
-
 			port.OnSerialDataReceived += PortOnSerialDataReceived;
 			port.OnConnectedStateChanged += PortOnConnectionStatusChanged;
 			port.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
@@ -364,11 +299,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Unsubscribe from the port events.
 		/// </summary>
 		/// <param name="port"></param>
-		private void Unsubscribe(ISerialPort port)
+		private void Unsubscribe(ConnectionStateManager port)
 		{
-			if (port == null)
-				return;
-
 			port.OnSerialDataReceived -= PortOnSerialDataReceived;
 			port.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
 			port.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
@@ -393,8 +325,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_SerialBuffer.Clear();
 
-			IsConnected = args.Data;
-
 			if (IsConnected)
 				Initialize();
 			else
@@ -409,7 +339,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
+		private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
 		}
@@ -448,9 +378,47 @@ namespace ICD.Connect.Conferencing.Zoom
 			var settings = new JsonSerializerSettings();
 			settings.Converters.Add(new ZoomRoomResponseConverter());
 			var response = JsonConvert.DeserializeObject<AbstractZoomRoomResponse>(json, settings);
-
-			CallResponseCallbacks(response);
+			if (response != null)
+				CallResponseCallbacks(response);
 		}
+
+		#endregion
+
+		#region Settings
+
+		protected override void ApplySettingsFinal(ZoomRoomSettings settings, IDeviceFactory factory)
+		{
+			base.ApplySettingsFinal(settings, factory);
+
+			if (settings.Port != null)
+			{
+				var port = factory.GetOriginatorById<ISerialPort>(settings.Port.Value);
+				m_ConnectionStateManager.SetPort(port);
+			}
+		}
+
+		protected override void ClearSettingsFinal()
+		{
+			base.ClearSettingsFinal();
+
+			m_ConnectionStateManager.SetPort(null);
+		}
+
+		protected override void CopySettingsFinal(ZoomRoomSettings settings)
+		{
+			base.CopySettingsFinal(settings);
+
+			settings.Port = m_ConnectionStateManager.PortNumber;
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Gets the help information for the node.
+		/// </summary>
+		public override string ConsoleHelp { get { return "The Zoom Room conferencing device"; } }
 
 		#endregion
 	}

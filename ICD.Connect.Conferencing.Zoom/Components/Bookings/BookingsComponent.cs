@@ -1,11 +1,11 @@
 ﻿using System;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
-namespace ICD.Connect.Conferencing.Zoom.Components
+namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 {
-	public class ZoomBookingsComponent : AbstractZoomRoomComponent
+	public class BookingsComponent : AbstractZoomRoomComponent
 	{
-		public ZoomBookingsComponent(ZoomRoom zoomRoom)
+		public BookingsComponent(ZoomRoom zoomRoom)
 			: base(zoomRoom)
 		{
 			Subscribe(zoomRoom);
@@ -15,7 +15,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		{
 			base.DisposeFinal();
 
-			Unsubscribe(ZoomRoom);
+			Unsubscribe(Parent);
 		}
 
 		#region Methods
@@ -24,8 +24,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		{
 			base.Initialize();
 
-			ZoomRoom.SendCommand("zCommand Bookings Update");
-			ZoomRoom.SendCommand("zCommand Bookings List");
+			Parent.SendCommand("zCommand Bookings Update");
+			Parent.SendCommand("zCommand Bookings List");
 		}
 
 		#endregion
