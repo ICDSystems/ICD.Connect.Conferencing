@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors;
@@ -9,6 +10,7 @@ using ICD.Connect.Conferencing.Controls.Routing;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
+using ICD.Connect.Routing.RoutingGraphs;
 using ICD.Connect.Routing.Utils;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
@@ -34,8 +36,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public override event EventHandler<ActiveInputStateChangeEventArgs> OnActiveInputsChanged;
 
 		private readonly SwitcherCache m_Cache;
+		private IRoutingGraph m_CachedRoutingGraph;
 
 		#region Properties
+
+		/// <summary>
+		/// Gets the routing graph.
+		/// </summary>
+		public IRoutingGraph RoutingGraph
+		{
+			get { return m_CachedRoutingGraph = m_CachedRoutingGraph ?? ServiceProvider.GetService<IRoutingGraph>(); }
+		}
 
 		/// <summary>
 		/// Gets the Video Component.
@@ -168,11 +179,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override ConnectorInfo GetInput(int address)
 		{
-			if (!VideoComponent.ContainsVideoInputConnector(address))
-				throw new KeyNotFoundException(string.Format("{0} has no input at address {1}", Parent, address));
+			Connection connection = RoutingGraph.Connections.GetInputConnection(this, address);
+			if (connection == null)
+				throw new ArgumentOutOfRangeException("input");
 
-			VideoInputConnector connector = VideoComponent.GetVideoInputConnector(address);
-			return new ConnectorInfo(address, connector.ConnectionType);
+			return new ConnectorInfo(connection.Destination.Address, connection.ConnectionType);
 		}
 
 		/// <summary>
@@ -182,7 +193,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override bool ContainsInput(int input)
 		{
-			return VideoComponent.ContainsVideoInputConnector(input);
+			return RoutingGraph.Connections.GetInputConnection(this, input) != null;
 		}
 
 		/// <summary>
@@ -191,8 +202,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
-			return VideoComponent.GetVideoInputConnectorIds()
-			                     .Select(id => GetInput(id));
+			return RoutingGraph.Connections
+			                   .GetInputConnections(Parent.Id, Id)
+			                   .Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
 		}
 
 		/// <summary>
@@ -202,11 +214,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override ConnectorInfo GetOutput(int address)
 		{
-			if (!VideoComponent.ContainsVideoOutputConnector(address))
-				throw new KeyNotFoundException(string.Format("{0} has no output at address {1}", Parent, address));
+			Connection connection = RoutingGraph.Connections.GetOutputConnection(this, address);
+			if (connection == null)
+				throw new ArgumentOutOfRangeException("address");
 
-			VideoOutputConnector connector = VideoComponent.GetVideoOutputConnector(address);
-			return new ConnectorInfo(address, connector.ConnectionType);
+			return new ConnectorInfo(connection.Source.Address, connection.ConnectionType);
 		}
 
 		/// <summary>
@@ -216,7 +228,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override bool ContainsOutput(int output)
 		{
-			return VideoComponent.ContainsVideoOutputConnector(output);
+			return RoutingGraph.Connections.GetOutputConnection(this, output) != null;
 		}
 
 		/// <summary>
@@ -225,8 +237,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetOutputs()
 		{
-			return VideoComponent.GetVideoOutputConnectorIds()
-			                     .Select(id => GetOutput(id));
+			return RoutingGraph.Connections
+			                   .GetOutputConnections(Parent.Id, Id)
+			                   .Select(c => new ConnectorInfo(c.Source.Address, c.ConnectionType));
 		}
 
 		#endregion
