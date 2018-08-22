@@ -18,16 +18,33 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 	/// </summary>
 	public sealed class CiscoCodecRoutingControl : AbstractVideoConferenceRouteControl<CiscoCodecDevice>
 	{
+		/// <summary>
+		/// Raised when the device starts/stops actively transmitting on an output.
+		/// </summary>
 		public override event EventHandler<TransmissionStateEventArgs> OnActiveTransmissionStateChanged;
+
+		/// <summary>
+		/// Raised when an input source status changes.
+		/// </summary>
 		public override event EventHandler<SourceDetectionStateChangeEventArgs> OnSourceDetectionStateChange;
+
+		/// <summary>
+		/// Raised when the device starts/stops actively using an input, e.g. unroutes an input.
+		/// </summary>
 		public override event EventHandler<ActiveInputStateChangeEventArgs> OnActiveInputsChanged;
 
 		private readonly SwitcherCache m_Cache;
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the Video Component.
+		/// </summary>
 		private VideoComponent VideoComponent { get { return Parent.Components.GetComponent<VideoComponent>(); } }
 
+		/// <summary>
+		/// Gets the Presentation Component.
+		/// </summary>
 		private PresentationComponent PresentationComponent
 		{
 			get { return Parent.Components.GetComponent<PresentationComponent>(); }
@@ -159,6 +176,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		}
 
 		/// <summary>
+		/// Returns true if the destination contains an input at the given address.
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
+		public override bool ContainsInput(int input)
+		{
+			return VideoComponent.ContainsVideoInputConnector(input);
+		}
+
+		/// <summary>
 		/// Returns the inputs.
 		/// </summary>
 		/// <returns></returns>
@@ -180,6 +207,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			VideoOutputConnector connector = VideoComponent.GetVideoOutputConnector(address);
 			return new ConnectorInfo(address, connector.ConnectionType);
+		}
+
+		/// <summary>
+		/// Returns true if the source contains an output at the given address.
+		/// </summary>
+		/// <param name="output"></param>
+		/// <returns></returns>
+		public override bool ContainsOutput(int output)
+		{
+			return VideoComponent.ContainsVideoOutputConnector(output);
 		}
 
 		/// <summary>
