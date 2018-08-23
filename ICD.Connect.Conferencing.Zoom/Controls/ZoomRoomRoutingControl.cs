@@ -23,6 +23,16 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private readonly CameraComponent m_CameraComponent;
 
+		private IRoutingGraph m_CachedRoutingGraph;
+
+		/// <summary>
+		/// Gets the routing graph.
+		/// </summary>
+		public IRoutingGraph RoutingGraph
+		{
+			get { return m_CachedRoutingGraph = m_CachedRoutingGraph ?? ServiceProvider.GetService<IRoutingGraph>(); }
+		}
+
 		public ZoomRoomRoutingControl(ZoomRoom parent, int id) : base(parent, id)
 		{
 			m_SwitcherCache = new SwitcherCache();
@@ -49,17 +59,25 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		#region Methods
 
 		/// <summary>
+		/// Returns true if the destination contains an input at the given address.
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
+		public override bool ContainsInput(int input)
+		{
+			return RoutingGraph.Connections.GetInputConnection(this, input) != null;
+		}
+
+		/// <summary>
 		/// Returns the inputs.
 		/// </summary>
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
 			return
-				ServiceProvider.GetService<IRoutingGraph>()
-				               .Connections
-				               .GetChildren()
-				               .Where(c => c.Destination.Device == Parent.Id && c.Destination.Control == Id)
-				               .Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
+				RoutingGraph.Connections
+							.GetInputConnections(Parent.Id, Id)
+							.Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
 		}
 
 		/// <summary>
@@ -70,6 +88,20 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
 			return true;
+		}
+
+		/// <summary>
+		/// Gets the input at the given address.
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
+		public override ConnectorInfo GetInput(int input)
+		{
+			Connection connection = RoutingGraph.Connections.GetInputConnection(this, input);
+			if (connection == null)
+				throw new ArgumentOutOfRangeException("input");
+
+			return new ConnectorInfo(connection.Destination.Address, connection.ConnectionType);
 		}
 
 		/// <summary>
@@ -93,17 +125,25 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		}
 
 		/// <summary>
+		/// Returns true if the source contains an output at the given address.
+		/// </summary>
+		/// <param name="output"></param>
+		/// <returns></returns>
+		public override bool ContainsOutput(int output)
+		{
+			return RoutingGraph.Connections.GetOutputConnection(this, output) != null;
+		}
+
+		/// <summary>
 		/// Returns the outputs.
 		/// </summary>
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetOutputs()
 		{
 			return
-				ServiceProvider.GetService<IRoutingGraph>()
-				               .Connections
-				               .GetChildren()
-				               .Where(c => c.Source.Device == Parent.Id && c.Source.Control == Id)
-				               .Select(c => new ConnectorInfo(c.Source.Address, c.ConnectionType));
+				RoutingGraph.Connections
+							.GetOutputConnections(Parent.Id, Id)
+							.Select(c => new ConnectorInfo(c.Source.Address, c.ConnectionType));
 		}
 
 		/// <summary>
@@ -117,6 +157,20 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override bool GetActiveTransmissionState(int output, eConnectionType type)
 		{
 			return true;
+		}
+
+		/// <summary>
+		/// Gets the output at the given address.
+		/// </summary>
+		/// <param name="output"></param>
+		/// <returns></returns>
+		public override ConnectorInfo GetOutput(int output)
+		{
+			Connection connection = RoutingGraph.Connections.GetOutputConnection(this, output);
+			if (connection == null)
+				throw new ArgumentOutOfRangeException("output");
+
+			return new ConnectorInfo(connection.Source.Address, connection.ConnectionType);
 		}
 
 		#endregion
