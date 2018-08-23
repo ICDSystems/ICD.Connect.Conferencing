@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -113,20 +112,14 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// </summary>
 		/// <param name="output"></param>
 		/// <returns></returns>
-		public virtual ConnectorInfo GetOutput(int output)
-		{
-			return GetOutputs().First(c => c.Address == output);
-		}
+		public abstract ConnectorInfo GetOutput(int output);
 
 		/// <summary>
 		/// Returns true if the source contains an output at the given address.
 		/// </summary>
 		/// <param name="output"></param>
 		/// <returns></returns>
-		public virtual bool ContainsOutput(int output)
-		{
-			return GetOutputs().Any(c => c.Address == output);
-		}
+		public abstract bool ContainsOutput(int output);
 
 		/// <summary>
 		/// Returns the outputs.
