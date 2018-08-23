@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -9,7 +10,6 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Zoom.Models;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
@@ -32,6 +32,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public event EventHandler<StringEventArgs> OnNumberChanged;
 
 		public event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
+
+		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantRemoved;
+
+		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantAdded;
+
+		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantUpdated;
 
 		#endregion
 
@@ -123,23 +129,21 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#region Constructors
 
-		public CallComponent(IncomingCall call, ZoomRoom parent) : base(parent)
+		public CallComponent(IncomingCall call, ZoomRoom parent) : this(parent)
 		{
 			CallerJoinId = call.CallerJoinId;
 			Start = IcdEnvironment.GetLocalTime();
 			Name = call.CallerName;
 			Number = call.MeetingNumber.ToString();
 			Direction = eConferenceSourceDirection.Incoming;
-			Participants = new List<ParticipantInfo>();
 			Status = eConferenceSourceStatus.Ringing;
-
-			Subscribe(Parent);
 		}
 
 		public CallComponent(ZoomRoom parent) : base(parent)
 		{
+			Name = "Meeting";
 			Direction = eConferenceSourceDirection.Outgoing;
-
+			Participants = new List<ParticipantInfo>();
 			Subscribe(Parent);
 		}
 
@@ -177,9 +181,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public void Hangup()
 		{
+			Parent.Log(eSeverity.Debug, "Disconnecting call {0}", Name);
 			Parent.SendCommand("zCommand Call Leave");
 			Status = eConferenceSourceStatus.Disconnecting;
-			Parent.Log(eSeverity.Debug, "Disconnecting call {0}", Name);
 		}
 
 		public void SendDtmf(string data)
@@ -200,6 +204,21 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				Status = eConferenceSourceStatus.Connected;
 		}
 
+		private void AddOrUpdateParticipant(ParticipantInfo participant)
+		{
+			if (participant.IsMyself)
+				return;
+
+			var index = Participants.FindIndex(p => p.UserId == participant.UserId);
+			if (index < 0)
+			{
+				Participants.Add(participant);
+				OnParticipantAdded.Raise(this, new GenericEventArgs<ParticipantInfo>(participant));
+			}
+			else
+				OnParticipantUpdated.Raise(this, new GenericEventArgs<ParticipantInfo>(participant));
+		}
+
 		#endregion
 
 		#region Zoom Room Callbacks
@@ -207,16 +226,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void Subscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
-			//zoomRoom.RegisterResponseCallback<ParticipantUpdateResponse>(ParticipantUpdateCallback);
+			zoomRoom.RegisterResponseCallback<ListParticipantsResponse>(ListParticipantsCallback);
+			zoomRoom.RegisterResponseCallback<SingleParticipantResponse>(ParticipantUpdateCallback);
 			zoomRoom.RegisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 			zoomRoom.RegisterResponseCallback<InfoResultResponse>(CallInfoCallback);
+			zoomRoom.RegisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
-			//zoomRoom.UnregisterResponseCallback<ParticipantUpdateResponse>(ParticipantUpdateCallback);
+			zoomRoom.UnregisterResponseCallback<SingleParticipantResponse>(ParticipantUpdateCallback);
 			zoomRoom.UnregisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
+			zoomRoom.UnregisterResponseCallback<InfoResultResponse>(CallInfoCallback);
+			zoomRoom.UnregisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 		}
 
 		private void CallConfigurationCallback(ZoomRoom room, CallConfigurationResponse response)
@@ -228,14 +251,30 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				CameraMute = config.Camera.Mute;
 		}
 
-		//private void ParticipantUpdateCallback(ZoomRoom zoomRoom, ParticipantUpdateResponse response)
-		//{
-		//	int index = Participants.FindIndex(p => p.UserId == response.Participant.UserId);
-		//	if (index >= 0)
-		//		Participants[index] = response.Participant;
-		//	else
-		//		Participants.Add(response.Participant);
-		//}
+		private void ParticipantUpdateCallback(ZoomRoom zoomRoom, SingleParticipantResponse response)
+		{
+			AddOrUpdateParticipant(response.Participant);
+		}
+
+		private void ListParticipantsCallback(ZoomRoom zoomroom, ListParticipantsResponse response)
+		{
+			// remove participants that have left
+			var participantsToRemove = new List<ParticipantInfo>();
+			foreach (var participant in Participants)
+			{
+				if(!response.Participants.Any(p => p.UserId == participant.UserId))
+				{
+					participantsToRemove.Add(participant);
+					OnParticipantRemoved.Raise(this, new GenericEventArgs<ParticipantInfo>(participant));
+				}
+			}
+			foreach (var removal in participantsToRemove)
+				Participants.Remove(removal);
+
+			// add or update current participants
+			foreach (var participant in response.Participants)
+				AddOrUpdateParticipant(participant);
+		}
 
 		private void DisconnectCallback(ZoomRoom zoomRoom, CallDisconnectResponse response)
 		{
@@ -246,6 +285,31 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void CallInfoCallback(ZoomRoom zoomRoom, InfoResultResponse response)
 		{
 			CallInfo result = response.InfoResult;
+			Number = result.MeetingId;
+		}
+
+		private void CallStatusCallback(ZoomRoom zoomroom, CallStatusResponse response)
+		{
+			var status = response.CallStatus.Status;
+			switch (status)
+			{
+				case eCallStatus.CONNECTING_MEETING:
+					Status = eConferenceSourceStatus.Connecting;
+					DialTime = IcdEnvironment.GetLocalTime();
+					break;
+				case eCallStatus.IN_MEETING:
+					Status = eConferenceSourceStatus.Connected;
+					Start = IcdEnvironment.GetLocalTime();
+					break;
+				case eCallStatus.NOT_IN_MEETING:
+				case eCallStatus.LOGGED_OUT:
+					Status = eConferenceSourceStatus.Disconnected;
+					break;
+				case eCallStatus.UNKNOWN:
+				default:
+					Status = eConferenceSourceStatus.Undefined;
+					break;
+			}
 		}
 
 		#endregion

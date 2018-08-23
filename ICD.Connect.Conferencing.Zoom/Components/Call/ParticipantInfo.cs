@@ -1,7 +1,7 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Responses;
 using Newtonsoft.Json;
 
-namespace ICD.Connect.Conferencing.Zoom.Models
+namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
 	public sealed class ParticipantInfo
 	{

@@ -1,5 +1,4 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Components.Call;
-using ICD.Connect.Conferencing.Zoom.Models;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses

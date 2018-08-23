@@ -60,9 +60,14 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 			string responseKey = jObject[RESPONSE_KEY].ToString();
 			eZoomRoomApiType apiResponseType = jObject[API_RESPONSE_TYPE].ToObject<eZoomRoomApiType>();
 			bool synchronous = jObject[SYNCHRONOUS].ToObject<bool>();
-
+			
 			// find concrete type that matches the json values
 			var responseType = Types.SingleOrDefault(t => TypeAttributeMatchesParams(t, responseKey, apiResponseType, synchronous));
+			
+			// shitty zoom api sometimes sends a single object instead of array
+			if (responseType == typeof(ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
+				responseType = typeof(SingleParticipantResponse);
+
 			if(responseType != null)
 				return (AbstractZoomRoomResponse)serializer.Deserialize(new JTokenReader(jObject), responseType);
 			return null;

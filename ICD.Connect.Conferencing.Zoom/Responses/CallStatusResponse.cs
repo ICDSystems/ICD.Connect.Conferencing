@@ -18,10 +18,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	
 	public enum eCallStatus
 	{
+		UNKNOWN,
 		NOT_IN_MEETING,
 		CONNECTING_MEETING,
 		IN_MEETING,
-		LOGGED_OUT,
-		UNKNOWN
+		LOGGED_OUT
 	}
 }
