@@ -38,7 +38,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// Meeting number for this meeting
 		/// </summary>
 		[JsonProperty("meetingNumber")]
-		public int MeetingNumber { get; private set; }
+		public string MeetingNumber { get; private set; }
 
 		[JsonProperty("callerName")]
 		public string CallerName { get; private set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -80,7 +81,21 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override void Dial(string number)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support dialing SIP numbers. Dial a contact instead");
+			var meetingNumberMatch = Regex.Match(number, @"^\d{3}-?\d{3}-?\d{4}$");
+			if (meetingNumberMatch.Success)
+			{
+				Parent.SendCommand("zCommand Dial Join meetingNumber: {0}", number);
+				return;
+			}
+
+			var userJoinIdMatch = Regex.Match(number, @"^\S+@xmpp\.zoom\.us$");
+			if(userJoinIdMatch.Success)
+			{
+				StartMeetingAndInviteUser(number);
+				return;
+			}
+
+			Parent.Log(eSeverity.Warning, "Could not manually dial \"{0}\"", number);
 		}
 
 		public override void Dial(string number, eConferenceSourceType callType)
@@ -97,22 +112,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			if (zoomContact != null)
 			{
 				if (CallStatus == eCallStatus.IN_MEETING)
-					InviteUser(zoomContact);
+					InviteUser(zoomContact.JoinId);
 				else
-				{
-					ZoomRoom.ResponseCallback<InfoResultResponse> inviteContactOnCallStart = null;
-					inviteContactOnCallStart = (a, b) =>
-					{
-						Parent.UnregisterResponseCallback(inviteContactOnCallStart);
-						InviteUser(zoomContact);
-					};
-					Parent.RegisterResponseCallback(inviteContactOnCallStart);
-					if (CallStatus != eCallStatus.CONNECTING_MEETING || CallStatus == eCallStatus.LOGGED_OUT)
-					{
-						Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting to invite user");
-						Parent.SendCommand("zCommand Dial StartPmi Duration: 30");
-					}
-				}
+					StartMeetingAndInviteUser(zoomContact.JoinId);
 				
 				return;
 			}
@@ -135,21 +137,42 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override void SetAutoAnswer(bool enabled)
 		{
-			Parent.AutoAnswer = enabled;
+			Parent.Log(eSeverity.Warning, "Zoom Room does not support settings auto-answer through the SSH API");
 		}
 
 		public override void SetPrivacyMute(bool enabled)
 		{
-			Parent.SendCommand("zConfiguration Call Microphone mute: on");
+			Parent.SendCommand("zConfiguration Call Microphone mute: {0}", enabled ? "on" : "off");
+			//Parent.SendCommand("zConfiguration Call Camera mute: {0}", enabled ? "on" : "off");
 		}
 
 		#endregion
+		
+		#region Private Methods
 
-		private void InviteUser(ZoomContact zoomContact)
+		private void StartMeetingAndInviteUser(string userJoinId)
 		{
-			Parent.Log(eSeverity.Debug, "Inviting {0} to Zoom meeting", zoomContact.Name);
-			Parent.SendCommand("zCommand Call Invite user: {0}", zoomContact.JoinId);
+			ZoomRoom.ResponseCallback<InfoResultResponse> inviteContactOnCallStart = null;
+			inviteContactOnCallStart = (a, b) =>
+			{
+				Parent.UnregisterResponseCallback(inviteContactOnCallStart);
+				InviteUser(userJoinId);
+			};
+			Parent.RegisterResponseCallback(inviteContactOnCallStart);
+			if (CallStatus != eCallStatus.CONNECTING_MEETING || CallStatus == eCallStatus.LOGGED_OUT)
+			{
+				Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting to invite user");
+				Parent.SendCommand("zCommand Dial StartPmi Duration: 30");
+			}
 		}
+
+		private void InviteUser(string userJoinId)
+		{
+			Parent.Log(eSeverity.Informational, "Inviting user: {0}", userJoinId);
+			Parent.SendCommand("zCommand Call Invite user: {0}", userJoinId);
+		}
+
+		#endregion
 
 		#region Parent Callbacks
 		
@@ -157,19 +180,18 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			parent.RegisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			parent.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
+			parent.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 
 			parent.OnInitializedChanged += ParentOnOnInitializedChanged;
-		}
-
-		private void ParentOnOnInitializedChanged(object sender, BoolEventArgs e)
-		{
-			Parent.SendCommand("zStatus Call Status");
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			parent.UnregisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			parent.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
+			parent.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
+
+			parent.OnInitializedChanged += ParentOnOnInitializedChanged;
 		}
 
 		private void CallStatusCallback(ZoomRoom zoomroom, CallStatusResponse response)
@@ -185,6 +207,19 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			SourceSubscribe(incomingCall);
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(incomingCall));
 			Parent.Log(eSeverity.Informational, "Incoming call: {0}", response.IncomingCall.CallerName);
+		}
+
+		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
+		{
+			var configuration = response.CallConfiguration;
+			if (configuration.Microphone != null)
+				PrivacyMuted = configuration.Microphone.Mute;
+		}
+
+		private void ParentOnOnInitializedChanged(object sender, BoolEventArgs e)
+		{
+			Parent.SendCommand("zStatus Call Status");
+			Parent.SendCommand("zConfiguration Call Microphone");
 		}
 
 		#endregion

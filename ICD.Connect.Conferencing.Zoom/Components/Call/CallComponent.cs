@@ -147,6 +147,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Subscribe(Parent);
 		}
 
+		protected override void DisposeFinal()
+		{
+			base.DisposeFinal();
+
+			Unsubscribe(Parent);
+		}
+
 		#endregion
 
 		#region Methods
@@ -194,6 +201,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		#endregion
 
 		#region Private Methods
+
+		protected override void Initialize()
+		{
+			base.Initialize();
+
+			Parent.SendCommand("zCommand Call Status");
+			Parent.SendCommand("zConfiguration Call Camera");
+			Parent.SendCommand("zConfiguration Call Microphone");
+			Parent.SendCommand("zCommand Call ListParticipants");
+		}
 
 		private void UpdateSourceHoldStatus()
 		{

@@ -374,10 +374,19 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
 			string json = args.Data;
-
 			var settings = new JsonSerializerSettings();
 			settings.Converters.Add(new ZoomRoomResponseConverter());
-			var response = JsonConvert.DeserializeObject<AbstractZoomRoomResponse>(json, settings);
+
+			AbstractZoomRoomResponse response = null;
+			try
+			{
+				response = JsonConvert.DeserializeObject<AbstractZoomRoomResponse>(json, settings);
+			}
+			catch (JsonReaderException)
+			{
+				// zoom gives us bad json (unescaped characters) in some error messages
+			}
+			
 			if (response != null)
 				CallResponseCallbacks(response);
 		}
