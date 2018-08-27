@@ -10,6 +10,7 @@ using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Zoom.Components;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Controls;
+using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol;
@@ -121,6 +122,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomPresentationControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomDialingControl(this, Controls.Count));
+			Controls.Add(new ZoomRoomCalendarControl(this, Controls.Count));
 		}
 
 		protected override void DisposeFinal(bool disposing)

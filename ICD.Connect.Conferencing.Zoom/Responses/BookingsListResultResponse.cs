@@ -7,6 +7,6 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	public sealed class BookingsListCommandResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("BookingsListResult")]
-		public ZoomBooking[] Bookings { get; private set; }
+		public Booking[] Bookings { get; private set; }
 	}
 }

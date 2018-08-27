@@ -120,7 +120,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			}
 
 			//// for when we do bookings, but we'll probably make an abstraction for that (not IContact)
-			//var zoomBooking = contact as ZoomBooking;
+			//var zoomBooking = contact as Booking;
 			//if (zoomBooking != null)
 			//{
 			//	Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", zoomBooking.MeetingNumber);

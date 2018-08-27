@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 {
-	public sealed class ZoomBooking
+	public sealed class Booking
 	{
 		/// <summary>
 		/// Name of the meeting

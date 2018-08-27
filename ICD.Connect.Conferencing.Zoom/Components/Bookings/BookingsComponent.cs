@@ -10,7 +10,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 	{
 		public event EventHandler OnBookingsUpdated;
 
-		private readonly List<ZoomBooking> m_Bookings;
+		private readonly List<Booking> m_Bookings;
 
 		public BookingsComponent(ZoomRoom zoomRoom)
 			: base(zoomRoom)
@@ -31,7 +31,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// Get the cached bookings for this Zoom Room
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<ZoomBooking> GetBookings()
+		public IEnumerable<Booking> GetBookings()
 		{
 			return m_Bookings.ToList();
 		}
