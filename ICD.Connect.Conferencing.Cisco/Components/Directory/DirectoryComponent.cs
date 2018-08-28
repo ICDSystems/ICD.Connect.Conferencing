@@ -236,8 +236,6 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory
 			}
 
 			// Pre initialize this folder's children
-			foreach(var folder in folders)
-				Codec.SendCommand(folder.GetSearchCommand());
 
 			if (OnResultParsed != null)
 				OnResultParsed(resultId, folders.ToArray(), contacts.ToArray());
