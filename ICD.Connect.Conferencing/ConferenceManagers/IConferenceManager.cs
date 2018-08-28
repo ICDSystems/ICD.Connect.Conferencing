@@ -35,6 +35,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
 
 		/// <summary>
+		/// Raised when the active conference ends.
+		/// </summary>
+		event EventHandler<ConferenceEventArgs> OnActiveConferenceEnded;
+
+		/// <summary>
 		/// Called when the active conference status changes.
 		/// </summary>
 		event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;

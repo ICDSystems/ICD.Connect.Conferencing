@@ -26,6 +26,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		public event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
+		public event EventHandler<ConferenceEventArgs> OnActiveConferenceEnded;
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
 		public event EventHandler OnConferenceSourceAddedOrRemoved;
 
@@ -80,6 +81,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				if (value == m_ActiveConference)
 					return;
 
+				var oldConference = m_ActiveConference;
+
 				Unsubscribe(m_ActiveConference);
 				m_ActiveConference = value;
 				Subscribe(m_ActiveConference);
@@ -87,6 +90,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				UpdateIsInCall();
 
 				OnActiveConferenceChanged.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+
+				if (m_ActiveConference == null)
+					OnActiveConferenceEnded.Raise(this, new ConferenceEventArgs(oldConference));
 			}
 		}
 
@@ -681,7 +687,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_SourcesSection.Enter();
 			try
 			{
-				m_ActiveConference.RemoveSource(source);
+				if (m_ActiveConference.RemoveSource(source) && m_ActiveConference.SourcesCount == 0)
+				{
+					ActiveConference = null;
+				}
 			}
 			finally
 			{
@@ -734,7 +743,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnActiveConferenceStatusChanged.Raise(this, new ConferenceStatusEventArgs(args.Data));
 
 			if (args.Data == eConferenceStatus.Disconnected)
+			{
 				ActiveConference = null;
+			}
 		}
 
 		private void ConferenceOnSourcesChanged(object sender, EventArgs eventArgs)
