@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
@@ -220,19 +219,14 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			get
 			{
-				if (m_Source == null)
-					return 0;
-				return (m_Source.Status == eConferenceSourceStatus.OnHold).ToUShort();
+				return m_Source == null ? (ushort)0 : (m_Source.Status == eConferenceSourceStatus.OnHold).ToUShort();
 			}
 			set
 			{
 				if (m_Source == null)
 					return;
 
-				if (value.ToBool())
-					m_Source.Status = eConferenceSourceStatus.OnHold;
-				else
-					m_Source.Status = eConferenceSourceStatus.Connected;
+				m_Source.Status = value.ToBool() ? eConferenceSourceStatus.OnHold : eConferenceSourceStatus.Connected;
 
 				OnHoldChanged.Raise(this, new SPlusUShortEventArgs(value));
 			}
