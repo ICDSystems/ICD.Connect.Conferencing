@@ -151,6 +151,12 @@ namespace ICD.Connect.Conferencing.Zoom
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
+			if (port != null)
+			{
+				port.DebugRx = eDebugMode.Ascii;
+				port.DebugTx = eDebugMode.Ascii;
+			}
+
 			m_ConnectionStateManager.SetPort(port);
 		}
 
@@ -195,7 +201,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		/// <param name="callback"></param>
 		/// <param name="path"></param>
-		public void RegisterResponseCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
+		public void RegisterResponseCallback<T>(ResponseCallback<T> callback)
+			where T : AbstractZoomRoomResponse
 		{
 			var wrappedCallback = WrapCallback(callback);
 
@@ -404,7 +411,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			if (settings.Port != null)
 			{
 				var port = factory.GetOriginatorById<ISerialPort>(settings.Port.Value);
-				m_ConnectionStateManager.SetPort(port);
+				SetPort(port);
 			}
 		}
 

@@ -4,8 +4,9 @@ using System.Linq;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Comparers;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Calendaring_NetStandard;
-using ICD.Connect.Calendaring_NetStandard.CalendarControl;
+using ICD.Connect.Calendaring.Booking;
+using ICD.Connect.Calendaring.CalendarControl;
+using ICD.Connect.Conferencing.Zoom.Comparers;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
@@ -15,7 +16,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    private readonly BookingsComponent m_BookingsComponent;
 
 	    private readonly List<ZoomBooking> m_SortedBookings;
-	    private readonly Dictionary<string, ZoomBooking> m_MeetingNumberToBooking;
+	    private readonly IcdHashSet<ZoomBooking> m_HashBooking;
 
 	    /// <summary>
 	    /// Raised when bookings are added/removed.
@@ -30,10 +31,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
-	    static ZoomRoomCalendarControl()
+		static ZoomRoomCalendarControl()
 	    {
 			s_BookingComparer = new PredicateComparer<ZoomBooking, DateTime>(b => b.StartTime);
-	    }
+
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -44,7 +46,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    : base(parent, id)
 	    {
 			m_SortedBookings = new List<ZoomBooking>();
-			m_MeetingNumberToBooking = new Dictionary<string, ZoomBooking>();
+			m_HashBooking = new IcdHashSet<ZoomBooking>(new BookingsComparer());
 
 		    m_BookingsComponent = Parent.Components.GetComponent<BookingsComponent>();
 		    Subscribe(m_BookingsComponent);
@@ -88,13 +90,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    {
 		    bool change = false;
 
-		    Booking[] bookings = m_BookingsComponent.GetBookings().ToArray();
-		    IcdHashSet<string> existing = m_SortedBookings.Select(b => b.MeetingNumber).ToIcdHashSet();
-		    IcdHashSet<string> current = bookings.Select(b => b.MeetingNumber).ToIcdHashSet();
+		    Booking[] bookings = m_BookingsComponent.GetBookings().Distinct().ToArray();
+		    IcdHashSet<ZoomBooking> existing = m_SortedBookings.ToIcdHashSet(new BookingsComparer());
+		    IcdHashSet<ZoomBooking> current = bookings.Select(b => new ZoomBooking(b)).ToIcdHashSet(new BookingsComparer());
 
-		    IcdHashSet<string> removeMeetingNumberList = existing.Subtract(current);
-		    foreach (string meetingNumber in removeMeetingNumberList)
-			    change |= RemoveBooking(meetingNumber);
+		    IcdHashSet<ZoomBooking> removeBookingList = existing.Subtract(current);
+		    foreach (ZoomBooking booking in removeBookingList)
+			    change |= RemoveBooking(booking);
 
 		    foreach (var booking in bookings)
 			    change |= AddBooking(booking);
@@ -119,25 +121,24 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    if (booking == null)
 			    throw new ArgumentNullException("booking");
 
-		    if (m_MeetingNumberToBooking.ContainsKey(booking.MeetingNumber))
+		    ZoomBooking zoomBooking = new ZoomBooking(booking);
+
+		    if (m_HashBooking.Contains(zoomBooking))
 			    return false;
 
-		    ZoomBooking zoomBooking = new ZoomBooking(booking);
-		    m_MeetingNumberToBooking[booking.MeetingNumber] = zoomBooking;
-
+		    m_HashBooking.Add(zoomBooking);
 
 		    m_SortedBookings.AddSorted(zoomBooking, s_BookingComparer);
 
 		    return true;
 	    }
 
-	    private bool RemoveBooking(string meetingNumber)
+	    private bool RemoveBooking(ZoomBooking zoomBooking)
 	    {
-		    ZoomBooking zoomBooking;
-		    if (!m_MeetingNumberToBooking.TryGetValue(meetingNumber, out zoomBooking))
+		    if (!m_HashBooking.Contains(zoomBooking))
 			    return false;
 
-		    m_MeetingNumberToBooking.Remove(meetingNumber);
+		    m_HashBooking.Remove(zoomBooking);
 		    m_SortedBookings.Remove(zoomBooking);
 
 		    return true;

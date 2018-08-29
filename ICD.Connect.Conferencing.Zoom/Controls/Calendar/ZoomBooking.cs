@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ICD.Connect.Calendaring_NetStandard;
-using ICD.Connect.Calendaring_NetStandard.Booking;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar

@@ -15,11 +15,15 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		public BookingsComponent(ZoomRoom zoomRoom)
 			: base(zoomRoom)
 		{
+			m_Bookings = new List<Booking>();
+
 			Subscribe(zoomRoom);
 		}
 
 		protected override void DisposeFinal()
 		{
+			OnBookingsUpdated = null;
+
 			base.DisposeFinal();
 
 			Unsubscribe(Parent);
@@ -49,9 +53,15 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 			Parent.SendCommand("zCommand Bookings Update");
 		}
 
+		public void ListBookings()
+		{
+			Parent.SendCommand("zCommand Bookings List");
+		}
+
 		protected override void Initialize()
 		{
 			base.Initialize();
+
 			UpdateBookings();
 		}
 
@@ -73,13 +83,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 
 		private void BookingsUpdateCallback(ZoomRoom zoomRoom, BookingsUpdateResponse response)
 		{
-			Parent.SendCommand("zCommand Bookings List");
+			ListBookings();
 		}
 
 		private void ListBookingsCallback(ZoomRoom zoomRoom, BookingsListCommandResponse response)
 		{
 			m_Bookings.Clear();
 			m_Bookings.AddRange(response.Bookings);
+
 			OnBookingsUpdated.Raise(this);
 		}
 

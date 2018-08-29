@@ -68,8 +68,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 			if (responseType == typeof(ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
 				responseType = typeof(SingleParticipantResponse);
 
-			if(responseType != null)
+			if (responseType != null)
 				return (AbstractZoomRoomResponse)serializer.Deserialize(new JTokenReader(jObject), responseType);
+
 			return null;
 		}
 

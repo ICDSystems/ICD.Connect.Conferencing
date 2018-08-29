@@ -1,4 +1,4 @@
-namespace ICD.Connect.Conferencing.Zoom.Responses
+namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
 	public enum eContactPresence
 	{
