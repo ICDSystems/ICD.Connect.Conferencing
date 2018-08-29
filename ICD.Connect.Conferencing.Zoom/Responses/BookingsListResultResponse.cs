@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
-	[ZoomRoomApiResponse("BookingsListResult", eZoomRoomApiType.zCommand, true)]
+	[ZoomRoomApiResponse("BookingsListResult", eZoomRoomApiType.zEvent, true)]
 	public sealed class BookingsListCommandResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("BookingsListResult")]
