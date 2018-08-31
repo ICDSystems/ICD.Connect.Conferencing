@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -14,17 +15,6 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	public sealed class ZoomRoomResponseConverter : AbstractGenericJsonConverter<AbstractZoomRoomResponse>
 	{
-#if SIMPLSHARP
-		private static CType[] s_types;
-		private static CType[] Types
-#else
-		private static Type[] s_types;
-		private static Type[] Types
-#endif
-		{
-			get { return s_types ?? (s_types = typeof (ZoomRoomResponseConverter).GetAssembly().GetTypes()); }
-		}
-
 		/// <summary>
 		/// Key to the property in the json which stores where the actual response data is stored
 		/// </summary>
@@ -40,7 +30,32 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		/// </summary>
 		private const string SYNCHRONOUS = "Sync";
 
+		private static readonly Dictionary<AttributeKey, Type> s_TypeDict;
+
 		public override bool CanWrite { get { return false; } }
+
+		/// <summary>
+		/// Static constructor.
+		/// </summary>
+		static ZoomRoomResponseConverter()
+		{
+			s_TypeDict = new Dictionary<AttributeKey, Type>();
+
+			foreach (
+#if SIMPLSHARP
+				CType
+#else
+				Type
+#endif
+					type in typeof(ZoomRoomResponseConverter).GetAssembly().GetTypes())
+			{
+				foreach (ZoomRoomApiResponseAttribute attribute in type.GetCustomAttributes<ZoomRoomApiResponseAttribute>())
+				{
+					AttributeKey key = new AttributeKey(attribute);
+					s_TypeDict.Add(key, type);
+				}
+			}
+		}
 
 		public override void WriteJson(JsonWriter writer, AbstractZoomRoomResponse value, JsonSerializer serializer)
 		{
@@ -61,8 +76,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 			eZoomRoomApiType apiResponseType = jObject[API_RESPONSE_TYPE].ToObject<eZoomRoomApiType>();
 			bool synchronous = jObject[SYNCHRONOUS].ToObject<bool>();
 			
+			AttributeKey key = new AttributeKey(responseKey, apiResponseType, synchronous);
+
 			// find concrete type that matches the json values
-			var responseType = Types.SingleOrDefault(t => TypeAttributeMatchesParams(t, responseKey, apiResponseType, synchronous));
+			Type responseType;
+			if (!s_TypeDict.TryGetValue(key, out responseType))
+				return null;
 			
 			// shitty zoom api sometimes sends a single object instead of array
 			if (responseType == typeof(ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
@@ -74,25 +93,61 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 			return null;
 		}
 
-		/// <summary>
-		/// Checks if the given type has a ZoomRoomApiResponse attribute with the given values
-		/// </summary>
-		/// <param name="type"></param>
-		/// <param name="key"></param>
-		/// <param name="responseType"></param>
-		/// <param name="synchronous"></param>
-		/// <returns></returns>
-#if SIMPLSHARP
-		private bool TypeAttributeMatchesParams(CType type, string key, eZoomRoomApiType responseType, bool synchronous)
-#else
-		private bool TypeAttributeMatchesParams(Type type, string key, eZoomRoomApiType responseType, bool synchronous)
-#endif
+		private sealed class AttributeKey : IEquatable<AttributeKey>
 		{
-			var attributes = type.GetCustomAttributes<ZoomRoomApiResponseAttribute>();
-			return attributes.Any(a =>
-				a.ResponseKey == key &&
-				a.CommandType == responseType &&
-				a.Synchronous == synchronous);
+			private readonly string m_Key;
+			private readonly eZoomRoomApiType m_ResponseType;
+			private readonly bool m_Synchronous;
+
+			public string Key
+			{
+				get { return m_Key; }
+			}
+			public eZoomRoomApiType ResponseType
+			{
+				get { return m_ResponseType; }
+			}
+			public bool Synchronous
+			{
+				get { return m_Synchronous; }
+			}
+
+			public AttributeKey(string key, eZoomRoomApiType type, bool synchronous)
+			{
+				m_Key = key;
+				m_ResponseType = type;
+				m_Synchronous = synchronous;
+			}
+
+			public AttributeKey(ZoomRoomApiResponseAttribute attribute)
+				: this(attribute.ResponseKey, attribute.CommandType, attribute.Synchronous)
+			{
+			}
+
+			public bool Equals(AttributeKey other)
+			{
+				if (ReferenceEquals(null, other)) return false;
+				if (ReferenceEquals(this, other)) return true;
+				return string.Equals(m_Key, other.m_Key) && m_ResponseType == other.m_ResponseType && m_Synchronous == other.m_Synchronous;
+			}
+
+			public override bool Equals(object obj)
+			{
+				if (ReferenceEquals(null, obj)) return false;
+				if (ReferenceEquals(this, obj)) return true;
+				return obj is AttributeKey && Equals((AttributeKey) obj);
+			}
+
+			public override int GetHashCode()
+			{
+				unchecked
+				{
+					var hashCode = (m_Key != null ? m_Key.GetHashCode() : 0);
+					hashCode = (hashCode * 397) ^ (int) m_ResponseType;
+					hashCode = (hashCode * 397) ^ m_Synchronous.GetHashCode();
+					return hashCode;
+				}
+			}
 		}
 	}
 }

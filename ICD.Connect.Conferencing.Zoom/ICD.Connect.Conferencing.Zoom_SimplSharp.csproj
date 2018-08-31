@@ -50,25 +50,27 @@
     <Reference Include="mscorlib" />
     <Reference Include="SimplSharpCustomAttributesInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpCustomAttributesInterface.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpHelperInterface, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpHelperInterface.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpNewtonsoft, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpNewtonsoft.dll</HintPath>
     </Reference>
     <Reference Include="SimplSharpReflectionInterface, Version=1.0.5583.25238, Culture=neutral, PublicKeyToken=1099c178b3b54c3b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\ProgramData\Crestron\SDK\SimplSharpReflectionInterface.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comparers\BookingComparer.cs" />
+    <Compile Include="Components\Bookings\Booking.cs" />
     <Compile Include="Components\Call\DialingComponent.cs" />
     <Compile Include="Components\AbstractZoomRoomComponent.cs" />
     <Compile Include="Components\Camera\CameraComponent.cs" />
@@ -79,6 +81,8 @@
     <Compile Include="Components\System\SystemComponent.cs" />
     <Compile Include="Components\Bookings\BookingsComponent.cs" />
     <Compile Include="Components\ZoomRoomComponentFactory.cs" />
+    <Compile Include="Controls\Calendar\ZoomBooking.cs" />
+    <Compile Include="Controls\Calendar\ZoomRoomCalendarControl.cs" />
     <Compile Include="Controls\ZoomRoomDialingControl.cs" />
     <Compile Include="Controls\ZoomRoomDirectoryControl.cs" />
     <Compile Include="Controls\ZoomRoomPresentationControl.cs" />
@@ -109,7 +113,6 @@
     <Compile Include="Components\Call\ParticipantInfo.cs" />
     <Compile Include="Responses\ParticipantResponse.cs" />
     <Compile Include="Responses\PhonebookResponse.cs" />
-    <Compile Include="Components\Bookings\ZoomBooking.cs" />
     <Compile Include="Components\Directory\ZoomContact.cs" />
     <Compile Include="Responses\SystemUnitResponse.cs" />
     <Compile Include="Responses\VideoCameraLineResponse.cs" />
@@ -144,6 +147,10 @@
     <ProjectReference Include="..\..\ICD.Connect.Routing\ICD.Connect.Routing\ICD.Connect.Routing_SimplSharp.csproj">
       <Project>{B0C0CA1C-FA55-4BEA-8A8B-EDB2141C523E}</Project>
       <Name>ICD.Connect.Routing_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Scheduling\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
+      <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
+      <Name>ICD.Connect.Calendaring_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Settings\ICD.Connect.Settings\ICD.Connect.Settings_SimplSharp.csproj">
       <Project>{5B84EB3C-1C3A-4C4D-98C2-69F67CF51D5A}</Project>

@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 			get { return m_Booking.EndTime; }
 		}
 
-	    public eMeetingType Type
+	    public override eMeetingType Type
 	    {
 		    get { return eMeetingType.VideoConference; }
 	    }
