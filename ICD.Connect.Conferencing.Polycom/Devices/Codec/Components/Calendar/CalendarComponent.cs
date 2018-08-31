@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
@@ -138,9 +139,37 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
 		/// <param name="meetings"></param>
 		private void HandleCalendarMeetings(IEnumerable<string> meetings)
 		{
-			string[] currentIds = meetings.Select(m => Meeting.FromString(m).Id).ToArray();
-			
-			throw new NotImplementedException();
+			if (meetings == null)
+				throw new ArgumentNullException("meetings");
+
+			bool change = false;
+
+			IcdHashSet<string> currentIds = meetings.Select(m => Meeting.FromString(m).Id).ToIcdHashSet();
+
+			m_MeetingInfosSection.Enter();
+
+			try
+			{
+				IcdHashSet<string> removeIds =
+					m_MeetingInfos.Keys
+					              .ToIcdHashSet()
+					              .Subtract(currentIds);
+
+				if (removeIds.Count > 0)
+					change = true;
+
+				m_MeetingInfos.RemoveAll(removeIds);
+			}
+			finally
+			{
+				m_MeetingInfosSection.Leave();
+			}
+
+			foreach (string id in currentIds)
+				CalendarInfo(id);
+
+			if (change)
+				OnMeetingsChanged.Raise(this);
 		}
 
 		/// <summary>
@@ -163,9 +192,32 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
 		/// <param name="meetingInfo"></param>
 		private void HandleCalendarInfo(IEnumerable<string> meetingInfo)
 		{
+			if (meetingInfo == null)
+				throw new ArgumentNullException("meetingInfo");
+
 			MeetingInfo instance = MeetingInfo.FromString(meetingInfo);
 
-			throw new NotImplementedException();
+			m_MeetingInfosSection.Enter();
+
+			try
+			{
+				MeetingInfo existing;
+				if (m_MeetingInfos.TryGetValue(instance.Id, out existing))
+				{
+					if (!existing.Update(instance))
+						return;
+				}
+				else
+				{
+					m_MeetingInfos.Add(instance.Id, instance);
+				}
+			}
+			finally
+			{
+				m_MeetingInfosSection.Leave();
+			}
+
+			OnMeetingsChanged.Raise(this);
 		}
 
 		#endregion

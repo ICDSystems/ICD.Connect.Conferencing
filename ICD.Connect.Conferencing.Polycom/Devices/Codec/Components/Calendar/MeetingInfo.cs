@@ -127,6 +127,89 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
 			return output;
 		}
 
+		/// <summary>
+		/// Updates this instance with the values from the given instance.
+		/// </summary>
+		/// <param name="instance"></param>
+		/// <returns></returns>
+		public bool Update(MeetingInfo instance)
+		{
+			if (instance == null)
+				throw new ArgumentNullException("instance");
+
+			bool change = false;
+
+			if (!instance.m_Attendees.ScrambledEquals(m_Attendees))
+			{
+				m_Attendees.Clear();
+				m_Attendees.AddRange(instance.m_Attendees);
+				change = true;
+			}
+
+			if (!instance.m_DialingNumbers.ScrambledEquals(m_DialingNumbers))
+			{
+				m_DialingNumbers.Clear();
+				m_DialingNumbers.AddRange(instance.m_DialingNumbers);
+				change = true;
+			}
+
+			if (instance.Id != Id)
+			{
+				Id = instance.Id;
+				change = true;
+			}
+
+			if (instance.Start != Start)
+			{
+				Start = instance.Start;
+				change = true;
+			}
+
+			if (instance.End != End)
+			{
+				End = instance.End;
+				change = true;
+			}
+
+			if (instance.Dialable != Dialable)
+			{
+				Dialable = instance.Dialable;
+				change = true;
+			}
+
+			if (instance.Public != Public)
+			{
+				Public = instance.Public;
+				change = true;
+			}
+
+			if (instance.Organizer != Organizer)
+			{
+				Organizer = instance.Organizer;
+				change = true;
+			}
+
+			if (instance.Location != Location)
+			{
+				Location = instance.Location;
+				change = true;
+			}
+
+			if (instance.Subject != Subject)
+			{
+				Subject = instance.Subject;
+				change = true;
+			}
+
+			if (instance.MeetingPassword != MeetingPassword)
+			{
+				MeetingPassword = instance.MeetingPassword;
+				change = true;
+			}
+
+			return change;
+		}
+
 		public sealed class DialingNumber
 		{
 			// dialingnumber|video|91138739
