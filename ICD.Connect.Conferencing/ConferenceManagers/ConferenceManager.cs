@@ -613,7 +613,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
 		{
-			RemoveSource(args.Data);
+			UpdateIsInCall();
 		}
 
 		/// <summary>
@@ -671,33 +671,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			UpdateIsInCall();
 
 			OnRecentSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
-		}
-
-		/// <summary>
-		/// removes the source from the active conference.
-		/// </summary>
-		/// <param name="source"></param>
-		private void RemoveSource(IConferenceSource source)
-		{
-			if (m_ActiveConference == null || !m_ActiveConference.ContainsSource(source))
-				return;
-
-			Unsubscribe(source);
-
-			m_SourcesSection.Enter();
-			try
-			{
-				if (m_ActiveConference.RemoveSource(source) && m_ActiveConference.SourcesCount == 0)
-				{
-					ActiveConference = null;
-				}
-			}
-			finally
-			{
-				m_SourcesSection.Leave();
-			}
-
-			UpdateIsInCall();
 		}
 
 		#endregion
