@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		public ZoomRoomCalendarControl(ZoomRoom parent, int id)
 		    : base(parent, id)
 	    {
-		    m_RefreshTimer = new SafeTimer(Refresh, 600000);
+		    m_RefreshTimer = new SafeTimer(Refresh, 10 * 60 * 1000);
 
 		    m_SortedBookings = new List<ZoomBooking>();
 		    m_HashBooking = new IcdHashSet<ZoomBooking>(new BookingsComparer());
