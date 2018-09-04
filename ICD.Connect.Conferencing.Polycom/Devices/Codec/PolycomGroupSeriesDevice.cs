@@ -16,7 +16,6 @@ using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
-using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
@@ -54,7 +53,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private readonly RateLimitedEventQueue<string> m_CommandQueue; 
 
 		private readonly PolycomComponentFactory m_Components;
-		private readonly ISerialBuffer m_SerialBuffer;
+		private readonly PolycomGroupSeriesSerialBuffer m_SerialBuffer;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
 		private bool m_Initialized;
@@ -120,7 +119,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			m_Components = new PolycomComponentFactory(this);
 
-			m_SerialBuffer = new MultiDelimiterSerialBuffer('\r', '\n');
+			m_SerialBuffer = new PolycomGroupSeriesSerialBuffer();
 			Subscribe(m_SerialBuffer);
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
@@ -369,18 +368,46 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// Subscribes to the buffer events.
 		/// </summary>
 		/// <param name="buffer"></param>
-		private void Subscribe(ISerialBuffer buffer)
+		private void Subscribe(PolycomGroupSeriesSerialBuffer buffer)
 		{
-			buffer.OnCompletedSerial += SerialBufferCompletedSerial;
+			buffer.OnCompletedSerial += BufferCompletedSerial;
+			buffer.OnUsernamePrompt += BufferOnUsernamePrompt;
+			buffer.OnPasswordPrompt += BufferOnPasswordPrompt;
 		}
 
 		/// <summary>
 		/// Unsubscribe from the buffer events.
 		/// </summary>
 		/// <param name="buffer"></param>
-		private void Unsubscribe(ISerialBuffer buffer)
+		private void Unsubscribe(PolycomGroupSeriesSerialBuffer buffer)
 		{
-			buffer.OnCompletedSerial -= SerialBufferCompletedSerial;
+			buffer.OnCompletedSerial -= BufferCompletedSerial;
+			buffer.OnUsernamePrompt -= BufferOnUsernamePrompt;
+			buffer.OnPasswordPrompt -= BufferOnPasswordPrompt;
+		}
+
+		/// <summary>
+		/// Called when the buffer reaches a password prompt.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void BufferOnPasswordPrompt(object sender, EventArgs eventArgs)
+		{
+			ISerialPort port = m_ConnectionStateManager.Port;
+			if (port != null)
+				port.Send(Password + END_OF_LINE);
+		}
+
+		/// <summary>
+		/// Called when the buffer reaches a username prompt.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void BufferOnUsernamePrompt(object sender, EventArgs eventArgs)
+		{
+			ISerialPort port = m_ConnectionStateManager.Port;
+			if (port != null)
+				port.Send(Username + END_OF_LINE);
 		}
 
 		/// <summary>
@@ -388,7 +415,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
+		private void BufferCompletedSerial(object sender, StringEventArgs args)
 		{
 			string data = args.Data;
 
@@ -396,17 +423,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (data.StartsWith("-> "))
 				data = data.Substring(3);
 
+			data = data.Trim();
+
 			if (string.IsNullOrEmpty(data))
 				return;
 
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
-			if (data.ToLower().StartsWith("username:"))
-				SendCommand(Username);
-			else if (data.ToLower().StartsWith("password:"))
-				SendCommand(Password);
-			else if (data.StartsWith("Hi, my name is"))
+			if (data.StartsWith("Hi, my name is"))
 			{
 				// Re-initialize every time we see the welcome message
 				Initialized = false;
@@ -452,7 +477,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="data"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		private string GetFirstWord(string data)
+		private static string GetFirstWord(string data)
 		{
 			if (data == null)
 				throw new ArgumentNullException("data");

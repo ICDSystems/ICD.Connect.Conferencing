@@ -99,6 +99,7 @@
     <Compile Include="Devices\Codec\Controls\PolycomCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecRoutingControl.cs" />
     <Compile Include="Devices\Codec\PolycomGroupSeriesDevice.cs" />
+    <Compile Include="Devices\Codec\PolycomGroupSeriesSerialBuffer.cs" />
     <Compile Include="Devices\Codec\PolycomGroupSeriesSettings.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
