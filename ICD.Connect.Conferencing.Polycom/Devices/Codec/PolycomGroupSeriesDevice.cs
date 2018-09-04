@@ -56,7 +56,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private readonly PolycomGroupSeriesSerialBuffer m_SerialBuffer;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
+		private readonly List<string> m_CurrentMutliLines;
+
 		private bool m_Initialized;
+		private string m_CurrentMultiLineHeader;
 
 		#region Properties
 
@@ -108,6 +111,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
+			m_CurrentMutliLines = new List<string>();
+
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
 			m_RangeFeedbackHandlers = new Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>>();
 
@@ -336,6 +341,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_SerialBuffer.Clear();
 			m_CommandQueue.Clear();
 
+			ClearCurrentMultiLine();
+
 			if (!args.Data)
 			{
 				Log(eSeverity.Critical, "Lost connection");
@@ -440,6 +447,40 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			else if (!Initialized)
 				return;
 
+			HandleData(data);
+		}
+
+		private void HandleData(string data)
+		{
+			if (!HandleMultiLineData(data))
+				HandleSingleLineData(data);
+		}
+
+		private bool HandleMultiLineData(string data)
+		{
+			// Handle multi-line responses
+			if (data.EndsWith(" begin") || data.EndsWith(" start"))
+			{
+				StartNewMultiLine(data);
+				return true;
+			}
+			if (data.EndsWith(" end"))
+			{
+				EndCurrentMultiLine(data);
+				return true;
+			}
+			if (m_CurrentMultiLineHeader != null)
+			{
+				AppendMultiLine(data);
+				return true;
+			}
+
+			return false;
+		}
+
+		private void HandleSingleLineData(string data)
+		{
+			// Handle one-line responses
 			string word = GetFirstWord(data);
 			if (word == null)
 				return;
@@ -485,6 +526,60 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			int index = data.IndexOfAny(new[] {' ', ':'});
 
 			return index < 0 ? null : data.Substring(0, index);
+		}
+
+		#endregion
+
+		#region Multi-Line
+
+		private void ClearCurrentMultiLine()
+		{
+			m_CurrentMutliLines.Clear();
+			m_CurrentMultiLineHeader = null;
+		}
+
+		private void StartNewMultiLine(string data)
+		{
+			ClearCurrentMultiLine();
+
+			// Trim the " start"
+			data = data.Substring(0, data.Length - " start".Length).Trim();
+
+			m_CurrentMultiLineHeader = data;
+		}
+
+		private void EndCurrentMultiLine(string data)
+		{
+			if (m_CurrentMultiLineHeader == null)
+				return;
+
+			if (m_CurrentMutliLines.Count == 0)
+				return;
+
+			IcdHashSet<Action<IEnumerable<string>>> handlers;
+			if (!m_RangeFeedbackHandlers.TryGetValue(m_CurrentMultiLineHeader, out handlers))
+				return;
+
+			List<string> lines = new List<string>(m_CurrentMutliLines);
+
+			ClearCurrentMultiLine();
+
+			foreach (Action<IEnumerable<string>> handler in handlers.ToArray(handlers.Count))
+			{
+				try
+				{
+					handler(lines);
+				}
+				catch (Exception e)
+				{
+					Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", StringUtils.ToRepresentation(data), e.Message);
+				}
+			}
+		}
+
+		private void AppendMultiLine(string data)
+		{
+			m_CurrentMutliLines.Add(data);
 		}
 
 		#endregion
