@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    public override string MeetingName
 	    {
 		    get { return m_Booking.MeetingName; }
-	    }
+		}
 
 	    public string MeetingNumber
 	    {
@@ -40,7 +40,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 			get { return m_Booking.EndTime; }
 		}
 
-	    public override eMeetingType Type
+	    public override bool IsPrivate
+	    {
+		    get { return m_Booking.IsPrivate; }
+	    }
+
+		public override eMeetingType Type
 	    {
 		    get { return eMeetingType.VideoConference; }
 	    }

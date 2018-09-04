@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Comparers;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Timers;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Calendaring.CalendarControl;
 using ICD.Connect.Conferencing.Zoom.Comparers;
@@ -14,7 +18,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
     public sealed class ZoomRoomCalendarControl : AbstractCalendarControl<ZoomRoom>
     {
 	    private readonly BookingsComponent m_BookingsComponent;
-
+	    private readonly SafeTimer m_RefreshTimer;
 	    private readonly List<ZoomBooking> m_SortedBookings;
 	    private readonly IcdHashSet<ZoomBooking> m_HashBooking;
 
@@ -34,7 +38,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		static ZoomRoomCalendarControl()
 	    {
 			s_BookingComparer = new PredicateComparer<ZoomBooking, DateTime>(b => b.StartTime);
-
 		}
 
 		/// <summary>
@@ -45,8 +48,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		public ZoomRoomCalendarControl(ZoomRoom parent, int id)
 		    : base(parent, id)
 	    {
-			m_SortedBookings = new List<ZoomBooking>();
-			m_HashBooking = new IcdHashSet<ZoomBooking>(new BookingsComparer());
+		    m_RefreshTimer = new SafeTimer(Refresh, 600000);
+
+		    m_SortedBookings = new List<ZoomBooking>();
+		    m_HashBooking = new IcdHashSet<ZoomBooking>(new BookingsComparer());
 
 		    m_BookingsComponent = Parent.Components.GetComponent<BookingsComponent>();
 		    Subscribe(m_BookingsComponent);
@@ -57,8 +62,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		/// </summary>
 		/// <param name="disposing"></param>
 	    protected override void DisposeFinal(bool disposing)
-	    {
-		    base.DisposeFinal(disposing);
+		{
+			m_RefreshTimer.Dispose();
+
+			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_BookingsComponent);
 	    }
@@ -90,7 +97,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    {
 		    bool change = false;
 
-		    Booking[] bookings = m_BookingsComponent.GetBookings().Distinct().ToArray();
+		    Booking[] bookings = m_BookingsComponent.GetBookings()
+			    .Where(b => b.EndTime > IcdEnvironment.GetLocalTime())
+			    .Distinct()
+			    .ToArray();
 		    IcdHashSet<ZoomBooking> existing = m_SortedBookings.ToIcdHashSet(new BookingsComparer());
 		    IcdHashSet<ZoomBooking> current = bookings.Select(b => new ZoomBooking(b)).ToIcdHashSet(new BookingsComparer());
 
