@@ -128,18 +128,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 									case "password":
 										m_RxData.Clear();
 										OnPasswordPrompt.Raise(this);
-										continue;
+										break;
 
 									case "username":
 										m_RxData.Clear();
 										OnUsernamePrompt.Raise(this);
-										continue;
+										break;
 
 									// Unhandled colon, push it back onto the rx data
 									default:
 										m_RxData.Append(':');
-										continue;
+										break;
 								}
+								continue;
 						}
 
 						string output = m_RxData.Pop();
@@ -147,7 +148,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 							continue;
 
 						OnCompletedSerial.Raise(this, new StringEventArgs(output));
-						break;
 					}
 				}
 			}
