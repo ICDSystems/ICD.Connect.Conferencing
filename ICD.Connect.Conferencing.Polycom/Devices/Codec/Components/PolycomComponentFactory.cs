@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Button;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
@@ -17,7 +17,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 {
 	public sealed class PolycomComponentFactory : IDisposable
 	{
-		private readonly IcdHashSet<AbstractPolycomComponent> m_Components;
+		private readonly Dictionary<Type, AbstractPolycomComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
 
 		private static readonly Dictionary<Type, Func<PolycomGroupSeriesDevice, AbstractPolycomComponent>> s_Factories =
@@ -27,6 +27,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 				{typeof(AutoAnswerComponent), codec => new AutoAnswerComponent(codec)},
 				{typeof(ButtonComponent), codec => new ButtonComponent(codec)},
 				{typeof(CameraComponent), codec => new CameraComponent(codec)},
+				{typeof(CalendarComponent), codec => new CalendarComponent(codec)},
 				{typeof(ContentComponent), codec => new ContentComponent(codec)},
 				{typeof(DialComponent), codec => new DialComponent(codec)},
 				{typeof(LayoutComponent), codec => new LayoutComponent(codec)},
@@ -42,7 +43,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 		/// <param name="codec"></param>
 		public PolycomComponentFactory(PolycomGroupSeriesDevice codec)
 		{
-			m_Components = new IcdHashSet<AbstractPolycomComponent>();
+			m_Components = new Dictionary<Type, AbstractPolycomComponent>();
 			m_ComponentsSection = new SafeCriticalSection();
 
 			m_Codec = codec;
@@ -74,14 +75,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 		public T GetComponent<T>()
 			where T : AbstractPolycomComponent
 		{
+			Type key = typeof(T);
+
 			m_ComponentsSection.Enter();
 
 			try
 			{
-				T output = m_Components.OfType<T>().FirstOrDefault() ?? s_Factories[typeof(T)](m_Codec) as T;
-				m_Components.Add(output);
+				AbstractPolycomComponent component;
+				if (!m_Components.TryGetValue(key, out component))
+				{
+					component = s_Factories[key](m_Codec) as T;
+					m_Components.Add(key, component);
+				}
 
-				return output;
+				return component as T;
 			}
 			finally
 			{
@@ -95,7 +102,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 		/// <returns></returns>
 		public IEnumerable<AbstractPolycomComponent> GetComponents()
 		{
-			return m_ComponentsSection.Execute(() => m_Components.ToArray());
+			return m_ComponentsSection.Execute(() => m_Components.Values.ToArray());
 		}
 
 		#endregion
@@ -109,7 +116,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 
 			try
 			{
-				foreach (AbstractPolycomComponent component in m_Components)
+				foreach (AbstractPolycomComponent component in m_Components.Values)
 					component.Dispose();
 				m_Components.Clear();
 			}

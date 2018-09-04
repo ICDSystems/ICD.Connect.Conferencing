@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
@@ -19,7 +18,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 	/// </summary>
 	public sealed class CiscoComponentFactory : IDisposable
 	{
-		private readonly IcdHashSet<AbstractCiscoComponent> m_Components;
+		private readonly Dictionary<Type, AbstractCiscoComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
 
 		private static readonly Dictionary<Type, Func<CiscoCodecDevice, AbstractCiscoComponent>> s_Factories =
@@ -43,7 +42,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		/// <param name="codec"></param>
 		public CiscoComponentFactory(CiscoCodecDevice codec)
 		{
-			m_Components = new IcdHashSet<AbstractCiscoComponent>();
+			m_Components = new Dictionary<Type, AbstractCiscoComponent>();
 			m_ComponentsSection = new SafeCriticalSection();
 
 			m_Codec = codec;
@@ -79,14 +78,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		public T GetComponent<T>()
 			where T : AbstractCiscoComponent
 		{
+			Type key = typeof(T);
+
 			m_ComponentsSection.Enter();
 
 			try
 			{
-				T output = m_Components.OfType<T>().FirstOrDefault() ?? s_Factories[typeof(T)](m_Codec) as T;
-				m_Components.Add(output);
+				AbstractCiscoComponent component;
+				if (!m_Components.TryGetValue(key, out component))
+				{
+					component = s_Factories[key](m_Codec) as T;
+					m_Components.Add(key, component);
+				}
 
-				return output;
+				return component as T;
 			}
 			finally
 			{
@@ -100,7 +105,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		/// <returns></returns>
 		public IEnumerable<AbstractCiscoComponent> GetComponents()
 		{
-			return m_ComponentsSection.Execute(() => m_Components.ToArray());
+			return m_ComponentsSection.Execute(() => m_Components.Values.ToArray());
 		}
 
 		#endregion
@@ -115,7 +120,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 
 			try
 			{
-				foreach (AbstractCiscoComponent component in m_Components)
+				foreach (AbstractCiscoComponent component in m_Components.Values)
 					component.Dispose();
 				m_Components.Clear();
 			}
