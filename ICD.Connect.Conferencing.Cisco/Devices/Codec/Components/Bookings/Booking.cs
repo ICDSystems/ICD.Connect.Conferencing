@@ -11,7 +11,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 	public sealed class Booking
 	{
 		// 2018-09-04T04:00:00Z
-		private const string DATE_FORMAT = "yyyy-MM-ddTHH:mm:ssZ";
+		private const string DATE_FORMAT = @"yyyy-MM-dd\THH:mm:ss\Z";
 
 		public enum ePrivacy
 		{
@@ -19,7 +19,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			Private
 		}
 
-		private readonly IcdOrderedDictionary<int, DialInfo> m_DialInfos;
+		private readonly IcdOrderedDictionary<string, BookingCall> m_Calls;
 
 		public int Id { get; private set; }
 		public string Title { get; private set; }
@@ -52,17 +52,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// </summary>
 		private Booking()
 		{
-			m_DialInfos = new IcdOrderedDictionary<int, DialInfo>();
+			m_Calls = new IcdOrderedDictionary<string, BookingCall>();
 		}
 
 		/// <summary>
-		/// Deserializes the given xml to a DialInfo instance.
+		/// Deserializes the given xml to a Booking instance.
 		/// </summary>
 		/// <param name="xml"></param>
 		/// <returns></returns>
 		public static Booking FromXml(string xml)
 		{
-			int id = XmlUtils.GetAttributeAsInt(xml, "id");
+			int id = XmlUtils.TryReadChildElementContentAsInt(xml, "Id") ?? 0;
 			string title = XmlUtils.TryReadChildElementContentAsString(xml, "Title");
 			string agenda = XmlUtils.TryReadChildElementContentAsString(xml, "Agenda");
 			ePrivacy privacy = XmlUtils.TryReadChildElementContentAsEnum<ePrivacy>(xml, "Privacy", true) ?? ePrivacy.Public;
@@ -117,21 +117,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			};
 
 			string dialInfoXml = XmlUtils.GetChildElementAsString(xml, "DialInfo");
-			IEnumerable<DialInfo> dialInfos = XmlUtils.GetChildElementsAsString(dialInfoXml).Select(x => DialInfo.FromXml(x));
+			string callsXml = XmlUtils.GetChildElementAsString(dialInfoXml, "Calls");
+			IEnumerable<BookingCall> bookingCalls = XmlUtils.GetChildElementsAsString(callsXml).Select(x => BookingCall.FromXml(x));
 
-			foreach (DialInfo info in dialInfos)
-				booking.m_DialInfos.Add(info.Id, info);
+			foreach (BookingCall info in bookingCalls)
+				booking.m_Calls.Add(info.Number, info);
 
 			return booking;
 		}
 
 		/// <summary>
-		/// Gets the dial info instances for this booking.
+		/// Gets the booking call instances for this booking.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<DialInfo> GetDialInfos()
+		public IEnumerable<BookingCall> GetCalls()
 		{
-			return m_DialInfos.Values.ToArray(m_DialInfos.Count);
+			return m_Calls.Values.ToArray(m_Calls.Count);
 		}
 
 		/// <summary>

@@ -3,31 +3,30 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 {
-	public sealed class DialInfo
+	public sealed class BookingCall
 	{
-		public int Id { get; private set; }
 		public string Number { get; private set; }
-		//public eProtocol Protocol { get; private set; }
+		public string Protocol { get; private set; }
 		public int CallRate { get; private set; }
 		public eCallType CallType { get; private set; }
 
 		/// <summary>
-		/// Deserializes the given xml to a DialInfo instance.
+		/// Deserializes the given xml to a BookingCall instance.
 		/// </summary>
 		/// <param name="xml"></param>
 		/// <returns></returns>
-		public static DialInfo FromXml(string xml)
+		public static BookingCall FromXml(string xml)
 		{
-			int id = XmlUtils.GetAttributeAsInt(xml, "id");
 			string number = XmlUtils.TryReadChildElementContentAsString(xml, "Number");
+			string protocol = XmlUtils.TryReadChildElementContentAsString(xml, "Protocol");
 			int callRate = XmlUtils.TryReadChildElementContentAsInt(xml, "CallRate") ?? 0;
 			eCallType callType = XmlUtils.TryReadChildElementContentAsEnum<eCallType>(xml, "CallType", true) ??
 			                     eCallType.Unknown;
 
-			return new DialInfo
+			return new BookingCall
 			{
-				Id = id,
 				Number = number,
+				Protocol = protocol,
 				CallRate = callRate,
 				CallType = callType
 			};
