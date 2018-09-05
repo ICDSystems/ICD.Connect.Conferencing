@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
+﻿using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
+using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Video
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Video
 {
 	[TestFixture]
 	public sealed class VideoSourceTest

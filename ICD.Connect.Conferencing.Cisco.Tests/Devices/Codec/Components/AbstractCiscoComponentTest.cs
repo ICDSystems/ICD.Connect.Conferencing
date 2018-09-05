@@ -3,7 +3,7 @@ using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
 using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components
 {
 	public abstract class AbstractCiscoComponentTest
 	{

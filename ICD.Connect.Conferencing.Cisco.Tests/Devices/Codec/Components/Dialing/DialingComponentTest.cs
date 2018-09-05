@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
-using NUnit.Framework;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Dialing
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Dialing
 {
 	[TestFixture]
 	public sealed class DialingComponentTest : AbstractCiscoComponentTest

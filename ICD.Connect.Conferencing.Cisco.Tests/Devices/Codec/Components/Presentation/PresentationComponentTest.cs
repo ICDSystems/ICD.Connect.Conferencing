@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
-using NUnit.Framework;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
+using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Presentation
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Presentation
 {
 	[TestFixture]
 	public sealed class PresentationComponentTest : AbstractCiscoComponentTest
