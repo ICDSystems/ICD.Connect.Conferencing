@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
+﻿using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
+using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Diagnostics
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Diagnostics
 {
 	[TestFixture]
 	public sealed class DiagnosticsMessageTest

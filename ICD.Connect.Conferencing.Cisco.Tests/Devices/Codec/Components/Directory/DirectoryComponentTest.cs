@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils;
-using NUnit.Framework;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Directory.Tree;
+using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Directory
 {
 	[TestFixture]
 	public sealed class DirectoryComponentTest : AbstractCiscoComponentTest

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
+using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Cameras
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Cameras
 {
 	public sealed class NearCamerasComponentTest : AbstractCiscoComponentTest
 	{
