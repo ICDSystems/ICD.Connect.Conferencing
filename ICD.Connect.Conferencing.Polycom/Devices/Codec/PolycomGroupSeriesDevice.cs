@@ -16,7 +16,6 @@ using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
-using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
@@ -54,10 +53,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private readonly RateLimitedEventQueue<string> m_CommandQueue; 
 
 		private readonly PolycomComponentFactory m_Components;
-		private readonly ISerialBuffer m_SerialBuffer;
+		private readonly PolycomGroupSeriesSerialBuffer m_SerialBuffer;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
+		private readonly List<string> m_CurrentMutliLines;
+
 		private bool m_Initialized;
+		private string m_CurrentMultiLineHeader;
 
 		#region Properties
 
@@ -109,6 +111,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
+			m_CurrentMutliLines = new List<string>();
+
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
 			m_RangeFeedbackHandlers = new Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>>();
 
@@ -120,7 +124,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			m_Components = new PolycomComponentFactory(this);
 
-			m_SerialBuffer = new MultiDelimiterSerialBuffer('\r', '\n');
+			m_SerialBuffer = new PolycomGroupSeriesSerialBuffer();
 			Subscribe(m_SerialBuffer);
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
@@ -337,6 +341,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_SerialBuffer.Clear();
 			m_CommandQueue.Clear();
 
+			ClearCurrentMultiLine();
+
 			if (!args.Data)
 			{
 				Log(eSeverity.Critical, "Lost connection");
@@ -369,18 +375,46 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// Subscribes to the buffer events.
 		/// </summary>
 		/// <param name="buffer"></param>
-		private void Subscribe(ISerialBuffer buffer)
+		private void Subscribe(PolycomGroupSeriesSerialBuffer buffer)
 		{
-			buffer.OnCompletedSerial += SerialBufferCompletedSerial;
+			buffer.OnCompletedSerial += BufferCompletedSerial;
+			buffer.OnUsernamePrompt += BufferOnUsernamePrompt;
+			buffer.OnPasswordPrompt += BufferOnPasswordPrompt;
 		}
 
 		/// <summary>
 		/// Unsubscribe from the buffer events.
 		/// </summary>
 		/// <param name="buffer"></param>
-		private void Unsubscribe(ISerialBuffer buffer)
+		private void Unsubscribe(PolycomGroupSeriesSerialBuffer buffer)
 		{
-			buffer.OnCompletedSerial -= SerialBufferCompletedSerial;
+			buffer.OnCompletedSerial -= BufferCompletedSerial;
+			buffer.OnUsernamePrompt -= BufferOnUsernamePrompt;
+			buffer.OnPasswordPrompt -= BufferOnPasswordPrompt;
+		}
+
+		/// <summary>
+		/// Called when the buffer reaches a password prompt.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void BufferOnPasswordPrompt(object sender, EventArgs eventArgs)
+		{
+			ISerialPort port = m_ConnectionStateManager.Port;
+			if (port != null)
+				port.Send(Password + END_OF_LINE);
+		}
+
+		/// <summary>
+		/// Called when the buffer reaches a username prompt.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void BufferOnUsernamePrompt(object sender, EventArgs eventArgs)
+		{
+			ISerialPort port = m_ConnectionStateManager.Port;
+			if (port != null)
+				port.Send(Username + END_OF_LINE);
 		}
 
 		/// <summary>
@@ -388,7 +422,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
+		private void BufferCompletedSerial(object sender, StringEventArgs args)
 		{
 			string data = args.Data;
 
@@ -396,17 +430,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (data.StartsWith("-> "))
 				data = data.Substring(3);
 
+			data = data.Trim();
+
 			if (string.IsNullOrEmpty(data))
 				return;
 
 			if (data.StartsWith("error:"))
 				Log(eSeverity.Error, data);
 
-			if (data.ToLower().StartsWith("username:"))
-				SendCommand(Username);
-			else if (data.ToLower().StartsWith("password:"))
-				SendCommand(Password);
-			else if (data.StartsWith("Hi, my name is"))
+			if (data.StartsWith("Hi, my name is"))
 			{
 				// Re-initialize every time we see the welcome message
 				Initialized = false;
@@ -415,6 +447,40 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			else if (!Initialized)
 				return;
 
+			HandleData(data);
+		}
+
+		private void HandleData(string data)
+		{
+			if (!HandleMultiLineData(data))
+				HandleSingleLineData(data);
+		}
+
+		private bool HandleMultiLineData(string data)
+		{
+			// Handle multi-line responses
+			if (data.EndsWith(" begin") || data.EndsWith(" start"))
+			{
+				StartNewMultiLine(data);
+				return true;
+			}
+			if (data.EndsWith(" end"))
+			{
+				EndCurrentMultiLine(data);
+				return true;
+			}
+			if (m_CurrentMultiLineHeader != null)
+			{
+				AppendMultiLine(data);
+				return true;
+			}
+
+			return false;
+		}
+
+		private void HandleSingleLineData(string data)
+		{
+			// Handle one-line responses
 			string word = GetFirstWord(data);
 			if (word == null)
 				return;
@@ -452,7 +518,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="data"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		private string GetFirstWord(string data)
+		private static string GetFirstWord(string data)
 		{
 			if (data == null)
 				throw new ArgumentNullException("data");
@@ -460,6 +526,60 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			int index = data.IndexOfAny(new[] {' ', ':'});
 
 			return index < 0 ? null : data.Substring(0, index);
+		}
+
+		#endregion
+
+		#region Multi-Line
+
+		private void ClearCurrentMultiLine()
+		{
+			m_CurrentMutliLines.Clear();
+			m_CurrentMultiLineHeader = null;
+		}
+
+		private void StartNewMultiLine(string data)
+		{
+			ClearCurrentMultiLine();
+
+			// Trim the " start"
+			data = data.Substring(0, data.Length - " start".Length).Trim();
+
+			m_CurrentMultiLineHeader = data;
+		}
+
+		private void EndCurrentMultiLine(string data)
+		{
+			if (m_CurrentMultiLineHeader == null)
+				return;
+
+			if (m_CurrentMutliLines.Count == 0)
+				return;
+
+			IcdHashSet<Action<IEnumerable<string>>> handlers;
+			if (!m_RangeFeedbackHandlers.TryGetValue(m_CurrentMultiLineHeader, out handlers))
+				return;
+
+			List<string> lines = new List<string>(m_CurrentMutliLines);
+
+			ClearCurrentMultiLine();
+
+			foreach (Action<IEnumerable<string>> handler in handlers.ToArray(handlers.Count))
+			{
+				try
+				{
+					handler(lines);
+				}
+				catch (Exception e)
+				{
+					Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", StringUtils.ToRepresentation(data), e.Message);
+				}
+			}
+		}
+
+		private void AppendMultiLine(string data)
+		{
+			m_CurrentMutliLines.Add(data);
 		}
 
 		#endregion

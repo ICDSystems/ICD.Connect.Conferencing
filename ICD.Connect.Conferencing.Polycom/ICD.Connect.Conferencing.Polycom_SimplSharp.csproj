@@ -72,6 +72,9 @@
     <Compile Include="Devices\Codec\Components\AutoAnswer\AutoAnswerComponent.cs" />
     <Compile Include="Devices\Codec\Components\AutoAnswer\PolycomAutoAnswerEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Button\ButtonComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Calendar\CalendarComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Calendar\Meeting.cs" />
+    <Compile Include="Devices\Codec\Components\Calendar\MeetingInfo.cs" />
     <Compile Include="Devices\Codec\Components\Camera\ActiveCameraEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Camera\CameraComponent.cs" />
     <Compile Include="Devices\Codec\Components\Camera\eCameraAction.cs" />
@@ -96,6 +99,7 @@
     <Compile Include="Devices\Codec\Controls\PolycomCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecRoutingControl.cs" />
     <Compile Include="Devices\Codec\PolycomGroupSeriesDevice.cs" />
+    <Compile Include="Devices\Codec\PolycomGroupSeriesSerialBuffer.cs" />
     <Compile Include="Devices\Codec\PolycomGroupSeriesSettings.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
