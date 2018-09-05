@@ -8,7 +8,7 @@ using ICD.Common.Utils.Xml;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 {
-	public sealed class Booking
+	public sealed class Booking : IEquatable<Booking>
 	{
 		// 2018-09-04T04:00:00Z
 		private const string DATE_FORMAT = @"yyyy-MM-dd\THH:mm:ss\Z";
@@ -135,14 +135,78 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			return m_Calls.Values.ToArray(m_Calls.Count);
 		}
 
-		/// <summary>
-		/// Updates this booking with details from the given booking.
-		/// </summary>
-		/// <param name="booking"></param>
-		/// <returns></returns>
-		public bool Update(Booking booking)
+		/// <summary>Indicates whether the current object is equal to another object of the same type.</summary>
+		/// <param name="other">An object to compare with this object.</param>
+		/// <returns>true if the current object is equal to the <paramref name="other">other</paramref> parameter; otherwise, false.</returns>
+		public bool Equals(Booking other)
 		{
-			throw new NotImplementedException();
+			if (ReferenceEquals(null, other))
+				return false;
+
+			if (ReferenceEquals(this, other))
+				return true;
+
+			return Id == other.Id &&
+			       string.Equals(Title, other.Title) &&
+			       string.Equals(Agenda, other.Agenda) &&
+			       Privacy == other.Privacy &&
+			       string.Equals(OrganizerFirstName, other.OrganizerFirstName) &&
+			       string.Equals(OrganizerLastName, other.OrganizerLastName) &&
+			       string.Equals(OrganizerEmail, other.OrganizerEmail) &&
+			       string.Equals(OrganizerId, other.OrganizerId) &&
+			       StartTime.Equals(other.StartTime) &&
+			       EndTime.Equals(other.EndTime) &&
+			       string.Equals(BookingStatusMessage, other.BookingStatusMessage) &&
+			       WebexEnabled == other.WebexEnabled &&
+			       string.Equals(WebexUrl, other.WebexUrl) &&
+			       string.Equals(WebexMeetingNumber, other.WebexMeetingNumber) &&
+			       string.Equals(WebexPassword, other.WebexPassword) &&
+			       string.Equals(WebexHostKey, other.WebexHostKey) &&
+			       m_Calls.DictionaryEqual(other.m_Calls);
+		}
+
+		/// <summary>Determines whether the specified object is equal to the current object.</summary>
+		/// <param name="obj">The object to compare with the current object.</param>
+		/// <returns>true if the specified object  is equal to the current object; otherwise, false.</returns>
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj))
+				return false;
+			
+			if (ReferenceEquals(this, obj))
+				return true;
+			
+			return obj is Booking && Equals((Booking)obj);
+		}
+
+		/// <summary>Serves as the default hash function.</summary>
+		/// <returns>A hash code for the current object.</returns>
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hashCode = Id;
+				hashCode = (hashCode * 397) ^ (Title != null ? Title.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (Agenda != null ? Agenda.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (int)Privacy;
+				hashCode = (hashCode * 397) ^ (OrganizerFirstName != null ? OrganizerFirstName.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (OrganizerLastName != null ? OrganizerLastName.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (OrganizerEmail != null ? OrganizerEmail.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (OrganizerId != null ? OrganizerId.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ StartTime.GetHashCode();
+				hashCode = (hashCode * 397) ^ EndTime.GetHashCode();
+				hashCode = (hashCode * 397) ^ (BookingStatusMessage != null ? BookingStatusMessage.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ WebexEnabled.GetHashCode();
+				hashCode = (hashCode * 397) ^ (WebexUrl != null ? WebexUrl.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (WebexMeetingNumber != null ? WebexMeetingNumber.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (WebexPassword != null ? WebexPassword.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ (WebexHostKey != null ? WebexHostKey.GetHashCode() : 0);
+
+				foreach (BookingCall item in m_Calls.Values)
+					hashCode = (hashCode * 397) ^ item.GetHashCode();
+
+				return hashCode;
+			}
 		}
 	}
 }

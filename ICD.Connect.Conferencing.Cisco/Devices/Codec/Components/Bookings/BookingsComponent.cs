@@ -178,18 +178,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// <returns></returns>
 		private bool UpdateBooking(Booking booking)
 		{
+			if (booking == null)
+				throw new ArgumentNullException("booking");
+
 			m_BookingsSection.Enter();
 
 			try
 			{
 				Booking existing;
-				if (!m_Bookings.TryGetValue(booking.Id, out existing))
-				{
-					m_Bookings.Add(booking.Id, booking);
-					return true;
-				}
+				if (m_Bookings.TryGetValue(booking.Id, out existing) && booking.Equals(existing))
+					return false;
 
-				return existing.Update(booking);
+				m_Bookings[booking.Id] = booking;
+
+				return true;
 			}
 			finally
 			{
