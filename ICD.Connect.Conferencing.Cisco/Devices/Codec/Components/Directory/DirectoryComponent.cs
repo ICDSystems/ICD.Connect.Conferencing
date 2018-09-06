@@ -246,6 +246,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 				m_FolderSection.Leave();
 			}
 
+			// Pre initialize this folder's children
+
 			if (OnResultParsed != null)
 				OnResultParsed(resultId, folders.ToArray(), contacts.ToArray());
 		}
