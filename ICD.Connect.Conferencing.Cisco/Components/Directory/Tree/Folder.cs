@@ -48,7 +48,10 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Directory.Tree
 		/// <returns></returns>
 		public static Folder FromXml(string xml, string idPrefix, Dictionary<string, IFolder> cache)
 		{
-			string folderId = XmlUtils.GetAttribute(xml, "localId").Value;
+			// From CE 9 onwards, LocalId is a child element, but from 8 back, it was an attribute.
+			// So, try to get the child element first, and if not, load the attribute value instead.
+			string folderId = XmlUtils.TryReadChildElementContentAsString(xml, "LocalId") ??
+			                  XmlUtils.GetAttribute(xml, "localId").Value;
 			string cachedId = idPrefix + folderId;
 
 			if (!cache.ContainsKey(cachedId))
