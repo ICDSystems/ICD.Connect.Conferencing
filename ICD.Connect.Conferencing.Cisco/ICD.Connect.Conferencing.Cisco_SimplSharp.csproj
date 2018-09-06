@@ -80,6 +80,9 @@
     <Compile Include="Devices\Codec\CiscoCodecSettings.cs" />
     <Compile Include="Devices\Codec\Components\AbstractCiscoComponent.cs" />
     <Compile Include="Devices\Codec\CiscoCodecDevice.cs" />
+    <Compile Include="Devices\Codec\Components\Bookings\Booking.cs" />
+    <Compile Include="Devices\Codec\Components\Bookings\BookingsComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Bookings\BookingCall.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\AbstractCiscoCamera.cs" />
     <Compile Include="Devices\Camera\CiscoCodecCameraDevice.cs" />
     <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
+using NUnit.Framework;
 
-namespace ICD.Connect.Conferencing.Cisco.Tests.Components.Directory.Tree
+namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Directory.Tree
 {
 	[TestFixture]
 	public sealed class FolderTest

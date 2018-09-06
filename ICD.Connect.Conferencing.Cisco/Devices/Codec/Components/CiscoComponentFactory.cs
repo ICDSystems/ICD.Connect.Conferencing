@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
@@ -24,6 +25,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		private static readonly Dictionary<Type, Func<CiscoCodecDevice, AbstractCiscoComponent>> s_Factories =
 			new Dictionary<Type, Func<CiscoCodecDevice, AbstractCiscoComponent>>
 			{
+				{typeof(BookingsComponent), codec => new BookingsComponent(codec)},
 				{typeof(DiagnosticsComponent), codec => new DiagnosticsComponent(codec)},
 				{typeof(DialingComponent), codec => new DialingComponent(codec)},
 				{typeof(DirectoryComponent), codec => new DirectoryComponent(codec)},
