@@ -205,7 +205,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0}", contact.Name));
 
 			string number = contact.GetContactMethods().FirstOrDefault(cm => !string.IsNullOrEmpty(cm.Number)).Number;
-			if(number == null)
+			if (number == null)
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0} have a valid number", contact.Name));
 
 			Dial(number);

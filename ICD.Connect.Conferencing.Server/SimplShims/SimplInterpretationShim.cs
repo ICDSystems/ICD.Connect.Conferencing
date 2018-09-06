@@ -277,6 +277,9 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		[PublicAPI("S+")]
 		public void ClearCallInfo()
 		{
+			if (m_Source == null || Originator == null)
+				return;
+
 			Originator.RemoveShimSource(m_Source);
 			Unsubscribe(m_Source);
 			m_Source = null;

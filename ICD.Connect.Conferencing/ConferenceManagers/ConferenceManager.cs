@@ -198,7 +198,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				mode = DialingPlan.DefaultSourceType;
 
 			IDialingDeviceControl dialingControl = GetDialingProvider(mode);
-
 			if (dialingControl == null)
 			{
 				Logger.AddEntry(eSeverity.Error,
@@ -332,6 +331,33 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Deregisters the dialing provider.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		public bool DeregisterDialingProvider(eConferenceSourceType sourceType)
+		{
+			m_SourceTypeToProviderSection.Enter();
+
+			try
+			{
+				if (!m_SourceTypeToProvider.ContainsKey(sourceType))
+					return false;
+
+				IDialingDeviceControl dialingControl = m_SourceTypeToProvider[sourceType];
+				m_SourceTypeToProvider.Remove(sourceType);
+
+				Unsubscribe(dialingControl);
+			}
+			finally
+			{
+				m_SourceTypeToProviderSection.Leave();
+			}
+
+			return true;
+		}
+
+		/// <summary>
 		/// Registers the dialing component, for feedback only.
 		/// </summary>
 		/// <param name="dialingControl"></param>
@@ -355,33 +381,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			AddSources(dialingControl.GetSources());
-
-			return true;
-		}
-
-		/// <summary>
-		/// Deregisters the dialing provider.
-		/// </summary>
-		/// <param name="sourceType"></param>
-		/// <returns></returns>
-		public bool DeregisterDialingProvider(eConferenceSourceType sourceType)
-		{
-			m_SourceTypeToProviderSection.Enter();
-
-			try
-			{
-				if (!m_SourceTypeToProvider.ContainsKey(sourceType))
-					return false;
-
-				IDialingDeviceControl dialingControl = m_SourceTypeToProvider[sourceType];
-				m_SourceTypeToProvider.Remove(sourceType);
-
-				Unsubscribe(dialingControl);
-			}
-			finally
-			{
-				m_SourceTypeToProviderSection.Leave();
-			}
 
 			return true;
 		}
@@ -616,7 +615,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (m_ActiveConference.ContainsSource(source))
 				return;
 
-			
 			m_SourcesSection.Enter();
 			try
 			{
@@ -675,7 +673,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#endregion
 
 		#region Conference Callbacks
-
 		/// <summary>
 		/// Subscribe to the conference events.
 		/// </summary>
