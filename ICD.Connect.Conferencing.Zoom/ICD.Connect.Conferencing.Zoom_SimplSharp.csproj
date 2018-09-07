@@ -69,7 +69,6 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Comparers\BookingComparer.cs" />
     <Compile Include="Components\Bookings\Booking.cs" />
     <Compile Include="Components\Call\DialingComponent.cs" />
     <Compile Include="Components\AbstractZoomRoomComponent.cs" />

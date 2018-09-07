@@ -15,7 +15,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    get { return m_Booking.MeetingName; }
 		}
 
-	    public string MeetingNumber
+	    public override string MeetingNumber
 	    {
 		    get { return m_Booking.MeetingNumber; }
 	    }

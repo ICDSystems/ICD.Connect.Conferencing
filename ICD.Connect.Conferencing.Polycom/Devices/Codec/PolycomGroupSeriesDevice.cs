@@ -12,6 +12,7 @@ using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Ports;
@@ -138,7 +139,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Controls.Add(new PolycomCodecLayoutControl(this, 3));
 			Controls.Add(new PolycomCodecPresentationControl(this, 4));
 			Controls.Add(new PolycomCodecPowerControl(this, 5));
-		}
+		    Controls.Add(new PolycomCalendarControl(this, 6));
+        }
 
 		#endregion
 

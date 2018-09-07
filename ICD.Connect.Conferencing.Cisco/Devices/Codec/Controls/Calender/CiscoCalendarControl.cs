@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Comparers;
@@ -11,18 +9,18 @@ using ICD.Common.Utils.Timers;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Calendaring.CalendarControl;
 using ICD.Connect.Calendaring.Comparers;
-using ICD.Connect.Conferencing.Zoom.Components.Bookings;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 
-namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 {
-    public sealed class ZoomRoomCalendarControl : AbstractCalendarControl<ZoomRoom>
+    public sealed class CiscoCalendarControl : AbstractCalendarControl<CiscoCodecDevice>
     {
         private const int TIMERREFRESHINTERVAL = 10 * 60 * 1000;
 
         private readonly BookingsComponent m_BookingsComponent;
 	    private readonly SafeTimer m_RefreshTimer;
-	    private readonly List<ZoomBooking> m_SortedBookings;
-	    private readonly IcdHashSet<ZoomBooking> m_HashBooking;
+	    private readonly List<CiscoBooking> m_SortedBookings;
+	    private readonly IcdHashSet<CiscoBooking> m_HashBooking;
 
 	    /// <summary>
 	    /// Raised when bookings are added/removed.
@@ -32,14 +30,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		/// <summary>
 		/// Sort bookings by start time.
 		/// </summary>
-		private static readonly PredicateComparer<ZoomBooking, DateTime> s_BookingComparer;
+		private static readonly PredicateComparer<CiscoBooking, DateTime> s_BookingComparer;
 
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
-		static ZoomRoomCalendarControl()
+		static CiscoCalendarControl()
 	    {
-			s_BookingComparer = new PredicateComparer<ZoomBooking, DateTime>(b => b.StartTime);
+			s_BookingComparer = new PredicateComparer<CiscoBooking, DateTime>(b => b.StartTime);
 		}
 
 		/// <summary>
@@ -47,13 +45,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public ZoomRoomCalendarControl(ZoomRoom parent, int id)
+		public CiscoCalendarControl(CiscoCodecDevice parent, int id)
 		    : base(parent, id)
 	    {
 		    m_RefreshTimer = new SafeTimer(Refresh, TIMERREFRESHINTERVAL, TIMERREFRESHINTERVAL);
 
-		    m_SortedBookings = new List<ZoomBooking>();
-		    m_HashBooking = new IcdHashSet<ZoomBooking>(new BookingsComparer<ZoomBooking>());
+		    m_SortedBookings = new List<CiscoBooking>();
+		    m_HashBooking = new IcdHashSet<CiscoBooking>(new BookingsComparer<CiscoBooking>());
 
 		    m_BookingsComponent = Parent.Components.GetComponent<BookingsComponent>();
 		    Subscribe(m_BookingsComponent);
@@ -80,7 +78,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		/// <param name="bookings"></param>
 	    private void Subscribe(BookingsComponent bookings)
 	    {
-		    bookings.OnBookingsUpdated += BookingsOnOnBookingsUpdated;
+		    bookings.OnBookingsChanged += BookingsOnOnBookingsUpdated;
 	    }
 
 		/// <summary>
@@ -89,7 +87,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		/// <param name="bookings"></param>
 	    private void Unsubscribe(BookingsComponent bookings)
 	    {
-		    bookings.OnBookingsUpdated -= BookingsOnOnBookingsUpdated;
+		    bookings.OnBookingsChanged -= BookingsOnOnBookingsUpdated;
 	    }
 
 	    /// <summary>
@@ -101,15 +99,16 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    {
 		    bool change = false;
 
-		    Booking[] bookings = m_BookingsComponent.GetBookings()
-			    .Where(b => b.EndTime > IcdEnvironment.GetLocalTime())
-			    .Distinct()
-			    .ToArray();
-		    IcdHashSet<ZoomBooking> existing = m_SortedBookings.ToIcdHashSet(new BookingsComparer<ZoomBooking>());
-		    IcdHashSet<ZoomBooking> current = bookings.Select(b => new ZoomBooking(b)).ToIcdHashSet(new BookingsComparer<ZoomBooking>());
+	        Booking[] bookings = m_BookingsComponent.GetBookings()
+	                                                .Where(b => b.EndTime > IcdEnvironment.GetLocalTime())
+	                                                .Distinct()
+	                                                .ToArray();
 
-		    IcdHashSet<ZoomBooking> removeBookingList = existing.Subtract(current);
-		    foreach (ZoomBooking booking in removeBookingList)
+		    IcdHashSet<CiscoBooking> existing = m_SortedBookings.ToIcdHashSet(new BookingsComparer<CiscoBooking>());
+		    IcdHashSet<CiscoBooking> current = bookings.Select(b => new CiscoBooking(b)).ToIcdHashSet(new BookingsComparer<CiscoBooking>());
+
+		    IcdHashSet<CiscoBooking> removeBookingList = existing.Subtract(current);
+		    foreach (CiscoBooking booking in removeBookingList)
 			    change |= RemoveBooking(booking);
 
 		    foreach (var booking in bookings)
@@ -122,7 +121,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 
 	    public override void Refresh()
 	    {
-			m_BookingsComponent.UpdateBookings();
+			m_BookingsComponent.ListBookings();
 	    }
 
 		public override IEnumerable<IBooking> GetBookings()
@@ -135,25 +134,25 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    if (booking == null)
 			    throw new ArgumentNullException("booking");
 
-		    ZoomBooking zoomBooking = new ZoomBooking(booking);
+		    CiscoBooking ciscoBooking = new CiscoBooking(booking);
 
-		    if (m_HashBooking.Contains(zoomBooking))
+		    if (m_HashBooking.Contains(ciscoBooking))
 			    return false;
 
-		    m_HashBooking.Add(zoomBooking);
+		    m_HashBooking.Add(ciscoBooking);
 
-		    m_SortedBookings.AddSorted(zoomBooking, s_BookingComparer);
+		    m_SortedBookings.AddSorted(ciscoBooking, s_BookingComparer);
 
 		    return true;
 	    }
 
-	    private bool RemoveBooking(ZoomBooking zoomBooking)
+	    private bool RemoveBooking(CiscoBooking ciscoBooking)
 	    {
-		    if (!m_HashBooking.Contains(zoomBooking))
+		    if (!m_HashBooking.Contains(ciscoBooking))
 			    return false;
 
-		    m_HashBooking.Remove(zoomBooking);
-		    m_SortedBookings.Remove(zoomBooking);
+		    m_HashBooking.Remove(ciscoBooking);
+		    m_SortedBookings.Remove(ciscoBooking);
 
 		    return true;
 	    }
