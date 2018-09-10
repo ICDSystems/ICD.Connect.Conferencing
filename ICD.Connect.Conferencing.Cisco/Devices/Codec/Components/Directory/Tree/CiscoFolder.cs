@@ -1,38 +1,73 @@
-﻿using System.Collections.Generic;
-using ICD.Common.Utils.Xml;
+﻿using ICD.Common.Utils.Xml;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
+	[XmlConverter(typeof(CiscoFolderXmlConverter))]
 	public sealed class CiscoFolder : AbstractCiscoFolder
 	{
-		private readonly string m_Name;
+		private string m_Name;
 
+		/// <summary>
+		/// The name of the folder.
+		/// </summary>
 		public override string Name { get { return m_Name; } }
 
-		public CiscoFolder(string name, string folderId) : base(folderId)
+		/// <summary>
+		/// Sets the name for the folder.
+		/// </summary>
+		/// <param name="name"></param>
+		public void SetName(string name)
 		{
 			m_Name = name;
 		}
+	}
+
+	public sealed class CiscoFolderXmlConverter : AbstractGenericXmlConverter<CiscoFolder>
+	{
+		// <Folder item="1" localId="localGroupId-3">
+		//   <Name item="1">CA</Name>
+		//   <FolderId item="1">localGroupId-3</FolderId>
+		//   <ParentFolderId item="1">localGroupId-2</ParentFolderId>
+		// </Folder>
 
 		/// <summary>
-		/// Creates a Folder from a Folder XML Element.
+		/// Override to handle the current attribute.
 		/// </summary>
-		/// <param name="xml"></param>
-		/// <param name="idPrefix"></param>
-		/// <param name="cache"></param>
-		/// <returns></returns>
-		public static CiscoFolder FromXml(string xml, string idPrefix, Dictionary<string, CiscoFolder> cache)
+		/// <param name="reader"></param>
+		/// <param name="instance"></param>
+		protected override void ReadAttribute(IcdXmlReader reader, CiscoFolder instance)
 		{
-			string folderId = XmlUtils.GetAttribute(xml, "localId").Value;
-			string cachedId = idPrefix + folderId;
-
-			if (!cache.ContainsKey(cachedId))
+			switch (reader.Name)
 			{
-				string name = XmlUtils.TryReadChildElementContentAsString(xml, "Name");
-				cache[cachedId] = new CiscoFolder(name, folderId);
-			}
+				case "localId":
+					instance.FolderId = reader.Value;
+					reader.Read();
+					break;
 
-			return cache[cachedId];
+				default:
+					base.ReadAttribute(reader, instance);
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Override to handle the current element.
+		/// </summary>
+		/// <param name="reader"></param>
+		/// <param name="instance"></param>
+		protected override void ReadElement(IcdXmlReader reader, CiscoFolder instance)
+		{
+			switch (reader.Name)
+			{
+				case "Name":
+					string name = reader.ReadElementContentAsString();
+					instance.SetName(name);
+					break;
+
+				default:
+					base.ReadElement(reader, instance);
+					break;
+			}
 		}
 	}
 }

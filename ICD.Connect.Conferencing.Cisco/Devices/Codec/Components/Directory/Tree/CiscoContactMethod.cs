@@ -1,5 +1,6 @@
 ﻿using ICD.Common.Properties;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Contacts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
@@ -7,52 +8,61 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 	/// <summary>
 	/// ContactMethod stores contact method info.
 	/// </summary>
+	[XmlConverter(typeof(CiscoContactMethodXmlConverter))]
 	public sealed class CiscoContactMethod : IContactMethod
 	{
-		private readonly string m_ContactMethodId;
-		private readonly string m_Number;
-
-		#region Properties
-
 		/// <summary>
 		/// Gets the ContactMethodId.
 		/// </summary>
 		[PublicAPI]
-		public string ContactMethodId { get { return m_ContactMethodId; } }
+		public int ContactMethodId { get; set; }
 
 		/// <summary>
 		/// Gets the contact number.
 		/// </summary>
 		[PublicAPI]
-		public string Number { get { return m_Number; } }
-
-		#endregion
-
-		#region Constructors
+		public string Number { get; set; }
 
 		/// <summary>
-		/// Constructor.
+		/// Gets the call type.
 		/// </summary>
-		/// <param name="contactMethodId"></param>
-		/// <param name="number"></param>
-		private CiscoContactMethod(string contactMethodId, string number)
-		{
-			m_ContactMethodId = contactMethodId;
-			m_Number = number;
-		}
+		[PublicAPI]
+		public eCallType CallType { get; set; }
+	}
+
+	public sealed class CiscoContactMethodXmlConverter : AbstractGenericXmlConverter<CiscoContactMethod>
+	{
+		// <ContactMethod item="1">
+		//   <ContactMethodId item="1">1</ContactMethodId>
+		//   <Number item="1">112</Number>
+		//   <CallType item="1">Video</CallType>
+		// </ContactMethod>
 
 		/// <summary>
-		/// Creates a ContactMethod from a ContactMethod XML Element.
+		/// Override to handle the current element.
 		/// </summary>
-		/// <param name="xml"></param>
-		/// <returns></returns>
-		public static CiscoContactMethod FromXml(string xml)
+		/// <param name="reader"></param>
+		/// <param name="instance"></param>
+		protected override void ReadElement(IcdXmlReader reader, CiscoContactMethod instance)
 		{
-			string contactMethodId = XmlUtils.ReadChildElementContentAsString(xml, "ContactMethodId");
-			string number = XmlUtils.ReadChildElementContentAsString(xml, "Number");
-			return new CiscoContactMethod(contactMethodId, number);
-		}
+			switch (reader.Name)
+			{
+				case "ContactMethodId":
+					instance.ContactMethodId = reader.ReadElementContentAsInt();
+					break;
 
-		#endregion
+				case "Number":
+					instance.Number = reader.ReadElementContentAsString();
+					break;
+
+				case "CallType":
+					instance.CallType = reader.ReadElementContentAsEnum<eCallType>(true);
+					break;
+
+				default:
+					base.ReadElement(reader, instance);
+					break;
+			}
+		}
 	}
 }

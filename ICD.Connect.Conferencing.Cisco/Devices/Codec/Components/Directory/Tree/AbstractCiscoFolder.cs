@@ -8,43 +8,31 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 	/// </summary>
 	public abstract class AbstractCiscoFolder : AbstractDirectoryFolder
 	{
-		private readonly string m_FolderId;
-		private readonly string m_FolderSearchId;
+		private string m_FolderSearchId;
 
 		#region Properties
 
 		/// <summary>
 		/// The id of the folder.
 		/// </summary>
-		public string FolderId { get { return m_FolderId; } }
+		public string FolderId { get; set; }
 
 		/// <summary>
 		/// The result id for browsing.
 		/// </summary>
-		public string FolderSearchId { get { return m_FolderSearchId; } }
+		public string FolderSearchId { get { return m_FolderSearchId = m_FolderSearchId ?? Guid.NewGuid().ToString(); } }
 
 		/// <summary>
 		/// Gets the phonebook type.
 		/// </summary>
 		public virtual ePhonebookType PhonebookType
 		{
-			get { return FolderId.StartsWith("local") ? ePhonebookType.Local : ePhonebookType.Corporate; }
+			get { return FolderId != null && FolderId.StartsWith("local") ? ePhonebookType.Local : ePhonebookType.Corporate; }
 		}
 
 		#endregion
 
 		#region Constructors
-
-		/// <summary>
-		/// Constructor.
-		/// </summary>
-		/// <param name="folderId"></param>
-		protected AbstractCiscoFolder(string folderId)
-		{
-			m_FolderId = folderId;
-
-			m_FolderSearchId = Guid.NewGuid().ToString();
-		}
 
 		/// <summary>
 		/// Gets the search command for the contents of the folder.
