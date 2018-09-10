@@ -99,8 +99,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Components.System
 			string on = string.Format(rX, "On");
 			string off = string.Format(rX, "Off");
 
-			Port.Receive(on);
 			Port.Receive(off);
+			Port.Receive(on);
 
 			Assert.AreEqual(2, responses.Count);
 			Assert.IsTrue(responses[0].Data);
