@@ -206,7 +206,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			base.Initialize();
 
-			Parent.SendCommand("zCommand Call Status");
+			Parent.SendCommand("zStatus Call Status");
 			Parent.SendCommand("zConfiguration Call Camera");
 			Parent.SendCommand("zConfiguration Call Microphone");
 			Parent.SendCommand("zCommand Call ListParticipants");
