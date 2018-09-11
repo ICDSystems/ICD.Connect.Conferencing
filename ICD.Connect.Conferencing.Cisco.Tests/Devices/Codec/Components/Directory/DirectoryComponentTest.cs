@@ -210,7 +210,9 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 
 			component.OnResultParsed += (id, folders, contacts) => results.AddRange(folders);
 
-			Port.Receive(EXAMPLE_XML);
+			string rX = string.Format(EXAMPLE_XML, component.GetRoot(ePhonebookType.Local).FolderSearchId);
+
+			Port.Receive(rX);
 
 			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
 
@@ -225,7 +227,9 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 
 			component.OnResultParsed += (id, folders, contacts) => results.AddRange(contacts);
 
-			Port.Receive(EXAMPLE_XML);
+			string rX = string.Format(EXAMPLE_XML, component.GetRoot(ePhonebookType.Local).FolderSearchId);
+
+			Port.Receive(rX);
 
 			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
 
