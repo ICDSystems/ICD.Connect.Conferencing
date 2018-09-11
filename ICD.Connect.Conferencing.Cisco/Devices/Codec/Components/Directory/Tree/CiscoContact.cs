@@ -37,7 +37,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// </summary>
 		public ePhonebookType PhonebookType
 		{
-			get { return ContactId.Contains("local") ? ePhonebookType.Local : ePhonebookType.Corporate; }
+			get { return ContactId != null && ContactId.Contains("local") ? ePhonebookType.Local : ePhonebookType.Corporate; }
 		}
 
 		/// <summary>
@@ -116,7 +116,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 					break;
 
 				case "FolderId":
-					instance.ContactId = reader.ReadElementContentAsString();
+					instance.FolderId = reader.ReadElementContentAsString();
 					break;
 
 				case "Title":

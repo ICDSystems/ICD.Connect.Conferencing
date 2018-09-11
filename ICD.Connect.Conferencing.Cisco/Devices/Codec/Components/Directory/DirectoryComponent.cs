@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -14,13 +13,6 @@ using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 {
-	public enum eContactType
-	{
-		[PublicAPI] Any,
-		[PublicAPI] Folder,
-		[PublicAPI] Contact
-	}
-
 	/// <summary>
 	/// DirectoryComponent provides functionality for using the codec directory features.
 	/// </summary>
@@ -46,7 +38,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 
 		// Mapping folder/contact ids
 		private readonly Dictionary<string, CiscoFolder> m_Folders;
-		private readonly Dictionary<string, CiscoContact> m_Contacts;
 
 		private readonly Dictionary<ePhonebookType, CiscoRootFolder> m_RootsCache;
 
@@ -64,7 +55,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		{
 			m_RootsCache = new Dictionary<ePhonebookType, CiscoRootFolder>();
 			m_Folders = new Dictionary<string, CiscoFolder>();
-			m_Contacts = new Dictionary<string, CiscoContact>();
 
 			m_FolderSection = new SafeCriticalSection();
 			m_RootsSection = new SafeCriticalSection();
@@ -102,11 +92,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 				foreach (CiscoRootFolder root in GetRoots())
 					root.ClearRecursive();
 
-				// Folders
 				m_Folders.Clear();
-
-				// Contacts
-				m_Contacts.Clear();
 			}
 			finally
 			{
@@ -114,15 +100,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			}
 
 			OnCleared.Raise(this);
-		}
-
-		/// <summary>
-		/// Gets the root for the configured phonebook type.
-		/// </summary>
-		/// <returns></returns>
-		public CiscoRootFolder GetRoot()
-		{
-			return GetRoot(Codec.PhonebookType);
 		}
 
 		/// <summary>
@@ -245,8 +222,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			foreach (CiscoFolder folder in result.GetFolders())
 				Codec.SendCommand(folder.GetSearchCommand());
 
-			if (OnResultParsed != null)
-				OnResultParsed(resultId, result.GetFolders(), result.GetContacts());
+			ResultParsedDelegate handler = OnResultParsed;
+			if (handler != null)
+				handler(resultId, result.GetFolders(), result.GetContacts());
 		}
 
 		/// <summary>
@@ -258,9 +236,30 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <param name="contacts"></param>
 		private void Insert(string resultId, IEnumerable<CiscoFolder> folders, IEnumerable<CiscoContact> contacts)
 		{
+			if (folders == null)
+				throw new ArgumentNullException("folders");
+
+			if (contacts == null)
+				throw new ArgumentNullException("contacts");
+
+			IList<CiscoFolder> foldersArray = folders as IList<CiscoFolder> ?? folders.ToArray();
+			IList<CiscoContact> contactsArray = contacts as IList<CiscoContact> ?? contacts.ToArray();
+
+			m_FolderSection.Enter();
+
+			try
+			{
+				foreach (CiscoFolder folder in foldersArray)
+					m_Folders[folder.FolderSearchId] = folder;
+			}
+			finally
+			{
+				m_FolderSection.Leave();
+			}
+
 			AbstractCiscoFolder parent = GetFolder(resultId);
 			if (parent != null)
-				parent.AddChildren(folders.Cast<IDirectoryFolder>(), contacts.Cast<IContact>());
+				parent.AddChildren(foldersArray.Cast<IDirectoryFolder>(), contactsArray.Cast<IContact>());
 		}
 
 		/// <summary>
@@ -270,11 +269,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <returns></returns>
 		private AbstractCiscoFolder GetFolder(string resultId)
 		{
-			return m_Folders.Values
-							.AsEnumerable()
-							.Cast<AbstractCiscoFolder>()
-			                .Concat(GetRoots().Cast<AbstractCiscoFolder>())
-			                .FirstOrDefault(f => f.FolderSearchId == resultId);
+			return m_FolderSection.Execute(() => m_Folders.GetDefault(resultId));
 		}
 
 		#endregion
