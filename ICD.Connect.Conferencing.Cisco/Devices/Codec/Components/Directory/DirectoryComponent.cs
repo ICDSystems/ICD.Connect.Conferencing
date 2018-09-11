@@ -219,8 +219,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			}
 
 			// Pre initialize this folder's children
-			foreach (CiscoFolder folder in result.GetFolders())
-				Codec.SendCommand(folder.GetSearchCommand());
+			//foreach (CiscoFolder folder in result.GetFolders())
+			//	Codec.SendCommand(folder.GetSearchCommand());
 
 			ResultParsedDelegate handler = OnResultParsed;
 			if (handler != null)

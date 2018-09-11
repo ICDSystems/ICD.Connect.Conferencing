@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
@@ -80,7 +81,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 
 		IEnumerable<IContactMethod> IContact.GetContactMethods()
 		{
-			return GetContactMethods();
+			return GetContactMethods().Cast<IContactMethod>();
 		}
 	}
 

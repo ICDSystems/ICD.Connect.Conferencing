@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -363,6 +364,46 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
+		private bool GetAdaptersForClientId(uint clientId, out IcdHashSet<ISimplInterpretationDevice> devices)
+		{
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				devices = null;
+
+				int room;
+				if (!m_ClientToRoom.TryGetValue(clientId, out room))
+				{
+					Log(eSeverity.Error, "No Room assigned to Client {0}", clientId);
+					return false;
+				}
+
+				ushort booth;
+				if (!m_RoomToBooth.TryGetValue(room, out booth))
+				{
+					Log(eSeverity.Error, "No Booth assigned to Room {0}", room);
+					return false;
+				}
+
+				ISimplInterpretationDevice device;
+				if (!m_AdapterToBooth.TryGetKey(booth, out device))
+				{
+					Log(eSeverity.Error, "No Adapter is assigned to booth {0}", booth);
+					return false;
+				}
+
+				devices = new IcdHashSet<ISimplInterpretationDevice>();
+				foreach (var kvp in m_AdapterToBooth.Where(kvp => kvp.Value == booth))
+					devices.Add(kvp.Key);
+
+				return true;
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+		}
+
 		private bool GetAdapterForRoom(int roomId, out ISimplInterpretationDevice device)
 		{
 			m_SafeCriticalSection.Enter();
@@ -391,6 +432,39 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
+		private bool GetAdaptersForRoom(int roomId, out IcdHashSet<ISimplInterpretationDevice> devices)
+		{
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				devices = null;
+
+				ushort targetBooth;
+				if (!m_RoomToBooth.TryGetValue(roomId, out targetBooth))
+				{
+					Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
+					return false;
+				}
+
+				ISimplInterpretationDevice device;
+				if (!m_AdapterToBooth.TryGetKey(targetBooth, out device))
+				{
+					Log(eSeverity.Error, "No booth with id {0}", targetBooth);
+					return false;
+				}
+
+				devices = new IcdHashSet<ISimplInterpretationDevice>();
+				foreach (var kvp in m_AdapterToBooth.Where(kvp => kvp.Value == targetBooth))
+					devices.Add(kvp.Key);
+
+				return true;
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+		} 
+
 		private void TransmitInterpretationState(ushort boothId)
 		{
 			m_SafeCriticalSection.Enter();
@@ -408,8 +482,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				{
 					foreach (IConferenceSource source in adapter.GetSources())
 					{
-						ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
-						sourceState.Language = adapter.Language;
+						ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, adapter.Language);
 						Guid id = m_Sources.GetKey(source);
 						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
 					}
@@ -491,24 +564,33 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[Rpc(AUTO_ANSWER_RPC), UsedImplicitly]
 		public void SetAutoAnswer(uint clientId, int roomId, bool enabled)
 		{
-			ISimplInterpretationDevice device;
-			if (GetAdapterForRoom(roomId, out device))
+			IcdHashSet<ISimplInterpretationDevice> devices;
+			if (!GetAdaptersForRoom(roomId, out devices))
+				return;
+
+			foreach (var device in devices)
 				device.SetAutoAnswer(enabled);
 		}
 
 		[Rpc(DO_NOT_DISTURB_RPC), UsedImplicitly]
 		public void SetDoNotDisturb(uint clientId, int roomId, bool enabled)
 		{
-			ISimplInterpretationDevice device;
-			if (GetAdapterForRoom(roomId, out device))
+			IcdHashSet<ISimplInterpretationDevice> devices;
+			if (!GetAdaptersForRoom(roomId, out devices))
+				return;
+
+			foreach (var device in devices)
 				device.SetDoNotDisturb(enabled);
 		}
 
 		[Rpc(PRIVACY_MUTE_RPC), UsedImplicitly]
 		public void SetPrivacyMute(uint clientId, int roomId, bool enabled)
 		{
-			ISimplInterpretationDevice device;
-			if (GetAdapterForRoom(roomId, out device))
+			IcdHashSet<ISimplInterpretationDevice> devices;
+			if (!GetAdaptersForRoom(roomId, out devices))
+				return;
+
+			foreach(var device in devices)
 				device.SetPrivacyMute(enabled);
 		}
 
@@ -852,7 +934,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				if (!GetClientIdForSource(id, out clientId))
 					return;
 
-				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source);
+				IcdHashSet<ISimplInterpretationDevice> adapters;
+				GetAdaptersForClientId(clientId, out adapters);
+
+				ISimplInterpretationDevice targetAdapter = adapters.FirstOrDefault(a => a.ContainsSource(source));
+
+				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, targetAdapter != null
+					                                                                             ? targetAdapter.Language
+					                                                                             : null);
 
 				const string key = InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE;
 				m_RpcController.CallMethod(clientId, key, id, sourceState);

@@ -611,6 +611,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    {
 		    base.ApplySettingsFinal(settings, factory);
 
+			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
+
+			RoomName = settings.RoomName;
+
+			RoomPrefix = settings.RoomPrefix;
+
 			ISerialPort port = null;
 
 		    if (settings.Port != null)
@@ -620,12 +626,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
 
 			m_ConnectionStateManager.SetPort(port);
-
-			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
-
-			RoomName = settings.RoomName;
-
-			RoomPrefix = settings.RoomPrefix;
 	    }
 
 	    protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
