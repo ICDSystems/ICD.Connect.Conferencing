@@ -41,7 +41,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 			{
 				case "localId":
 					instance.FolderId = reader.Value;
-					reader.Read();
 					break;
 
 				default:
