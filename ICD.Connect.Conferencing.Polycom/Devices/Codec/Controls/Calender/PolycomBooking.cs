@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 {
-    public sealed class PolycomBooking : AbstractBooking
+    public sealed class PolycomBooking : AbstractBooking, ISipBooking
     {
 	    private readonly MeetingInfo m_Booking;
 
@@ -13,10 +14,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 		    get { return m_Booking.Subject; }
 		}
 
-	    public override string MeetingNumber
-	    {
-		    get { return m_Booking.Id; }
-	    }
+		public string SipUri
+		{
+			get
+			{
+				return m_Booking.GetDialingNumbers()
+					.Where(n => n.Protocol.Equals("sip", StringComparison.OrdinalIgnoreCase))
+					.Select(n => n.Number)
+					.FirstOrDefault();
+			}
+		}
 
 		public override string OrganizerName
 	    {

@@ -7,7 +7,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 {
-    public sealed class CiscoBooking : AbstractBooking
+    public sealed class CiscoBooking : AbstractBooking, ISipBooking
     {
 	    private readonly Booking m_Booking;
 
@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		    get { return m_Booking.Title; }
 		}
 
-	    public override string MeetingNumber
+	    public string SipUri
 	    {
 		    get
 		    {

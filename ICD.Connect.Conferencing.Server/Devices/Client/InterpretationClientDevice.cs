@@ -8,7 +8,9 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Server.Devices.Server;
@@ -237,6 +239,54 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		    if(IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_TYPE_RPC, m_RoomId, number, callType);
 	    }
+
+	    public void Dial(IContact contact)
+	    {
+		    var contactMethod = contact.GetContactMethods().FirstOrDefault();
+			if(contactMethod != null)
+				Dial(contactMethod.Number);
+	    }
+
+		/// <summary>
+		/// Returns the level of support the dialer has for the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		/// <returns></returns>
+		public eBookingSupport CanDial(IBooking booking)
+		{
+			var sipBooking = booking as ISipBooking;
+			if (sipBooking != null && !sipBooking.IsValidSipUri())
+				return eBookingSupport.Supported;
+
+			var potsBooking = booking as IPstnBooking;
+			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+				return eBookingSupport.Supported;
+
+			return eBookingSupport.Unsupported;
+		}
+
+		/// <summary>
+		/// Dials the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		public void Dial(IBooking booking)
+		{
+			var sipBooking = booking as ISipBooking;
+			if (sipBooking != null && sipBooking.IsValidSipUri())
+			{
+				Dial(sipBooking.SipUri);
+				return;
+			}
+
+			var potsBooking = booking as IPstnBooking;
+			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+			{
+				Dial(potsBooking.PhoneNumber);
+				return;
+			}
+
+			Log(eSeverity.Error, "No supported methods for dialing the booking were found.");
+		}
 
 		public void SetPrivacyMute(bool enabled)
 	    {

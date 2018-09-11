@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.EventArguments;
 
@@ -73,6 +75,21 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public override void Dial(string number, eConferenceSourceType callType)
 		{
 			Parent.Dial(number, callType);
+		}
+
+		public override void Dial(IContact contact)
+		{
+			Parent.Dial(contact);
+		}
+
+		public override eBookingSupport CanDial(IBooking booking)
+		{
+			return Parent.CanDial(booking);
+		}
+
+		public override void Dial(IBooking booking)
+		{
+			Parent.Dial(booking);
 		}
 
 		public override void SetDoNotDisturb(bool enabled)

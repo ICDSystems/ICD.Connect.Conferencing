@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Attributes;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -105,6 +106,21 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <param name="contact"></param>
 		[ApiMethod(DialingDeviceControlApi.METHOD_DIAL_CONTACT, DialingDeviceControlApi.HELP_METHOD_DIAL_CONTACT)]
 		void Dial(IContact contact);
+
+		/// <summary>
+		/// Returns the level of support the device has for the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		/// <returns></returns>
+		[ApiMethod(DialingDeviceControlApi.METHOD_CAN_DIAL_BOOKING, DialingDeviceControlApi.HELP_METHOD_CAN_DIAL_BOOKING)]
+		eBookingSupport CanDial(IBooking booking);
+
+		/// <summary>
+		/// Dials the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		[ApiMethod(DialingDeviceControlApi.METHOD_DIAL_BOOKING, DialingDeviceControlApi.HELP_METHOD_DIAL_BOOKING)]
+		void Dial(IBooking booking);
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.

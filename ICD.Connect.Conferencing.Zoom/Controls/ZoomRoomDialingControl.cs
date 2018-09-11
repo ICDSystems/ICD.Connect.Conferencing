@@ -5,12 +5,14 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.Directory;
+using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
@@ -84,7 +86,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			var meetingNumberMatch = Regex.Match(number, @"^\d{3}-?\d{3}-?\d{4}$");
 			if (meetingNumberMatch.Success)
 			{
-				Parent.SendCommand("zCommand Dial Join meetingNumber: {0}", number);
+				Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", number);
 				return;
 			}
 
@@ -119,15 +121,31 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 				return;
 			}
 
-			//// for when we do bookings, but we'll probably make an abstraction for that (not IContact)
-			//var zoomBooking = contact as Booking;
-			//if (zoomBooking != null)
-			//{
-			//	Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", zoomBooking.MeetingNumber);
-			//	return;
-			//}
-
 			Parent.Log(eSeverity.Error, "Zoom Room can not handle contacts of type {0}", contact.GetType().Name);
+		}
+
+		public override eBookingSupport CanDial(IBooking booking)
+		{
+			if (booking is ZoomBooking)
+				return eBookingSupport.Native;
+
+			var zoomBooking = booking as IZoomBooking;
+			if (zoomBooking != null && !string.IsNullOrEmpty(zoomBooking.MeetingNumber))
+				return eBookingSupport.ParsedNative;
+
+			return eBookingSupport.Unsupported;
+		}
+
+		public override void Dial(IBooking booking)
+		{
+			var zoomBooking = booking as IZoomBooking;
+			if (zoomBooking == null || string.IsNullOrEmpty(zoomBooking.MeetingNumber))
+			{
+				Log(eSeverity.Error, "Cannot dial booking - Not a valid Zoom booking");
+				return;
+			}
+
+			Dial(zoomBooking.MeetingNumber);
 		}
 
 		public override void SetDoNotDisturb(bool enabled)
@@ -137,7 +155,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override void SetAutoAnswer(bool enabled)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support settings auto-answer through the SSH API");
+			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting auto-answer through the SSH API");
 		}
 
 		public override void SetPrivacyMute(bool enabled)
