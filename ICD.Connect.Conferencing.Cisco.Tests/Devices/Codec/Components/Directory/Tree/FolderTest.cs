@@ -31,11 +31,13 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 			{
 				FolderId = "ParentId"
 			};
+			parent.SetName("parent");
 
 			CiscoFolder child = new CiscoFolder
 			{
 				FolderId = "ChildId"
 			};
+			child.SetName("child");
 
 			Assert.IsTrue(parent.AddFolder(child));
 			Assert.IsFalse(parent.AddFolder(child));
@@ -48,8 +50,9 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 			{
 				FolderId = "ParentId"
 			};
+			parent.SetName("parent");
 
-			CiscoContact child = new CiscoContact();
+			CiscoContact child = new CiscoContact(){Name = "child"};
 
 			Assert.IsTrue(parent.AddContact(child));
 			Assert.IsFalse(parent.AddContact(child));
@@ -64,10 +67,11 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 			{
 				FolderId = "ParentId"
 			};
+			parent.SetName("parent");
 
 			parent.OnContentsChanged += (sender, args) => results.Add(args);
 
-			CiscoContact child = new CiscoContact();
+			CiscoContact child = new CiscoContact(){Name = "child"};
 			parent.AddContact(child);
 			parent.AddContact(child);
 
@@ -83,6 +87,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 			{
 				FolderId = "ParentId"
 			};
+			parent.SetName("parent");
 
 			parent.OnContentsChanged += (sender, args) => results.Add(args);
 
@@ -90,6 +95,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 			{
 				FolderId = "ChildId"
 			};
+			child.SetName("child");
 
 			parent.AddFolder(child);
 			parent.AddFolder(child);
