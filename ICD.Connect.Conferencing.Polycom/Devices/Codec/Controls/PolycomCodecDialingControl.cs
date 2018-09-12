@@ -135,7 +135,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public override eBookingSupport CanDial(IBooking booking)
 		{
 			var sipBooking = booking as ISipBooking;
-			if (sipBooking != null && !sipBooking.IsValidSipUri())
+			if (sipBooking != null && sipBooking.IsValidSipUri())
 				return eBookingSupport.Supported;
 
 			var potsBooking = booking as IPstnBooking;
@@ -164,7 +164,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				Dial(potsBooking.PhoneNumber);
 				return;
 			}
-
+			
 			Log(eSeverity.Error, "No supported methods for dialing the booking were found.");
 		}
 

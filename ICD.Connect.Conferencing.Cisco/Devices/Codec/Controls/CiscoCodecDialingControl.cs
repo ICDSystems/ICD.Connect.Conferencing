@@ -95,7 +95,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public override eBookingSupport CanDial(IBooking booking)
 		{
 			var sipBooking = booking as ISipBooking;
-			if (sipBooking != null && !sipBooking.IsValidSipUri())
+			if (sipBooking != null && sipBooking.IsValidSipUri())
 				return eBookingSupport.Supported;
 
 			var potsBooking = booking as IPstnBooking;

@@ -20,7 +20,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 			{
 				return m_Booking.GetDialingNumbers()
 					.Where(n => n.Protocol.Equals("sip", StringComparison.OrdinalIgnoreCase))
-					.Select(n => n.Number)
+					.Select(n => n.Number.Split(';').FirstOrDefault())
 					.FirstOrDefault();
 			}
 		}
