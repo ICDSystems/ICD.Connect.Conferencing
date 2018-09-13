@@ -88,7 +88,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			"xFeedback Register Result"
 		};
 
-		private readonly Dictionary<string, List<ParserCallback>> m_ParserCallbacks;
+		private readonly Dictionary<string, IcdHashSet<ParserCallback>> m_ParserCallbacks;
+		private readonly Dictionary<string, Dictionary<string, int>> m_KeyedCallbackChildren; 
 		private readonly SafeCriticalSection m_ParserCallbacksSection;
 
 		private readonly ISerialBuffer m_SerialBuffer;
@@ -148,7 +149,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		public CiscoCodecDevice()
 		{
-			m_ParserCallbacks = new Dictionary<string, List<ParserCallback>>();
+			m_ParserCallbacks = new Dictionary<string, IcdHashSet<ParserCallback>>();
+			m_KeyedCallbackChildren = new Dictionary<string, Dictionary<string, int>>();
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
 			m_Components = new CiscoComponentFactory(this);
@@ -287,24 +289,45 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// <param name="path"></param>
 		public void RegisterParserCallback(ParserCallback callback, params string[] path)
 		{
+			string key = XmlPathToKey(path);
+
 			m_ParserCallbacksSection.Enter();
 
 			try
 			{
-				string key = XmlPathToKey(path);
+				// Callbacks
+				IcdHashSet<ParserCallback> callbacks;
+				if (!m_ParserCallbacks.TryGetValue(key, out callbacks))
+				{
+					callbacks = new IcdHashSet<ParserCallback>();
+					m_ParserCallbacks.Add(key, callbacks);
+				}
 
-				if (!m_ParserCallbacks.ContainsKey(key))
-					m_ParserCallbacks[key] = new List<ParserCallback>();
+				callbacks.Add(callback);
 
-				m_ParserCallbacks[key].Add(callback);
+				// Children
+				for (int index = 1; index < path.Length - 1; index++)
+				{
+					string thisKey = XmlPathToKey(path.Take(index));
+					string nextKey = XmlPathToKey(path.Take(index + 1));
 
-				if (Initialized)
-					RegisterFeedback(key);
+					Dictionary<string, int> childKeys;
+					if (!m_KeyedCallbackChildren.TryGetValue(thisKey, out childKeys))
+					{
+						childKeys = new Dictionary<string, int>();
+						m_KeyedCallbackChildren.Add(thisKey, childKeys);
+					}
+
+					childKeys[nextKey] = childKeys.GetDefault(nextKey) + 1;
+				}
 			}
 			finally
 			{
 				m_ParserCallbacksSection.Leave();
 			}
+
+			if (Initialized)
+				RegisterFeedback(key);
 		}
 
 		/// <summary>
@@ -319,25 +342,48 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			if (!m_ConnectionStateManager.IsConnected)
 				return false;
 
+			string key = XmlPathToKey(path);
+
 			m_ParserCallbacksSection.Enter();
 
 			try
 			{
-				string key = XmlPathToKey(path);
-
-				if (!m_ParserCallbacks.ContainsKey(key))
+				// Callbacks
+				IcdHashSet<ParserCallback> callbacks;
+				if (!m_ParserCallbacks.TryGetValue(key, out callbacks))
 					return false;
 
-				bool output = m_ParserCallbacks[key].Remove(callback);
-				if (output && m_ParserCallbacks[key].Count == 0)
-					DeregisterFeedback(key);
+				if (!callbacks.Remove(callback) || callbacks.Count > 0)
+					return false;
 
-				return output;
+				// Children
+				for (int index = 1; index < path.Length - 1; index++)
+				{
+					string thisKey = XmlPathToKey(path.Take(index));
+					string nextKey = XmlPathToKey(path.Take(index + 1));
+
+					Dictionary<string, int> childKeys;
+					if (!m_KeyedCallbackChildren.TryGetValue(thisKey, out childKeys))
+						continue;
+
+					int count;
+					if (!childKeys.TryGetValue(nextKey, out count))
+						continue;
+
+					if (count > 1)
+						childKeys[nextKey]--;
+					else
+						childKeys.Remove(nextKey);
+				}
 			}
 			finally
 			{
 				m_ParserCallbacksSection.Leave();
 			}
+
+			DeregisterFeedback(key);
+
+			return true;
 		}
 
 		#endregion
@@ -400,35 +446,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private void DeregisterFeedback(string key)
 		{
 			SendCommand("xFeedback Deregister {0}", key);
-		}
-
-		/// <summary>
-		/// Calls the parser callbacks for the given path.
-		/// </summary>
-		/// <param name="xml"></param>
-		/// <param name="resultId"></param>
-		/// <param name="path"></param>
-		private void CallParserCallbacks(string xml, string resultId, IEnumerable<string> path)
-		{
-			string key = XmlPathToKey(path);
-			ParserCallback[] callbacks;
-
-			m_ParserCallbacksSection.Enter();
-
-			try
-			{
-				if (!m_ParserCallbacks.ContainsKey(key))
-					return;
-
-				callbacks = m_ParserCallbacks[key].ToArray();
-			}
-			finally
-			{
-				m_ParserCallbacksSection.Leave();
-			}
-
-			foreach (ParserCallback callback in callbacks)
-				callback(this, resultId, xml);
 		}
 
 		/// <summary>
@@ -624,19 +641,53 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		/// <param name="resultId"></param>
 		/// <param name="args"></param>
-		private void XmlCallback(string resultId, XmlRecursionEventArgs args)
+		private bool XmlCallback(string resultId, XmlRecursionEventArgs args)
 		{
 			string xml = args.Outer;
+			string status = XmlUtils.HasAttribute(xml, "status") ? XmlUtils.GetAttribute(xml, "status").Value : null;
 
-			CallParserCallbacks(xml, resultId, args.Path.Skip(1));
+			switch (status)
+			{
+				case "Error":
+					ParseError(xml);
+					return false;
 
-			if (!XmlUtils.HasAttribute(xml, "status"))
-				return;
+				default:
+					string key = XmlPathToKey(args.Path.Skip(1));
 
-			// Check for errors
-			IcdXmlAttribute statusAttr = XmlUtils.GetAttribute(xml, "status");
-			if (statusAttr.Value == "Error")
-				ParseError(xml);
+					CallParserCallbacks(xml, resultId, key);
+
+					Dictionary<string, int> children;
+					return m_KeyedCallbackChildren.TryGetValue(key, out children) && children.Count > 0;
+			}
+		}
+
+		/// <summary>
+		/// Calls the parser callbacks for the given path.
+		/// </summary>
+		/// <param name="xml"></param>
+		/// <param name="resultId"></param>
+		/// <param name="key"></param>
+		private void CallParserCallbacks(string xml, string resultId, string key)
+		{
+			ParserCallback[] callbacks;
+
+			m_ParserCallbacksSection.Enter();
+
+			try
+			{
+				if (!m_ParserCallbacks.ContainsKey(key))
+					return;
+
+				callbacks = m_ParserCallbacks[key].ToArray();
+			}
+			finally
+			{
+				m_ParserCallbacksSection.Leave();
+			}
+
+			foreach (ParserCallback callback in callbacks)
+				callback(this, resultId, xml);
 		}
 
 		#endregion
