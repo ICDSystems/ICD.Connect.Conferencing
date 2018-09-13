@@ -71,6 +71,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 					string name = reader.ReadElementContentAsString();
 					instance.SetName(name);
 					break;
+				case "LocalId":
+					instance.FolderId = reader.ReadElementContentAsString();
+					break;
 
 				default:
 					base.ReadElement(reader, instance);
