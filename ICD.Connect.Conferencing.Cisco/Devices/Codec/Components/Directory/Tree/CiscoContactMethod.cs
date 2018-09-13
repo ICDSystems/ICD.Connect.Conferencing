@@ -39,6 +39,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		// </ContactMethod>
 
 		/// <summary>
+		/// Creates a new instance of T.
+		/// </summary>
+		/// <returns></returns>
+		protected override CiscoContactMethod Instantiate()
+		{
+			return new CiscoContactMethod();
+		}
+
+		/// <summary>
 		/// Override to handle the current element.
 		/// </summary>
 		/// <param name="reader"></param>

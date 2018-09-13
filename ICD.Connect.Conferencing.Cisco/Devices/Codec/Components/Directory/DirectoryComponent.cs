@@ -390,6 +390,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			// </PhonebookSearchResult>
 
 		/// <summary>
+		/// Creates a new instance of T.
+		/// </summary>
+		/// <returns></returns>
+		protected override PhonebookSearchResult Instantiate()
+		{
+			return new PhonebookSearchResult();
+		}
+
+		/// <summary>
 		/// Override to handle the current element.
 		/// </summary>
 		/// <param name="reader"></param>

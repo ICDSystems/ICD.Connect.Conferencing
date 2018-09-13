@@ -31,6 +31,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		// </Folder>
 
 		/// <summary>
+		/// Creates a new instance of T.
+		/// </summary>
+		/// <returns></returns>
+		protected override CiscoFolder Instantiate()
+		{
+			return new CiscoFolder();
+		}
+
+		/// <summary>
 		/// Override to handle the current attribute.
 		/// </summary>
 		/// <param name="reader"></param>
