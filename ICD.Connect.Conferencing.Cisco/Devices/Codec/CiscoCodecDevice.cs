@@ -610,12 +610,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			// Pull the resultId from the xml
 			string resultId;
+			string innerXml;
+
 			using (IcdXmlReader reader = new IcdXmlReader(xml))
 			{
 				if (!reader.ReadToNextElement())
 					return;
 
 				resultId = reader.GetAttribute("resultId");
+				innerXml = reader.ReadInnerXml();
 			}
 
 			// Parse feedback registration
@@ -628,11 +631,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			// Recurse through the elements
 			try
 			{
-				XmlUtils.Recurse(xml, eventArgs => XmlCallback(resultId, eventArgs));
+				if(innerXml != string.Empty)
+					XmlUtils.Recurse(innerXml, eventArgs => XmlCallback(resultId, eventArgs));
 			}
 			catch (IcdXmlException e)
 			{
-				Log(eSeverity.Error, "Failed to parse XML - {0} - {1}", e.Message, xml);
+				Log(eSeverity.Error, "Failed to parse XML - {0} - {1}", e.Message, innerXml);
 			}
 		}
 
@@ -653,7 +657,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 					return false;
 
 				default:
-					string key = XmlPathToKey(args.Path.Skip(1));
+					string key = XmlPathToKey(args.Path);
 
 					CallParserCallbacks(xml, resultId, key);
 
