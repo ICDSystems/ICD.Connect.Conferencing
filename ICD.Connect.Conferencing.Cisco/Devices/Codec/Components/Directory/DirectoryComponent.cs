@@ -269,7 +269,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <returns></returns>
 		private AbstractCiscoFolder GetFolder(string resultId)
 		{
-			return m_FolderSection.Execute(() => m_Folders.GetDefault(resultId));
+			return m_FolderSection.Execute(() => m_Folders.GetDefault(resultId)) 
+				?? m_RootsCache.Values.FirstOrDefault(value => value.FolderSearchId == resultId) as AbstractCiscoFolder;
 		}
 
 		#endregion
