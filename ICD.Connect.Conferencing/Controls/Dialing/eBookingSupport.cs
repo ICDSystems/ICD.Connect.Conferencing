@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Crestron.SimplSharp;
-
-namespace ICD.Connect.Conferencing.Controls.Dialing
+﻿namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	public enum eBookingSupport
 	{
