@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [10.0.0] - 2018-09-14
+### Added
+ - Added Polycom calendar parsing
+
+### Changed
+ - Fixed bug with Cisco VTC awake state
+ - Cisco routing control does not depend on feedback from the device
+ - Significant routing performance improvements
+
 ## [9.1.0] - 2018-07-19
 ### Added
  - Added Polycom button features for emulating remote control
