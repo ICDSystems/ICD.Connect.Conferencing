@@ -609,8 +609,7 @@ namespace ICD.Connect.Conferencing.Cisco
 				if (!reader.ReadToNextElement())
 					return;
 
-				reader.TryGetChildElementAsString("ResultId", out resultId);
-				resultId = string.IsNullOrEmpty(resultId) ? reader.GetAttribute("resultId") : resultId;
+				resultId = reader.GetAttribute("resultId");
 			}
 
 			// Parse feedback registration
