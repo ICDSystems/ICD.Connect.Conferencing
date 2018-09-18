@@ -617,7 +617,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				if (!reader.ReadToNextElement())
 					return;
 
-				resultId = reader.GetAttribute("resultId");
+				reader.TryGetChildElementAsString("ResultId", out resultId);
+				resultId = string.IsNullOrEmpty(resultId)? reader.GetAttribute("resultId") : resultId;
 				innerXml = reader.ReadInnerXml();
 			}
 
