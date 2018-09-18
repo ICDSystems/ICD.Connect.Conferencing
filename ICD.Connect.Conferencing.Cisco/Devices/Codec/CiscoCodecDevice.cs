@@ -632,7 +632,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			// Recurse through the elements
 			try
 			{
-				if(innerXml != string.Empty)
+				if(!StringUtils.IsNullOrWhitespace(innerXml))
 					XmlUtils.Recurse(innerXml, eventArgs => XmlCallback(resultId, eventArgs));
 			}
 			catch (IcdXmlException e)
