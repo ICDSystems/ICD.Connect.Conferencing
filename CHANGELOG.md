@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - Conference manager now enforces privacy mute state on feedback providers
+ - Support CE 9.3 for the cisco codec
+ - Fallback to root directory folder when getfolder would otherwise fail
+ 
+###Changed
+ - Fixed bug where if the client interpretation device was initialized before the server, it would not connect
+ - Overhaul XML parsing to improve performance
 
 ## [10.0.0] - 2018-09-14
 ### Added
