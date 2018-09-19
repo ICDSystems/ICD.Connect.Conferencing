@@ -5,7 +5,7 @@
 	/// </summary>
 	public sealed class CiscoRootFolder : AbstractCiscoFolder
 	{
-		private readonly ePhonebookType m_PhonebookType;
+		private ePhonebookType m_PhonebookType;
 
 		#region Properties
 
@@ -21,18 +21,13 @@
 
 		#endregion
 
-		#region Constructors
-
 		/// <summary>
-		/// Constructor.
+		/// Sets the phonebook type.
 		/// </summary>
 		/// <param name="phonebookType"></param>
-		public CiscoRootFolder(ePhonebookType phonebookType)
-			: base(null)
+		public void SetPhonebookType(ePhonebookType phonebookType)
 		{
 			m_PhonebookType = phonebookType;
 		}
-
-		#endregion
 	}
 }

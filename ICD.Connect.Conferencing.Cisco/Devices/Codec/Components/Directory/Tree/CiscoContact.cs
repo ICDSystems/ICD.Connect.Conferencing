@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
 
@@ -8,100 +11,137 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 	/// <summary>
 	/// Contact provides information for a phonebook contact.
 	/// </summary>
+	[XmlConverter(typeof(CiscoContactXmlConverter))]
 	public sealed class CiscoContact : IContact
 	{
-		private readonly IContactMethod[] m_ContactMethods;
+		private readonly IcdOrderedDictionary<int, CiscoContactMethod> m_ContactMethods;
 
 		#region Properties
 
 		/// <summary>
 		/// Gets the contact id.
 		/// </summary>
-		public string ContactId { get; private set; }
+		public string ContactId { get; set; }
 
 		/// <summary>
 		/// Gets the name.
 		/// </summary>
-		public string Name { get; private set; }
-
-		/// <summary>
-		/// Gets the first name.
-		/// </summary>
-		public string FirstName { get { return Name.Split().FirstOrDefault(); } }
-
-		/// <summary>
-		/// Gets the last name.
-		/// </summary>
-		public string LastName { get { return Name.Split().LastOrDefault(); } }
+		public string Name { get; set; }
 
 		/// <summary>
 		/// Gets the folder id.
 		/// </summary>
-		public string FolderId { get; private set; }
+		public string FolderId { get; set; }
 
 		/// <summary>
 		/// Gets the phonebook type.
 		/// </summary>
 		public ePhonebookType PhonebookType
 		{
-			get { return (ContactId.Contains("local")) ? ePhonebookType.Local : ePhonebookType.Corporate; }
+			get { return ContactId != null && ContactId.Contains("local") ? ePhonebookType.Local : ePhonebookType.Corporate; }
 		}
 
-		#endregion
+		/// <summary>
+		/// Gets the title.
+		/// </summary>
+		public string Title { get; set; }
 
-		#region Constructors
+		string IContact.Name { get { return Name; } }
+
+		#endregion
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="name"></param>
-		/// <param name="contactId"></param>
-		/// <param name="folderId"></param>
-		/// <param name="contactMethods"></param>
-		public CiscoContact(string name, string contactId, string folderId, IEnumerable<IContactMethod> contactMethods)
+		public CiscoContact()
 		{
-			Name = name;
-			ContactId = contactId;
-			FolderId = folderId;
-			m_ContactMethods = contactMethods.ToArray();
+			m_ContactMethods = new IcdOrderedDictionary<int, CiscoContactMethod>();
 		}
-
-		/// <summary>
-		/// Builds a Contact from an XML Contact Element.
-		/// </summary>
-		/// <param name="xml"></param>
-		/// <param name="idPrefix"></param>
-		/// <param name="cache"></param>
-		/// <returns></returns>
-		public static CiscoContact FromXml(string xml, string idPrefix, IDictionary<string, CiscoContact> cache)
-		{
-			string contactId = XmlUtils.ReadChildElementContentAsString(xml, "ContactId");
-			string cachedId = idPrefix + contactId;
-
-			if (!cache.ContainsKey(cachedId))
-			{
-				string name = XmlUtils.TryReadChildElementContentAsString(xml, "Name");
-				string folderId = XmlUtils.TryReadChildElementContentAsString(xml, "FolderId");
-
-				IEnumerable<IContactMethod> contactMethods = XmlUtils.GetChildElementsAsString(xml, "ContactMethod")
-				                                                     .Select(e => CiscoContactMethod.FromXml(e))
-				                                                     .Cast<IContactMethod>();
-
-				cache[cachedId] = new CiscoContact(name, contactId, folderId, contactMethods);
-			}
-
-			return cache[cachedId];
-		}
-
-		#endregion
 
 		/// <summary>
 		/// Gets the contact methods.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IContactMethod> GetContactMethods()
+		public IEnumerable<CiscoContactMethod> GetContactMethods()
 		{
-			return m_ContactMethods;
+			return m_ContactMethods.Values.ToArray(m_ContactMethods.Count);
+		}
+
+		/// <summary>
+		/// Adds the given contact method.
+		/// </summary>
+		/// <param name="contactMethod"></param>
+		public void AddContactMethod(CiscoContactMethod contactMethod)
+		{
+			if (contactMethod == null)
+				throw new ArgumentNullException("contactMethod");
+
+			m_ContactMethods.Add(contactMethod.ContactMethodId, contactMethod);
+		}
+
+		IEnumerable<IContactMethod> IContact.GetContactMethods()
+		{
+			return GetContactMethods().Cast<IContactMethod>();
+		}
+	}
+
+	public sealed class CiscoContactXmlConverter : AbstractGenericXmlConverter<CiscoContact>
+	{
+		// <Contact item="2">
+		//   <Name item="1">Brett Fisher</Name>
+		//   <ContactId item="1">localContactId-11</ContactId>
+		//   <FolderId item="1">localGroupId-19</FolderId>
+		//   <Title item="1">Vice President</Title>
+		//   <ContactMethod item="1">
+		//     <ContactMethodId item="1">1</ContactMethodId>
+		//     <Number item="1">112</Number>
+		//     <CallType item="1">Video</CallType>
+		//   </ContactMethod>
+		// </Contact>
+
+		/// <summary>
+		/// Creates a new instance of T.
+		/// </summary>
+		/// <returns></returns>
+		protected override CiscoContact Instantiate()
+		{
+			return new CiscoContact();
+		}
+
+		/// <summary>
+		/// Override to handle the current element.
+		/// </summary>
+		/// <param name="reader"></param>
+		/// <param name="instance"></param>
+		protected override void ReadElement(IcdXmlReader reader, CiscoContact instance)
+		{
+			switch (reader.Name)
+			{
+				case "Name":
+					instance.Name = reader.ReadElementContentAsString();
+					break;
+
+				case "ContactId":
+					instance.ContactId = reader.ReadElementContentAsString();
+					break;
+
+				case "FolderId":
+					instance.FolderId = reader.ReadElementContentAsString();
+					break;
+
+				case "Title":
+					instance.Title = reader.ReadElementContentAsString();
+					break;
+
+				case "ContactMethod":
+					CiscoContactMethod contactMethod = IcdXmlConvert.DeserializeObject<CiscoContactMethod>(reader);
+					instance.AddContactMethod(contactMethod);
+					break;
+
+				default:
+					base.ReadElement(reader, instance);
+					break;
+			}
 		}
 	}
 }

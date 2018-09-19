@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -14,13 +13,6 @@ using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 {
-	public enum eContactType
-	{
-		[PublicAPI] Any,
-		[PublicAPI] Folder,
-		[PublicAPI] Contact
-	}
-
 	/// <summary>
 	/// DirectoryComponent provides functionality for using the codec directory features.
 	/// </summary>
@@ -46,7 +38,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 
 		// Mapping folder/contact ids
 		private readonly Dictionary<string, CiscoFolder> m_Folders;
-		private readonly Dictionary<string, CiscoContact> m_Contacts;
 
 		private readonly Dictionary<ePhonebookType, CiscoRootFolder> m_RootsCache;
 
@@ -64,7 +55,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		{
 			m_RootsCache = new Dictionary<ePhonebookType, CiscoRootFolder>();
 			m_Folders = new Dictionary<string, CiscoFolder>();
-			m_Contacts = new Dictionary<string, CiscoContact>();
 
 			m_FolderSection = new SafeCriticalSection();
 			m_RootsSection = new SafeCriticalSection();
@@ -102,11 +92,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 				foreach (CiscoRootFolder root in GetRoots())
 					root.ClearRecursive();
 
-				// Folders
 				m_Folders.Clear();
-
-				// Contacts
-				m_Contacts.Clear();
 			}
 			finally
 			{
@@ -114,15 +100,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			}
 
 			OnCleared.Raise(this);
-		}
-
-		/// <summary>
-		/// Gets the root for the configured phonebook type.
-		/// </summary>
-		/// <returns></returns>
-		public CiscoRootFolder GetRoot()
-		{
-			return GetRoot(Codec.PhonebookType);
 		}
 
 		/// <summary>
@@ -136,10 +113,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 
 			try
 			{
-				if (!m_RootsCache.ContainsKey(phonebookType))
-					m_RootsCache[phonebookType] = new CiscoRootFolder(phonebookType);
+				CiscoRootFolder root;
+				if (!m_RootsCache.TryGetValue(phonebookType, out root))
+				{
+					root = new CiscoRootFolder();
+					root.SetPhonebookType(phonebookType);
 
-				return m_RootsCache[phonebookType];
+					m_RootsCache.Add(phonebookType, root);
+				}
+
+				return root;
 			}
 			finally
 			{
@@ -219,23 +202,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <param name="xml"></param>
 		private void ParseSearchResult(string resultId, string xml)
 		{
-			IcdHashSet<CiscoFolder> folders = new IcdHashSet<CiscoFolder>();
-			IcdHashSet<CiscoContact> contacts = new IcdHashSet<CiscoContact>();
+			PhonebookSearchResult result;
 
 			m_FolderSection.Enter();
 
 			try
 			{
-				folders.AddRange(XmlUtils.GetChildElementsAsString(xml, "Folder")
-				                         .Select(e => CiscoFolder.FromXml(e, resultId, m_Folders)));
+				result = IcdXmlConvert.DeserializeObject<PhonebookSearchResult>(xml);
+				Codec.Log(eSeverity.Debug, "Phone Book download complete. {0} entries downloaded.", result.Count);
 
-				contacts.AddRange(XmlUtils.GetChildElementsAsString(xml, "Contact")
-				                          .Select(e => CiscoContact.FromXml(e, resultId, m_Contacts)));
-
-				int count = folders.Count + contacts.Count;
-				Codec.Log(eSeverity.Debug, "Phone Book download complete. {0} entries downloaded.", count);
-
-				Insert(resultId, folders, contacts);
+				Insert(resultId, result.GetFolders(), result.GetContacts());
 			}
 			finally
 			{
@@ -243,11 +219,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			}
 
 			// Pre initialize this folder's children
-			foreach(var folder in folders)
-				Codec.SendCommand(folder.GetSearchCommand());
+			//foreach (CiscoFolder folder in result.GetFolders())
+			//	Codec.SendCommand(folder.GetSearchCommand());
 
-			if (OnResultParsed != null)
-				OnResultParsed(resultId, folders.ToArray(), contacts.ToArray());
+			ResultParsedDelegate handler = OnResultParsed;
+			if (handler != null)
+				handler(resultId, result.GetFolders(), result.GetContacts());
 		}
 
 		/// <summary>
@@ -259,9 +236,30 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <param name="contacts"></param>
 		private void Insert(string resultId, IEnumerable<CiscoFolder> folders, IEnumerable<CiscoContact> contacts)
 		{
+			if (folders == null)
+				throw new ArgumentNullException("folders");
+
+			if (contacts == null)
+				throw new ArgumentNullException("contacts");
+
+			IList<CiscoFolder> foldersArray = folders as IList<CiscoFolder> ?? folders.ToArray();
+			IList<CiscoContact> contactsArray = contacts as IList<CiscoContact> ?? contacts.ToArray();
+
+			m_FolderSection.Enter();
+
+			try
+			{
+				foreach (CiscoFolder folder in foldersArray)
+					m_Folders[folder.FolderSearchId] = folder;
+			}
+			finally
+			{
+				m_FolderSection.Leave();
+			}
+
 			AbstractCiscoFolder parent = GetFolder(resultId);
 			if (parent != null)
-				parent.AddChildren(folders.Cast<IDirectoryFolder>(), contacts.Cast<IContact>());
+				parent.AddChildren(foldersArray.Cast<IDirectoryFolder>(), contactsArray.Cast<IContact>());
 		}
 
 		/// <summary>
@@ -271,9 +269,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <returns></returns>
 		private AbstractCiscoFolder GetFolder(string resultId)
 		{
-			return m_Folders.Values.AsEnumerable().Cast<AbstractCiscoFolder>()
-			                .Concat(GetRoots().Cast<AbstractCiscoFolder>())
-			                .FirstOrDefault(f => f.FolderSearchId == resultId);
+			return m_FolderSection.Execute(() => m_Folders.GetDefault(resultId)) 
+				?? m_RootsCache.Values.FirstOrDefault(value => value.FolderSearchId == resultId) as AbstractCiscoFolder;
 		}
 
 		#endregion
@@ -302,5 +299,129 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		}
 
 		#endregion
+	}
+
+	[XmlConverter(typeof(PhonebookSearchResultXmlConverter))]
+	public sealed class PhonebookSearchResult
+	{
+		private readonly IcdOrderedDictionary<string, CiscoFolder> m_Folders;
+		private readonly IcdOrderedDictionary<string, CiscoContact> m_Contacts;
+
+		/// <summary>
+		/// Gets the total number of folders and contacts.
+		/// </summary>
+		public int Count { get { return m_Folders.Count + m_Contacts.Count; } }
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		public PhonebookSearchResult()
+		{
+			m_Folders = new IcdOrderedDictionary<string, CiscoFolder>();
+			m_Contacts = new IcdOrderedDictionary<string, CiscoContact>();
+		}
+
+		/// <summary>
+		/// Gets the folders.
+		/// </summary>
+		/// <returns></returns>
+		public CiscoFolder[] GetFolders()
+		{
+			return m_Folders.Values.ToArray(m_Folders.Count);
+		}
+
+		/// <summary>
+		/// Gets the contacts.
+		/// </summary>
+		/// <returns></returns>
+		public CiscoContact[] GetContacts()
+		{
+			return m_Contacts.Values.ToArray(m_Contacts.Count);
+		}
+
+		/// <summary>
+		/// Adds the given folder.
+		/// </summary>
+		/// <param name="folder"></param>
+		public void AddFolder(CiscoFolder folder)
+		{
+			if (folder == null)
+				throw new ArgumentNullException("folder");
+
+			m_Folders.Add(folder.FolderId, folder);
+		}
+
+		/// <summary>
+		/// Adds the given contact.
+		/// </summary>
+		/// <param name="contact"></param>
+		public void AddContact(CiscoContact contact)
+		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
+			m_Contacts.Add(contact.ContactId, contact);
+		}
+	}
+
+	public sealed class PhonebookSearchResultXmlConverter : AbstractGenericXmlConverter<PhonebookSearchResult>
+	{
+			// <PhonebookSearchResult item="1" status="OK">
+			//   <ResultInfo item="1">
+			//     <Offset item="1">0</Offset>
+			//     <Limit item="1">50</Limit>
+			//     <TotalRows item="1">21</TotalRows>
+			//   </ResultInfo>
+			//   <Folder item="1" localId="localGroupId-3">
+			//     <Name item="1">CA</Name>
+			//     <FolderId item="1">localGroupId-3</FolderId>
+			//     <ParentFolderId item="1">localGroupId-2</ParentFolderId>
+			//   </Folder>
+			//   <Contact item="1">
+			//     <Name item="1">Bradd Fisher</Name>
+			//     <ContactId item="1">localContactId-10</ContactId>
+			//     <FolderId item="1">localGroupId-18</FolderId>
+			//     <Title item="1">President</Title>
+			//     <ContactMethod item="1">
+			//       <ContactMethodId item="1">1</ContactMethodId>
+			//       <Number item="1">111</Number>
+			//       <CallType item="1">Video</CallType>
+			//     </ContactMethod>
+			//   </Contact>
+			// </PhonebookSearchResult>
+
+		/// <summary>
+		/// Creates a new instance of T.
+		/// </summary>
+		/// <returns></returns>
+		protected override PhonebookSearchResult Instantiate()
+		{
+			return new PhonebookSearchResult();
+		}
+
+		/// <summary>
+		/// Override to handle the current element.
+		/// </summary>
+		/// <param name="reader"></param>
+		/// <param name="instance"></param>
+		protected override void ReadElement(IcdXmlReader reader, PhonebookSearchResult instance)
+		{
+			switch (reader.Name)
+			{
+				case "Folder":
+					CiscoFolder folder = IcdXmlConvert.DeserializeObject<CiscoFolder>(reader);
+					instance.AddFolder(folder);
+					break;
+
+				case "Contact":
+					CiscoContact contact = IcdXmlConvert.DeserializeObject<CiscoContact>(reader);
+					instance.AddContact(contact);
+					break;
+
+				default:
+					base.ReadElement(reader, instance);
+					break;
+			}
+		}
 	}
 }

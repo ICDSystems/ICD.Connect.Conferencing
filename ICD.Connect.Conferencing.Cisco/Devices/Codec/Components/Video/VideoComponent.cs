@@ -414,12 +414,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		/// <returns></returns>
 		public VideoInputConnector GetVideoInputConnector(int id)
 		{
-			if (!ContainsVideoInputConnector(id))
-			{
-				throw new KeyNotFoundException(string.Format("{0} contains no {1} with id {2}", GetType().Name,
-															 typeof(VideoInputConnector).Name, id));
-			}
-			return m_VideoInputConnectors[id];
+			return GetOrCreateInputConnector(id);
 		}
 
 		/// <summary>
@@ -614,13 +609,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		private void ParseVideoInputConnectorStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			int connectorId = AbstractVideoConnector.GetConnectorId(xml);
-			var connector = GetOrCreateConnector(connectorId);
+			var connector = GetOrCreateInputConnector(connectorId);
 
 			// Update
 			connector.UpdateFromXml(xml);
 		}
 
-		private VideoInputConnector GetOrCreateConnector(int connectorId)
+		private VideoInputConnector GetOrCreateInputConnector(int connectorId)
 		{
 			VideoInputConnector connector = m_VideoInputConnectors.GetDefault(connectorId, null);
 

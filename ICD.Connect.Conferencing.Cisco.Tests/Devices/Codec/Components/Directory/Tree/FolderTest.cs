@@ -11,19 +11,34 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 		[Test]
 		public void PhonebookTypeTest()
 		{
-			CiscoFolder folder = new CiscoFolder("Test", "Id");
+			CiscoFolder folder = new CiscoFolder
+			{
+				FolderId = "Id"
+			};
 			Assert.AreEqual(ePhonebookType.Corporate, folder.PhonebookType);
 
-			folder = new CiscoFolder("Test2", "localId");
+			folder = new CiscoFolder
+			{
+				FolderId = "localId"
+			};
 			Assert.AreEqual(ePhonebookType.Local, folder.PhonebookType);
 		}
 
 		[Test]
 		public void AddFolderTest()
 		{
-			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder
+			{
+				FolderId = "ParentId"
+			};
+			parent.SetName("parent");
 
-			CiscoFolder child = new CiscoFolder("Child", "ChildId");
+			CiscoFolder child = new CiscoFolder
+			{
+				FolderId = "ChildId"
+			};
+			child.SetName("child");
+
 			Assert.IsTrue(parent.AddFolder(child));
 			Assert.IsFalse(parent.AddFolder(child));
 		}
@@ -31,9 +46,14 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 		[Test]
 		public void AddContactTest()
 		{
-			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder
+			{
+				FolderId = "ParentId"
+			};
+			parent.SetName("parent");
 
-			CiscoContact child = new CiscoContact("Child", "ChildId", "ParentId", new CiscoContactMethod[0]);
+			CiscoContact child = new CiscoContact(){Name = "child"};
+
 			Assert.IsTrue(parent.AddContact(child));
 			Assert.IsFalse(parent.AddContact(child));
 		}
@@ -43,11 +63,15 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 		{
 			List<EventArgs> results = new List<EventArgs>();
 
-			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder
+			{
+				FolderId = "ParentId"
+			};
+			parent.SetName("parent");
 
 			parent.OnContentsChanged += (sender, args) => results.Add(args);
 
-			CiscoContact child = new CiscoContact("Child", "ChildId", "ParentId", new CiscoContactMethod[0]);
+			CiscoContact child = new CiscoContact(){Name = "child"};
 			parent.AddContact(child);
 			parent.AddContact(child);
 
@@ -59,11 +83,20 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 		{
 			List<EventArgs> results = new List<EventArgs>();
 
-			CiscoFolder parent = new CiscoFolder("Parent", "ParentId");
+			CiscoFolder parent = new CiscoFolder
+			{
+				FolderId = "ParentId"
+			};
+			parent.SetName("parent");
 
 			parent.OnContentsChanged += (sender, args) => results.Add(args);
 
-			CiscoFolder child = new CiscoFolder("Child", "ChildId");
+			CiscoFolder child = new CiscoFolder
+			{
+				FolderId = "ChildId"
+			};
+			child.SetName("child");
+
 			parent.AddFolder(child);
 			parent.AddFolder(child);
 

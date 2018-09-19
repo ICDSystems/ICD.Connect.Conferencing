@@ -190,7 +190,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 		[Test]
 		public void DirectoryBuildingTest()
 		{
-			DirectoryComponent component = new DirectoryComponent(Codec);
+			DirectoryComponent component = Codec.Components.GetComponent<DirectoryComponent>();
 
 			string rX = string.Format(EXAMPLE_XML, component.GetRoot(ePhonebookType.Local).FolderSearchId);
 
@@ -205,12 +205,14 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 		[Test]
 		public void FolderSearchResultFeedbackTest()
 		{
-			DirectoryComponent component = new DirectoryComponent(Codec);
+			DirectoryComponent component = Codec.Components.GetComponent<DirectoryComponent>();
 			List<IDirectoryFolder> results = new List<IDirectoryFolder>();
 
 			component.OnResultParsed += (id, folders, contacts) => results.AddRange(folders);
 
-			Port.Receive(EXAMPLE_XML);
+			string rX = string.Format(EXAMPLE_XML, component.GetRoot(ePhonebookType.Local).FolderSearchId);
+
+			Port.Receive(rX);
 
 			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
 
@@ -220,12 +222,14 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 		[Test]
 		public void ContactSearchResultFeedbackTest()
 		{
-			DirectoryComponent component = new DirectoryComponent(Codec);
+			DirectoryComponent component = Codec.Components.GetComponent<DirectoryComponent>();
 			List<CiscoContact> results = new List<CiscoContact>();
 
 			component.OnResultParsed += (id, folders, contacts) => results.AddRange(contacts);
 
-			Port.Receive(EXAMPLE_XML);
+			string rX = string.Format(EXAMPLE_XML, component.GetRoot(ePhonebookType.Local).FolderSearchId);
+
+			Port.Receive(rX);
 
 			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
 
