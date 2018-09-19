@@ -57,6 +57,11 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 			}
 		}
 
+		protected override AbstractZoomRoomResponse Instantiate()
+		{
+			throw new NotImplementedException();
+		}
+
 		public override void WriteJson(JsonWriter writer, AbstractZoomRoomResponse value, JsonSerializer serializer)
 		{
 			throw new NotSupportedException();
