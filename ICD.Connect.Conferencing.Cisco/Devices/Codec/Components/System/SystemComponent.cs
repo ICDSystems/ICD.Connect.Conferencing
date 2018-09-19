@@ -494,7 +494,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 		private void ParseStandbyStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
-			Awake = XmlUtils.GetInnerXml(xml) == "On";
+			string standby = XmlUtils.GetInnerXml(xml);
+			Awake = standby == "Off";
 		}
 
 		private void ParseSipRegistrationStatus(CiscoCodecDevice sender, string resultId, string xml)
