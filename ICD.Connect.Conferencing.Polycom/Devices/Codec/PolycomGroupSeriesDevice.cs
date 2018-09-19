@@ -88,6 +88,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 				m_Initialized = value;
 
+				Log(eSeverity.Informational, "Initialized state changed to {0}", m_Initialized);
+
 				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
 			}
 		}
