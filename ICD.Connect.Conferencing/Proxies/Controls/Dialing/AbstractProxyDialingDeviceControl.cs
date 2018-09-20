@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Proxies.Controls;
 using ICD.Connect.Devices.Proxies.Devices;
@@ -141,6 +144,35 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		public void Dial(string number, eConferenceSourceType callType)
 		{
 			CallMethod(DialingDeviceControlApi.METHOD_DIAL_TYPE, callType);
+		}
+
+		/// <summary>
+		/// Dials the given contact.
+		/// </summary>
+		/// <param name="contact"></param>
+		public void Dial(IContact contact)
+		{
+			CallMethod(DialingDeviceControlApi.METHOD_DIAL_CONTACT, contact);
+		}
+
+		/// <summary>
+		/// Returns the level of support the device has for the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		/// <returns></returns>
+		public eBookingSupport CanDial(IBooking booking)
+		{
+			// TODO ???
+			return eBookingSupport.Unknown;
+		}
+
+		/// <summary>
+		/// Dials the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		public void Dial(IBooking booking)
+		{
+			CallMethod(DialingDeviceControlApi.METHOD_DIAL_BOOKING, booking);
 		}
 
 		/// <summary>

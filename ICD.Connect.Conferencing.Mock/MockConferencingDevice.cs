@@ -4,7 +4,9 @@ using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 
@@ -147,6 +149,34 @@ namespace ICD.Connect.Conferencing.Mock
 			m_Sources.Add(source);
 
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
+		}
+
+		public eBookingSupport CanDial(IBooking booking)
+		{
+			return eBookingSupport.Supported;
+		}
+
+		public void Dial(IBooking booking)
+		{
+			var zoomBooking = booking as IZoomBooking;
+			if (zoomBooking != null)
+			{
+				Dial(zoomBooking.MeetingNumber, eConferenceSourceType.Video);
+			}
+
+			var sipBooking = booking as ISipBooking;
+			if (sipBooking != null)
+			{
+				Dial(sipBooking.SipUri, eConferenceSourceType.Video);
+				return;
+			}
+
+			var pstnBooking = booking as IPstnBooking;
+			if (pstnBooking != null)
+			{
+				Dial(pstnBooking.PhoneNumber, eConferenceSourceType.Audio);
+				return;
+			}
 		}
 	}
 }

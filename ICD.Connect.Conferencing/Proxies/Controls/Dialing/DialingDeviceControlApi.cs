@@ -14,12 +14,20 @@
 
 		public const string METHOD_DIAL = "Dial";
 		public const string METHOD_DIAL_TYPE = "DialType";
+		public const string METHOD_DIAL_CONTACT = "DialContact";
+		public const string METHOD_CAN_DIAL_BOOKING = "CanDialBooking";
+		public const string METHOD_DIAL_BOOKING = "DialBooking";
 		public const string METHOD_SET_DO_NOT_DISTURB = "SetDoNotDisturb";
 		public const string METHOD_SET_AUTO_ANSWER = "SetAutoAnswer";
 		public const string METHOD_SET_PRIVACY_MUTE = "SetPrivacyMute";
 
 		public const string HELP_METHOD_DIAL = "Dials the given number.";
 		public const string HELP_METHOD_DIAL_TYPE = "Dials the given number.";
+		public const string HELP_METHOD_DIAL_CONTACT = "Dials the given contact.";
+
+		public const string HELP_METHOD_CAN_DIAL_BOOKING =
+			"Returns the level of support the device has for the given booking.";
+		public const string HELP_METHOD_DIAL_BOOKING = "Dials the given booking.";
 		public const string HELP_METHOD_SET_DO_NOT_DISTURB = "Sets the do-not-disturb enabled state.";
 		public const string HELP_METHOD_SET_AUTO_ANSWER = "SetAutoAnswer";
 		public const string HELP_METHOD_SET_PRIVACY_MUTE = "SetPrivacyMute";

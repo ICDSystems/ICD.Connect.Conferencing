@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
@@ -22,7 +25,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
-		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
+		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video | eConferenceSourceType.Audio; } }
 
 		/// <summary>
 		/// Constructor.
@@ -82,6 +85,47 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public override void Dial(string number, eConferenceSourceType callType)
 		{
 			m_Component.Dial(number, callType);
+		}
+
+		/// <summary>
+		/// Returns the level of support the dialer has for the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		/// <returns></returns>
+		public override eBookingSupport CanDial(IBooking booking)
+		{
+			var sipBooking = booking as ISipBooking;
+			if (sipBooking != null && sipBooking.IsValidSipUri())
+				return eBookingSupport.Supported;
+
+			var potsBooking = booking as IPstnBooking;
+			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+				return eBookingSupport.Supported;
+
+			return eBookingSupport.Unsupported;
+		}
+
+		/// <summary>
+		/// Dials the given booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		public override void Dial(IBooking booking)
+		{
+			var sipBooking = booking as ISipBooking;
+			if (sipBooking != null && sipBooking.IsValidSipUri())
+			{
+				Dial(sipBooking.SipUri);
+				return;
+			}
+
+			var potsBooking = booking as IPstnBooking;
+			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+			{
+				Dial(potsBooking.PhoneNumber);
+				return;
+			}
+
+			Log(eSeverity.Error, "No supported methods for dialing the booking were found.");
 		}
 
 		/// <summary>

@@ -103,7 +103,17 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IDirectoryFolder GetFolder(string name)
 		{
-			return m_FoldersSection.Execute(() => m_CachedFolders[name]);
+			m_FoldersSection.Enter();
+			try
+			{
+				if(m_CachedFolders.ContainsKey(name))
+					return m_CachedFolders[name];
+				return null;
+			}
+			finally
+			{
+				m_FoldersSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -122,7 +132,17 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IContact GetContact(string name)
 		{
-			return m_ContactsSection.Execute(() => m_CachedContacts[name]);
+			m_ContactsSection.Enter();
+			try
+			{
+				if(m_CachedContacts.ContainsKey(name))
+					return m_CachedContacts[name];
+				return null;
+			}
+			finally
+			{
+				m_ContactsSection.Leave();
+			}
 		}
 
 		/// <summary>
