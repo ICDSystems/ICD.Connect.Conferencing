@@ -413,7 +413,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				case eConnectionState.Connected:
 					return eConferenceSourceStatus.Connected;
 				case eConnectionState.Inactive:
-					return eConferenceSourceStatus.Idle;
 				case eConnectionState.Disconnecting:
 					return eConferenceSourceStatus.Disconnecting;
 				case eConnectionState.Disconnected:
