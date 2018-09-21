@@ -4,7 +4,7 @@ using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 {
-    public sealed class ZoomBooking : AbstractBooking, IZoomBooking, ISipBooking
+    public sealed class ZoomBooking : AbstractBooking, IZoomBooking
     {
 	    private readonly Booking m_Booking;
 
@@ -20,7 +20,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 
 	    public string SipUri
 	    {
-		    get { return m_Booking.MeetingNumber + "@zmus.us"; }
+		    get { return "sip:" + m_Booking.MeetingNumber + "@zmus.us"; }
 	    }
 
 		public override string OrganizerName
