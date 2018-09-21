@@ -13,6 +13,7 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
@@ -170,6 +171,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			Controls.Add(new CiscoCodecLayoutControl(this, 3));
 			Controls.Add(new CiscoCodecPresentationControl(this, 4));
 			Controls.Add(new CiscoCodecPowerControl(this, 5));
+			Controls.Add(new CiscoCalendarControl(this, 6));
 		}
 
 		#endregion
