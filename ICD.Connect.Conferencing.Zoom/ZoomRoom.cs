@@ -40,15 +40,16 @@ namespace ICD.Connect.Conferencing.Zoom
 			public object ActualCallback { get; set; }
 		}
 
-		private const string END_OF_LINE = "\r\n";
+		private const string END_OF_LINE = "\r";
 
 		/// <summary>
 		/// System Configuration Commands
 		/// </summary>
 		private readonly string[] m_ConfigurationCommands =
 		{
-			"echo off",
+            "echo off",
 			"format json",
+            "zStatus Call Status"
 		};
 
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
@@ -264,7 +265,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void Initialize()
 		{
 			SendCommands(m_ConfigurationCommands);
-			Initialized = true;
 		}
 
 		private void CallResponseCallbacks(AbstractZoomRoomResponse response)
@@ -322,7 +322,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void PortOnSerialDataReceived(object sender, StringEventArgs args)
 		{
-			m_SerialBuffer.Enqueue(args.Data);
+		    m_SerialBuffer.Enqueue(args.Data);
 		}
 
 		/// <summary>
@@ -344,7 +344,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		}
 
 		/// <summary>
-		/// Called when the port online status changes.
+		/// Called when the port online status changes.1
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
@@ -395,9 +395,12 @@ namespace ICD.Connect.Conferencing.Zoom
 			{
 				// zoom gives us bad json (unescaped characters) in some error messages
 			}
-			
-			if (response != null)
-				CallResponseCallbacks(response);
+
+		    if (response != null)
+		    {
+		        CallResponseCallbacks(response);
+		        Initialized = true;
+		    }
 		}
 
 		#endregion
