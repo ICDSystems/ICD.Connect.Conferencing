@@ -104,10 +104,18 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 
 				return null;
 			}
+#if SIMPLSHARP
+			//Added to catch JsonExceptions in SimplSharp. JsonException causing build to fail.
+			catch (Exception ex)
+			{
+				return null;
+			}
+#else
 			catch (JsonException ex)
 			{
 				return null;
 			}
+#endif
 		}
 
 		private sealed class AttributeKey : IEquatable<AttributeKey>
