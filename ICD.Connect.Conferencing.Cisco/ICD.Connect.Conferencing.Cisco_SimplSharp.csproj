@@ -141,6 +141,10 @@
       <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
       <Name>ICD.Connect.API_SimplSharp</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Calendaring\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
+      <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
+      <Name>ICD.Connect.Calendaring_SimplSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_SimplSharp.csproj">
       <Project>{B13D593D-8BBF-4E20-ABD8-47C6095E7D3E}</Project>
       <Name>ICD.Connect.Cameras_SimplSharp</Name>
@@ -160,10 +164,6 @@
     <ProjectReference Include="..\..\ICD.Connect.Routing\ICD.Connect.Routing\ICD.Connect.Routing_SimplSharp.csproj">
       <Project>{B0C0CA1C-FA55-4BEA-8A8B-EDB2141C523E}</Project>
       <Name>ICD.Connect.Routing_SimplSharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ICD.Connect.Scheduling\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
-      <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
-      <Name>ICD.Connect.Calendaring_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Settings\ICD.Connect.Settings\ICD.Connect.Settings_SimplSharp.csproj">
       <Project>{5B84EB3C-1C3A-4C4D-98C2-69F67CF51D5A}</Project>
