@@ -36,7 +36,7 @@ namespace ICD.Connect.Conferencing.Mock
 
 		public override void PopulateFolder(IDirectoryFolder folder)
 		{
-			folder.AddContact(new Contact("MockPerson", new IContactMethod[0]));
+			folder.AddContact(new Contact("MockPerson", new IContactMethod[]{ new ContactMethod("555-555-5555") }));
 		}
 	}
 }
