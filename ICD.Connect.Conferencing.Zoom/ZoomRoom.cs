@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ICD.Common.Properties;
+﻿using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -12,14 +9,14 @@ using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Controls;
 using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
 using ICD.Connect.Conferencing.Zoom.Responses;
-using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Protocol;
-using ICD.Connect.Protocol.Extensions;
-using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings.Core;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
@@ -40,7 +37,11 @@ namespace ICD.Connect.Conferencing.Zoom
 			public object ActualCallback { get; set; }
 		}
 
-		private const string END_OF_LINE = "\r\n";
+		/// <summary>
+		/// End of line character(s) for ZR-CSAPI commands.
+		/// Must be \r, since the API doesn't accept the "format json" command otherwise.
+		/// </summary>
+		private const string END_OF_LINE = "\r";
 
 		/// <summary>
 		/// System Configuration Commands
@@ -49,6 +50,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			"echo off",
 			"format json",
+			"zStatus Call Status"
 		};
 
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
@@ -73,7 +75,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			private set
 			{
 				if (value == m_Initialized)
+				{
 					return;
+				}
 
 				m_Initialized = value;
 
@@ -151,12 +155,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			if (port != null)
-			{
-				port.DebugRx = eDebugMode.Ascii;
-				port.DebugTx = eDebugMode.Ascii;
-			}
-
 			m_ConnectionStateManager.SetPort(port);
 		}
 
@@ -177,7 +175,9 @@ namespace ICD.Connect.Conferencing.Zoom
 		public void SendCommand(string command, params object[] args)
 		{
 			if (args != null)
+			{
 				command = string.Format(command, args);
+			}
 
 			SendCommand(command);
 		}
@@ -190,10 +190,14 @@ namespace ICD.Connect.Conferencing.Zoom
 		public void SendCommands(params string[] commands)
 		{
 			if (commands == null)
+			{
 				throw new ArgumentNullException("commands");
+			}
 
 			foreach (string command in commands)
+			{
 				SendCommand(command);
+			}
 		}
 
 		/// <summary>
@@ -208,10 +212,12 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			m_ResponseCallbacksSection.Execute(() =>
 			{
-				if (!m_ResponseCallbacks.ContainsKey(typeof (T)))
-					m_ResponseCallbacks.Add(typeof (T), new List<ResponseCallbackPair>());
+				if (!m_ResponseCallbacks.ContainsKey(typeof(T)))
+				{
+					m_ResponseCallbacks.Add(typeof(T), new List<ResponseCallbackPair>());
+				}
 
-				m_ResponseCallbacks[typeof (T)].Add(new ResponseCallbackPair
+				m_ResponseCallbacks[typeof(T)].Add(new ResponseCallbackPair
 				{
 					WrappedCallback = wrappedCallback,
 					ActualCallback = callback
@@ -230,22 +236,26 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		/// <param name="callback"></param>
 		[PublicAPI]
-		public void UnregisterResponseCallback<T>(ResponseCallback<T> callback) where T: AbstractZoomRoomResponse
+		public void UnregisterResponseCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
 		{
 			m_ResponseCallbacksSection.Enter();
 
 			try
 			{
-				Type key = typeof (T);
+				Type key = typeof(T);
 				if (!m_ResponseCallbacks.ContainsKey(key))
+				{
 					return;
+				}
 
 				List<ResponseCallbackPair> callbackList = m_ResponseCallbacks[key];
 				ResponseCallbackPair callbackToRemove = callbackList.SingleOrDefault(c => c.ActualCallback.Equals(callback));
 
 				if (callbackToRemove == null)
+				{
 					return;
-				
+				}
+
 				callbackList.Remove(callbackToRemove);
 			}
 			finally
@@ -264,7 +274,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void Initialize()
 		{
 			SendCommands(m_ConfigurationCommands);
-			Initialized = true;
 		}
 
 		private void CallResponseCallbacks(AbstractZoomRoomResponse response)
@@ -276,7 +285,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			try
 			{
 				if (!m_ResponseCallbacks.ContainsKey(responseType))
+				{
 					return;
+				}
 
 				callbacks = m_ResponseCallbacks[responseType].Select(c => c.WrappedCallback).ToArray();
 			}
@@ -286,7 +297,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 
 			foreach (ResponseCallback callback in callbacks)
+			{
 				callback(this, response);
+			}
 		}
 
 		#endregion
@@ -335,7 +348,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_SerialBuffer.Clear();
 
 			if (IsConnected)
+			{
 				Initialize();
+			}
 			else
 			{
 				Log(eSeverity.Critical, "Lost connection");
@@ -344,7 +359,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		}
 
 		/// <summary>
-		/// Called when the port online status changes.
+		/// Called when the port online status changes.1
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
@@ -395,9 +410,12 @@ namespace ICD.Connect.Conferencing.Zoom
 			{
 				// zoom gives us bad json (unescaped characters) in some error messages
 			}
-			
+
 			if (response != null)
+			{
 				CallResponseCallbacks(response);
+				Initialized = true;
+			}
 		}
 
 		#endregion
