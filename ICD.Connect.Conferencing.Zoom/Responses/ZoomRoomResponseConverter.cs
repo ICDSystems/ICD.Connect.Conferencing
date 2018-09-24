@@ -76,26 +76,33 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		/// <returns></returns>
 		public override AbstractZoomRoomResponse ReadJson(JsonReader reader, AbstractZoomRoomResponse existingValue, JsonSerializer serializer)
 		{
-			JObject jObject = JObject.Load(reader);
-			string responseKey = jObject[RESPONSE_KEY].ToString();
-			eZoomRoomApiType apiResponseType = jObject[API_RESPONSE_TYPE].ToObject<eZoomRoomApiType>();
-			bool synchronous = jObject[SYNCHRONOUS].ToObject<bool>();
-			
-			AttributeKey key = new AttributeKey(responseKey, apiResponseType, synchronous);
+		    try
+		    {
+		        JObject jObject = JObject.Load(reader);
+		        string responseKey = jObject[RESPONSE_KEY].ToString();
+		        eZoomRoomApiType apiResponseType = jObject[API_RESPONSE_TYPE].ToObject<eZoomRoomApiType>();
+		        bool synchronous = jObject[SYNCHRONOUS].ToObject<bool>();
 
-			// find concrete type that matches the json values
-			Type responseType;
-			if (!s_TypeDict.TryGetValue(key, out responseType))
-				return null;
-			
-			// shitty zoom api sometimes sends a single object instead of array
-			if (responseType == typeof(ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
-				responseType = typeof(SingleParticipantResponse);
+		        AttributeKey key = new AttributeKey(responseKey, apiResponseType, synchronous);
 
-			if (responseType != null)
-				return (AbstractZoomRoomResponse)serializer.Deserialize(new JTokenReader(jObject), responseType);
+		        // find concrete type that matches the json values
+		        Type responseType;
+		        if (!s_TypeDict.TryGetValue(key, out responseType))
+		            return null;
 
-			return null;
+		        // shitty zoom api sometimes sends a single object instead of array
+		        if (responseType == typeof(ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
+		            responseType = typeof(SingleParticipantResponse);
+
+		        if (responseType != null)
+		            return (AbstractZoomRoomResponse) serializer.Deserialize(new JTokenReader(jObject), responseType);
+                
+		        return null;
+		    }
+		    catch(JsonException ex)
+		    {
+		        return null;
+		    }
 		}
 
 		private sealed class AttributeKey : IEquatable<AttributeKey>

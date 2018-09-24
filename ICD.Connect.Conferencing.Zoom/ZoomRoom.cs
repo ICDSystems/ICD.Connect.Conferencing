@@ -151,12 +151,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			if (port != null)
-			{
-				port.DebugRx = eDebugMode.Ascii;
-				port.DebugTx = eDebugMode.Ascii;
-			}
-
 			m_ConnectionStateManager.SetPort(port);
 		}
 
