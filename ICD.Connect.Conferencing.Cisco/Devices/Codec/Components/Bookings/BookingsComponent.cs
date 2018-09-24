@@ -67,22 +67,33 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// <summary>
 		/// Sends a command to the Cisco Codec to list the available bookings.
 		/// </summary>
-		/// <param name="days">Number of days to retrieve bookings from.</param>
+		/// <param name="days">Number of days to retrieve bookings from (1..365).</param>
 		public void ListBookings(int days)
 		{
-			ListBookings(days, 0, ushort.MaxValue, 0);
+			ListBookings(days, 0, 65534, 0);
 		}
 
 		/// <summary>
 		/// Sends a command to the Cisco Codec to list the available bookings.
 		/// </summary>
-		/// <param name="days">Number of days to retrieve bookings from.</param>
-		/// <param name="dayOffset">Which day to start the search from (today: 0, tomorrow: 1…).</param>
-		/// <param name="limit">Max number of bookings to list.</param>
-		/// <param name="offset">Offset number of bookings for this search.</param>
+		/// <param name="days">Number of days to retrieve bookings from (1..365).</param>
+		/// <param name="dayOffset">Which day to start the search from (today: 0, tomorrow: 1…) (0..365).</param>
+		/// <param name="limit">Max number of bookings to list (1..65534).</param>
+		/// <param name="offset">Offset number of bookings for this search (0..65534).</param>
 		public void ListBookings(int days, int dayOffset, int limit, int offset)
 		{
-			Codec.SendCommand("xCommand Bookings List Days:{0}, DayOffset:{1}, Limit:{2}, Offset:{3}", days, dayOffset, limit, offset);
+			string command = "xCommand Bookings List";
+
+			if (days != 0)
+				command += string.Format(" Days:{0}", days);
+			if (dayOffset != 0)
+				command += string.Format(" DayOffset:{0}", dayOffset);
+			if (limit != 0)
+				command += string.Format(" Limit:{0}", limit);
+			if (offset != 0)
+				command += string.Format(" Offset:{0}", offset);
+
+			Codec.SendCommand(command);
 			Codec.Log(eSeverity.Informational, "Listing bookings for Days:{0} DayOffset:{1} Limit:{2} Offset:{3}", days, dayOffset, limit, offset);
 		}
 
@@ -139,7 +150,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		{
 			bool change = false;
 
-			IcdHashSet<Booking> bookings = XmlUtils.GetChildElementsAsString(xml)
+			IcdHashSet<Booking> bookings = XmlUtils.GetChildElementsAsString(xml, "Booking")
 			                                       .Select(x => Booking.FromXml(x))
 			                                       .ToIcdHashSet();
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -76,26 +75,39 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		/// <returns></returns>
 		public override AbstractZoomRoomResponse ReadJson(JsonReader reader, AbstractZoomRoomResponse existingValue, JsonSerializer serializer)
 		{
-			JObject jObject = JObject.Load(reader);
-			string responseKey = jObject[RESPONSE_KEY].ToString();
-			eZoomRoomApiType apiResponseType = jObject[API_RESPONSE_TYPE].ToObject<eZoomRoomApiType>();
-			bool synchronous = jObject[SYNCHRONOUS].ToObject<bool>();
-			
-			AttributeKey key = new AttributeKey(responseKey, apiResponseType, synchronous);
+			try
+			{
+				JObject jObject = JObject.Load(reader);
+				string responseKey = jObject[RESPONSE_KEY].ToString();
+				eZoomRoomApiType apiResponseType = jObject[API_RESPONSE_TYPE].ToObject<eZoomRoomApiType>();
+				bool synchronous = jObject[SYNCHRONOUS].ToObject<bool>();
 
-			// find concrete type that matches the json values
-			Type responseType;
-			if (!s_TypeDict.TryGetValue(key, out responseType))
+				AttributeKey key = new AttributeKey(responseKey, apiResponseType, synchronous);
+
+				// find concrete type that matches the json values
+				Type responseType;
+				if (!s_TypeDict.TryGetValue(key, out responseType))
+				{
+					return null;
+				}
+
+				// shitty zoom api sometimes sends a single object instead of array
+				if (responseType == typeof(ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
+				{
+					responseType = typeof(SingleParticipantResponse);
+				}
+
+				if (responseType != null)
+				{
+					return (AbstractZoomRoomResponse)serializer.Deserialize(new JTokenReader(jObject), responseType);
+				}
+
 				return null;
-			
-			// shitty zoom api sometimes sends a single object instead of array
-			if (responseType == typeof(ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
-				responseType = typeof(SingleParticipantResponse);
-
-			if (responseType != null)
-				return (AbstractZoomRoomResponse)serializer.Deserialize(new JTokenReader(jObject), responseType);
-
-			return null;
+			}
+			catch (JsonException ex)
+			{
+				return null;
+			}
 		}
 
 		private sealed class AttributeKey : IEquatable<AttributeKey>
@@ -131,16 +143,32 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 
 			public bool Equals(AttributeKey other)
 			{
-				if (ReferenceEquals(null, other)) return false;
-				if (ReferenceEquals(this, other)) return true;
+				if (ReferenceEquals(null, other))
+				{
+					return false;
+				}
+
+				if (ReferenceEquals(this, other))
+				{
+					return true;
+				}
+
 				return string.Equals(m_Key, other.m_Key) && m_ResponseType == other.m_ResponseType && m_Synchronous == other.m_Synchronous;
 			}
 
 			public override bool Equals(object obj)
 			{
-				if (ReferenceEquals(null, obj)) return false;
-				if (ReferenceEquals(this, obj)) return true;
-				return obj is AttributeKey && Equals((AttributeKey) obj);
+				if (ReferenceEquals(null, obj))
+				{
+					return false;
+				}
+
+				if (ReferenceEquals(this, obj))
+				{
+					return true;
+				}
+
+				return obj is AttributeKey && Equals((AttributeKey)obj);
 			}
 
 			public override int GetHashCode()
@@ -148,7 +176,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 				unchecked
 				{
 					var hashCode = (m_Key != null ? m_Key.GetHashCode() : 0);
-					hashCode = (hashCode * 397) ^ (int) m_ResponseType;
+					hashCode = (hashCode * 397) ^ (int)m_ResponseType;
 					hashCode = (hashCode * 397) ^ m_Synchronous.GetHashCode();
 					return hashCode;
 				}
