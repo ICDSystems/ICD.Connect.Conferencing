@@ -7,6 +7,7 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
+using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 
@@ -33,6 +34,7 @@ namespace ICD.Connect.Conferencing.Mock
 			m_Online = true;
 
 			Controls.Add(new MockDialingDeviceControl(this, 0));
+			Controls.Add(new MockDirectoryControl(this, 1));
 		}
 
 		/// <summary>
