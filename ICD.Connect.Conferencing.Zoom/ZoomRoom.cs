@@ -37,6 +37,10 @@ namespace ICD.Connect.Conferencing.Zoom
 			public object ActualCallback { get; set; }
 		}
 
+		/// <summary>
+		/// End of line character(s) for ZR-CSAPI commands.
+		/// Must be \r, since the API doesn't accept the "format json" command otherwise.
+		/// </summary>
 		private const string END_OF_LINE = "\r";
 
 		/// <summary>
