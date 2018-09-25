@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [10.0.1] - 2018-09-25
+### Changed
+ - Fixed bugs with Polycom initialization commands being cleared prematurely
+ - Fixed bug where Polycom call state would bounce between disconnected and connected
+
 ## [10.0.0] - 2018-09-14
 ### Added
  - Added Polycom calendar parsing
