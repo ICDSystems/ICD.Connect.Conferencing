@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
 {
@@ -236,10 +237,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
 				if (!match.Success)
 					throw new ArgumentException("Unable to parse dialing number", "line");
 
+				string number = CallStatus.CleanupNumber(match.Groups["number"].Value);
+
 				return new DialingNumber
 				{
 					Video = match.Groups["video"].Value == "video",
-					Number = match.Groups["number"].Value,
+					Number = number,
 					Protocol = match.Groups["protocol"].Value,
 				};
 			}

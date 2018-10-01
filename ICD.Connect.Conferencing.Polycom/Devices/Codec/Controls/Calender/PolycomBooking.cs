@@ -19,9 +19,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 			get
 			{
 				return m_Booking.GetDialingNumbers()
-					.Where(n => n.Protocol.Equals("sip", StringComparison.OrdinalIgnoreCase))
-					.Select(n => n.Number.Split(';').FirstOrDefault())
-					.FirstOrDefault();
+				                .Where(n => n.Protocol.Equals("sip", StringComparison.OrdinalIgnoreCase))
+				                .Select(n => n.Number)
+				                .FirstOrDefault();
 			}
 		}
 
