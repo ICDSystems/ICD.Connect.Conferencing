@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Calendaring;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
@@ -153,30 +154,30 @@ namespace ICD.Connect.Conferencing.Mock
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
 		}
 
-		public eBookingSupport CanDial(IBooking booking)
+		public eBookingSupport CanDial(IBookingNumber bookingNumber)
 		{
 			return eBookingSupport.Supported;
 		}
 
-		public void Dial(IBooking booking)
+		public void Dial(IBookingNumber bookingNumber)
 		{
-			var zoomBooking = booking as IZoomBooking;
-			if (zoomBooking != null)
+			var zoomNumber = bookingNumber as IZoomBookingNumber;
+			if (zoomNumber != null)
 			{
-				Dial(zoomBooking.MeetingNumber, eConferenceSourceType.Video);
+				Dial(zoomNumber.MeetingNumber, eConferenceSourceType.Video);
 			}
 
-			var sipBooking = booking as ISipBooking;
-			if (sipBooking != null)
+			var sipNumber = bookingNumber as ISipBookingNumber;
+			if (sipNumber != null)
 			{
-				Dial(sipBooking.SipUri, eConferenceSourceType.Video);
+				Dial(sipNumber.SipUri, eConferenceSourceType.Video);
 				return;
 			}
 
-			var pstnBooking = booking as IPstnBooking;
-			if (pstnBooking != null)
+			var potsNumber = bookingNumber as IPstnBookingNumber;
+			if (potsNumber != null)
 			{
-				Dial(pstnBooking.PhoneNumber, eConferenceSourceType.Audio);
+				Dial(potsNumber.PhoneNumber, eConferenceSourceType.Audio);
 				return;
 			}
 		}
