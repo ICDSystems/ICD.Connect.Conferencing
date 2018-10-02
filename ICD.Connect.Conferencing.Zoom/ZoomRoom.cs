@@ -49,8 +49,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly string[] m_ConfigurationCommands =
 		{
 			"echo off",
-			"format json",
-			"zStatus Call Status"
+			"format json"
 		};
 
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
@@ -274,6 +273,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void Initialize()
 		{
 			SendCommands(m_ConfigurationCommands);
+			Initialized = true;
 		}
 
 		private void CallResponseCallbacks(AbstractZoomRoomResponse response)
