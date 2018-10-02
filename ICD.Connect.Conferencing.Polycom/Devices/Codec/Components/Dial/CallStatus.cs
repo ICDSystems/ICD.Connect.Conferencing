@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -181,7 +182,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			CallId = int.Parse(match.Groups["call"].Value);
 			FarSiteName = match.Groups["name"].Value;
-			FarSiteNumber = match.Groups["number"].Value;
+			FarSiteNumber = CleanupNumber(match.Groups["number"].Value);
 			Speed = match.Groups["speed"].Value;
 
 			string stateName = match.Groups["connected"].Value;
@@ -213,7 +214,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			CallId = int.Parse(match.Groups["call"].Value);
 			ChannelId = int.Parse(match.Groups["chan"].Value);
-			FarSiteNumber = match.Groups["dialstr"].Value;
+			FarSiteNumber = CleanupNumber(match.Groups["dialstr"].Value);
 
 			string stateName = match.Groups["state"].Value;
 
@@ -240,7 +241,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 
 			CallId = int.Parse(match.Groups["call"].Value);
 			FarSiteName = match.Groups["name"].Value;
-			FarSiteNumber = match.Groups["number"].Value;
+			FarSiteNumber = CleanupNumber(match.Groups["number"].Value);
 			Speed = match.Groups["speed"].Value;
 
 			string stateName = match.Groups["connected"].Value;
@@ -270,7 +271,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			if (!match.Success)
 				throw new ArgumentException("Unable to parse line status", "lineStatus");
 
-			FarSiteNumber = match.Groups["number"].Value;
+			FarSiteNumber = CleanupNumber(match.Groups["number"].Value);
 
 			CallId = int.Parse(match.Groups["callId"].Value);
 			LineId = int.Parse(match.Groups["lineId"].Value);
@@ -351,6 +352,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		#endregion
 
 		#region Static Methods
+
+		/// <summary>
+		/// Removes trailing query info from a number.
+		/// E.g.
+		///		chris.van@profoundtech.onmicrosoft.com;gruu;opaque=app:conf:focus:id:WPBNWHOH
+		/// Becomes
+		///		chris.van@profoundtech.onmicrosoft.com
+		/// </summary>
+		/// <param name="number"></param>
+		/// <returns></returns>
+		public static string CleanupNumber(string number)
+		{
+			return number == null ? null : number.Split(';').FirstOrDefault();
+		}
 
 		/// <summary>
 		/// Gets the call id from the given call info data.
