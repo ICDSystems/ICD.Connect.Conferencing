@@ -155,6 +155,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
+			if (port != null)
+			{
+				port.DebugTx = eDebugMode.Ascii;
+				port.DebugRx = eDebugMode.Ascii;
+			}
 			m_ConnectionStateManager.SetPort(port);
 		}
 
@@ -335,7 +340,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void PortOnSerialDataReceived(object sender, StringEventArgs args)
 		{
-			m_SerialBuffer.Enqueue(args.Data);
+			if (args.Data.Contains("Login"))
+				Initialize();
+			else 
+				m_SerialBuffer.Enqueue(args.Data);
 		}
 
 		/// <summary>
@@ -347,11 +355,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_SerialBuffer.Clear();
 
-			if (IsConnected)
-			{
-				Initialize();
-			}
-			else
+			if (!args.Data)
 			{
 				Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;

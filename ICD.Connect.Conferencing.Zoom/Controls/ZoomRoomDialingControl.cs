@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private readonly CallComponent m_CurrentCall;
 		private readonly Dictionary<string, ThinConferenceSource> m_ParticipantSources;
 
-		private readonly List<CallComponent> m_IncomingCalls;
+		private readonly List<ThinConferenceSource> m_IncomingCalls;
 
 		#region Properties
 
@@ -59,7 +59,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			m_CurrentCall = Parent.Components.GetComponent<CallComponent>();
 			Subscribe(m_CurrentCall);
 			m_ParticipantSources = new Dictionary<string, ThinConferenceSource>();
-			m_IncomingCalls = new List<CallComponent>();
+			m_IncomingCalls = new List<ThinConferenceSource>();
 			Subscribe(parent);
 		}
 
@@ -219,12 +219,48 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private void IncomingCallCallback(ZoomRoom zoomroom, IncomingCallResponse response)
 		{
-			var incomingCall = new CallComponent(response.IncomingCall, zoomroom);
-
+			var incomingCall = CreateSourceFromIncomingCall(response.IncomingCall);
 			m_IncomingCalls.Add(incomingCall);
-			SourceSubscribe(incomingCall);
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(incomingCall));
 			Parent.Log(eSeverity.Informational, "Incoming call: {0}", response.IncomingCall.CallerName);
+		}
+
+		private ThinConferenceSource CreateSourceFromIncomingCall(IncomingCall call)
+		{
+			return new ThinConferenceSource()
+			{
+				Name = call.CallerName,
+				Number = call.MeetingNumber,
+				Status = eConferenceSourceStatus.Ringing,
+				AnswerState = eConferenceSourceAnswerState.Unanswered,
+				DialTime = IcdEnvironment.GetLocalTime(),
+				Direction = eConferenceSourceDirection.Incoming,
+				AnswerCallback = IncomingCallAnswerCallback(call),
+				RejectCallback = IncomingCallRejectCallback(call)
+			};
+		}
+
+		private ThinConferenceSourceAnswerCallback IncomingCallAnswerCallback(IncomingCall call)
+		{
+			return (source) =>
+			{
+				Parent.SendCommand("zCommand Call Accept callerJid: {0}", call.CallerJoinId);
+				source.AnswerState = eConferenceSourceAnswerState.Answered;
+				source.Status = eConferenceSourceStatus.Undefined;
+				m_IncomingCalls.Remove(source);
+				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(source));
+			};
+		}
+		private ThinConferenceSourceRejectCallback IncomingCallRejectCallback(IncomingCall call)
+		{
+			return (source) =>
+			{
+				Parent.SendCommand("zCommand Call Reject callerJid: {0}", call.CallerJoinId);
+				source.AnswerState = eConferenceSourceAnswerState.Ignored;
+				source.Status = eConferenceSourceStatus.Undefined;
+				m_IncomingCalls.Remove(source);
+				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(source));
+			};
 		}
 
 		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
