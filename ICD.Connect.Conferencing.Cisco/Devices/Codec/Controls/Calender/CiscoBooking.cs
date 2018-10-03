@@ -12,7 +12,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
     public sealed class CiscoBooking : AbstractBooking
     {
 	    private readonly Booking m_Booking;
-	    private readonly IEnumerable<IBookingNumber> m_BookingNumbers;
+	    private readonly List<IBookingNumber> m_BookingNumbers;
 
 	    public override string MeetingName
 	    {
@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 
 	    public override IEnumerable<IBookingNumber> GetBookingNumbers()
 	    {
-			return m_BookingNumbers.ToArray(m_BookingNumbers.Count());
+			return m_BookingNumbers.ToArray(m_BookingNumbers.Count);
 		}
 
 	    public override eMeetingType Type
@@ -87,18 +87,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 
 	    private IEnumerable<IBookingNumber> ParseBookingNumbers()
 	    {
-		    if (!m_Booking.WebexEnabled)
+		    foreach (BookingCall call in m_Booking.GetCalls())
 		    {
-			    foreach (BookingCall call in m_Booking.GetCalls())
+			    switch (call.Protocol.ToUpper())
 			    {
-				    switch (call.Protocol.ToUpper())
-				    {
-					    case "SIP":
-						    yield return new SipBookingNumber(call.Number);
-						    continue;
-				    }
-				}
-		    }
+				    case "SIP":
+					    yield return new SipBookingNumber(call.Number);
+					    continue;
+			    }
+			}
 
 	    }
     }
