@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Conference manager now enforces privacy mute state on feedback providers
  - Support CE 9.3 for the cisco codec
  - Fallback to root directory folder when getfolder would otherwise fail
+ - XML Bookig numbers parsing
  
 ###Changed
  - Fixed bug where if the client interpretation device was initialized before the server, it would not connect
