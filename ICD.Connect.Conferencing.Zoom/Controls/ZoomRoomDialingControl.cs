@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -14,7 +13,6 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.Directory;
-using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
@@ -128,28 +126,28 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			Parent.Log(eSeverity.Error, "Zoom Room can not handle contacts of type {0}", contact.GetType().Name);
 		}
 
-		public override eBookingSupport CanDial(IBooking booking)
+		public override eBookingSupport CanDial(IBookingNumber bookingNumber)
 		{
-			if (booking is ZoomBooking)
+			if (bookingNumber is ZoomBookingNumber)
 				return eBookingSupport.Native;
 
-			var zoomBooking = booking as IZoomBooking;
-			if (zoomBooking != null && !string.IsNullOrEmpty(zoomBooking.MeetingNumber))
+			var zoomNumber = bookingNumber as IZoomBookingNumber;
+			if (zoomNumber != null && !string.IsNullOrEmpty(zoomNumber.MeetingNumber))
 				return eBookingSupport.ParsedNative;
 
 			return eBookingSupport.Unsupported;
 		}
 
-		public override void Dial(IBooking booking)
+		public override void Dial(IBookingNumber bookingNumber)
 		{
-			var zoomBooking = booking as IZoomBooking;
-			if (zoomBooking == null || string.IsNullOrEmpty(zoomBooking.MeetingNumber))
+			var zoomNumber = bookingNumber as IZoomBookingNumber;
+			if (zoomNumber == null || string.IsNullOrEmpty(zoomNumber.MeetingNumber))
 			{
 				Log(eSeverity.Error, "Cannot dial booking - Not a valid Zoom booking");
 				return;
 			}
 
-			Dial(zoomBooking.MeetingNumber);
+			Dial(zoomNumber.MeetingNumber);
 		}
 
 		public override void SetDoNotDisturb(bool enabled)

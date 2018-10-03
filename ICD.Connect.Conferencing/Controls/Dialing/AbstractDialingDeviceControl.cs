@@ -215,15 +215,15 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Returns the level of support the device has for the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
+		/// <param name="bookingNumber"></param>
 		/// <returns></returns>
-		public abstract eBookingSupport CanDial(IBooking booking);
+		public abstract eBookingSupport CanDial(IBookingNumber bookingNumber);
 
 		/// <summary>
 		/// Dials the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
-		public abstract void Dial(IBooking booking);
+		/// <param name="bookingNumber"></param>
+		public abstract void Dial(IBookingNumber bookingNumber);
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.

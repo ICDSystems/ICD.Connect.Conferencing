@@ -158,9 +158,9 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// <summary>
 		/// Returns the level of support the device has for the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
+		/// <param name="bookingNumber"></param>
 		/// <returns></returns>
-		public eBookingSupport CanDial(IBooking booking)
+		public eBookingSupport CanDial(IBookingNumber bookingNumber)
 		{
 			// TODO ???
 			return eBookingSupport.Unknown;
@@ -169,10 +169,10 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// <summary>
 		/// Dials the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
-		public void Dial(IBooking booking)
+		/// <param name="bookingNumber"></param>
+		public void Dial(IBookingNumber bookingNumber)
 		{
-			CallMethod(DialingDeviceControlApi.METHOD_DIAL_BOOKING, booking);
+			CallMethod(DialingDeviceControlApi.METHOD_DIAL_BOOKING, bookingNumber);
 		}
 
 		/// <summary>

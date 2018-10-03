@@ -1,30 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Calendaring;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 {
-    public sealed class CiscoBooking : AbstractBooking, ISipBooking
+    public sealed class CiscoBooking : AbstractBooking
     {
 	    private readonly Booking m_Booking;
+	    private readonly List<IBookingNumber> m_BookingNumbers;
 
 	    public override string MeetingName
 	    {
 		    get { return m_Booking.Title; }
 		}
-
-	    public string SipUri
-	    {
-		    get
-		    {
-		        return m_Booking.WebexEnabled
-		            ? m_Booking.WebexMeetingNumber
-		            : m_Booking.GetCalls().Select(c => c.Number).FirstOrDefault();
-		    }
-	    }
 
         public override string OrganizerName
         {
@@ -51,7 +44,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		    get { return m_Booking.Privacy == Booking.ePrivacy.Private; }
 	    }
 
-		public override eMeetingType Type
+	    public override IEnumerable<IBookingNumber> GetBookingNumbers()
+	    {
+			return m_BookingNumbers.ToArray(m_BookingNumbers.Count);
+		}
+
+	    public override eMeetingType Type
 	    {
 		    get
 		    {
@@ -66,6 +64,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 	    public CiscoBooking(Booking booking)
 	    {
 		    m_Booking = booking;
+		    m_BookingNumbers = ParseBookingNumbers().ToList();
 	    }
 
         private static eMeetingType FromCallType(eCallType type)
@@ -85,5 +84,19 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
                     throw new ArgumentOutOfRangeException("type");
             }
         }
+
+	    private IEnumerable<IBookingNumber> ParseBookingNumbers()
+	    {
+		    foreach (BookingCall call in m_Booking.GetCalls())
+		    {
+			    switch (call.Protocol.ToUpper())
+			    {
+				    case "SIP":
+					    yield return new SipBookingNumber(call.Number);
+					    continue;
+			    }
+			}
+
+	    }
     }
 }
