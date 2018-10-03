@@ -49,8 +49,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly string[] m_ConfigurationCommands =
 		{
 			"echo off",
-			"format json",
-			"zStatus Call Status"
+			"format json"
 		};
 
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
@@ -274,6 +273,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void Initialize()
 		{
 			SendCommands(m_ConfigurationCommands);
+			Initialized = true;
 		}
 
 		private void CallResponseCallbacks(AbstractZoomRoomResponse response)
@@ -335,7 +335,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void PortOnSerialDataReceived(object sender, StringEventArgs args)
 		{
-			m_SerialBuffer.Enqueue(args.Data);
+			if (args.Data.Contains("Login"))
+				Initialize();
+			else 
+				m_SerialBuffer.Enqueue(args.Data);
 		}
 
 		/// <summary>
@@ -347,11 +350,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_SerialBuffer.Clear();
 
-			if (IsConnected)
-			{
-				Initialize();
-			}
-			else
+			if (!args.Data)
 			{
 				Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;

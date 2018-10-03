@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Common.Utils.Timers;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
@@ -26,7 +28,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private readonly CallComponent m_CurrentCall;
 		private readonly Dictionary<string, ThinConferenceSource> m_ParticipantSources;
 
-		private readonly List<CallComponent> m_IncomingCalls;
+		private readonly SafeCriticalSection m_IncomingCallsSection;
+		private readonly Dictionary<ThinConferenceSource, SafeTimer> m_IncomingCalls;
 
 		#region Properties
 
@@ -59,7 +62,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			m_CurrentCall = Parent.Components.GetComponent<CallComponent>();
 			Subscribe(m_CurrentCall);
 			m_ParticipantSources = new Dictionary<string, ThinConferenceSource>();
-			m_IncomingCalls = new List<CallComponent>();
+			m_IncomingCalls = new Dictionary<ThinConferenceSource, SafeTimer>();
+			m_IncomingCallsSection = new SafeCriticalSection();
 			Subscribe(parent);
 		}
 
@@ -219,12 +223,80 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private void IncomingCallCallback(ZoomRoom zoomroom, IncomingCallResponse response)
 		{
-			var incomingCall = new CallComponent(response.IncomingCall, zoomroom);
-
-			m_IncomingCalls.Add(incomingCall);
-			SourceSubscribe(incomingCall);
-			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(incomingCall));
+			var incomingCall = CreateSourceFromIncomingCall(response.IncomingCall);
+			AddIncomingCall(incomingCall);
 			Parent.Log(eSeverity.Informational, "Incoming call: {0}", response.IncomingCall.CallerName);
+		}
+
+		private ThinConferenceSource CreateSourceFromIncomingCall(IncomingCall call)
+		{
+			return new ThinConferenceSource()
+			{
+				Name = call.CallerName,
+				Number = call.MeetingNumber,
+				Status = eConferenceSourceStatus.Ringing,
+				AnswerState = eConferenceSourceAnswerState.Unanswered,
+				DialTime = IcdEnvironment.GetLocalTime(),
+				Direction = eConferenceSourceDirection.Incoming,
+				AnswerCallback = IncomingCallAnswerCallback(call),
+				RejectCallback = IncomingCallRejectCallback(call)
+			};
+		}
+
+		private ThinConferenceSourceAnswerCallback IncomingCallAnswerCallback(IncomingCall call)
+		{
+			return (source) =>
+			{
+				Parent.SendCommand("zCommand Call Accept callerJid: {0}", call.CallerJoinId);
+				source.AnswerState = eConferenceSourceAnswerState.Answered;
+				RemoveIncomingCall(source);
+			};
+		}
+
+		private ThinConferenceSourceRejectCallback IncomingCallRejectCallback(IncomingCall call)
+		{
+			return (source) =>
+			{
+				Parent.SendCommand("zCommand Call Reject callerJid: {0}", call.CallerJoinId);
+				source.AnswerState = eConferenceSourceAnswerState.Ignored;
+				RemoveIncomingCall(source);
+			};
+		}
+
+		private void AddIncomingCall(ThinConferenceSource source)
+		{
+			m_IncomingCallsSection.Enter();
+			try
+			{
+				var timer = new SafeTimer(() => source.Reject(), 1000 * 60, -1L);
+				m_IncomingCalls.Add(source, timer);
+				OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
+			}
+			finally
+			{
+				m_IncomingCallsSection.Leave();
+			}
+		}
+
+		private void RemoveIncomingCall(ThinConferenceSource source)
+		{
+			m_IncomingCallsSection.Enter();
+			try
+			{
+				source.Status = eConferenceSourceStatus.Undefined;
+				SafeTimer timer;
+				if (m_IncomingCalls.TryGetValue(source, out timer))
+				{
+					timer.Stop();
+					m_IncomingCalls.Remove(source);
+				}
+
+				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(source));
+			}
+			finally
+			{
+				m_IncomingCallsSection.Leave();
+			}
 		}
 
 		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
