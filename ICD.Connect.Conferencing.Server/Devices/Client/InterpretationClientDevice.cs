@@ -250,15 +250,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// <summary>
 		/// Returns the level of support the dialer has for the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
+		/// <param name="bookingNumber"></param>
 		/// <returns></returns>
-		public eBookingSupport CanDial(IBooking booking)
+		public eBookingSupport CanDial(IBookingNumber bookingNumber)
 		{
-			var sipBooking = booking as ISipBooking;
+			var sipBooking = bookingNumber as ISipBookingNumber;
 			if (sipBooking != null && sipBooking.IsValidSipUri())
 				return eBookingSupport.Supported;
 
-			var potsBooking = booking as IPstnBooking;
+			var potsBooking = bookingNumber as IPstnBookingNumber;
 			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
 				return eBookingSupport.Supported;
 
@@ -268,17 +268,17 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// <summary>
 		/// Dials the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
-		public void Dial(IBooking booking)
+		/// <param name="bookingNumber"></param>
+		public void Dial(IBookingNumber bookingNumber)
 		{
-			var sipBooking = booking as ISipBooking;
+			var sipBooking = bookingNumber as ISipBookingNumber;
 			if (sipBooking != null && sipBooking.IsValidSipUri())
 			{
 				Dial(sipBooking.SipUri);
 				return;
 			}
 
-			var potsBooking = booking as IPstnBooking;
+			var potsBooking = bookingNumber as IPstnBookingNumber;
 			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
 			{
 				Dial(potsBooking.PhoneNumber);
