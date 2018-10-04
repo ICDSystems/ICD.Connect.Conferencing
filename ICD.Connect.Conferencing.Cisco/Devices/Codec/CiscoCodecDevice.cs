@@ -153,16 +153,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			m_KeyedCallbackChildren = new Dictionary<string, Dictionary<string, int>>();
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
+			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
+			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
+			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
+
 			m_Components = new CiscoComponentFactory(this);
 			m_FeedbackTimer = SafeTimer.Stopped(FeedbackTimerCallback);
 
 			m_SerialBuffer = new XmlSerialBuffer();
 			Subscribe(m_SerialBuffer);
-
-			m_ConnectionStateManager = new ConnectionStateManager(this){ConfigurePort = ConfigurePort};
-			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
-			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 
 			Controls.Add(new CiscoCodecRoutingControl(this, 0));
 			Controls.Add(new CiscoCodecDialingControl(this, 1));
