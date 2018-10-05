@@ -169,6 +169,7 @@
     <Compile Include="Proxies\Controls\Routing\IProxyVideoConferenceRouteControl.cs" />
     <Compile Include="Proxies\Controls\Routing\ProxyVideoConferenceRouteControl.cs" />
     <Compile Include="Proxies\Controls\Routing\VideoConferenceRouteDestinationControlApi.cs" />
+    <Compile Include="Utils\ConferencingBookingUtils.cs" />
     <Compile Include="Utils\SipUtils.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>

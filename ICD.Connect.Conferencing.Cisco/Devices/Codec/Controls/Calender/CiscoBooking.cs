@@ -49,18 +49,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 			return m_BookingNumbers.ToArray(m_BookingNumbers.Count);
 		}
 
-	    public override eMeetingType Type
-	    {
-		    get
-		    {
-		        return m_Booking.WebexEnabled
-		            ? eMeetingType.VideoConference
-		            : m_Booking.GetCalls()
-		                       .Select(c => FromCallType(c.CallType))
-		                       .FirstOrDefault(eMeetingType.Presentation);
-		    }
-	    }
-
 	    public CiscoBooking(Booking booking)
 	    {
 		    m_Booking = booking;

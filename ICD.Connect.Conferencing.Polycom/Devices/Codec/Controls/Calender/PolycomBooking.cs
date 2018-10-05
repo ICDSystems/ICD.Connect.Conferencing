@@ -48,11 +48,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 			return m_BookingNumbers.ToArray(m_BookingNumbers.Count);
 		}
 
-		public override eMeetingType Type
-		{
-			get { return eMeetingType.VideoConference; }
-		}
-
 		public PolycomBooking(MeetingInfo booking)
 		{
 			m_Booking = booking;

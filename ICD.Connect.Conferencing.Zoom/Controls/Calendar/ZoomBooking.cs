@@ -45,11 +45,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 			yield return new ZoomBookingNumber(m_Booking.MeetingNumber);
 		}
 
-	    public override eMeetingType Type
-	    {
-		    get { return eMeetingType.VideoConference; }
-	    }
-
 		public ZoomBooking(Booking booking)
 	    {
 		    m_Booking = booking;
