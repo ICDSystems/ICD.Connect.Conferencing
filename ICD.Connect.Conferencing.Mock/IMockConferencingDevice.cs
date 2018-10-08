@@ -17,8 +17,8 @@ namespace ICD.Connect.Conferencing.Mock
 
 		void Dial(string number, eConferenceSourceType type);
 
-		eBookingSupport CanDial(IBooking booking);
+		eBookingSupport CanDial(IBookingNumber bookingNumber);
 
-		void Dial(IBooking booking);
+		void Dial(IBookingNumber bookingNumber);
 	}
 }

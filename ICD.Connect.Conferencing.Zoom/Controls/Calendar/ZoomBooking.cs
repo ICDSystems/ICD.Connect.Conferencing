@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using ICD.Connect.Calendaring;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 {
-    public sealed class ZoomBooking : AbstractBooking, IZoomBooking
+    public sealed class ZoomBooking : AbstractBooking
     {
 	    private readonly Booking m_Booking;
 
@@ -12,16 +14,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    {
 		    get { return m_Booking.MeetingName; }
 		}
-
-	    public string MeetingNumber
-	    {
-		    get { return m_Booking.MeetingNumber; }
-	    }
-
-	    public string SipUri
-	    {
-		    get { return "sip:" + m_Booking.MeetingNumber + "@zmus.us"; }
-	    }
 
 		public override string OrganizerName
 	    {
@@ -48,12 +40,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    get { return m_Booking.IsPrivate; }
 	    }
 
-		public override eMeetingType Type
+	    public override IEnumerable<IBookingNumber> GetBookingNumbers()
 	    {
-		    get { return eMeetingType.VideoConference; }
-	    }
+			yield return new ZoomBookingNumber(m_Booking.MeetingNumber);
+		}
 
-	    public ZoomBooking(Booking booking)
+		public ZoomBooking(Booking booking)
 	    {
 		    m_Booking = booking;
 	    }

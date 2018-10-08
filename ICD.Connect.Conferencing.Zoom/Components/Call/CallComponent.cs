@@ -20,6 +20,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private bool m_MicrophoneMute;
 		private string m_Name;
 		private eConferenceSourceStatus m_Status;
+		private eConferenceSourceAnswerState m_AnswerState;
 
 		#region Events
 
@@ -81,7 +82,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public eConferenceSourceDirection Direction { get; private set; }
 
-		public eConferenceSourceAnswerState AnswerState { get; private set; }
+		public eConferenceSourceAnswerState AnswerState 
+		{
+			get { return m_AnswerState; }
+			private set
+			{
+				if (value == m_AnswerState)
+					return;
+
+				m_AnswerState = value;
+				Parent.Log(eSeverity.Informational, "Call {0} answer state changed: {1}", Number, StringUtils.NiceName(m_AnswerState));
+
+				OnAnswerStateChanged.Raise(this, new ConferenceSourceAnswerStateEventArgs(m_AnswerState));
+			}
+		}
 
 		public DateTime? Start { get; private set; }
 		
@@ -134,7 +148,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			CallerJoinId = call.CallerJoinId;
 			Start = IcdEnvironment.GetLocalTime();
 			Name = call.CallerName;
-			Number = call.MeetingNumber.ToString();
+			Number = call.MeetingNumber;
 			Direction = eConferenceSourceDirection.Incoming;
 			Status = eConferenceSourceStatus.Ringing;
 		}
@@ -160,11 +174,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public void Answer()
 		{
+			AnswerState = eConferenceSourceAnswerState.Answered;
 			Parent.SendCommand("zCommand Call Accept callerJid: {0}", CallerJoinId);
 		}
 
 		public void Reject()
 		{
+			AnswerState = eConferenceSourceAnswerState.Ignored;
 			Parent.SendCommand("zCommand Call Reject callerJid: {0}", CallerJoinId);
 		}
 
@@ -253,6 +269,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
+			zoomRoom.UnregisterResponseCallback<ListParticipantsResponse>(ListParticipantsCallback);
 			zoomRoom.UnregisterResponseCallback<SingleParticipantResponse>(ParticipantUpdateCallback);
 			zoomRoom.UnregisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 			zoomRoom.UnregisterResponseCallback<InfoResultResponse>(CallInfoCallback);

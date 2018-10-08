@@ -61,14 +61,14 @@ namespace ICD.Connect.Conferencing.Mock
 			Parent.Dial(number, callType);
 		}
 
-		public override eBookingSupport CanDial(IBooking booking)
+		public override eBookingSupport CanDial(IBookingNumber bookingNumber)
 		{
-			return Parent.CanDial(booking);
+			return Parent.CanDial(bookingNumber);
 		}
 
-		public override void Dial(IBooking booking)
+		public override void Dial(IBookingNumber bookingNumber)
 		{
-			Parent.Dial(booking);
+			Parent.Dial(bookingNumber);
 		}
 
 		public override void SetDoNotDisturb(bool enabled)

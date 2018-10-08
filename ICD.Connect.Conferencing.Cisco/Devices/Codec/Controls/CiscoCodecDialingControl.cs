@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.Calendaring;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.ConferenceSources;
@@ -90,16 +92,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <summary>
 		/// Returns the level of support the dialer has for the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
+		/// <param name="bookingNumber"></param>
 		/// <returns></returns>
-		public override eBookingSupport CanDial(IBooking booking)
+		public override eBookingSupport CanDial(IBookingNumber bookingNumber)
 		{
-			var sipBooking = booking as ISipBooking;
-			if (sipBooking != null && sipBooking.IsValidSipUri())
+			var sipNumber = bookingNumber as ISipBookingNumber;
+			if (sipNumber != null && sipNumber.IsValidSipUri())
 				return eBookingSupport.Supported;
 
-			var potsBooking = booking as IPstnBooking;
-			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+			var potsNumber = bookingNumber as IPstnBookingNumber;
+			if (potsNumber != null && !string.IsNullOrEmpty(potsNumber.PhoneNumber))
 				return eBookingSupport.Supported;
 
 			return eBookingSupport.Unsupported;
@@ -108,20 +110,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <summary>
 		/// Dials the given booking.
 		/// </summary>
-		/// <param name="booking"></param>
-		public override void Dial(IBooking booking)
+		/// <param name="bookingNumber"></param>
+		public override void Dial(IBookingNumber bookingNumber)
 		{
-			var sipBooking = booking as ISipBooking;
-			if (sipBooking != null && sipBooking.IsValidSipUri())
+			var sipNumber = bookingNumber as ISipBookingNumber;
+			if (sipNumber != null && sipNumber.IsValidSipUri())
 			{
-				Dial(sipBooking.SipUri);
+				Dial(sipNumber.SipUri);
 				return;
 			}
 
-			var potsBooking = booking as IPstnBooking;
-			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+			var potsNumber = bookingNumber as IPstnBookingNumber;
+			if (potsNumber != null && !string.IsNullOrEmpty(potsNumber.PhoneNumber))
 			{
-				Dial(potsBooking.PhoneNumber);
+				Dial(potsNumber.PhoneNumber);
 				return;
 			}
 

@@ -44,8 +44,8 @@ namespace ICD.Connect.Conferencing.Devices
 		void Dial(string number);
 		void Dial(string number, eConferenceSourceType callType);
 		void Dial(IContact contact);
-		eBookingSupport CanDial(IBooking booking);
-		void Dial(IBooking booking);
+		eBookingSupport CanDial(IBookingNumber bookingNumber);
+		void Dial(IBookingNumber bookingNumber);
 		void SetPrivacyMute(bool enabled);
 		void SetAutoAnswer(bool enabled);
 		void SetDoNotDisturb(bool enabled);
