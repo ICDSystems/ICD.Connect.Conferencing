@@ -4,7 +4,11 @@ using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Calendaring;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Controls.Dialing;
+using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices;
 
@@ -31,6 +35,7 @@ namespace ICD.Connect.Conferencing.Mock
 			m_Online = true;
 
 			Controls.Add(new MockDialingDeviceControl(this, 0));
+			Controls.Add(new MockDirectoryControl(this, 1));
 		}
 
 		/// <summary>
@@ -147,6 +152,34 @@ namespace ICD.Connect.Conferencing.Mock
 			m_Sources.Add(source);
 
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
+		}
+
+		public eBookingSupport CanDial(IBookingNumber bookingNumber)
+		{
+			return eBookingSupport.Supported;
+		}
+
+		public void Dial(IBookingNumber bookingNumber)
+		{
+			var zoomNumber = bookingNumber as IZoomBookingNumber;
+			if (zoomNumber != null)
+			{
+				Dial(zoomNumber.MeetingNumber, eConferenceSourceType.Video);
+			}
+
+			var sipNumber = bookingNumber as ISipBookingNumber;
+			if (sipNumber != null)
+			{
+				Dial(sipNumber.SipUri, eConferenceSourceType.Video);
+				return;
+			}
+
+			var potsNumber = bookingNumber as IPstnBookingNumber;
+			if (potsNumber != null)
+			{
+				Dial(potsNumber.PhoneNumber, eConferenceSourceType.Audio);
+				return;
+			}
 		}
 	}
 }

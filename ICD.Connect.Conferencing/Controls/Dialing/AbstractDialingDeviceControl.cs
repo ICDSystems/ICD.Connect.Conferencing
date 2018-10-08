@@ -8,6 +8,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -204,12 +205,25 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			if (!contact.GetContactMethods().Any())
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0}", contact.Name));
 
-			string number = contact.GetContactMethods().FirstOrDefault(cm => !string.IsNullOrEmpty(cm.Number)).Number;
-			if (number == null)
+			IContactMethod contactMethod;
+			if (!contact.GetContactMethods().TryFirst(cm => !string.IsNullOrEmpty(cm.Number), out contactMethod))
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0} have a valid number", contact.Name));
 
-			Dial(number);
+			Dial(contactMethod.Number);
 		}
+
+		/// <summary>
+		/// Returns the level of support the device has for the given booking.
+		/// </summary>
+		/// <param name="bookingNumber"></param>
+		/// <returns></returns>
+		public abstract eBookingSupport CanDial(IBookingNumber bookingNumber);
+
+		/// <summary>
+		/// Dials the given booking.
+		/// </summary>
+		/// <param name="bookingNumber"></param>
+		public abstract void Dial(IBookingNumber bookingNumber);
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.

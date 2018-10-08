@@ -12,6 +12,7 @@ using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Ports;
@@ -88,6 +89,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 				m_Initialized = value;
 
+				Log(eSeverity.Informational, "Initialized state changed to {0}", m_Initialized);
+
 				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
 			}
 		}
@@ -138,7 +141,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Controls.Add(new PolycomCodecLayoutControl(this, 3));
 			Controls.Add(new PolycomCodecPresentationControl(this, 4));
 			Controls.Add(new PolycomCodecPowerControl(this, 5));
-		}
+		    Controls.Add(new PolycomCalendarControl(this, 6));
+        }
 
 		#endregion
 
@@ -338,20 +342,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="args"></param>
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs args)
 		{
-			m_SerialBuffer.Clear();
-			m_CommandQueue.Clear();
-
-			ClearCurrentMultiLine();
-
-			if (!args.Data)
-			{
-				Log(eSeverity.Critical, "Lost connection");
-				Initialized = false;
-			}
-			else
+			if (args.Data)
 			{
 				if (m_ConnectionStateManager.Port is IComPort)
 					SendCommand("exit");
+			}
+			else
+			{
+				m_SerialBuffer.Clear();
+				m_CommandQueue.Clear();
+
+				ClearCurrentMultiLine();
+
+				Log(eSeverity.Critical, "Lost connection");
+				Initialized = false;
 			}
 
 			OnConnectedStateChanged.Raise(this, new BoolEventArgs(args.Data));

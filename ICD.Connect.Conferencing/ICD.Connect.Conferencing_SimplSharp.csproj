@@ -81,6 +81,10 @@
     <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
     <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
+    <Compile Include="Contacts\eOnlineState.cs" />
+    <Compile Include="Contacts\IContactWithOnlineState.cs" />
+    <Compile Include="Contacts\IContactWithSurname.cs" />
+    <Compile Include="Controls\Dialing\eBookingSupport.cs" />
     <Compile Include="Controls\Directory\AbstractDirectoryControl.cs" />
     <Compile Include="Controls\Directory\DirectoryControlConsole.cs" />
     <Compile Include="Controls\Directory\IDirectoryControl.cs" />
@@ -165,6 +169,7 @@
     <Compile Include="Proxies\Controls\Routing\IProxyVideoConferenceRouteControl.cs" />
     <Compile Include="Proxies\Controls\Routing\ProxyVideoConferenceRouteControl.cs" />
     <Compile Include="Proxies\Controls\Routing\VideoConferenceRouteDestinationControlApi.cs" />
+    <Compile Include="Utils\ConferencingBookingUtils.cs" />
     <Compile Include="Utils\SipUtils.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
@@ -176,6 +181,10 @@
     <ProjectReference Include="..\..\ICD.Connect.API\ICD.Connect.API\ICD.Connect.API_SimplSharp.csproj">
       <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
       <Name>ICD.Connect.API_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Calendaring\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
+      <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
+      <Name>ICD.Connect.Calendaring_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_SimplSharp.csproj">
       <Project>{B13D593D-8BBF-4E20-ABD8-47C6095E7D3E}</Project>
