@@ -194,7 +194,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
         public void Disconnect()
         {
             m_ConnectionStateManager.Disconnect();
-        
         }
         
         /// <summary>
