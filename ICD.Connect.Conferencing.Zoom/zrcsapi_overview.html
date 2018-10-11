@@ -1,0 +1,967 @@
+
+<!-- saved from url=(0050)https://zoom.github.io/zoom-rooms-csapi/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="Generator" content="Microsoft Word 15 (filtered)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:Menlo;
+	panose-1:2 11 6 9 3 8 4 2 2 4;}
+@font-face
+	{font-family:Consolas;
+	panose-1:2 11 6 9 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Calibri",sans-serif;}
+h1
+	{mso-style-link:"Heading 1 Char";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:"Calibri Light",sans-serif;
+	color:#2F5496;
+	font-weight:normal;}
+h2
+	{mso-style-link:"Heading 2 Char";
+	margin-right:0in;
+	margin-left:0in;
+	font-size:14.0pt;
+	font-family:"Times New Roman",serif;
+	font-weight:bold;}
+h3
+	{mso-style-link:"Heading 3 Char";
+	margin-right:0in;
+	margin-left:0in;
+	font-size:13.5pt;
+	font-family:"Times New Roman",serif;
+	font-weight:bold;}
+a:link, span.MsoHyperlink
+	{color:#0563C1;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:#954F72;
+	text-decoration:underline;}
+p.MsoDocumentMap, li.MsoDocumentMap, div.MsoDocumentMap
+	{mso-style-link:"Document Map Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;}
+p
+	{margin-right:0in;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;}
+pre
+	{mso-style-link:"HTML Preformatted Char";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.5in;
+	font-size:12.0pt;
+	font-family:"Calibri",sans-serif;}
+p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Calibri",sans-serif;}
+p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Calibri",sans-serif;}
+p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+	{margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:.5in;
+	font-size:12.0pt;
+	font-family:"Calibri",sans-serif;}
+span.Heading2Char
+	{mso-style-name:"Heading 2 Char";
+	mso-style-link:"Heading 2";
+	font-family:"Times New Roman",serif;
+	font-weight:bold;}
+span.HTMLPreformattedChar
+	{mso-style-name:"HTML Preformatted Char";
+	mso-style-link:"HTML Preformatted";
+	font-family:"Courier New";}
+span.Heading1Char
+	{mso-style-name:"Heading 1 Char";
+	mso-style-link:"Heading 1";
+	font-family:"Calibri Light",sans-serif;
+	color:#2F5496;}
+p.p1, li.p1, div.p1
+	{mso-style-name:p1;
+	margin:0in;
+	margin-bottom:.0001pt;
+	background:white;
+	font-size:8.5pt;
+	font-family:Menlo;
+	color:black;}
+span.s1
+	{mso-style-name:s1;}
+p.midtxt2, li.midtxt2, div.midtxt2
+	{mso-style-name:midtxt2;
+	margin-right:0in;
+	margin-left:11.25pt;
+	font-size:12.0pt;
+	font-family:Consolas;
+	color:#222222;}
+p.Menloplus, li.Menloplus, div.Menloplus
+	{mso-style-name:Menloplus;
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:9.0pt;
+	font-family:Menlo;
+	color:black;}
+p.midtxt, li.midtxt, div.midtxt
+	{mso-style-name:midtxt;
+	margin-right:0in;
+	margin-left:11.25pt;
+	font-size:12.0pt;
+	font-family:Consolas;
+	color:#222222;}
+p.sec, li.sec, div.sec
+	{mso-style-name:sec;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	font-size:14.0pt;
+	font-family:"Times New Roman",serif;
+	font-weight:bold;}
+span.DocumentMapChar
+	{mso-style-name:"Document Map Char";
+	mso-style-link:"Document Map";
+	font-family:"Times New Roman",serif;}
+span.apple-converted-space
+	{mso-style-name:apple-converted-space;}
+span.Heading3Char
+	{mso-style-name:"Heading 3 Char";
+	mso-style-link:"Heading 3";
+	font-family:"Times New Roman",serif;
+	font-weight:bold;}
+p.auto-cursor-target, li.auto-cursor-target, div.auto-cursor-target
+	{mso-style-name:auto-cursor-target;
+	margin-right:0in;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman",serif;}
+span.mtg-option-name
+	{mso-style-name:mtg-option-name;}
+p.Heading1, li.Heading1, div.Heading1
+	{mso-style-name:Heading_1;
+	margin:0in;
+	margin-bottom:.0001pt;
+	text-align:center;
+	font-size:20.0pt;
+	font-family:"Times New Roman",serif;
+	font-weight:bold;}
+p.tentry2, li.tentry2, div.tentry2
+	{mso-style-name:tentry2;
+	margin-top:2.0pt;
+	margin-right:0in;
+	margin-bottom:2.0pt;
+	margin-left:0in;
+	font-size:11.0pt;
+	font-family:Consolas;}
+p.tableup2, li.tableup2, div.tableup2
+	{mso-style-name:tableup2;
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:14.0pt;
+	font-family:"Times New Roman",serif;
+	font-weight:bold;}
+p.code, li.code, div.code
+	{mso-style-name:code;
+	margin:0in;
+	margin-bottom:.0001pt;
+	font-size:9.0pt;
+	font-family:Consolas;}
+.MsoChpDefault
+	{font-family:"Calibri",sans-serif;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:.5in .5in .5in .5in;}
+div.WordSection1
+	{page:WordSection1;}
+ /* List Definitions */
+ ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+
+</head>
+
+<body lang="EN-US" link="#0563C1" vlink="#954F72">
+
+<div class="WordSection1">
+
+<p class="Heading1">Zoom Rooms Control System API</p>
+
+<p class="Heading1">Version 1</p>
+
+<h2>ZR-CSAPI Features: Version 1</h2>
+
+<p class="MsoNormal">The ZR-CSAPI is a stand-alone process that runs on the Zoom
+Room machine. The process exposes an SSH interface that accepts a CLI terminal
+connection from an external automation controller. The ZR-CSAPI then connects
+to the Zoom Room process via a proprietary Zoom Room API. The ZR-CSAPI
+translates the SSH CLI commands from the automation controller to the
+proprietary Zoom Room API commands for the Zoom Room. Features of the ZR-CSAPI :</p>
+
+<p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>The CLI feature set is detailed in the <a href="https://zoom.github.io/zoom-rooms-csapi/zrcsapi_ref.html">Command
+reference</a> document.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Version 1 will run on the Mac Zoom Room only. A version that runs
+on the PC Zoom Room will follow.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>It supports SSH only, via port 2244. It supports a single SSH
+connection at a time. Also, the standard Zoom Room Controller (iPad / Android
+tablet) cannot be connected to the Zoom Room simultaneously while ZR-CSAPI is
+running.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>It will not support an RS-232 connection. RS-232 support will
+likely <b>not</b> be added in future versions.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>For interactive terminal command line editing, ZR-CSAPI supports Arrow
+up/down/left/right, Del, and Backspace.</p>
+
+<p class="MsoListParagraphCxSpLast" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>The CLI can return either CLI-style reply text, or JSON reply
+structures.</p>
+
+<h2>Installing and launching</h2>
+
+<p class="MsoNormal">Because the automation controller needs to connect to the
+Zoom Room over Ethernet to establish an SSH connection, the automation
+controller will likely need to connect to the Zoom Room machine over the
+corporate LAN. For security purposes, you can setup a VLAN to isolate the
+communication between the automation controller and the Zoom Room.</p>
+
+<p class="MsoNormal">Install the Zoom Room on a Mac. The Zoom Room install
+package will install the ZR-CSAPI executable. After the Zoom Room installer
+finishes, it will launch the Zoom Room. Log in to the Zoom Room as you normally
+would to activate the Zoom Room.</p>
+
+<h2>Enabling the ZR-CSAPI</h2>
+
+<p class="MsoNormal">The ZR-CSAPI process must be launched by the Zoom Room
+process; it's not possible to manually launch the ZR-CSAPI process. To get the
+Zoom Room to launch the ZR-CSAPI, it is necessary to perform two configuration
+steps:</p>
+
+<p class="MsoNormal">Activate the ZR-CSAPI for your Zoom account</p>
+
+<p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Fill out this Google Form: <a href="https://goo.gl/forms/7xH86rTHhvi0Qgj13">https://goo.gl/forms/7xH86rTHhvi0Qgj13</a></p>
+
+<p class="MsoListParagraphCxSpLast" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Submitting this form will create a support ticket to turn on two
+features for your account:</p>
+
+<p class="MsoNormal" style="margin-left:.25in">The <b>ZR Automation API</b>
+feature: After this feature is activated, then in the settings for a Zoom Room,
+the Control System API enable/disable UI will appear. You can use that UI to
+enable the API.</p>
+
+<p class="MsoNormal" style="margin-left:.25in">The <b>ZR Monitor </b>feature:
+After this feature is activated, then in the settings for a Zoom Room, a Device
+tab will appear, to show device-specific information about the Zoom Room. This
+list will show the appVersion and deviceSystem values, which can be set from
+the API.</p>
+
+<p class="MsoNormal">Enable the ZR-CSAPI for a Zoom Room</p>
+
+<p class="MsoListParagraph" style="text-indent:-.25in"><span style="font-family:
+Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>After the <b>ZR Automation API </b>feature is enabled on the
+operations server for the customer's Zoom account, the customer will then see a
+UI on the Zoom web portal for the account, in the Zoom Room configuration
+section, to enable the ZR-CSAPI. The customer can then enable the ZR-CSAPI, and
+set the SSH passcode, on a per-Zoom-Room basis. The Zoom Room will download
+this information, and launch ZR-CSAPI if enabled, and configure the desired SSH
+passcode.</p>
+
+<h2>ZR-CSAPI Process verification</h2>
+
+<p class="MsoNormal">After the Zoom Room launches, you can verify that the ZR-CSAPI
+process is running on the Mac using the ps command:</p>
+
+<p class="MsoNormal">ps | grep ZAAPI</p>
+
+<p class="MsoNormal">And you will see a process that looks like this:</p>
+
+<p class="Menloplus">/Applications/ZoomPresence.app/Contents/Frameworks/ZAAPI.app/Contents/MacOS/ZAAPI
+-ssh -p zoomus123 -a rlb|pkg|tcp://127.0.0.1:9090 -t
+wxxaMzYuMDEISZyqto8LfA4r0HjYTeRepUKDu-nIb_Y.DgEWVS15Z3F0M0hTdFNtYlkxSmZZVy1PQR90Y3B8cGtnfHJsYjovLzEwLjEwLjE3LjIzMjo5MDkw</p>
+
+<p class="MsoNormal">To run the ps command, you can use one of two methods:</p>
+
+<p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Put the Zoom Room process in the background of the Mac using
+Command-H, then launch a terminal program, and enter the ps command at the
+terminal.</p>
+
+<p class="MsoListParagraphCxSpLast" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Enable SSH login on the Mac, then remotely SSH into the Mac using
+the normal SSH port 22, then issue the ps command in the SSH terminal.</p>
+
+<h2>Connecting the automation controller to ZR-CSAPI</h2>
+
+<p class="MsoNormal">When ZR-CSAPI is running, you can connect to it via SSH,
+over port 2244. It does not use the standard SSH port 22, because that port
+requires root access, and the Zoom Room machine is not permitted to run root-level
+processes.</p>
+
+<p class="MsoNormal">When logging into the ZR-CSAPI, Use the SSH username <b>zoom</b>.</p>
+
+<p class="MsoNormal">You can set the SSH password on the Zoom web portal, under
+the Zoom Room configuration section.</p>
+
+<p class="MsoNormal">Currently, when you turn on the ZR-SCAPI functionality, the
+default password is blank (the empty string). Please immediately change the password
+to a non-empty string.</p>
+
+<p class="MsoNormal">It is possible to use the location configuration feature on
+the Zoom Portal to place a number of Zoom Rooms in a Location, then change the
+settings for all Zoom Rooms in the same location at once. Online instructions
+for setting up locations is here: <a href="https://support.zoom.us/hc/en-us/articles/115000342983-Zoom-Rooms-Location-Hierarchy">https://support.zoom.us/hc/en-us/articles/115000342983-Zoom-Rooms-Location-Hierarchy</a></p>
+
+<p class="MsoNormal">Example: If your Zoom Room is at 10.10.1.5, connect to the
+ZR-CSAPI using:</p>
+
+<p class="Menloplus">ssh -p 2244 zoom@10.10.1.5</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">The ZR-CSAPI supports a subset of the SSH PTY pseudo-terminal,
+for command line interactivity. The interactive features include:</p>
+
+<p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Arrow up/down to go backward / forward in the history.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Arrow left/right to go left/right on a command line.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Del to delete a character after the cursor.</p>
+
+<p class="MsoListParagraphCxSpLast" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Backspace to delete a character before the cursor.</p>
+
+<p class="MsoNormal">The ZR-CSAPI SSH interface supports only one SSH connection
+at a time.</p>
+
+<p class="MsoNormal">While the ZR-CSAPI process is running, it's not possible to simultaneously
+use a Zoom Room controller: be sure to quit the Zoom Room Controller (your iPad
+/ Android tablet) before using the ZR-CSAPI.</p>
+
+<h2>ZR-CSAPI basic commands</h2>
+
+<p class="MsoNormal">There are several basic CLI commands:</p>
+
+<table class="MsoTableGrid" border="1" cellspacing="0" cellpadding="0" width="96%" style="width:96.7%;border-collapse:collapse;border:none">
+ <tbody><tr style="height:17.8pt">
+  <td width="132" valign="top" style="width:98.75pt;border:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;height:17.8pt">
+  <p class="MsoNormal"><b>Command</b></p>
+  </td>
+  <td width="564" valign="top" style="width:422.95pt;border:solid windowtext 1.0pt;
+  border-left:none;padding:0in 5.4pt 0in 5.4pt;height:17.8pt">
+  <p class="MsoNormal"><b>Functionality</b></p>
+  </td>
+ </tr>
+ <tr style="height:18.35pt">
+  <td width="132" valign="top" style="width:98.75pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;height:18.35pt">
+  <p class="MsoNormal">bye</p>
+  </td>
+  <td width="564" valign="top" style="width:422.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;height:18.35pt">
+  <p class="MsoNormal">Exit the session</p>
+  </td>
+ </tr>
+ <tr style="height:17.8pt">
+  <td width="132" valign="top" style="width:98.75pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;height:17.8pt">
+  <p class="MsoNormal">echo on/off</p>
+  </td>
+  <td width="564" valign="top" style="width:422.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;height:17.8pt">
+  <p class="MsoNormal">Turn terminal echo on/off. Upon entry, echo is on.</p>
+  </td>
+ </tr>
+ <tr style="height:18.35pt">
+  <td width="132" valign="top" style="width:98.75pt;border:solid windowtext 1.0pt;
+  border-top:none;padding:0in 5.4pt 0in 5.4pt;height:18.35pt">
+  <p class="MsoNormal">format json/cli</p>
+  </td>
+  <td width="564" valign="top" style="width:422.95pt;border-top:none;border-left:
+  none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  padding:0in 5.4pt 0in 5.4pt;height:18.35pt">
+  <p class="MsoNormal">Switch between JSON format reply and CLI format reply</p>
+  </td>
+ </tr>
+</tbody></table>
+
+<h2>JSON format reply structure</h2>
+
+<p class="MsoNormal">At login, the default reply structure is CLI format.&nbsp; To
+switch to JSON, issue the command:</p>
+
+<p class="MsoNormal"><i>format json</i></p>
+
+<p class="MsoNormal">For this command:</p>
+
+<p class="MsoNormal"><i>zStatus SystemUnit</i></p>
+
+<p class="MsoNormal">This is an example return structure in JSON format:</p>
+
+<p class="code">{</p>
+
+<p class="code">&nbsp; "Status": {</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "message": "",</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "state": "OK"</p>
+
+<p class="code">&nbsp; },</p>
+
+<p class="code">&nbsp; "Sync": true,</p>
+
+<p class="code">&nbsp; "SystemUnit": {</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "email":
+"scott.firestone_U-ygqt3HStSmbY1JfYW-OA@parasync.com",</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "login_type": "work_email",</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "meeting_number": "5526136251",</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "platform": "Mac OS X, 10.11.6",</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "room_info": {</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "account_email": "room@kanovia.com",</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "is_auto_answer_enabled": true,</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "is_auto_answer_selected": false,</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "room_name": "ZR-ScottFirestone2"</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; },</p>
+
+<p class="code">&nbsp;&nbsp;&nbsp; "room_version": "4.0.58637.1228"</p>
+
+<p class="code">&nbsp; },</p>
+
+<p class="code">&nbsp; "topKey": "SystemUnit",</p>
+
+<p class="code">&nbsp; "type": "zStatus"</p>
+
+<p class="code">}</p>
+
+<p class="MsoNormal">&nbsp;</p>
+
+<p class="MsoNormal">JSON structures have these top level keys:</p>
+
+<p class="MsoNormal"><b>topKey</b>: The name of the top level keyword in the
+command hierarchy; the keyword also appears at the top level of the structure.</p>
+
+<p class="MsoNormal"><b>Status</b>: error information, with a possible error
+message. A state of OK means success.</p>
+
+<p class="MsoNormal"><b>Sync</b>: If true, this structure is a synchronous
+reponse to a command. If false, it is an asynchronous notification.</p>
+
+<p class="MsoNormal"><b>type</b>:</p>
+
+<p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>If <b>Sync</b> = true, the structure is a synchronous response,
+and this type will be zCommand, zConfiguration, or zStatus, corresponding to
+the original command type that triggered this response.</p>
+
+<p class="MsoListParagraphCxSpLast" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>If <b>Sync</b> = false, the structure is an asynchronous reply,
+and this type will be zCommand, zConfiguration, or zStatus, if the notification
+was triggered by a corresponding synchronous reply. The type will be zEvent, if
+the notification does not have a corresponding synchronous reply. One example reply
+with type of zEvent is IncomingCallIndication; that notification does not have
+a correspondong synchronous command or reply.</p>
+
+<h2>ZR-CSAPI CLI commands</h2>
+
+<p class="MsoNormal">The ZR-CSAPI command set is described in detail in the <a href="https://zoom.github.io/zoom-rooms-csapi/zrcsapi_ref.html">Command
+reference</a>. There are several categories of commands:</p>
+
+<p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>zCommands</b>: Perform an action, or retrieve dynamic
+user-centric information.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>zConfiguration</b>: Get/Set read/write configuration settings:
+Only the CLI can change these values, not external events.</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>zStatus</b>: Get read-only status settings. Some of these
+values never change, but some values can change based on external events. </p>
+
+<p class="MsoListParagraphCxSpLast" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><b>zEvents</b>: In addition, asynchronous notifications can alert
+the CLI to changes: these are called <b>zEvents</b>.</p>
+
+<p class="MsoNormal">Each command specifies a path hierarchy, like the Windows
+registry. All commands and parameter names are case-insensitive. However,
+values may be case-sensitive.</p>
+
+<p class="sec">zCommands</p>
+
+<p class="MsoNormal">zCommands either perform an action, or retrieve dynamic
+user-centric information. Each zCommand takes a specific number of parameters.
+All parameters are required; there are no optional parameters. The parameters
+must be provided in the order shown in the command reference. Boolean
+parameters can have values of <i>on</i> or <i>off</i>.</p>
+
+<p class="MsoNormal">Example:</p>
+
+<p class="Menloplus">zCommand Call MuteParticipant mute: on Id: 16778240</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">In this case, the path heirarchy for this command is <i>Call
+-&gt; MuteParticipant</i>, and the two required parameters are <i>mute</i> (with
+a value of <i>on</i>) and <i>Id</i> (with a value of <i>16778240</i>). The <a href="https://zoom.github.io/zoom-rooms-csapi/zrcsapi_ref.html">Command
+reference</a> has examples for each zCommand. Example reply text for this
+command is:</p>
+
+<p class="Menloplus">OK<br>
+*r CallMuteParticipantResult (status=OK):<br>
+** end</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">Command responses generally consist of <i>OK</i>, followed
+by a status, followed by return values, if any, followed by <i>**end</i>. For
+zCommands, the status and reply values are preceded by *r.</p>
+
+<p class="MsoNormal">Some zCommands are In-meeting only: they can only be used
+when a meeting is in progress. They return an error if you attempt to call them
+when a meeting is not active. To find out whether the Zoom Room is in a
+meeting, use the zStatus command:</p>
+
+<p class="Menloplus">zStatus Call Status</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">After you issue a zCommand, you may receive asynchronous
+zEvent notifications if the command changes the state of the Zoom Room.</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="sec">zConfiguration</p>
+
+<p class="MsoNormal">A zConfiguration command can get or set a single configuration
+setting value on the Zoom Room.</p>
+
+<p class="MsoNormal">To get a value, specify the path hierarchy, down to the leaf
+parameter, but do not specify a value. Example:</p>
+
+<p class="Menloplus">zConfiguration System mute_av_begin</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">And the reply is:</p>
+
+<p class="Menloplus">*c zConfiguration System mute_av_begin: off<br>
+** end<br>
+OK</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">In this case, the path is <i>Sytem</i>, and the parameter is
+mute_av_begin. The return value is a boolean, with a value of <i>off</i>. To set
+this value, specify a value for the parameter:</p>
+
+<p class="Menloplus">zConfiguration System mute_av_begin: on</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">And the reply is:</p>
+
+<p class="Menloplus">** end<br>
+OK</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">zConfiguration reply text consists of <i>**end</i> followed
+by OK. In addition, if the value changes, you will get an asynchronous
+notification that is value has changed, in the form of a zEvent. The zEvent has
+the same format as the original zConfiguration command, and starts with *c. the
+zEvent will not end in an OK. An example of a zEvent for the <i>zConfiguration
+sytem mute_av_begin</i> parameter:</p>
+
+<p class="Menloplus">*c zConfiguration System mute_av_begin: on<br>
+** end</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">Some zConfiguration commands are In-meeting only: they
+get/set values for a meeting in progress; they return an error if you attempt
+to call them when a meeting is not active.</p>
+
+<p class="sec">zStatus</p>
+
+<p class="MsoNormal">A zStatus command gets one or more read-only values. Specify
+the path hierarchy. Example:</p>
+
+<p class="Menloplus">zStatus Call Status</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">In this example, the path is <i>Call</i>, and the parameter
+is <i>Status</i>. The reply is:</p>
+
+<p class="Menloplus"><span class="s1">*s Call Status: NOT_IN_MEETING<br>
+** end<br>
+OK</span></p>
+
+<p class="Menloplus"><span class="s1">&nbsp;</span></p>
+
+<p class="MsoNormal">For zStatus commands, you must specify the path down to a
+certain level in the command hierarchy. The ZR-CSAPI will return all values for
+that level and below. The <a href="https://zoom.github.io/zoom-rooms-csapi/zrcsapi_ref.html">Command
+reference</a> shows the required hierarchy level in green. For instance, To get
+a list of Audio Input devices, specify the zStatus hierarchy down to <b>audio
+Input Line</b>:</p>
+
+<p class="MsoNormal"><i>zStatus Audio Input Line</i></p>
+
+<p class="MsoNormal">And you will get parameters for that level in the hierarchy,
+and below. This reply returns an array of devices:</p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 1 id: Sennheiser SC70 USB
+CTRL<br>
+*s Audio Input Line 1 Name: Sennheiser SC70 USB CTRL</span></p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 1 Alias:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 2 id: HD Pro Webcam C920</span></p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 2 Name: HD Pro Webcam
+C920</span></p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 2 Alias:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 3 id: Built-in Input</span></p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 3 Name: Built-in Input
+(Line In)</span></p>
+
+<p class="Menloplus"><span class="s1">*s Audio Input Line 3 Alias:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">** end</span></p>
+
+<p class="Menloplus"><span class="s1">OK</span></p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">Each zStatus reply line has the *s prefix. zStatus values are
+read-only, but can change from external changes to the state of the Zoom Room.
+If the value changes, you will get an asynchronous notification that the value
+has changed, in the form of a zEvent. The zEvent has the same format as the zStatus
+command, and starts with *s. The zEvent will not end in an OK. An example of a
+zEvent for the <i>zStatus</i> <i>Call Status</i> parameter:</p>
+
+<p class="Menloplus">*s Call Status: CONNECTING_MEETING</p>
+
+<p class="Menloplus">** end</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="sec">zEvent</p>
+
+<p class="MsoNormal">zEvents are asynchronous notifications. They can come in several
+forms:</p>
+
+<p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Changes to zStatus parameters</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Changes to zConfiguration parameters</p>
+
+<p class="MsoListParagraphCxSpMiddle" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Events triggered by zCommands</p>
+
+<p class="MsoListParagraphCxSpLast" style="text-indent:-.25in"><span style="font-family:Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>Other asynchronous events, such as a remote participant attempting
+to join a conference.</p>
+
+<p class="MsoNormal">As an example, if a remote participant attempts to join a
+meeting hosted by the Zoom Room, and if the Zoom Room is not configured to
+auto-accept new meeting participants, the ZR-CSAPI will issue this zEvent notification
+to indicate that the participant requests to enter the conference:</p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication callerJID:
+thqrasdqs4wzdnch4kcbiw@xmpp.zoom.us</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication calleeJID:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication meetingID: g</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication password:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication meetingOption: 6</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication meetingNumber:
+5351459175</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication callerName: Bob
+Smith</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication avatarURL:</span></p>
+
+<p class="Menloplus"><span class="s1">*e IncomingCallIndication lifeTime: 60</span></p>
+
+<p class="Menloplus"><span class="s1">** end</span></p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">zEvent notifications that are not triggered by changes to
+zStatus or zConfiguration changes will have an *e prefix.</p>
+
+<p class="sec">Arrays</p>
+
+<p class="MsoNormal">Some hierarchical paths include an array index for a level
+in the path. In the Command Reference, this array level is indicated by an <b>n</b>
+in the path specification. For example, when retrieving a list of PhoneBook
+entries, it is possible to Ask for a range of entries, starting at an offset
+index, and spaning a maximum number of return values. In this case, the return
+information contains an array of multiple parameters underneath it, with the
+index array value preceding the values under the array level:</p>
+
+<p class="Menloplus"><span class="s1">zcommand phonebook list offset: 2 Limit: 2</span></p>
+
+<p class="Menloplus"><span class="s1">OK</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult (status=OK):</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult resultInfo Offset: 2</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult resultInfo Limit: 2</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult resultInfo TotalRows:
+2</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 jid:
+hap3piapreqhiqztagcrsq@xmpp.zoom.us</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 screenName:
+AlexBaker</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 firstName:
+AlexBaker</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 lastName:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 phoneNumber:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 email:
+rooms_hAP3piAPRrqHIQzXAgCRsQ@gmail.com</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 avatarURL:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 presence:
+ZoomIMPresence_Offline</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 onDesktop:
+off</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 3 onMobile:
+off</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 jid:
+lkfetphqtnyarhkofk4baa@xmpp.zoom.us</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 screenName:
+ZR-FifthFloor</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 firstName:
+ZR-FifthFloor</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 lastName:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 phoneNumber:</span><span class="apple-converted-space">&nbsp;</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 email: Bob.Smoth_lkFETpHqTnycRHKOFk4BaA@parasync.com</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 avatarURL:</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 presence:
+ZoomIMPresence_Offline</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 onDesktop:
+off</span></p>
+
+<p class="Menloplus"><span class="s1">*r PhonebookListResult Contact 4 onMobile:
+off</span></p>
+
+<p class="Menloplus"><span class="s1">** end</span></p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<h2>Call Participants IDs</h2>
+
+<p class="MsoNormal">When a meeting is active, you can get a list of
+participants. Each participant has a meeting participant Id. However, the
+bottom 10 bits of the Id are ignored. In order to compare two Ids, you must
+mask off the bottom 10 bits.</p>
+
+<h2>Controller connections</h2>
+
+<p class="MsoNormal">The Zoom Room can support either the ZR-CSAPI, or a Zoom
+Room Controller, but not both. If one type of controller connects, the other
+will disconnect.</p>
+
+<p class="MsoNormal">Normally, the ZR-CSAPI maintains a pipe connection to the
+Zoom Room. But if the Zoom Room Controller connects to the same Zoom Room, then
+the ZR-CSAPI will disconnect its pipe from the Zoom Room. If the SSH login is
+active, then the ZR-CSAPI will issue this zEvent to the SSH terminal:</p>
+
+<h2><span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif;font-weight:
+normal">*e Pipe OtherControllerLogin<br>
+** end</span></h2>
+
+<h2><span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif;font-weight:
+normal">If the SSH login is not active, then the ZR-CSAPI will still disconnect
+its pipe.</span></h2>
+
+<h2><span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif;font-weight:
+normal">There are two ways to re-establish the ZR-CSAPI pipe connection ot the
+ZR:</span></h2>
+
+<h2><span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif;font-weight:
+normal">1. Log in to the ZR-CSAPI. If you are currently logged in, you can log
+out, and then log back in again.</span></h2>
+
+<h2><span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif;font-weight:
+normal">2. Issue any ZR-CSAPI command. The command will not execute, but you
+will get this zEvent message:</span></h2>
+
+<h2><span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif;font-weight:
+normal">*e Pipe Reconnecting<br>
+** end</span></h2>
+
+<h2><span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif;font-weight:
+normal">This message indicates that the ZR-CSAPI has re-connected its pipe to
+the ZR. You can then re-issue your previous command to execute it. Reconnecting
+the ZR-CSAPI pipe to the ZR will cause the Zoom Room Controller is disconnect. <span style="color:red">Known bug: in some circumstances, the ZRC will immediately
+attempt to reconnect, causing the ZR-CSAPI to disconnect.</span></span></h2>
+
+<h2>Web Portal UI</h2>
+
+<p class="MsoListParagraph" style="text-indent:-.25in"><span style="font-family:
+Symbol">·<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span>On the Zoom Portal website, under the Zoom Room settings, there
+is a UI to enable/disable ZR-CSAPI, enable/disable the SSH connection, and set
+the password of the SSH connection. You will see this UI after you turn on the <b>ZR
+Automation API </b>by submitting the Google Form: <a href="https://goo.gl/forms/7xH86rTHhvi0Qgj13">https://goo.gl/forms/7xH86rTHhvi0Qgj13</a></p>
+
+<p class="MsoNormal" align="center" style="text-align:center"><img border="0" width="481" height="186" id="Picture 3" src="./zrcsapi_overview_files/image001.png" alt="../../../Desktop/Screen%20Shot%202017-11-22%20at%2012.20.34%20PM.png"></p>
+
+<p class="MsoNormal">On the Zoom Portal website, under the Zoom Room settings,
+the Room tab will list some details on the API for that Zoom Room. In this
+case, the automation controller using the API has set deviceSystem to CP3:</p>
+
+<p class="MsoNormal"><img border="0" width="540" height="191" id="Picture 2" src="./zrcsapi_overview_files/image002.png" alt="../../../Downloads/Picture2.png"></p>
+
+<span style="font-size:12.0pt;font-family:&quot;Calibri&quot;,sans-serif"><br clear="all" style="page-break-before:always">
+</span>
+
+<p class="MsoNormal" style="margin-bottom:0in;margin-bottom:.0001pt">&nbsp;</p>
+
+<p class="MsoNormal">With the <b>ZR Monitor</b> feature enabled, you will also
+see <b>Zoom Rooms Automation Controllers</b> in the list. An external
+automation control system will send the Zoom Room the <b>App version</b> and <b>Device
+System</b> for the control system, and the Zoom Room will forward that
+information to the Web Portal to be listed as info for the device.&nbsp; For
+instance, to show App Version <b>1.45</b>, and Device System <b>CP3</b>, issue
+these ZR-CSAPI CLI commands:</p>
+
+<p class="Menloplus">zConfiguration Client appVersion: 1.45<br>
+zConfiguration Client deviceSystem: CP3</p>
+
+<p class="Menloplus">&nbsp;</p>
+
+<p class="MsoNormal">And those values will be displayed on the Devices tab on the
+web portal:</p>
+
+<p class="MsoNormal"><img border="0" width="540" height="191" id="Picture 1" src="./zrcsapi_overview_files/image003.png" alt="../../../Downloads/Picture1.png"></p>
+
+<p class="MsoNormal" align="center" style="text-align:center">&nbsp;</p>
+
+<p class="MsoNormal">In addition, the status of <b><span style="color:#00B050">Online</span></b><span style="color:#00B050"> </span>will appear, if an automation controller is
+connected to ZR-CSAPI via SSH.</p>
+
+<h2>ZR-CSAPI log files</h2>
+
+<p class="MsoNormal">Log files are created automatically, to capture all severity
+levels.</p>
+
+<p class="MsoNormal">Every time the ZR-CSAPI launches, the old log files are
+deleted, and a new log file is created.</p>
+
+<p class="MsoNormal">When a log file reaches 20 MB in size, the logs continue
+with a new file; up to 4 log files at 20 MB in size may exist. The log files
+will be located in&nbsp;~/Library/Logs/zoom.us/zaapi/zaapi_XXX.log.Please&nbsp;IGNORE&nbsp;the
+files that start with&nbsp;the uppercase ZAAPI_XXX.</p>
+
+</div>
+
+
+
+
+</body></html>
