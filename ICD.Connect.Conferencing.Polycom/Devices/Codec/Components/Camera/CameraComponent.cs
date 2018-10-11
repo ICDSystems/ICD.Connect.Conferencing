@@ -76,6 +76,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 		{
 			base.Initialize();
 
+			InitializeFeedBack();
+		}
+
+		/// <summary>
+		/// Called to initialize the feedbacks.
+		/// </summary>
+		protected void InitializeFeedBack()
+		{
 			Codec.EnqueueCommand("notify vidsourcechanges");
 			Codec.EnqueueCommand("preset register");
 		}

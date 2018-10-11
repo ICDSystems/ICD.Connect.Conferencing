@@ -70,9 +70,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		{
 			base.Initialize();
 
-			Codec.EnqueueCommand("vcbutton register");
+			InitializeFeedBack();
+
 			Codec.EnqueueCommand("vcbutton get");
 			Codec.EnqueueCommand("vcbutton source get");
+		}
+
+
+		/// <summary>
+		/// Called to initialize the feedbacks.
+		/// </summary>
+		protected void InitializeFeedBack()
+		{
+			Codec.EnqueueCommand("vcbutton register");
 		}
 
 		#region Methods

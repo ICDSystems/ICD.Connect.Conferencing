@@ -66,6 +66,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		{
 			base.Initialize();
 
+			InitializeFeedBack();
+		}
+
+		/// <summary>
+		/// Called to initialize the feedbacks.
+		/// </summary>
+		protected void InitializeFeedBack()
+		{
 			Codec.EnqueueCommand("sleep register");
 		}
 
