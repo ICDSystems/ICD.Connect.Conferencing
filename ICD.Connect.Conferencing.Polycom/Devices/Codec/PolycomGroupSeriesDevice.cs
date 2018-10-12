@@ -312,7 +312,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 		public void ReSubscribeToFeedbacks()
 		{
-			if (m_Initialized)
+			if (!m_Initialized)
 				return;
 
 			foreach (IFeedBackComponent components in m_Components.GetComponents().OfType<IFeedBackComponent>())
