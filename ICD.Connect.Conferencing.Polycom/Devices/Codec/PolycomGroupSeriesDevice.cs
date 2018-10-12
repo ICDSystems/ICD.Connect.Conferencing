@@ -7,6 +7,7 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Common.Utils.Timers;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components;
@@ -48,12 +49,18 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
-		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
+        /// <summary>
+		/// Timer interval used for resubscribing to feedbacks.
+		/// </summary>
+        private const int TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL = 30 * 60 * 1000;
+
+        private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
 		private readonly Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>> m_RangeFeedbackHandlers;
 
-		private readonly RateLimitedEventQueue<string> m_CommandQueue; 
+		private readonly RateLimitedEventQueue<string> m_CommandQueue;
+        private readonly SafeTimer m_FeedbackTimer;
 
-		private readonly PolycomComponentFactory m_Components;
+        private readonly PolycomComponentFactory m_Components;
 		private readonly PolycomGroupSeriesSerialBuffer m_SerialBuffer;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
@@ -119,7 +126,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
 			m_RangeFeedbackHandlers = new Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>>();
 
-			m_CommandQueue = new RateLimitedEventQueue<string>
+            m_FeedbackTimer = new SafeTimer(ReSubscribeToFeedbacks, TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL, TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL);
+
+            m_CommandQueue = new RateLimitedEventQueue<string>
 			{
 				BetweenMilliseconds = RATE_LIMIT_MS
 			};
@@ -168,7 +177,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_ConnectionStateManager.Dispose();
 
 			m_Components.Dispose();
-		}
+        }
 
 		/// <summary>
 		/// Sets the port for communicating with the device.
@@ -297,6 +306,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			m_RangeFeedbackHandlers[word].Add(callback);
 		}
+
+        public void ReSubscribeToFeedbacks()
+        {
+            foreach (IFeedBackComponent components in m_Components.GetComponents().OfType<IFeedBackComponent>())
+            {
+                components.InitializeFeedBack();
+            }
+        }
 
 		#endregion
 

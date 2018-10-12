@@ -9,7 +9,7 @@ using ICD.Connect.API.Commands;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 {
-	public sealed class DialComponent : AbstractPolycomComponent
+	public sealed class DialComponent : AbstractPolycomComponent, IFeedBackComponent
 	{
 		/// <summary>
 		/// Raised when a call state is added, removed or updated.
@@ -88,7 +88,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		/// <summary>
 		/// Called to initialize the feedbacks.
 		/// </summary>
-		protected void InitializeFeedBack()
+		public void InitializeFeedBack()
 		{
 			Codec.EnqueueCommand("callstate register");
 			Codec.EnqueueCommand("notify callstatus");

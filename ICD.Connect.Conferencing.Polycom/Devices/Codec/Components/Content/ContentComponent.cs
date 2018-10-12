@@ -8,8 +8,8 @@ using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 {
-	public sealed class ContentComponent : AbstractPolycomComponent
-	{
+	public sealed class ContentComponent : AbstractPolycomComponent, IFeedBackComponent
+    {
 		/// <summary>
 		/// Raised when the active content video source changes.
 		/// </summary>
@@ -77,10 +77,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		}
 
 
-		/// <summary>
-		/// Called to initialize the feedbacks.
-		/// </summary>
-		protected void InitializeFeedBack()
+        /// <summary>
+        /// Called to initialize the feedbacks.
+        /// </summary>
+        public void InitializeFeedBack()
 		{
 			Codec.EnqueueCommand("vcbutton register");
 		}

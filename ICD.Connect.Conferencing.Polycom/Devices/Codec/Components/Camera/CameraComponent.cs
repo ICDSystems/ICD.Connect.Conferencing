@@ -9,8 +9,8 @@ using ICD.Connect.API.Commands;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 {
-	public sealed class CameraComponent : AbstractPolycomComponent
-	{
+	public sealed class CameraComponent : AbstractPolycomComponent, IFeedBackComponent
+    {
 		private const string NOTIFICATION_REGEX =
 			@"notification:vidsourcechange:(?'near'[^:]+):(?'camera'[^:]+):(?'name'[^:]+):(?'mode'[^:]+)";
 
@@ -79,10 +79,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 			InitializeFeedBack();
 		}
 
-		/// <summary>
-		/// Called to initialize the feedbacks.
-		/// </summary>
-		protected void InitializeFeedBack()
+        /// <summary>
+        /// Called to initialize the feedbacks.
+        /// </summary>
+        public void InitializeFeedBack()
 		{
 			Codec.EnqueueCommand("notify vidsourcechanges");
 			Codec.EnqueueCommand("preset register");

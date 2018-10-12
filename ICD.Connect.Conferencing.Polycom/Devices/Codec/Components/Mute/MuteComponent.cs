@@ -9,8 +9,8 @@ using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 {
-	public sealed class MuteComponent : AbstractPolycomComponent
-	{
+	public sealed class MuteComponent : AbstractPolycomComponent, IFeedBackComponent
+    {
 		private const string MUTE_REGEX = @"mute (?'near'near|far) (?'on'on|off)";
 		private const string VIDEO_MUTE_REGEX = @"videomute near (?'on'on|off)";
 
@@ -140,7 +140,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		/// <summary>
 		/// Called to initialize the feedbacks.
 		/// </summary>
-		protected void InitializeFeedBack()
+		public void InitializeFeedBack()
 		{
 			Codec.EnqueueCommand("mute register");
 			Codec.EnqueueCommand("notify mutestatus");
