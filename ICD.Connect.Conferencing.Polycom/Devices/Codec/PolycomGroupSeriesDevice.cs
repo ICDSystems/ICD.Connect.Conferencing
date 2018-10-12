@@ -7,6 +7,7 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Common.Utils.Timers;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components;
@@ -48,10 +49,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
+		/// <summary>
+		/// Timer interval used for resubscribing to feedbacks.
+		/// </summary>
+		private const int TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL = 30 * 60 * 1000;
+
 		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
 		private readonly Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>> m_RangeFeedbackHandlers;
 
-		private readonly RateLimitedEventQueue<string> m_CommandQueue; 
+		private readonly RateLimitedEventQueue<string> m_CommandQueue;
+		private readonly SafeTimer m_FeedbackTimer;
 
 		private readonly PolycomComponentFactory m_Components;
 		private readonly PolycomGroupSeriesSerialBuffer m_SerialBuffer;
@@ -103,7 +110,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <summary>
 		/// Provides the components attached to this codec.
 		/// </summary>
-		public PolycomComponentFactory Components { get { return m_Components; } }
+		public PolycomComponentFactory Components
+		{
+			get { return m_Components; }
+		}
 
 		#endregion
 
@@ -119,6 +129,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
 			m_RangeFeedbackHandlers = new Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>>();
 
+			m_FeedbackTimer = new SafeTimer(ReSubscribeToFeedbacks, TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL, TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL);
+
 			m_CommandQueue = new RateLimitedEventQueue<string>
 			{
 				BetweenMilliseconds = RATE_LIMIT_MS
@@ -130,7 +142,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_SerialBuffer = new PolycomGroupSeriesSerialBuffer();
 			Subscribe(m_SerialBuffer);
 
-			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
+			m_ConnectionStateManager = new ConnectionStateManager(this) {ConfigurePort = ConfigurePort};
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
@@ -141,8 +153,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Controls.Add(new PolycomCodecLayoutControl(this, 3));
 			Controls.Add(new PolycomCodecPresentationControl(this, 4));
 			Controls.Add(new PolycomCodecPowerControl(this, 5));
-		    Controls.Add(new PolycomCalendarControl(this, 6));
-        }
+			Controls.Add(new PolycomCalendarControl(this, 6));
+		}
 
 		#endregion
 
@@ -296,6 +308,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				m_RangeFeedbackHandlers.Add(word, new IcdHashSet<Action<IEnumerable<string>>>());
 
 			m_RangeFeedbackHandlers[word].Add(callback);
+		}
+
+		public void ReSubscribeToFeedbacks()
+		{
+			if (!m_Initialized)
+				return;
+
+			foreach (IFeedBackComponent components in m_Components.GetComponents().OfType<IFeedBackComponent>())
+			{
+				components.InitializeFeedBack();
+			}
 		}
 
 		#endregion
@@ -468,11 +491,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				StartNewMultiLine(data);
 				return true;
 			}
+
 			if (data.EndsWith(" end"))
 			{
 				EndCurrentMultiLine(data);
 				return true;
 			}
+
 			if (m_CurrentMultiLineHeader != null)
 			{
 				AppendMultiLine(data);
@@ -631,13 +656,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Password = settings.Password;
 
 			// TODO - Global addressbook not supported
-			AddressbookType = eAddressbookType.Local;//settings.AddressbookType;
+			AddressbookType = eAddressbookType.Local; //settings.AddressbookType;
 
 			ISerialPort port = null;
 
 			if (settings.Port != null)
 			{
-				port = factory.GetPortById((int)settings.Port) as ISerialPort;
+				port = factory.GetPortById((int) settings.Port) as ISerialPort;
 				if (port == null)
 					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 			}

@@ -9,7 +9,7 @@ using ICD.Connect.API.Commands;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 {
-	public sealed class DialComponent : AbstractPolycomComponent
+	public sealed class DialComponent : AbstractPolycomComponent, IFeedBackComponent
 	{
 		/// <summary>
 		/// Raised when a call state is added, removed or updated.
@@ -79,22 +79,30 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		{
 			base.Initialize();
 
-			Codec.EnqueueCommand("callstate register");
-			Codec.EnqueueCommand("notify callstatus");
-			Codec.EnqueueCommand("notify linestatus");
-			Codec.EnqueueCommand("listen video");
+			InitializeFeedBack();
 
 			Codec.EnqueueCommand("callinfo all");
 			Codec.EnqueueCommand("callstate get");
 		}
 
+		/// <summary>
+		/// Called to initialize the feedbacks.
+		/// </summary>
+		public void InitializeFeedBack()
+		{
+			Codec.EnqueueCommand("callstate register");
+			Codec.EnqueueCommand("notify callstatus");
+			Codec.EnqueueCommand("notify linestatus");
+			Codec.EnqueueCommand("listen video");
+		}
+
 		#region Methods
 
-		/// <summary>
-		/// Returns the active call statuses.
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<CallStatus> GetCallStatuses()
+			/// <summary>
+			/// Returns the active call statuses.
+			/// </summary>
+			/// <returns></returns>
+			public IEnumerable<CallStatus> GetCallStatuses()
 		{
 			return m_CallStatesSection.Execute(() => m_CallStates.Values.ToArray(m_CallStates.Count));
 		}

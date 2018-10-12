@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Support CE 9.3 for the cisco codec
  - Fallback to root directory folder when getfolder would otherwise fail
  - XML Bookig numbers parsing
+ - Added Feedback Resubscription to Polycom
  
 ###Changed
  - Fixed bug where if the client interpretation device was initialized before the server, it would not connect
