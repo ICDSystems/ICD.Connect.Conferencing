@@ -40,11 +40,6 @@ namespace ICD.Connect.Conferencing.Conferences
 		DateTime? End { get; }
 
 		/// <summary>
-		/// Gets the number of sources in the conference.
-		/// </summary>
-		int SourcesCount { get; }
-
-		/// <summary>
 		/// Gets the number of online sources in the conference.
 		/// </summary>
 		int OnlineSourcesCount { get; }
