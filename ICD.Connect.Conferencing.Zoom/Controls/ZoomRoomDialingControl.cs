@@ -266,7 +266,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			m_IncomingCallsSection.Enter();
 			try
 			{
-				var timer = new SafeTimer(() => source.Reject(), 1000 * 60, -1L);
+				var timer = new SafeTimer(source.Reject, 1000 * 60, -1L);
 				m_IncomingCalls.Add(source, timer);
 				OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
 			}

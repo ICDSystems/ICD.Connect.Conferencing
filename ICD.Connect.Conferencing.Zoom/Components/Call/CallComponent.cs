@@ -296,7 +296,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			var participantsToRemove = new List<ParticipantInfo>();
 			foreach (var participant in Participants)
 			{
-				if(!response.Participants.Any(p => p.UserId == participant.UserId))
+				ParticipantInfo participantCopy = participant;
+				if(!response.Participants.Any(p => p.UserId == participantCopy.UserId))
 				{
 					participantsToRemove.Add(participant);
 					OnParticipantRemoved.Raise(this, new GenericEventArgs<ParticipantInfo>(participant));

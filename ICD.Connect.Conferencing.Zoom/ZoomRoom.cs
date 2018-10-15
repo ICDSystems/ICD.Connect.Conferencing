@@ -203,7 +203,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Registers the given callback.
 		/// </summary>
 		/// <param name="callback"></param>
-		/// <param name="path"></param>
 		public void RegisterResponseCallback<T>(ResponseCallback<T> callback)
 			where T : AbstractZoomRoomResponse
 		{
