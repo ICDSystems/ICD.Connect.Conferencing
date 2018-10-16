@@ -662,8 +662,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 					CallParserCallbacks(xml, resultId, key);
 
-					Dictionary<string, int> children;
-					return m_KeyedCallbackChildren.TryGetValue(key, out children) && children.Count > 0;
+					//TODO: Fix this cache, for now chris says its not worth fixing
+					return true;
+					//Dictionary<string, int> children;
+					//return m_KeyedCallbackChildren.TryGetValue(key, out children) && children.Count > 0;
 			}
 		}
 
