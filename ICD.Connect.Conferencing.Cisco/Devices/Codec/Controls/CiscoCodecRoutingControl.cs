@@ -392,17 +392,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void CacheOnActiveTransmissionStateChanged(object sender, TransmissionStateEventArgs args)
 		{
-			OnActiveTransmissionStateChanged.Raise(this, new TransmissionStateEventArgs(args.Output, args.Type, args.State));
+			OnActiveTransmissionStateChanged.Raise(this, new TransmissionStateEventArgs(args));
 		}
 
 		private void CacheOnSourceDetectionStateChange(object sender, SourceDetectionStateChangeEventArgs args)
 		{
-			OnSourceDetectionStateChange.Raise(this, new SourceDetectionStateChangeEventArgs(args.Input, args.Type, args.State));
+			OnSourceDetectionStateChange.Raise(this, new SourceDetectionStateChangeEventArgs(args));
 		}
 
 		private void CacheOnActiveInputsChanged(object sender, ActiveInputStateChangeEventArgs args)
 		{
-			OnActiveInputsChanged.Raise(this, new ActiveInputStateChangeEventArgs(args.Input, args.Type, args.Active));
+			OnActiveInputsChanged.Raise(this, new ActiveInputStateChangeEventArgs(args));
 		}
 
 		#endregion
