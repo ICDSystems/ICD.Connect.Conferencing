@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [11.0.0] - 2018-10-18
 ### Added
  - Conference manager now enforces privacy mute state on feedback providers
  - Support CE 9.3 for the cisco codec
@@ -12,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - XML Bookig numbers parsing
  - Added Feedback Resubscription to Polycom
  
-###Changed
+### Changed
  - Fixed bug where if the client interpretation device was initialized before the server, it would not connect
  - Overhaul XML parsing to improve performance
 
