@@ -1,13 +1,11 @@
 ﻿using System;
 using ICD.Common.Properties;
-using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Directory
 {
-	public interface IDirectoryBrowser<TFolder, TContact> : IDisposable
+	public interface IDirectoryBrowser<TFolder> : IDisposable
 		where TFolder : IDirectoryFolder
-		where TContact : IContact
 	{
 		/// <summary>
 		/// Called when navigating to a different folder.
