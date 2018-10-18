@@ -228,7 +228,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private ThinConferenceSource CreateSourceFromIncomingCall(IncomingCall call)
 		{
-			return new ThinConferenceSource()
+			return new ThinConferenceSource
 			{
 				Name = call.CallerName,
 				Number = call.MeetingNumber,
@@ -243,7 +243,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private ThinConferenceSourceAnswerCallback IncomingCallAnswerCallback(IncomingCall call)
 		{
-			return (source) =>
+			return source =>
 			{
 				Parent.SendCommand("zCommand Call Accept callerJid: {0}", call.CallerJoinId);
 				source.AnswerState = eConferenceSourceAnswerState.Answered;
@@ -253,7 +253,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private ThinConferenceSourceRejectCallback IncomingCallRejectCallback(IncomingCall call)
 		{
-			return (source) =>
+			return source =>
 			{
 				Parent.SendCommand("zCommand Call Reject callerJid: {0}", call.CallerJoinId);
 				source.AnswerState = eConferenceSourceAnswerState.Ignored;
@@ -330,9 +330,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			source.Start = IcdEnvironment.GetLocalTime();
 			source.Direction = eConferenceSourceDirection.Undefined;
 			source.Status = eConferenceSourceStatus.Connected;
-			source.HoldCallback = (s) => { MuteParticipant(true, s.Number); };
-			source.ResumeCallback = (s) => { MuteParticipant(false, s.Number); };
-			source.SendDtmfCallback = (s,s2) => { Parent.Log(eSeverity.Warning, "Zoom Room does not support sending DTMF"); };
+			source.HoldCallback = s => MuteParticipant(true, s.Number);
+			source.ResumeCallback = s => MuteParticipant(false, s.Number);
+			source.SendDtmfCallback = (s, s2) => Parent.Log(eSeverity.Warning, "Zoom Room does not support sending DTMF");
 			source.AnswerState = eConferenceSourceAnswerState.Autoanswered;
 
 			SourceSubscribe(source);

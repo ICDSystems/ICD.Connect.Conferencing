@@ -7,21 +7,16 @@ namespace ICD.Connect.Conferencing.Mock
 {
 	public sealed class MockDirectoryControl : AbstractDirectoryControl<IMockConferencingDevice>
 	{
-
 		public override event EventHandler OnCleared;
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
 		public MockDirectoryControl(IMockConferencingDevice parent, int id)
 			: base(parent, id)
 		{
-		}
-
-		/// <summary>
-		/// Override to release resources.
-		/// </summary>
-		/// <param name="disposing"></param>
-		protected override void DisposeFinal(bool disposing)
-		{
-			base.DisposeFinal(disposing);
 		}
 
 		public override IDirectoryFolder GetRoot()
@@ -31,7 +26,6 @@ namespace ICD.Connect.Conferencing.Mock
 
 		public override void Clear()
 		{
-			throw new NotImplementedException();
 		}
 
 		public override void PopulateFolder(IDirectoryFolder folder)
