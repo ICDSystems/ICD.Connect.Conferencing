@@ -351,23 +351,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#region Console Node
 
-		public string ConsoleName
+		public override string ConsoleName
 		{
 			get { return Name; }
 		}
 
-		public string ConsoleHelp
+		public override string ConsoleHelp
 		{
 			get { return "Zoom Room Call"; }
 		}
 
-		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
-			yield break;
-		}
+			base.BuildConsoleStatus(addRow);
 
-		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
 			addRow("Name", Name);
 			addRow("Number", Number);
 			addRow("Start Time", StartOrDialTime);
@@ -376,8 +373,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			addRow("Caller Join Id", CallerJoinId);
 		}
 
-		public IEnumerable<IConsoleCommand> GetConsoleCommands()
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
 			if (Status == eConferenceSourceStatus.Ringing)
 				yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
 			else
@@ -388,6 +388,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				else
 					yield return new ConsoleCommand("Hold", "Mutes the audio and video of the call", () => Hold());
 			}
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion
