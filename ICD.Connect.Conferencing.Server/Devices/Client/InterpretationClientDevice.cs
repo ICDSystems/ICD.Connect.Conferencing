@@ -325,20 +325,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region Private Helper Methods
 
-		/// <summary>
-		/// Logs to logging core.
-		/// </summary>
-		/// <param name="severity"></param>
-		/// <param name="message"></param>
-		/// <param name="args"></param>
-		private void Log(eSeverity severity, string message, params object[] args)
-		{
-			message = string.Format(message, args);
-			message = string.Format("{0} - {1}", GetType().Name, message);
-
-			Logger.AddEntry(severity, message);
-		}
-
 		private void ClearSources()
 		{
 			m_SourcesCriticalSection.Enter();
