@@ -655,11 +655,17 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			ISerialPort port = null;
 
-		    if (settings.Port != null)
-			    port = factory.GetPortById(settings.Port.Value) as ISerialPort;
-
-			if (port == null)
-				Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+			if (settings.Port != null)
+			{
+				try
+				{
+					port = factory.GetPortById(settings.Port.Value) as ISerialPort;
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+				}
+			}
 
 			m_ConnectionStateManager.SetPort(port);
 	    }

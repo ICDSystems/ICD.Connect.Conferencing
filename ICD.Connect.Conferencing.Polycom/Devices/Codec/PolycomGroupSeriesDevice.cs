@@ -662,9 +662,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			if (settings.Port != null)
 			{
-				port = factory.GetPortById((int) settings.Port) as ISerialPort;
-				if (port == null)
+				try
+				{
+					port = factory.GetPortById((int)settings.Port) as ISerialPort;
+				}
+				catch (KeyNotFoundException)
+				{
 					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
+				}
 			}
 
 			SetPort(port);
