@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [11.0.1] - 2018-10-30
+### Changed
+ - Fixed loading issue where devices would not fail gracefully when a port was not available
+
 ## [11.0.0] - 2018-10-18
 ### Added
  - Conference manager now enforces privacy mute state on feedback providers
