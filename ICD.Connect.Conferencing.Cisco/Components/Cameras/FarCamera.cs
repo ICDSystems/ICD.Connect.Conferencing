@@ -12,6 +12,28 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 	public sealed class FarCamera : AbstractCiscoCamera, IRemoteCamera
 	{
 		/// <summary>
+		/// Mapping of eCameraPanTiltAction to cisco command text
+		/// </summary>
+		private static readonly Dictionary<eCameraPanTiltAction, string> s_PanTiltActionToCisco = new Dictionary
+			<eCameraPanTiltAction, string>
+		{
+			{eCameraPanTiltAction.Up, "Up"},
+			{eCameraPanTiltAction.Down, "Down"},
+			{eCameraPanTiltAction.Left, "Left"},
+			{eCameraPanTiltAction.Right, "Right"}
+		};
+
+		/// <summary>
+		/// Mapping of eCameraZoomAction to command text
+		/// </summary>
+		private static readonly Dictionary<eCameraZoomAction, string> s_ZoomActionToCisco = new Dictionary
+			<eCameraZoomAction, string>
+		{
+			{eCameraZoomAction.ZoomIn, "ZoomIn"},
+			{eCameraZoomAction.ZoomOut, "ZoomOut"}
+		};
+		
+		/// <summary>
 		/// The CallId for the remote camera.
 		/// </summary>
 		private readonly int m_CallId;
@@ -48,7 +70,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// <param name="action"></param>
 		public override void PanTilt(eCameraPanTiltAction action)
 		{
-			Codec.SendCommand("xCommand Call FarEndControl Camera Move CallId: {0} Value: {1}", m_CallId, action);
+			if (action == eCameraPanTiltAction.Stop)
+			{
+				StopPanTilt();
+				return;
+			}
+
+			SendMoveCommand(s_PanTiltActionToCisco[action]);
 			Codec.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
 		}
 
@@ -66,7 +94,13 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// <param name="action"></param>
 		public void Zoom(eCameraZoomAction action)
 		{
-			Codec.SendCommand("xCommand Call FarEndControl Camera Move CallId: {0} Value: {1}", m_CallId, action);
+			if (action == eCameraZoomAction.Stop)
+			{
+				StopZoom();
+				return;
+			}
+
+			SendMoveCommand(s_ZoomActionToCisco[action]);
 			Codec.Log(eSeverity.Informational, "Zooming Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
 		}
 
@@ -76,6 +110,11 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		public void StopZoom()
 		{
 			StopMove();
+		}
+
+		private void SendMoveCommand(string command)
+		{
+			Codec.SendCommand("xCommand Call FarEndControl Camera Move CallId: {0} Value: {1}", m_CallId, command);
 		}
 
 		private void StopMove()
