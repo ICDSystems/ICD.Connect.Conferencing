@@ -1,4 +1,6 @@
-﻿using ICD.Common.Utils.Services.Logging;
+﻿using System.Collections.Generic;
+using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.Cameras;
 using ICD.Connect.Conferencing.Cameras;
 
@@ -55,8 +57,53 @@ namespace ICD.Connect.Conferencing.Cisco.Components.Cameras
 		/// </summary>
 		public override void StopPanTilt()
 		{
+			StopMove();
+		}
+
+		/// <summary>
+		/// Zooms the camera
+		/// </summary>
+		/// <param name="action"></param>
+		public void Zoom(eCameraZoomAction action)
+		{
+			Codec.SendCommand("xCommand Call FarEndControl Camera Move CallId: {0} Value: {1}", m_CallId, action);
+			Codec.Log(eSeverity.Informational, "Zooming Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
+		}
+
+		/// <summary>
+		/// Stops the camera from zooming
+		/// </summary>
+		public void StopZoom()
+		{
+			StopMove();
+		}
+
+		private void StopMove()
+		{
 			Codec.SendCommand("xCommand Call FarEndControl Camera Stop CallId: {0}", m_CallId);
 			Codec.Log(eSeverity.Informational, "Stop Moving Far End Camera CallId: {0}", m_CallId);
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			yield return new EnumConsoleCommand<eCameraZoomAction>("Zoom", e => Zoom(e));
+			yield return new ConsoleCommand("StopZoom", "Stops moving the camera", () => StopZoom());
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion
