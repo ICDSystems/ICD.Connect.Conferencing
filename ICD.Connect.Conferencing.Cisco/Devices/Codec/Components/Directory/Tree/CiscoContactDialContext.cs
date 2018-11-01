@@ -30,7 +30,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		// <ContactMethod item="1">
 		//   <ContactMethodId item="1">1</ContactMethodId>
 		//   <Number item="1">112</Number>
-		//   <CiscoCallType item="1">Video</CiscoCallType>
+		//   <CallType item="1">Video</CallType>
 		// </ContactMethod>
 
 		/// <summary>
