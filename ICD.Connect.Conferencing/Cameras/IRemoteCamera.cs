@@ -14,5 +14,16 @@ namespace ICD.Connect.Conferencing.Cameras
 		/// Stops the camera from moving.
 		/// </summary>
 		void StopPanTilt();
+
+		/// <summary>
+		/// Zooms the camera
+		/// </summary>
+		/// <param name="action"></param>
+		void Zoom(eCameraZoomAction action);
+
+		/// <summary>
+		/// Stops the camera from zooming
+		/// </summary>
+		void StopZoom();
 	}
 }
