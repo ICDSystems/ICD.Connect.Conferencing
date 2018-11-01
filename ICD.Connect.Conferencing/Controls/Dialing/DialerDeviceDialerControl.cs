@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Calendaring.Booking;
-using ICD.Connect.Conferencing.ConferenceSources;
-using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
-	public sealed class DialerDeviceDialerControl : AbstractDialingDeviceControl<IDialerDevice> 
+	public sealed class DialerDeviceDialerControl : AbstractTraditionalConferenceDeviceControl<IDialerDevice>
 	{
-		public override event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
-		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
+		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
-		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video; } }
+		public override eCallType Supports { get { return eCallType.Video; } }
 
 		public DialerDeviceDialerControl(IDialerDevice parent, int id)
 			: base(parent, id)
@@ -29,22 +29,32 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			parent.OnAutoAnswerChanged += ParentOnAutoAnswerChanged;
 			parent.OnDoNotDisturbChanged += ParentOnDoNotDisturbChanged;
 			parent.OnPrivacyMuteChanged += ParentOnPrivacyMuteChanged;
-			parent.OnSourceAdded += ParentOnSourceAdded;
-			parent.OnSourceRemoved += ParentOnSourceRemoved;
+			parent.OnParticipantAdded += ParentOnParticipantAdded;
+			parent.OnParticipantRemoved += ParentOnParticipantRemoved;
+			parent.OnIncomingCallAdded += ParentOnIncomingCallAdded;
+			parent.OnIncomingCallRemoved += ParentOnIncomingCallRemoved;
 		}
 
-		private void ParentOnSourceAdded(object sender, ConferenceSourceEventArgs eventArgs)
+		private void ParentOnParticipantAdded(object sender, GenericEventArgs<ITraditionalParticipant> eventArgs)
 		{
-			SourceSubscribe(eventArgs.Data);
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnSourceAdded-OnSourceAdded");
-			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs));
+			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnParticpantAdded-OnParticipantAdded");
+			AddParticipant(eventArgs.Data);
 		}
 
-		private void ParentOnSourceRemoved(object sender, ConferenceSourceEventArgs eventArgs)
+		private void ParentOnParticipantRemoved(object sender, GenericEventArgs<ITraditionalParticipant> eventArgs)
 		{
-			SourceUnsubscribe(eventArgs.Data);
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnSourceRemoved-OnSourceRemoved");
-			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs));
+			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnParticpantRemoved-OnParticipantRemoved");
+			RemoveParticipant(eventArgs.Data);
+		}
+
+		private void ParentOnIncomingCallAdded(object sender, GenericEventArgs<IIncomingCall> args)
+		{
+			
+		}
+
+		private void ParentOnIncomingCallRemoved(object sender, GenericEventArgs<IIncomingCall> args)
+		{
+			
 		}
 
 		private void ParentOnPrivacyMuteChanged(object sender, BoolEventArgs eventArgs)
@@ -62,34 +72,14 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			AutoAnswer = Parent.AutoAnswer;
 		}
 
-		public override IEnumerable<IConferenceSource> GetSources()
+		public override eDialContextSupport CanDial(IDialContext dialContext)
 		{
-			return Parent.GetSources();
+			return Parent.CanDial(dialContext);
 		}
 
-		public override void Dial(string number)
+		public override void Dial(IDialContext dialContext)
 		{
-			Parent.Dial(number);
-		}
-
-		public override void Dial(string number, eConferenceSourceType callType)
-		{
-			Parent.Dial(number, callType);
-		}
-
-		public override void Dial(IContact contact)
-		{
-			Parent.Dial(contact);
-		}
-
-		public override eBookingSupport CanDial(IBookingNumber bookingNumber)
-		{
-			return Parent.CanDial(bookingNumber);
-		}
-
-		public override void Dial(IBookingNumber bookingNumber)
-		{
-			Parent.Dial(bookingNumber);
+			Parent.Dial(dialContext);
 		}
 
 		public override void SetDoNotDisturb(bool enabled)

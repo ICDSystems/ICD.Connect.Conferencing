@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Settings.SPlusShims.EventArguments;
 
@@ -11,8 +11,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
 	public sealed class SimplInterpretationDevice : AbstractSimplDevice<SimplInterpretationDeviceSettings>, ISimplInterpretationDevice
 	{
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		public event EventHandler<ParticipantEventArgs> OnSourceAdded;
+		public event EventHandler<ParticipantEventArgs> OnSourceRemoved;
 
 		public event EventHandler<SPlusBoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<SPlusBoolEventArgs> OnDoNotDisturbChanged;
@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		#region Private Members
 
-		private IConferenceSource m_Source;
+		private ITraditionalParticipant m_Source;
 		private bool m_AutoAnswer;
 		private bool m_DoNotDisturb;
 		private bool m_PrivacyMute;
@@ -142,7 +142,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 				handler(this, number);
 		}
 
-		public void Dial(string number, eConferenceSourceType type)
+		public void Dial(string number, eCallType type)
 		{
 			SimplDialerDialTypeCallback handler = DialTypeCallback;
 			if (handler != null)
@@ -170,39 +170,39 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 				handler(this, enabled.ToUShort());
 		}
 
-		public void AddShimSource(IConferenceSource source)
+		public void AddShimSource(ITraditionalParticipant source)
 		{
 			SetShimSource(source);
 		}
 
-		public void RemoveShimSource(IConferenceSource source)
+		public void RemoveShimSource(IParticipant source)
 		{
 			SetShimSource(null);
 		}
 
-		private void SetShimSource(IConferenceSource source)
+		private void SetShimSource(ITraditionalParticipant source)
 		{
 			if (source == m_Source)
 				return;
 
-			IConferenceSource oldSource = m_Source;
+			IParticipant oldSource = m_Source;
 
 			m_Source = source;
 
 			if(oldSource != null)
-				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(oldSource));
+				OnSourceRemoved.Raise(this, new ParticipantEventArgs(oldSource));
 
 			if (m_Source != null)
-				OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(m_Source));
+				OnSourceAdded.Raise(this, new ParticipantEventArgs(m_Source));
 		}
 
-		public IEnumerable<IConferenceSource> GetSources()
+		public IEnumerable<ITraditionalParticipant> GetSources()
 		{
 			if (m_Source != null)
 				yield return m_Source;
 		}
 
-		public bool ContainsSource(IConferenceSource source)
+		public bool ContainsSource(IParticipant source)
 		{
 			return source == m_Source;
 		}

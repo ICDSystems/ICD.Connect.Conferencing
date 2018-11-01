@@ -78,13 +78,32 @@
     <Compile Include="Cameras\IRemoteCamera.cs" />
     <Compile Include="ConferenceManagers\ConferenceManager.cs" />
     <Compile Include="ConferenceManagers\IConferenceManager.cs" />
-    <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
-    <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
-    <Compile Include="ConferenceSources\ThinConferenceSource.cs" />
+    <Compile Include="Conferences\AbstractConference.cs" />
+    <Compile Include="Conferences\TraditionalConference.cs" />
+    <Compile Include="Controls\Dialing\AbstractTraditionalConferenceDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\AbstractWebConferenceDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\ITraditionalConferenceDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\IWebConferenceDeviceControl.cs" />
+    <Compile Include="DialContexts\AbstractDialContext.cs" />
+    <Compile Include="DialContexts\eDialProtocol.cs" />
+    <Compile Include="DialContexts\GenericDialContext.cs" />
+    <Compile Include="DialContexts\IDialContext.cs" />
+    <Compile Include="DialContexts\PstnDialContext.cs" />
+    <Compile Include="DialContexts\SipDialContext.cs" />
+    <Compile Include="DialContexts\ZoomContactDialContext.cs" />
+    <Compile Include="DialContexts\ZoomDialContext.cs" />
+    <Compile Include="Participants\ConferenceSourceState.cs" />
+    <Compile Include="Participants\IIncomingCall.cs" />
+    <Compile Include="Participants\IParticipant.cs" />
+    <Compile Include="Participants\EventHelpers\AbstractParticipantEventHelper.cs" />
+    <Compile Include="Participants\ThinIncomingCall.cs" />
+    <Compile Include="Conferences\IConference.cs" />
+    <Compile Include="Conferences\IWebConference.cs" />
+    <Compile Include="Participants\IWebParticipant.cs" />
     <Compile Include="Contacts\eOnlineState.cs" />
     <Compile Include="Contacts\IContactWithOnlineState.cs" />
     <Compile Include="Contacts\IContactWithSurname.cs" />
-    <Compile Include="Controls\Dialing\eBookingSupport.cs" />
+    <Compile Include="Controls\Dialing\eDialContextSupport.cs" />
     <Compile Include="Controls\Directory\AbstractDirectoryControl.cs" />
     <Compile Include="Controls\Directory\DirectoryControlConsole.cs" />
     <Compile Include="Controls\Directory\IDirectoryControl.cs" />
@@ -105,7 +124,6 @@
     <Compile Include="Directory\IDirectoryBrowser.cs" />
     <Compile Include="Directory\Tree\AbstractDirectoryFolder.cs" />
     <Compile Include="Directory\AbstractDirectoryBrowser.cs" />
-    <Compile Include="Controls\Dialing\AbstractDialingDeviceControl.cs" />
     <Compile Include="Controls\Presentation\AbstractPresentationControl.cs" />
     <Compile Include="Controls\Dialing\DialerDeviceDialerControl.cs" />
     <Compile Include="Controls\Dialing\DialingDeviceControlConsole.cs" />
@@ -122,34 +140,36 @@
     <Compile Include="DialingPlans\Matchers\ExactPlanMatcher.cs" />
     <Compile Include="Directory\Tree\IDirectoryFolder.cs" />
     <Compile Include="Directory\Tree\DirectoryFolderEventArgs.cs" />
-    <Compile Include="EventArguments\ConferenceSourceAnswerStateEventArgs.cs" />
-    <Compile Include="Conferences\Conference.cs" />
-    <Compile Include="EventArguments\ConferenceSourceStatusEventArgs.cs" />
-    <Compile Include="Conferences\IConference.cs" />
+    <Compile Include="EventArguments\IncomingCallAnswerStateEventArgs.cs" />
+    <Compile Include="EventArguments\ParticipantStatusEventArgs.cs" />
+    <Compile Include="Conferences\ITraditionalConference.cs" />
     <Compile Include="Conferences\ConferenceStatusEventArgs.cs" />
     <Compile Include="Contacts\Contact.cs" />
     <Compile Include="Contacts\ContactMethod.cs" />
     <Compile Include="Contacts\IContact.cs" />
     <Compile Include="Contacts\IContactMethod.cs" />
-    <Compile Include="EventArguments\ConferenceSourceEventArgs.cs" />
+    <Compile Include="EventArguments\ParticipantEventArgs.cs" />
     <Compile Include="DialingPlans\Matchers\AbstractPlanMatcher.cs" />
     <Compile Include="DialingPlans\Matchers\IPlanMatcher.cs" />
     <Compile Include="DialingPlans\Matchers\NumericPlanMatcher.cs" />
     <Compile Include="DialingPlans\Matchers\RegexPlanMatcher.cs" />
-    <Compile Include="EventArguments\ConferenceSourceTypeEventArgs.cs" />
+    <Compile Include="EventArguments\ParticipantTypeEventArgs.cs" />
     <Compile Include="EventArguments\InCallEventArgs.cs" />
     <Compile Include="EventArguments\PresentationActiveInputApiEventArgs.cs" />
-    <Compile Include="Favorites\FavoriteContactMethod.cs" />
+    <Compile Include="Favorites\FavoriteDialContext.cs" />
     <Compile Include="Favorites\Favorite.cs" />
     <Compile Include="EventArguments\ConferenceEventArgs.cs" />
-    <Compile Include="ConferenceSources\IConferenceSource.cs" />
+    <Compile Include="Participants\ITraditionalParticipant.cs" />
     <Compile Include="Favorites\IFavorites.cs" />
     <Compile Include="Favorites\SqLite\SqLiteFavoriteContactMethods.cs" />
     <Compile Include="Favorites\SqLite\SqLiteFavorites.cs" />
-    <Compile Include="Controls\Dialing\IDialingDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\IConferenceDeviceControl.cs" />
     <None Include="ObfuscationSettings.cs" />
+    <Compile Include="Participants\ThinTraditionalParticipant.cs" />
+    <Compile Include="Participants\ThinWebParticipant.cs" />
+    <Compile Include="Participants\EventHelpers\TraditionalParticipantEventHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Proxies\Controls\Dialing\AbstractProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Dialing\AbstractProxyTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Proxies\Controls\Directory\AbstractProxyDirectoryControl.cs" />
     <Compile Include="Proxies\Controls\Directory\DirectoryControlApi.cs" />
     <Compile Include="Proxies\Controls\Directory\IProxyDirectoryControl.cs" />
@@ -160,16 +180,15 @@
     <Compile Include="Proxies\Controls\Layout\ProxyConferenceLayoutControl.cs" />
     <Compile Include="Proxies\Controls\Presentation\AbstractProxyPresentationControl.cs" />
     <Compile Include="Proxies\Controls\Dialing\DialingDeviceControlApi.cs" />
-    <Compile Include="Proxies\Controls\Dialing\IProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Dialing\IProxyTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Proxies\Controls\Presentation\IProxyPresentationControl.cs" />
     <Compile Include="Proxies\Controls\Presentation\PresentationControlApi.cs" />
-    <Compile Include="Proxies\Controls\Dialing\ProxyDialingDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Dialing\ProxyTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Proxies\Controls\Presentation\ProxyPresentationControl.cs" />
     <Compile Include="Proxies\Controls\Routing\AbstractProxyConferenceRouteControl.cs" />
     <Compile Include="Proxies\Controls\Routing\IProxyVideoConferenceRouteControl.cs" />
     <Compile Include="Proxies\Controls\Routing\ProxyVideoConferenceRouteControl.cs" />
     <Compile Include="Proxies\Controls\Routing\VideoConferenceRouteDestinationControlApi.cs" />
-    <Compile Include="Utils\ConferencingBookingUtils.cs" />
     <Compile Include="Utils\SipUtils.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
@@ -181,10 +200,6 @@
     <ProjectReference Include="..\..\ICD.Connect.API\ICD.Connect.API\ICD.Connect.API_SimplSharp.csproj">
       <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
       <Name>ICD.Connect.API_SimplSharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ICD.Connect.Calendaring\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
-      <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
-      <Name>ICD.Connect.Calendaring_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_SimplSharp.csproj">
       <Project>{B13D593D-8BBF-4E20-ABD8-47C6095E7D3E}</Project>

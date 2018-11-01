@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Sqlite;
+using ICD.Connect.Conferencing.DialContexts;
+using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Favorites.SqLite
 {
@@ -13,11 +16,15 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 
 		private const string COLUMN_ID = "id";
 		public const string COLUMN_FAVORITE_ID = "favorite_id";
-		public const string COLUMN_NUMBER = "number";
+		public const string COLUMN_DIAL_STRING = "number";
+		public const string COLUMN_DIAL_PROTOCOL = "dial_protocol";
+		public const string COLUMN_CALL_TYPE = "call_type";
 
 		private const string PARAM_ID = "@" + COLUMN_ID;
 		private const string PARAM_FAVORITE_ID = "@" + COLUMN_FAVORITE_ID;
-		public const string PARAM_NUMBER = "@" + COLUMN_NUMBER;
+		public const string PARAM_DIAL_STRING = "@" + COLUMN_DIAL_STRING;
+		public const string PARAM_DIAL_PROTOCOL = "@" + COLUMN_DIAL_PROTOCOL;
+		public const string PARAM_CALL_TYPE = "@" + COLUMN_CALL_TYPE;
 
 		#region Properties
 
@@ -55,7 +62,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <returns></returns>
 		[PublicAPI]
-		public IEnumerable<FavoriteContactMethod> GetContactMethods()
+		public IEnumerable<FavoriteDialContext> GetContactMethods()
 		{
 			string query = string.Format("SELECT * FROM {0}", TABLE);
 
@@ -76,7 +83,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <param name="id"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public FavoriteContactMethod GetContactMethod(long id)
+		public FavoriteDialContext GetContactMethod(long id)
 		{
 			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_ID, PARAM_ID);
 
@@ -99,7 +106,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <param name="favoriteId"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public IEnumerable<FavoriteContactMethod> GetContactMethodsForFavorite(long favoriteId)
+		public IEnumerable<FavoriteDialContext> GetContactMethodsForFavorite(long favoriteId)
 		{
 			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_FAVORITE_ID, PARAM_FAVORITE_ID);
 
@@ -122,15 +129,15 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <param name="number"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public IEnumerable<FavoriteContactMethod> GetContactMethodsByNumber(string number)
+		public IEnumerable<FavoriteDialContext> GetContactMethodsByNumber(string number)
 		{
-			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_NUMBER, PARAM_NUMBER);
+			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_DIAL_STRING, PARAM_DIAL_STRING);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_NUMBER, eDbType.String).Value = number;
+					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.String).Value = number;
 
 					connection.Open();
 					using (IcdSqliteDataReader reader = command.ExecuteReader())
@@ -144,22 +151,25 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// method already exists with the same id.
 		/// </summary>
 		/// <param name="favoriteId"></param>
-		/// <param name="contactMethod"></param>
+		/// <param name="dialContext"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public bool SubmitContactMethod(long favoriteId, FavoriteContactMethod contactMethod)
+		public bool SubmitContactMethod(long favoriteId, FavoriteDialContext dialContext)
 		{
 			// Insertion
 			string query =
-				string.Format("INSERT INTO {0} ({1}, {2}) VALUES ({3}, {4})",
-				              TABLE, COLUMN_FAVORITE_ID, COLUMN_NUMBER, PARAM_FAVORITE_ID, PARAM_NUMBER);
+				string.Format("INSERT INTO {0} ({1}, {2}, {3}, {4}) VALUES ({5}, {6}, {7}, {8})",
+				              TABLE, COLUMN_FAVORITE_ID, COLUMN_DIAL_STRING, COLUMN_DIAL_PROTOCOL, COLUMN_CALL_TYPE,
+							  PARAM_FAVORITE_ID, PARAM_DIAL_STRING, PARAM_DIAL_PROTOCOL, PARAM_CALL_TYPE);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
 					command.Parameters.Add(PARAM_FAVORITE_ID, eDbType.Int64).Value = favoriteId;
-					command.Parameters.Add(PARAM_NUMBER, eDbType.String).Value = contactMethod.Number;
+					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.String).Value = dialContext.DialString;
+					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.Int32).Value = dialContext.Protocol;
+					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.Int32).Value = dialContext.CallType;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
@@ -170,10 +180,10 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <summary>
 		/// Removes the contact method.
 		/// </summary>
-		/// <param name="contactMethod"></param>
+		/// <param name="dialContext"></param>
 		/// <returns>False if the contact method does not exist.</returns>
 		[PublicAPI]
-		public bool RemoveContactMethod(FavoriteContactMethod contactMethod)
+		public bool RemoveContactMethod(FavoriteDialContext dialContext)
 		{
 			string query = string.Format("DELETE FROM {0} WHERE {1}={2}", TABLE, COLUMN_ID, PARAM_ID);
 
@@ -181,7 +191,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = contactMethod.Id;
+					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = dialContext.Id;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
@@ -192,19 +202,24 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <summary>
 		/// Updates the contact method with the given id.
 		/// </summary>
-		/// <param name="contactMethod"></param>
+		/// <param name="dialContext"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public bool UpdateContactMethod(FavoriteContactMethod contactMethod)
+		public bool UpdateContactMethod(FavoriteDialContext dialContext)
 		{
-			string query = string.Format("UPDATE {0} SET {1}={2} WHERE {3}={4}", TABLE, COLUMN_NUMBER, PARAM_NUMBER, COLUMN_ID,
-			                             PARAM_ID);
+			string query = string.Format("UPDATE {0} SET {1}={2}, {3}={4}, {5}={6} WHERE {7}={8}", TABLE, 
+				COLUMN_DIAL_STRING, PARAM_DIAL_STRING,
+				COLUMN_DIAL_PROTOCOL, PARAM_DIAL_PROTOCOL,
+				COLUMN_CALL_TYPE, PARAM_CALL_TYPE,
+				COLUMN_ID, PARAM_ID);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_NUMBER, eDbType.String).Value = contactMethod.Number;
+					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.String).Value = dialContext.DialString;
+					command.Parameters.Add(PARAM_DIAL_PROTOCOL, eDbType.Int32).Value = dialContext.Protocol;
+					command.Parameters.Add(PARAM_CALL_TYPE, eDbType.Int32).Value = dialContext.CallType;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
@@ -221,7 +236,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static IEnumerable<FavoriteContactMethod> ContactMethodsFromReader(IIcdDataReader reader)
+		private static IEnumerable<FavoriteDialContext> ContactMethodsFromReader(IIcdDataReader reader)
 		{
 			while (reader.Read())
 				yield return RowToContactMethod(reader);
@@ -232,12 +247,14 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="reader"></param>
 		/// <returns></returns>
-		private static FavoriteContactMethod RowToContactMethod(IIcdDataRecord reader)
+		private static FavoriteDialContext RowToContactMethod(IIcdDataRecord reader)
 		{
-			return new FavoriteContactMethod
+			return new FavoriteDialContext
 			{
 				Id = (long)reader[COLUMN_ID],
-				Number = reader[COLUMN_NUMBER] as string,
+				DialString = reader[COLUMN_DIAL_STRING] as string,
+				Protocol = (eDialProtocol)reader[COLUMN_DIAL_PROTOCOL],
+				CallType = (eCallType)reader[COLUMN_CALL_TYPE]
 			};
 		}
 
@@ -246,19 +263,44 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		private void CreateTable()
 		{
-			string favoriteId = string.Format("{0} INTEGER, FOREIGN KEY ({0}) REFERENCES {1}({2})", COLUMN_FAVORITE_ID,
-			                                  SqLiteFavorites.TABLE, COLUMN_ID);
-			string query =
-				string.Format("CREATE TABLE IF NOT EXISTS {0} ({1} INTEGER PRIMARY KEY, {2} VARCHAR(40) NOT NULL, {3})",
-				              TABLE, COLUMN_ID, COLUMN_NUMBER, favoriteId);
-
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
-				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
-				{
-					connection.Open();
+				connection.Open();
+
+				string favoriteId = string.Format("{0} INTEGER, FOREIGN KEY ({0}) REFERENCES {1}({2})", COLUMN_FAVORITE_ID,
+			                                  SqLiteFavorites.TABLE, COLUMN_ID);
+				string createQuery =
+					string.Format("CREATE TABLE IF NOT EXISTS {0} ({1} INTEGER PRIMARY KEY, {2} VARCHAR(40) NOT NULL, {3} INTEGER DEFAULT 1, {4} INTEGER DEFAULT 0, {5})",
+								TABLE, COLUMN_ID, COLUMN_DIAL_STRING, COLUMN_DIAL_PROTOCOL, COLUMN_CALL_TYPE, favoriteId);
+				using (IcdSqliteCommand command = new IcdSqliteCommand(createQuery, connection))
 					command.ExecuteNonQuery();
+
+				bool migrate = true;
+				string pragmaQuery = string.Format("PRAGMA table_info({0}", TABLE);
+				using (IcdSqliteCommand command = new IcdSqliteCommand(pragmaQuery, connection))
+				{
+					var result = command.ExecuteReader();
+
+					while (result.Read())
+					{
+						if (result["name"].Equals(COLUMN_DIAL_PROTOCOL) || result["name"].Equals(COLUMN_CALL_TYPE))
+						{
+							migrate = false;
+							break;
+						}
+					}
 				}
+
+				if (!migrate)
+					return;
+
+				string migrateQuery = "ALTER TABLE {0} ADD COLUMN {1} INTEGER DEFAULT {2}";
+				string protocolQuery = string.Format(migrateQuery, TABLE, COLUMN_DIAL_PROTOCOL, 1);
+				string callTypeQuery = string.Format(migrateQuery, TABLE, COLUMN_CALL_TYPE, 0);
+				using (IcdSqliteCommand command = new IcdSqliteCommand(protocolQuery, connection))
+					command.ExecuteNonQuery();
+				using (IcdSqliteCommand command = new IcdSqliteCommand(callTypeQuery, connection))
+					command.ExecuteNonQuery();
 			}
 		}
 

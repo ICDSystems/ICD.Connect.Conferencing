@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		public string Number { get; private set; }
 		public string Protocol { get; private set; }
 		public int CallRate { get; private set; }
-		public eCallType CallType { get; private set; }
+		public eCiscoCallType CiscoCallType { get; private set; }
 
 		/// <summary>
 		/// Deserializes the given xml to a BookingCall instance.
@@ -21,15 +21,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			string number = XmlUtils.TryReadChildElementContentAsString(xml, "Number");
 			string protocol = XmlUtils.TryReadChildElementContentAsString(xml, "Protocol");
 			int callRate = XmlUtils.TryReadChildElementContentAsInt(xml, "CallRate") ?? 0;
-			eCallType callType = XmlUtils.TryReadChildElementContentAsEnum<eCallType>(xml, "CallType", true) ??
-			                     eCallType.Unknown;
+			eCiscoCallType ciscoCallType = XmlUtils.TryReadChildElementContentAsEnum<eCiscoCallType>(xml, "CiscoCallType", true) ??
+			                     eCiscoCallType.Unknown;
 
 			return new BookingCall
 			{
 				Number = number,
 				Protocol = protocol,
 				CallRate = callRate,
-				CallType = callType
+				CiscoCallType = ciscoCallType
 			};
 		}
 
@@ -47,7 +47,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			return string.Equals(Number, other.Number) &&
 			       string.Equals(Protocol, other.Protocol) &&
 			       CallRate == other.CallRate &&
-			       CallType == other.CallType;
+			       CiscoCallType == other.CiscoCallType;
 		}
 
 		/// <summary>Determines whether the specified object is equal to the current object.</summary>
@@ -73,7 +73,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 				int hashCode = (Number != null ? Number.GetHashCode() : 0);
 				hashCode = (hashCode * 397) ^ (Protocol != null ? Protocol.GetHashCode() : 0);
 				hashCode = (hashCode * 397) ^ CallRate;
-				hashCode = (hashCode * 397) ^ (int)CallType;
+				hashCode = (hashCode * 397) ^ (int)CiscoCallType;
 				return hashCode;
 			}
 		}

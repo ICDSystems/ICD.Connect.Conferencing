@@ -71,8 +71,8 @@
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="MockConferencingDevice.cs" />
     <Compile Include="MockConferencingDeviceSettings.cs" />
-    <Compile Include="MockDialingDeviceControl.cs" />
     <Compile Include="MockDirectoryControl.cs" />
+    <Compile Include="MockTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>

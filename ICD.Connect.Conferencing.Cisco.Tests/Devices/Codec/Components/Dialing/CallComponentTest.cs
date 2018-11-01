@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
-using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.EventArguments;
 using NUnit.Framework;
 
@@ -17,7 +17,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Dialing
 
 			CallComponent component = new CallComponent(id, Codec);
 
-			List<ConferenceSourceStatusEventArgs> responses = new List<ConferenceSourceStatusEventArgs>();
+			List<ParticipantStatusEventArgs> responses = new List<ParticipantStatusEventArgs>();
 
 			component.OnStatusChanged += (sender, e) => responses.Add(e);
 
@@ -65,10 +65,10 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Dialing
 			Port.Receive(connectedBad);
 
 			Assert.AreEqual(3, responses.Count);
-			Assert.AreEqual(eConferenceSourceStatus.Ringing, responses[0].Data);
-			Assert.AreEqual(eConferenceSourceStatus.Connecting, responses[1].Data);
-			Assert.AreEqual(eConferenceSourceStatus.Connected, responses[2].Data);
-			Assert.AreEqual(eConferenceSourceStatus.Connected, component.Status);
+			Assert.AreEqual(eParticipantStatus.Ringing, responses[0].Data);
+			Assert.AreEqual(eParticipantStatus.Connecting, responses[1].Data);
+			Assert.AreEqual(eParticipantStatus.Connected, responses[2].Data);
+			Assert.AreEqual(eParticipantStatus.Connected, component.Status);
 		}
 
 		[Test]

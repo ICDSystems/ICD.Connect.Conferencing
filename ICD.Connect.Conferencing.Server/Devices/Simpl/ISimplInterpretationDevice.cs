@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Settings.SPlusShims.EventArguments;
 
@@ -15,8 +15,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 	public interface ISimplInterpretationDevice : ISimplDevice
 	{
-		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
-		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		event EventHandler<ParticipantEventArgs> OnSourceAdded;
+		event EventHandler<ParticipantEventArgs> OnSourceRemoved;
 
 		event EventHandler<SPlusBoolEventArgs> OnAutoAnswerChanged;
 		event EventHandler<SPlusBoolEventArgs> OnDoNotDisturbChanged;
@@ -39,15 +39,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		bool PrivacyMute { get; set; }
 
 		void Dial(string number);
-		void Dial(string number, eConferenceSourceType type);
+		void Dial(string number, eCallType type);
 		void SetAutoAnswer(bool enabled);
 		void SetDoNotDisturb(bool enabled);
 		void SetPrivacyMute(bool enabled);
 
-		void AddShimSource(IConferenceSource source);
-		void RemoveShimSource(IConferenceSource source);
+		void AddShimSource(ITraditionalParticipant source);
+		void RemoveShimSource(IParticipant source);
 
-		IEnumerable<IConferenceSource> GetSources();
-		bool ContainsSource(IConferenceSource source);
+		IEnumerable<ITraditionalParticipant> GetSources();
+		bool ContainsSource(IParticipant source);
 	}
 }

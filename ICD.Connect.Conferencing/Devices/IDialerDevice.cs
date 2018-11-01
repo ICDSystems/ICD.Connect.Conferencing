@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
-using ICD.Connect.Calendaring.Booking;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices;
 
 namespace ICD.Connect.Conferencing.Devices
@@ -13,14 +13,24 @@ namespace ICD.Connect.Conferencing.Devices
 	public interface IDialerDevice : IDevice
 	{
 		/// <summary>
-		/// Called when a source is added to the dialing device.
+		/// Called when a participant is added to the dialing device.
 		/// </summary>
-		event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantAdded;
 
 		/// <summary>
-		/// Called when a source is removed from the dialing device.
+		/// Called when a participant is removed from the dialing device.
 		/// </summary>
-		event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantRemoved;
+
+		/// <summary>
+		/// Called when an incoming call is added to the dialing device.
+		/// </summary>
+		event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
+
+		/// <summary>
+		/// Called when an incoming call is removed from the dialing device.
+		/// </summary>
+		event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		/// <summary>
 		/// Raised when the Do Not Disturb state changes.
@@ -41,15 +51,10 @@ namespace ICD.Connect.Conferencing.Devices
 		bool DoNotDisturb { get; }
 		bool AutoAnswer { get; }
 
-		void Dial(string number);
-		void Dial(string number, eConferenceSourceType callType);
-		void Dial(IContact contact);
-		eBookingSupport CanDial(IBookingNumber bookingNumber);
-		void Dial(IBookingNumber bookingNumber);
+		eDialContextSupport CanDial(IDialContext dialContext);
+		void Dial(IDialContext dialContext);
 		void SetPrivacyMute(bool enabled);
 		void SetAutoAnswer(bool enabled);
 		void SetDoNotDisturb(bool enabled);
-		
-		IEnumerable<IConferenceSource> GetSources();
 	}
 }

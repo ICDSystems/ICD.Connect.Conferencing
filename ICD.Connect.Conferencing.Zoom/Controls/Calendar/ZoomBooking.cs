@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ICD.Connect.Calendaring;
 using ICD.Connect.Calendaring.Booking;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
@@ -40,9 +41,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    get { return m_Booking.IsPrivate; }
 	    }
 
-	    public override IEnumerable<IBookingNumber> GetBookingNumbers()
+	    public override IEnumerable<IDialContext> GetBookingNumbers()
 	    {
-			yield return new ZoomBookingNumber(m_Booking.MeetingNumber);
+			yield return new ZoomDialContext { DialString = m_Booking.MeetingNumber };
 		}
 
 		public ZoomBooking(Booking booking)

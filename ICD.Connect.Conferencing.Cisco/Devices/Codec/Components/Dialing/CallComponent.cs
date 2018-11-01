@@ -12,15 +12,15 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {
 	/// <summary>
 	/// Call Type
 	/// </summary>
-	public enum eCallType
+	public enum eCiscoCallType
 	{
 		// Ignore missing comments warning
 #pragma warning disable 1591
@@ -30,22 +30,46 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		AudioCanEscalate,
 		ForwardAllCall
 #pragma warning restore 1591
+
+	}
+
+	public static class CiscoCallTypeExtensions
+	{
+		public static eCallType ToCallType(this eCiscoCallType callType)
+		{
+			switch (callType)
+			{
+				case eCiscoCallType.Video:
+					return eCallType.Video;
+
+				case eCiscoCallType.Audio:
+				case eCiscoCallType.AudioCanEscalate:
+				case eCiscoCallType.ForwardAllCall:
+					return eCallType.Audio;
+
+				case eCiscoCallType.Unknown:
+					return eCallType.Unknown;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
 	}
 
 	/// <summary>
 	/// CallComponent represents a single call.
 	/// </summary>
-	public sealed class CallComponent : AbstractCiscoComponent, IConferenceSource
+	public sealed class CallComponent : AbstractCiscoComponent, ITraditionalParticipant
 	{
 		/// <summary>
 		/// Raised when the answer state changes.
 		/// </summary>
-		public event EventHandler<ConferenceSourceAnswerStateEventArgs> OnAnswerStateChanged;
+		public event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
 
 		/// <summary>
 		/// Raised when the call status changes.
 		/// </summary>
-		public event EventHandler<ConferenceSourceStatusEventArgs> OnStatusChanged;
+		public event EventHandler<ParticipantStatusEventArgs> OnStatusChanged;
 
 		/// <summary>
 		/// Raised when the source name changes.
@@ -60,18 +84,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Raised when the source type changes.
 		/// </summary>
-		public event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
+		public event EventHandler<ParticipantTypeEventArgs> OnSourceTypeChanged;
 
-		private eConferenceSourceStatus m_Status;
+		private eParticipantStatus m_Status;
 		private FarCamera m_CachedCamera;
 		private string m_Name;
 		private string m_Number;
-		private eCallType m_CallType;
-		private eConferenceSourceType m_SourceType;
-		private eConferenceSourceAnswerState m_AnswerState;
-
-		private readonly List<ConferenceSourceSnapshot> m_History;
-		private readonly SafeCriticalSection m_HistorySection;
+		private eCiscoCallType m_CiscoCallType;
+		private eCallType m_SourceType;
+		private eCallAnswerState m_AnswerState;
 
 		private static readonly Dictionary<string, string> s_CachedNumberToName;
 		private static readonly SafeCriticalSection s_CachedNumberToNameSection;
@@ -87,7 +108,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Call Answer State
 		/// </summary>
-		public eConferenceSourceAnswerState AnswerState
+		public eCallAnswerState AnswerState
 		{
 			get { return m_AnswerState; }
 			private set
@@ -97,7 +118,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_AnswerState = value;
 
-				OnAnswerStateChanged.Raise(this, new ConferenceSourceAnswerStateEventArgs(m_AnswerState));
+				OnAnswerStateChanged.Raise(this, new IncomingCallAnswerStateEventArgs(m_AnswerState));
 			}
 		}
 
@@ -147,7 +168,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Call Direction
 		/// </summary>
-		public eConferenceSourceDirection Direction { get; private set; }
+		public eCallDirection Direction { get; private set; }
 
 		/// <summary>
 		/// The time the call started.
@@ -187,7 +208,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Call Status
 		/// </summary>
-		public eConferenceSourceStatus Status
+		public eParticipantStatus Status
 		{
 			get { return m_Status; }
 			private set
@@ -200,7 +221,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				UpdateIsOnlineStatus();
 
-				OnStatusChanged.Raise(this, new ConferenceSourceStatusEventArgs(m_Status));
+				OnStatusChanged.Raise(this, new ParticipantStatusEventArgs(m_Status));
 			}
 		}
 
@@ -214,45 +235,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// Call Type
 		/// </summary>
 		[PublicAPI]
-		public eCallType CallType
+		public eCiscoCallType CiscoCallType
 		{
-			get { return m_CallType; }
+			get { return m_CiscoCallType; }
 			private set
 			{
-				if (value == m_CallType)
+				if (value == m_CiscoCallType)
 					return;
 
-				m_CallType = value;
+				m_CiscoCallType = value;
 
-				switch (m_CallType)
-				{
-					case eCallType.Audio:
-						SourceType = eConferenceSourceType.Audio;
-						break;
-					case eCallType.Video:
-						SourceType = eConferenceSourceType.Video;
-						break;
-					case eCallType.Unknown:
-						SourceType = eConferenceSourceType.Unknown;
-						break;
-
-					case eCallType.AudioCanEscalate:
-						SourceType = eConferenceSourceType.Audio;
-						break;
-					case eCallType.ForwardAllCall:
-						SourceType = eConferenceSourceType.Audio;
-						break;
-
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
+				SourceType = m_CiscoCallType.ToCallType();
 			}
 		}
 
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
-		public eConferenceSourceType SourceType
+		public eCallType SourceType
 		{
 			get { return m_SourceType; }
 			private set
@@ -262,7 +262,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_SourceType = value;
 
-				OnSourceTypeChanged.Raise(this, new ConferenceSourceTypeEventArgs(m_SourceType));
+				OnSourceTypeChanged.Raise(this, new ParticipantTypeEventArgs(m_SourceType));
 			}
 		}
 
@@ -274,13 +274,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		{
 			get
 			{
-				if (SourceType != eConferenceSourceType.Video)
+				if (SourceType != eCallType.Video)
 					return null;
 				return m_CachedCamera ?? (m_CachedCamera = new FarCamera(CallId, Codec));
 			}
 		}
 
-		IRemoteCamera IConferenceSource.Camera { get { return Camera; } }
+		IRemoteCamera ITraditionalParticipant.Camera { get { return Camera; } }
 
 		#endregion
 
@@ -302,9 +302,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="codec"></param>
 		public CallComponent(int callId, CiscoCodecDevice codec) : base(codec)
 		{
-			m_History = new List<ConferenceSourceSnapshot>();
-			m_HistorySection = new SafeCriticalSection();
-
 			CallId = callId;
 
 			Subscribe(Codec);
@@ -350,7 +347,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				// Dead calls rise up as ghosts.
 				bool ghost = reader.GetAttribute("ghost") == "True";
 				if (ghost)
-					Status = eConferenceSourceStatus.Disconnected;
+					Status = eParticipantStatus.Disconnected;
 
 				foreach (IcdXmlReader child in reader.GetChildElements())
 				{
@@ -365,7 +362,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 						case "Protocol":
 							Protocol = child.ReadElementContentAsString();
 							break;
-						case "CallType":
+						case "CiscoCallType":
 							SetCallType(child.ReadElementContentAsString());
 							break;
 						case "RemoteNumber":
@@ -394,8 +391,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 					child.Dispose();
 				}
 			}
-
-			CreateSnapshot();
 		}
 
 		/// <summary>
@@ -421,7 +416,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		public void Hold()
 		{
-			if (Status == eConferenceSourceStatus.OnHold)
+			if (Status == eParticipantStatus.OnHold)
 				return;
 
 			Codec.SendCommand("xCommand Call Hold CallId: {0}", CallId);
@@ -433,7 +428,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		public void Resume()
 		{
-			if (Status != eConferenceSourceStatus.OnHold)
+			if (Status != eParticipantStatus.OnHold)
 				return;
 
 			Codec.SendCommand("xCommand Call Resume CallId: {0}", CallId);
@@ -457,15 +452,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		{
 			Codec.SendCommand("xCommand Call Join CallId: {0} CallId: {1}", CallId, other);
 			Codec.Log(eSeverity.Debug, "Joining Call {0} with {1}", CallId, other);
-		}
-
-		/// <summary>
-		/// Gets the history snapshots of the call.
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<ConferenceSourceSnapshot> GetHistory()
-		{
-			return m_HistorySection.Execute(() => m_History.ToArray());
 		}
 
 		/// <summary>
@@ -514,28 +500,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			base.ConnectionStatusChanged(state);
 
 			if (!state)
-				Status = eConferenceSourceStatus.Disconnected;
-		}
-
-		/// <summary>
-		/// Adds a snapshot to the history. Doesn't add the same snapshot twice in a row.
-		/// </summary>
-		private void CreateSnapshot()
-		{
-			m_HistorySection.Enter();
-
-			try
-			{
-				ConferenceSourceSnapshot last = m_History.LastOrDefault();
-				ConferenceSourceSnapshot current = ConferenceSourceSnapshot.FromConferenceSource(this);
-
-				if (!last.AreEqualExceptTimestamp(current))
-					m_History.Add(current);
-			}
-			finally
-			{
-				m_HistorySection.Leave();
-			}
+				Status = eParticipantStatus.Disconnected;
 		}
 
 		/// <summary>
@@ -597,17 +562,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 		private void SetCallType(string callType)
 		{
-			CallType = EnumUtils.Parse<eCallType>(callType, true);
+			CiscoCallType = EnumUtils.Parse<eCiscoCallType>(callType, true);
 		}
 
 		private void SetDirection(string direction)
 		{
-			Direction = EnumUtils.Parse<eConferenceSourceDirection>(direction, true);
+			Direction = EnumUtils.Parse<eCallDirection>(direction, true);
 		}
 
 		private void SetAnswerState(string state)
 		{
-			AnswerState = EnumUtils.Parse<eConferenceSourceAnswerState>(state, true);
+			AnswerState = EnumUtils.Parse<eCallAnswerState>(state, true);
 		}
 
 		private void SetStatus(string status)
@@ -616,7 +581,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (status.ToLower() == "dialling")
 				status = "dialing";
 
-			Status = EnumUtils.Parse<eConferenceSourceStatus>(status, true);
+			Status = EnumUtils.Parse<eParticipantStatus>(status, true);
 		}
 
 		/// <summary>
@@ -648,7 +613,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
 			yield return new ConsoleCommand("Reject", "Rejects the incoming call", () => Reject());
 			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
-			yield return new ConsoleCommand("History", "Prints the history for the call", () => PrintHistory());
 		}
 
 		/// <summary>
@@ -669,7 +633,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			foreach (IConsoleNodeBase group in GetBaseConsoleNodes())
 				yield return group;
 
-			if (CallType == eCallType.Video)
+			if (SourceType == eCallType.Video)
 				yield return Camera;
 		}
 
@@ -694,7 +658,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			addRow("Status", Status);
 			addRow("Direction", Direction);
 			addRow("Protocol", Protocol);
-			addRow("Call Type", CallType);
+			addRow("Call Type", CiscoCallType);
 			addRow("Remote Number", RemoteNumber);
 			addRow("Callback Number", Number);
 			addRow("Name", Name);
@@ -702,26 +666,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			addRow("Receive Call Rate", ReceiveRate);
 			addRow("Duration", this.GetDuration());
 			addRow("Answer State", AnswerState);
-		}
-
-		/// <summary>
-		/// Prints the history for the call.
-		/// </summary>
-		private string PrintHistory()
-		{
-			m_HistorySection.Enter();
-			StringBuilder builder = new StringBuilder();
-			try
-			{
-				builder.AppendFormat("History for call ID:{0}{1}", CallId, IcdEnvironment.NewLine);
-				foreach (ConferenceSourceSnapshot snapshot in m_History)
-					builder.AppendLine(snapshot.ToString());
-				return builder.ToString();
-			}
-			finally
-			{
-				m_HistorySection.Leave();
-			}
 		}
 
 		#endregion

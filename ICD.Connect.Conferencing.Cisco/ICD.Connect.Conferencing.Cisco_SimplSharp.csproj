@@ -99,7 +99,7 @@
     <Compile Include="Devices\Codec\Components\Diagnostics\DiagnosticsMessage.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\AbstractCiscoFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContact.cs" />
-    <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContactMethod.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContactDialContext.cs" />
     <Compile Include="Devices\Codec\Components\Peripherals\PeripheralsComponent.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\LayoutEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\PresentationModeEventArgs.cs" />
@@ -127,7 +127,7 @@
     <Compile Include="Devices\Codec\Controls\CiscoCodecPowerControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
-    <Compile Include="Devices\Codec\Controls\CiscoCodecDialingControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecTraditionalConferenceControl.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />

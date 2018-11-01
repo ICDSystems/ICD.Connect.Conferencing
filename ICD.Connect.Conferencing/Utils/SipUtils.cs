@@ -51,26 +51,14 @@ namespace ICD.Connect.Conferencing.Utils
 			return match.Success ? match.Groups[1].Value : null;
 		}
 
-		/// <summary>
-		/// Returns true if the given number is a valid sip number.
-		/// </summary>
-		/// <param name="number"></param>
-		/// <returns></returns>
-		public static bool IsValidNumber(string number)
+		public static bool IsValidSipUri(string number)
 		{
-			if (number == null)
-				throw new ArgumentNullException("number");
-
-			if (string.IsNullOrEmpty(number))
+			Uri uri;
+			if (!Uri.TryCreate(number, UriKind.RelativeOrAbsolute, out uri))
 				return false;
 
-			if (number.Any(char.IsWhiteSpace))
-				return false;
-
-			if (number.IndexOfAny(s_UriDisallowed) >= 0)
-				return false;
-
-			return number.IndexOfAny(s_UriReserved) < 0;
+			return uri.IsWellFormedOriginalString() &&
+			       (!uri.IsAbsoluteUri || uri.Scheme.Equals("sip", StringComparison.OrdinalIgnoreCase));
 		}
 	}
 }

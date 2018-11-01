@@ -12,12 +12,12 @@ namespace ICD.Connect.Conferencing.Tests.Utils
 			Assert.AreEqual(expected, SipUtils.NumberFromUri(uri));
 		}
 
-		[TestCase("1000", true)]
-		[TestCase("bob", true)]
+		[TestCase("sip:jeffery@wedoresi.com", true)]
+		[TestCase("sip:1234567890", true)]
 		[TestCase("\"100\"", false)]
 		public void IsValidNumberTest(string number, bool expected)
 		{
-			Assert.AreEqual(expected, SipUtils.IsValidNumber(number));
+			Assert.AreEqual(expected, SipUtils.IsValidSipUri(number));
 		}
 	}
 }

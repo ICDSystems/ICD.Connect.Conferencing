@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <summary>
 		/// The source type of the plan.
 		/// </summary>
-		public eConferenceSourceType SourceType { get; private set; }
+		public eCallType SourceType { get; private set; }
 
 		/// <summary>
 		/// The format pattern for FormatNumber.
@@ -39,7 +39,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <param name="sourceType"></param>
 		/// <param name="format"></param>
 		/// <param name="formatMode"></param>
-		protected AbstractPlanMatcher(string name, eConferenceSourceType sourceType, string format, eFormatMode formatMode)
+		protected AbstractPlanMatcher(string name, eCallType sourceType, string format, eFormatMode formatMode)
 		{
 			Name = name;
 			SourceType = sourceType;

@@ -100,7 +100,7 @@ namespace ICD.Connect.Conferencing.Controls.Directory
 			builder.AppendLine(contact.Name);
 
 			// Add the contact methods
-			foreach (IContactMethod child in contact.GetContactMethods())
+			foreach (IContactMethod child in contact.GetDialContexts())
 				PrintContactMethod(builder, child, depth + 1);
 		}
 

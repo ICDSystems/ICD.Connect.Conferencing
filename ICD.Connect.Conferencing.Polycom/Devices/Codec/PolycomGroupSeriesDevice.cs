@@ -136,7 +136,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 
 			Controls.Add(new PolycomCodecRoutingControl(this, 0));
-			Controls.Add(new PolycomCodecDialingControl(this, 1));
+			Controls.Add(new PolycomCodecTraditionalConferenceControl(this, 1));
 			Controls.Add(new PolycomCodecDirectoryControl(this, 2));
 			Controls.Add(new PolycomCodecLayoutControl(this, 3));
 			Controls.Add(new PolycomCodecPresentationControl(this, 4));

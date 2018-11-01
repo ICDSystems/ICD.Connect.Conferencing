@@ -72,6 +72,7 @@
     <Compile Include="Components\Bookings\Booking.cs" />
     <Compile Include="Components\Call\DialingComponent.cs" />
     <Compile Include="Components\AbstractZoomRoomComponent.cs" />
+    <Compile Include="Components\Call\ZoomParticipant.cs" />
     <Compile Include="Components\Camera\CameraComponent.cs" />
     <Compile Include="Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Components\Presentation\PresentationComponent.cs" />
@@ -82,7 +83,7 @@
     <Compile Include="Components\ZoomRoomComponentFactory.cs" />
     <Compile Include="Controls\Calendar\ZoomBooking.cs" />
     <Compile Include="Controls\Calendar\ZoomRoomCalendarControl.cs" />
-    <Compile Include="Controls\ZoomRoomDialingControl.cs" />
+    <Compile Include="Controls\ZoomRoomConferenceControl.cs" />
     <Compile Include="Controls\ZoomRoomDirectoryControl.cs" />
     <Compile Include="Controls\ZoomRoomPresentationControl.cs" />
     <Compile Include="Controls\ZoomRoomRoutingControl.cs" />

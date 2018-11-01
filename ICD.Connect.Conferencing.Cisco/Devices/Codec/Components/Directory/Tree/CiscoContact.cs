@@ -5,6 +5,7 @@ using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
@@ -14,7 +15,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 	[XmlConverter(typeof(CiscoContactXmlConverter))]
 	public sealed class CiscoContact : IContact
 	{
-		private readonly IcdOrderedDictionary<int, CiscoContactMethod> m_ContactMethods;
+		private readonly IcdOrderedDictionary<int, CiscoContactDialContext> m_ContactMethods;
 
 		#region Properties
 
@@ -55,14 +56,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// </summary>
 		public CiscoContact()
 		{
-			m_ContactMethods = new IcdOrderedDictionary<int, CiscoContactMethod>();
+			m_ContactMethods = new IcdOrderedDictionary<int, CiscoContactDialContext>();
 		}
 
 		/// <summary>
 		/// Gets the contact methods.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<CiscoContactMethod> GetContactMethods()
+		public IEnumerable<CiscoContactDialContext> GetContactMethods()
 		{
 			return m_ContactMethods.Values.ToArray(m_ContactMethods.Count);
 		}
@@ -70,18 +71,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// <summary>
 		/// Adds the given contact method.
 		/// </summary>
-		/// <param name="contactMethod"></param>
-		public void AddContactMethod(CiscoContactMethod contactMethod)
+		/// <param name="contactDialContext"></param>
+		public void AddContactMethod(CiscoContactDialContext contactDialContext)
 		{
-			if (contactMethod == null)
-				throw new ArgumentNullException("contactMethod");
+			if (contactDialContext == null)
+				throw new ArgumentNullException("contactDialContext");
 
-			m_ContactMethods.Add(contactMethod.ContactMethodId, contactMethod);
+			m_ContactMethods.Add(contactDialContext.ContactMethodId, contactDialContext);
 		}
 
-		IEnumerable<IContactMethod> IContact.GetContactMethods()
+		IEnumerable<IDialContext> IContact.GetDialContexts()
 		{
-			return GetContactMethods().Cast<IContactMethod>();
+			return GetContactMethods().Cast<IDialContext>();
 		}
 	}
 
@@ -95,7 +96,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		//   <ContactMethod item="1">
 		//     <ContactMethodId item="1">1</ContactMethodId>
 		//     <Number item="1">112</Number>
-		//     <CallType item="1">Video</CallType>
+		//     <CiscoCallType item="1">Video</CiscoCallType>
 		//   </ContactMethod>
 		// </Contact>
 
@@ -134,8 +135,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 					break;
 
 				case "ContactMethod":
-					CiscoContactMethod contactMethod = IcdXmlConvert.DeserializeObject<CiscoContactMethod>(reader);
-					instance.AddContactMethod(contactMethod);
+					CiscoContactDialContext contactDialContext = IcdXmlConvert.DeserializeObject<CiscoContactDialContext>(reader);
+					instance.AddContactMethod(contactDialContext);
 					break;
 
 				default:

@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
@@ -331,12 +332,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (!match.Success)
 				throw new FormatException("Failed to parse contact");
 
-			IContactMethod[] contactMethods =
+			IDialContext[] dialMethods =
 			{
-				new ContactMethod(match.Groups["number"].Value) 
+				new GenericDialContext { DialString = match.Groups["number"].Value }
 			};
 
-			return new Contact(match.Groups["name"].Value, contactMethods);
+			return new Contact(match.Groups["name"].Value, dialMethods);
 		}
 
 		/// <summary>

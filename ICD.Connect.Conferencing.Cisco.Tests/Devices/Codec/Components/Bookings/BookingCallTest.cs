@@ -1,5 +1,6 @@
 ﻿using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using ICD.Connect.Conferencing.EventArguments;
 using NUnit.Framework;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
@@ -22,7 +23,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 			Assert.AreEqual("432@firstrepublic.com", info.Number);
 			Assert.AreEqual("SIP", info.Protocol);
 			Assert.AreEqual(4096, info.CallRate);
-			Assert.AreEqual(eCallType.Video, info.CallType);
+			Assert.AreEqual(eCallType.Video, info.CiscoCallType);
 		}
 	}
 }

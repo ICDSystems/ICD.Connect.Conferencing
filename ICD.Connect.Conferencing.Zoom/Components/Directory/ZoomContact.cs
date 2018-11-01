@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.DialContexts;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Directory
@@ -57,9 +58,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 			get { return string.Format("{0} {1}", FirstName, LastName); }
 		}
 
-		public IEnumerable<IContactMethod> GetContactMethods()
+		public IEnumerable<IDialContext> GetDialContexts()
 		{
-			yield return new ContactMethod(JoinId);
+			yield return new ZoomContactDialContext { DialString = JoinId };
 		}
 
 		public eOnlineState OnlineState

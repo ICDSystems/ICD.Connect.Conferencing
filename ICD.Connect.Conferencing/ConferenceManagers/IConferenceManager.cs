@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;
+using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {
@@ -28,7 +29,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Raised when a source is added to the current active conference.
 		/// </summary>
-		event EventHandler<ConferenceSourceEventArgs> OnRecentSourceAdded;
+		event EventHandler<ParticipantEventArgs> OnRecentSourceAdded;
 
 		/// <summary>
 		/// Raised when the active conference changes.
@@ -48,7 +49,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Called when an active source status changes.
 		/// </summary>
-		event EventHandler<ConferenceSourceStatusEventArgs> OnActiveSourceStatusChanged;
+		event EventHandler<ParticipantStatusEventArgs> OnActiveSourceStatusChanged;
 
 		/// <summary>
 		/// Raised when the privacy mute status changes.
@@ -82,7 +83,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the active conference.
 		/// </summary>
-		IConference ActiveConference { get; }
+		ITraditionalConference ActiveConference { get; }
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
@@ -118,7 +119,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="number"></param>
 		/// <param name="mode"></param>
-		void Dial(string number, eConferenceSourceType mode);
+		void Dial(string number, eCallType mode);
 
 		/// <summary>
 		/// Enables DoNotDisturb.
@@ -142,59 +143,59 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Gets the recent conferences in order of time.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IConference> GetRecentConferences();
+		IEnumerable<ITraditionalConference> GetRecentConferences();
 
 		/// <summary>
 		/// Gets the recent sources in order of time.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IConferenceSource> GetRecentSources();
+		IEnumerable<ITraditionalParticipant> GetRecentSources();
 
 		/// <summary>
-		/// Gets the dialing component for the given source type.
+		/// Gets the conference component for the given source type.
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		IDialingDeviceControl GetDialingProvider(eConferenceSourceType sourceType);
+		IConferenceDeviceControl GetDialingProvider(eCallType sourceType);
 
 		/// <summary>
-		/// Gets the registered dialing components.
+		/// Gets the registered conference components.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IDialingDeviceControl> GetDialingProviders();
+		IEnumerable<IConferenceDeviceControl> GetDialingProviders();
 
 		/// <summary>
-		/// Registers the dialing component.
-		/// </summary>
-		/// <param name="sourceType"></param>
-		/// <param name="dialingControl"></param>
-		/// <returns></returns>
-		bool RegisterDialingProvider(eConferenceSourceType sourceType, IDialingDeviceControl dialingControl);
-
-		/// <summary>
-		/// Registers the dialing component, for feedback only.
-		/// </summary>
-		/// <param name="dialingControl"></param>
-		/// <returns></returns>
-		bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
-
-		/// <summary>
-		/// Deregisters the dialing component.
+		/// Registers the conference component.
 		/// </summary>
 		/// <param name="sourceType"></param>
+		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		bool DeregisterDialingProvider(eConferenceSourceType sourceType);
+		bool RegisterDialingProvider(eCallType sourceType, IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Deregisters the dialing componet from the feedback only list.
+		/// Registers the conference component, for feedback only.
 		/// </summary>
-		/// <param name="dialingControl"></param>
+		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		bool DeregisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
+		bool RegisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Deregisters all of the dialing components.
+		/// Deregisters the conference component.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		bool DeregisterDialingProvider(eCallType sourceType);
+
+		/// <summary>
+		/// Deregisters the conference componet from the feedback only list.
+		/// </summary>
+		/// <param name="conferenceControl"></param>
+		/// <returns></returns>
+		bool DeregisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl);
+
+		/// <summary>
+		/// Deregisters all of the conference components.
 		/// </summary>
 		void ClearDialingProviders();
 
@@ -212,22 +213,22 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="extends"></param>
 		/// <param name="number"></param>
 		/// <returns></returns>
-		public static eConferenceSourceType GetCallType(this IConferenceManager extends, string number)
+		public static eCallType GetCallType(this IConferenceManager extends, string number)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
 			// Gets the type the number resolves to
-			eConferenceSourceType type = extends.DialingPlan.GetSourceType(number);
+			eCallType type = extends.DialingPlan.GetSourceType(number);
 
 			// Gets the best provider for that call type
-			IDialingDeviceControl provider = extends.GetDialingProvider(type);
+			IConferenceDeviceControl provider = extends.GetDialingProvider(type);
 
 			// Return the best available type we can handle the call as.
-			eConferenceSourceType providerType = provider == null ? eConferenceSourceType.Unknown : provider.Supports;
+			eCallType providerType = provider == null ? eCallType.Unknown : provider.Supports;
 
 			// If we don't know the call type use the provider default.
-			if (type == eConferenceSourceType.Unknown)
+			if (type == eCallType.Unknown)
 				return providerType;
 
 			// Limit the type to what the provider can support.
@@ -243,7 +244,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			IConference active = extends.ActiveConference;
+			ITraditionalConference active = extends.ActiveConference;
 			return active != null && active.GetOnlineSources().Length > 0;
 		}
 
@@ -257,7 +258,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			eConferenceSourceType mode = extends.GetCallType(number);
+			eCallType mode = extends.GetCallType(number);
 			extends.Dial(number, mode);
 		}
 
@@ -290,11 +291,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			IContactMethod contactMethod = extends.DialingPlan.GetContactMethod(contact);
-			if (contactMethod == null)
-				throw new ArgumentException("Contact has no contact methods", "contact");
+			IDialContext dialContext = extends.DialingPlan.GetDialContext(contact);
+			if (dialContext == null)
+				throw new ArgumentException("Contact has no dial contexts", "contact");
 
-			extends.Dial(contactMethod);
+			extends.Dial(dialContext);
 		}
 
 		/// <summary>
@@ -302,7 +303,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="source"></param>
-		public static void Dial(this IConferenceManager extends, IConferenceSource source)
+		public static void Dial(this IConferenceManager extends, ITraditionalParticipant source)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");

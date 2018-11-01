@@ -35,7 +35,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <param name="maxLength"></param>
 		/// <param name="exclude"></param>
 		/// <param name="format"></param>
-		public NumericPlanMatcher(string name, eConferenceSourceType sourceType, string format, eFormatMode formatMode,
+		public NumericPlanMatcher(string name, eCallType sourceType, string format, eFormatMode formatMode,
 		                          int minLength, int maxLength, char[] exclude)
 			: base(name, sourceType, format, formatMode)
 		{

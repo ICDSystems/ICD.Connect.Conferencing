@@ -15,7 +15,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <param name="format"></param>
 		/// <param name="formatMode"></param>
 		/// <param name="number"></param>
-		public ExactPlanMatcher(string name, eConferenceSourceType sourceType, string format, eFormatMode formatMode,
+		public ExactPlanMatcher(string name, eCallType sourceType, string format, eFormatMode formatMode,
 		                        string number)
 			: base(name, sourceType, format, formatMode)
 		{

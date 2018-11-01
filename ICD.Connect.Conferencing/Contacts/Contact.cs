@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Contacts
 {
 	public sealed class Contact : IContact
 	{
-		private readonly IContactMethod[] m_ContactMethods;
+		private readonly IDialContext[] m_DialContexts;
 		private readonly string m_Name;
 
 		/// <summary>
@@ -16,20 +17,20 @@ namespace ICD.Connect.Conferencing.Contacts
 		/// Constructor.
 		/// </summary>
 		/// <param name="name"></param>
-		/// <param name="contactMethods"></param>
-		public Contact(string name, IContactMethod[] contactMethods)
+		/// <param name="dialContexts"></param>
+		public Contact(string name, IDialContext[] dialContexts)
 		{
 			m_Name = name;
-			m_ContactMethods = contactMethods;
+			m_DialContexts = dialContexts;
 		}
 
 		/// <summary>
 		/// Gets the contact methods.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IContactMethod> GetContactMethods()
+		public IEnumerable<IDialContext> GetDialContexts()
 		{
-			return m_ContactMethods;
+			return m_DialContexts;
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Sqlite;
+using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Favorites.SqLite
 {
@@ -121,20 +122,24 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="contactNumber"></param>
 		/// <returns></returns>
-		public IEnumerable<Favorite> GetFavoritesByContactNumber(string contactNumber)
+		public IEnumerable<Favorite> GetFavoritesByDialContext(IDialContext dialContext)
 		{
-			string query = string.Format(@"SELECT * FROM {0} INNER JOIN {1} ON {2}.{3}={4}.{5} WHERE {6}={7}",
+			string query = string.Format(@"SELECT * FROM {0} INNER JOIN {1} ON {2}.{3}={4}.{5} WHERE {6}={7} AND {8}={9}",
 			                             TABLE, SqLiteFavoriteContactMethods.TABLE, TABLE, COLUMN_ID,
 			                             SqLiteFavoriteContactMethods.TABLE,
 			                             SqLiteFavoriteContactMethods.COLUMN_FAVORITE_ID,
-			                             SqLiteFavoriteContactMethods.COLUMN_NUMBER,
-			                             SqLiteFavoriteContactMethods.PARAM_NUMBER);
+			                             SqLiteFavoriteContactMethods.COLUMN_DIAL_STRING,
+			                             SqLiteFavoriteContactMethods.PARAM_DIAL_STRING,
+										 SqLiteFavoriteContactMethods.COLUMN_DIAL_PROTOCOL,
+										 SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL
+				);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(SqLiteFavoriteContactMethods.PARAM_NUMBER, eDbType.String).Value = contactNumber;
+					command.Parameters.Add(SqLiteFavoriteContactMethods.PARAM_DIAL_STRING, eDbType.String).Value = dialContext.DialString;
+					command.Parameters.Add(SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL, eDbType.Int32).Value = (int)dialContext.Protocol;
 
 					connection.Open();
 
@@ -179,7 +184,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				return null;
 
 			// Add all of the contact methods
-			foreach (FavoriteContactMethod contactMethod in favorite.GetContactMethods())
+			foreach (FavoriteDialContext contactMethod in favorite.GetContactMethods())
 				m_ContactMethods.SubmitContactMethod(lastId, contactMethod);
 
 			return GetFavorite(lastId);
@@ -193,7 +198,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		public Favorite UpdateFavorite(Favorite favorite)
 		{
 			// Add all of the contact methods
-			foreach (FavoriteContactMethod contactMethod in favorite.GetContactMethods())
+			foreach (FavoriteDialContext contactMethod in favorite.GetContactMethods())
 				m_ContactMethods.SubmitContactMethod(favorite.Id, contactMethod);
 
 			string query = string.Format("UPDATE {0} SET {1}={2} WHERE {3}={4}", TABLE, COLUMN_NAME, PARAM_NAME, COLUMN_ID,
@@ -223,7 +228,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		public bool RemoveFavorite(Favorite favorite)
 		{
 			// Remove contact methods
-			foreach (FavoriteContactMethod method in m_ContactMethods.GetContactMethodsForFavorite(favorite.Id))
+			foreach (FavoriteDialContext method in m_ContactMethods.GetContactMethodsForFavorite(favorite.Id))
 				m_ContactMethods.RemoveContactMethod(method);
 
 			string query = string.Format("DELETE FROM {0} WHERE {1}={2}", TABLE, COLUMN_ID, PARAM_ID);
@@ -269,7 +274,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				Name = reader[COLUMN_NAME] as string,
 			};
 
-			IEnumerable<FavoriteContactMethod> contactMethods =
+			IEnumerable<FavoriteDialContext> contactMethods =
 				m_ContactMethods.GetContactMethodsForFavorite(output.Id);
 
 			output.SetContactMethods(contactMethods);

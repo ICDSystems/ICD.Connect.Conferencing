@@ -385,7 +385,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			//     <ContactMethod item="1">
 			//       <ContactMethodId item="1">1</ContactMethodId>
 			//       <Number item="1">111</Number>
-			//       <CallType item="1">Video</CallType>
+			//       <CiscoCallType item="1">Video</CiscoCallType>
 			//     </ContactMethod>
 			//   </Contact>
 			// </PhonebookSearchResult>

@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Calendaring;
 using ICD.Connect.Calendaring.Booking;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
@@ -11,7 +12,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 	public sealed class PolycomBooking : AbstractBooking
 	{
 		private readonly MeetingInfo m_Booking;
-		private readonly List<IBookingNumber> m_BookingNumbers;
+		private readonly List<IDialContext> m_BookingNumbers;
 
 		public override string MeetingName
 		{
@@ -43,7 +44,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 			get { return !m_Booking.Public; }
 		}
 
-		public override IEnumerable<IBookingNumber> GetBookingNumbers()
+		public override IEnumerable<IDialContext> GetBookingNumbers()
 		{
 			return m_BookingNumbers.ToArray(m_BookingNumbers.Count);
 		}
@@ -55,14 +56,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 
 		}
 
-		private IEnumerable<IBookingNumber> ParseBookingNumbers()
+		private IEnumerable<IDialContext> ParseBookingNumbers()
 		{
 			foreach (MeetingInfo.DialingNumber number in m_Booking.GetDialingNumbers())
 			{
 				switch (number.Protocol.ToUpper())
 				{
 					case "SIP":
-						yield return new SipBookingNumber(number.Number.Split(';').FirstOrDefault());
+						yield return new SipDialContext { DialString = number.Number.Split(';').FirstOrDefault() };
 						continue;
 				}
 			}
