@@ -59,7 +59,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 					instance.DialString = reader.ReadElementContentAsString();
 					break;
 
-				case "CiscoCallType":
+				case "CallType":
 					instance.CallType = reader.ReadElementContentAsEnum<eCiscoCallType>(true).ToCallType();
 					break;
 
