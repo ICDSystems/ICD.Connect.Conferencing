@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {
 	// Ignore missing comment warnings
 #pragma warning disable 1591
-	public enum eDialProtocol
+	public enum eCiscoDialProtocol
 	{
 		[UsedImplicitly] H320,
 		[UsedImplicitly] H323,
@@ -181,7 +181,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="number"></param>
 		public void Dial(string number)
 		{
-			Dial(number, EventArguments.eCallType.Video);
+			Dial(number, eCallType.Video);
 		}
 
 		/// <summary>
@@ -189,9 +189,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		/// <param name="number"></param>
 		/// <param name="callType"></param>
-		public void Dial(string number, EventArguments.eCallType callType)
+		public void Dial(string number, eCallType callType)
 		{
-			Dial(number, eDialProtocol.Sip, callType);
+			Dial(number, eCiscoDialProtocol.Sip, callType);
 		}
 
 		/// <summary>
@@ -205,14 +205,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="protocol"></param>
 		/// <param name="callType"></param>
 		[PublicAPI]
-		public void Dial(string number, eDialProtocol protocol, EventArguments.eCallType callType)
+		public void Dial(string number, eCiscoDialProtocol protocol, eCallType callType)
 		{
 			CallComponent existing = GetCallComponents().Where(c => c.GetIsOnline()).FirstOrDefault();
 			if (existing != null)
 				existing.Hold();
 
-			Codec.SendCommand("xCommand Dial Number: {0} Protocol: {1} CiscoCallType: {2}", number, protocol, callType);
-			Codec.Log(eSeverity.Debug, "Dialing {0} Protocol: {1} CiscoCallType: {2}", number, protocol, callType);
+			Codec.SendCommand("xCommand Dial Number: {0} Protocol: {1} CallType: {2}", number, protocol, callType);
+			Codec.Log(eSeverity.Debug, "Dialing {0} Protocol: {1} CallType: {2}", number, protocol, callType);
 		}
 
 		/// <summary>

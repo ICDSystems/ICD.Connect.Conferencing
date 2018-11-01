@@ -2,8 +2,6 @@
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
-using ICD.Connect.Conferencing.EventArguments;
-using eDialProtocol = ICD.Connect.Conferencing.DialContexts.eDialProtocol;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {

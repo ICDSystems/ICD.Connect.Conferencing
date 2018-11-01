@@ -36,12 +36,12 @@ namespace ICD.Connect.Conferencing.Mock
 
 		private void ParentOnIncomingCallAdded(object sender, GenericEventArgs<IIncomingCall> args)
 		{
-			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(args));
+			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(args.Data));
 		}
 
 		private void ParentOnIncomingCallRemoved(object sender, GenericEventArgs<IIncomingCall> args)
 		{
-			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(args));
+			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(args.Data));
 		}
 
 		public override eDialContextSupport CanDial(IDialContext dialContext)

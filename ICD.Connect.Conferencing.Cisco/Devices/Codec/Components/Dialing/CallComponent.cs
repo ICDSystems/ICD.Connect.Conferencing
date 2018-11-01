@@ -362,7 +362,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 						case "Protocol":
 							Protocol = child.ReadElementContentAsString();
 							break;
-						case "CiscoCallType":
+						case "CallType":
 							SetCallType(child.ReadElementContentAsString());
 							break;
 						case "RemoteNumber":
