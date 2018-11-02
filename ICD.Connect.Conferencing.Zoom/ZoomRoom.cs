@@ -31,7 +31,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public delegate void ResponseCallback<T>(ZoomRoom zoomRoom, T response) where T : AbstractZoomRoomResponse;
 
-		private class ResponseCallbackPair
+		private sealed class ResponseCallbackPair
 		{
 			public ResponseCallback WrappedCallback { get; set; }
 			public object ActualCallback { get; set; }

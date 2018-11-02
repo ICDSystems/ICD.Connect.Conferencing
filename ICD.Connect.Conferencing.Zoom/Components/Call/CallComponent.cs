@@ -341,6 +341,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					Status = eConferenceSourceStatus.Disconnected;
 					break;
 				case eCallStatus.UNKNOWN:
+					Status = eConferenceSourceStatus.Undefined;
+					break;
 				default:
 					Status = eConferenceSourceStatus.Undefined;
 					break;
