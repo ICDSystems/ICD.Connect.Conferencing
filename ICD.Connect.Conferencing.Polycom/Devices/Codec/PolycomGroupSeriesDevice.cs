@@ -471,8 +471,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				Initialized = false;
 				Initialized = true;
 			}
-			else if (!Initialized)
-				return;
+			else if (m_ConnectionStateManager.IsConnected)
+				Initialized = true;
 
 			HandleData(data);
 		}
