@@ -300,6 +300,8 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		[PublicAPI("S+")]
 		public void SetCallName(string name)
 		{
+			if (String.IsNullOrEmpty(name))
+				return;
 			m_SourceCriticalSection.Enter();
 			try
 			{
@@ -316,6 +318,8 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		[PublicAPI("S+")]
 		public void SetCallNumber(string number)
 		{
+			if (String.IsNullOrEmpty(number))
+				return;
 			m_SourceCriticalSection.Enter();
 			try
 			{
