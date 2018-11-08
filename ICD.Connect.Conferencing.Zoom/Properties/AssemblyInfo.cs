@@ -4,5 +4,5 @@ using System.Reflection;
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ICD.Connect.Conferencing.Zoom")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
-[assembly: AssemblyVersion("11.0.1.0")]
+[assembly: AssemblyVersion("11.1.0.0")]
 
