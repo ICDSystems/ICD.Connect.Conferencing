@@ -649,7 +649,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private bool XmlCallback(string resultId, XmlRecursionEventArgs args)
 		{
 			string xml = args.Outer;
-			string status = XmlUtils.HasAttribute(xml, "status") ? XmlUtils.GetAttribute(xml, "status").Value : null;
+			string status = XmlUtils.GetAttribute(xml, "status");
 
 			switch (status)
 			{
