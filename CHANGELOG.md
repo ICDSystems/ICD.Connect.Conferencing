@@ -5,13 +5,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [11.1.0] - 2018-11-08
+### Added
+ - Added far-end zoom for Cisco remote cameras.
+
+### Changed
+ - Improved thread safety in Server SimplInterpretationShim
+ - Fixed bug where Polycom GroupSeries would not initialize unless getting the SSH welcome message
+
+## [11.0.1] - 2018-10-30
+### Changed
+ - Fixed loading issue where devices would not fail gracefully when a port was not available
+
+## [11.0.0] - 2018-10-18
 ### Added
  - Conference manager now enforces privacy mute state on feedback providers
  - Support CE 9.3 for the cisco codec
  - Fallback to root directory folder when getfolder would otherwise fail
  - XML Bookig numbers parsing
+ - Added Feedback Resubscription to Polycom
  
-###Changed
+### Changed
  - Fixed bug where if the client interpretation device was initialized before the server, it would not connect
  - Overhaul XML parsing to improve performance
 

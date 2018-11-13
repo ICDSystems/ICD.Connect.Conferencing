@@ -1,12 +1,11 @@
 ﻿using System;
 using ICD.Common.Properties;
-using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Directory
 {
-	public sealed class DirectoryControlBrowser : AbstractDirectoryBrowser<IDirectoryFolder, IContact>
+	public sealed class DirectoryControlBrowser : AbstractDirectoryBrowser<IDirectoryFolder>
 	{
 		private IDirectoryControl m_Control;
 

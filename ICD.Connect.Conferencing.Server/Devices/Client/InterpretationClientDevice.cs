@@ -306,20 +306,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region Private Helper Methods
 
-		/// <summary>
-		/// Logs to logging core.
-		/// </summary>
-		/// <param name="severity"></param>
-		/// <param name="message"></param>
-		/// <param name="args"></param>
-		private void Log(eSeverity severity, string message, params object[] args)
-		{
-			message = string.Format(message, args);
-			message = string.Format("{0} - {1}", GetType().Name, message);
-
-			Logger.AddEntry(severity, message);
-		}
-
 		private void ClearSources()
 		{
 			m_SourcesCriticalSection.Enter();
@@ -650,11 +636,17 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			ISerialPort port = null;
 
-		    if (settings.Port != null)
-			    port = factory.GetPortById(settings.Port.Value) as ISerialPort;
-
-			if (port == null)
-				Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+			if (settings.Port != null)
+			{
+				try
+				{
+					port = factory.GetPortById(settings.Port.Value) as ISerialPort;
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+				}
+			}
 
 			m_ConnectionStateManager.SetPort(port);
 	    }

@@ -1,7 +1,7 @@
-﻿using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Comparers;
+﻿using ICD.Connect.Conferencing.Comparers;
 using NUnit.Framework;
 using System.Linq;
+using ICD.Common.Utils.Extensions;
 
 namespace ICD.Connect.Conferencing.Tests.Comparers
 {
@@ -27,7 +27,7 @@ namespace ICD.Connect.Conferencing.Tests.Comparers
 				"Test A B"
 			};
 
-			string[] sorted = names.OrderBy(ContactNameComparer.Instance).ToArray();
+			string[] sorted = names.Order(ContactNameComparer.Instance).ToArray();
 
 			Assert.IsTrue(expected.SequenceEqual(sorted));
 		}

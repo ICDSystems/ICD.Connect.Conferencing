@@ -154,16 +154,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			m_KeyedCallbackChildren = new Dictionary<string, Dictionary<string, int>>();
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
+			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
+			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
+			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
+
 			m_Components = new CiscoComponentFactory(this);
 			m_FeedbackTimer = SafeTimer.Stopped(FeedbackTimerCallback);
 
 			m_SerialBuffer = new XmlSerialBuffer();
 			Subscribe(m_SerialBuffer);
-
-			m_ConnectionStateManager = new ConnectionStateManager(this){ConfigurePort = ConfigurePort};
-			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
-			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 
 			Controls.Add(new CiscoCodecRoutingControl(this, 0));
 			Controls.Add(new CiscoCodecTraditionalConferenceControl(this, 1));
@@ -649,7 +649,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private bool XmlCallback(string resultId, XmlRecursionEventArgs args)
 		{
 			string xml = args.Outer;
-			string status = XmlUtils.HasAttribute(xml, "status") ? XmlUtils.GetAttribute(xml, "status").Value : null;
+			string status = XmlUtils.GetAttribute(xml, "status");
 
 			switch (status)
 			{
@@ -662,8 +662,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 					CallParserCallbacks(xml, resultId, key);
 
-					Dictionary<string, int> children;
-					return m_KeyedCallbackChildren.TryGetValue(key, out children) && children.Count > 0;
+					//TODO: Fix this cache, for now chris says its not worth fixing
+					return true;
+					//Dictionary<string, int> children;
+					//return m_KeyedCallbackChildren.TryGetValue(key, out children) && children.Count > 0;
 			}
 		}
 
@@ -741,9 +743,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			if (settings.Port != null)
 			{
-				port = factory.GetPortById((int)settings.Port) as ISerialPort;
-				if (port == null)
+				try
+				{
+					port = factory.GetPortById((int)settings.Port) as ISerialPort;
+				}
+				catch (KeyNotFoundException)
+				{
 					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
+				}
 			}
 
 			m_ConnectionStateManager.SetPort(port);

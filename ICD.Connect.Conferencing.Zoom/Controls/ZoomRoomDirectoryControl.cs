@@ -2,7 +2,6 @@
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
-using ICD.Connect.Conferencing.Zoom.Components;
 using ICD.Connect.Conferencing.Zoom.Components.Directory;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls

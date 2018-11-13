@@ -306,6 +306,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					Status = eConferenceStatus.Disconnected;
 					break;
 				case eCallStatus.UNKNOWN:
+					Status = eConferenceStatus.Undefined;
+					break;
 				default:
 					Status = eConferenceStatus.Undefined;
 					break;
@@ -316,30 +318,46 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#region Console Node
 
-		public string ConsoleName { get { return Name; } }
+		public override string ConsoleName
+		{
+			get { return Name; }
+		}
 
-		public string ConsoleHelp { get { return "Zoom Room Conference"; } }
+		public override string ConsoleHelp
+		{
+			get { return "Zoom Room Conference"; }
+		}
 
-		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+        public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
 			foreach (var participant in GetParticipants())
 				yield return participant;
 		}
 
-		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
+			base.BuildConsoleStatus(addRow);
+
 			addRow("Name", Name);
 			addRow("Number", Number);
 			addRow("Status", Status);
 			addRow("Participants", GetParticipants().Count());
 		}
 
-		public IEnumerable<IConsoleCommand> GetConsoleCommands()
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+				
 			yield return new ConsoleCommand("Leave", "Leaves the conference", () => LeaveConference());
 			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
 			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
 			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion

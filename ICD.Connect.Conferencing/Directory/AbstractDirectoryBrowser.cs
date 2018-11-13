@@ -4,7 +4,6 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Directory
@@ -12,9 +11,8 @@ namespace ICD.Connect.Conferencing.Directory
 	/// <summary>
 	/// DirectoryBrowser provides methods for browsing through a phonebook.
 	/// </summary>
-	public abstract class AbstractDirectoryBrowser<TFolder, TContact> : IDirectoryBrowser<TFolder, TContact>
+	public abstract class AbstractDirectoryBrowser<TFolder> : IDirectoryBrowser<TFolder>
 		where TFolder : class, IDirectoryFolder
-		where TContact : class, IContact
 	{
 		/// <summary>
 		/// Called when navigating to a different folder.

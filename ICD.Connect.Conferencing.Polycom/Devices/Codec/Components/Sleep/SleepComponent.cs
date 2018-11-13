@@ -5,8 +5,8 @@ using ICD.Common.Utils.Services.Logging;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 {
-	public sealed class SleepComponent : AbstractPolycomComponent
-	{
+	public sealed class SleepComponent : AbstractPolycomComponent, IFeedBackComponent
+    {
 		/// <summary>
 		/// Raised when the awake state changes.
 		/// </summary>
@@ -66,6 +66,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		{
 			base.Initialize();
 
+			InitializeFeedBack();
+		}
+
+		/// <summary>
+		/// Called to initialize the feedbacks.
+		/// </summary>
+		public void InitializeFeedBack()
+		{
 			Codec.EnqueueCommand("sleep register");
 		}
 

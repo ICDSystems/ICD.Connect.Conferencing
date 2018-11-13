@@ -86,6 +86,7 @@
     <Compile Include="Devices\Codec\Components\Dial\eConnectionState.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eDialProtocol.cs" />
     <Compile Include="Devices\Codec\Components\Dial\eDialType.cs" />
+    <Compile Include="Devices\Codec\Components\IFeedBackComponent.cs" />
     <Compile Include="Devices\Codec\Components\Layout\PipPositionEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Layout\LayoutComponent.cs" />
     <Compile Include="Devices\Codec\Components\Layout\SelfViewEventArgs.cs" />
