@@ -64,25 +64,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 				yield return m_ZoomConference;
 		}
 
-		public void Dial(IContact contact)
-		{
-			if (contact == null)
-				throw new ArgumentNullException();
-
-			var zoomContact = contact as ZoomContact;
-			if (zoomContact != null)
-			{
-				if (m_ZoomConference.Status == eConferenceStatus.Connected)
-					InviteUser(zoomContact.JoinId);
-				else
-					StartPersonalMeetingAndInviteUser(zoomContact.JoinId);
-				
-				return;
-			}
-
-			Parent.Log(eSeverity.Error, "Zoom Room can not handle contacts of type {0}", contact.GetType().Name);
-		}
-
 		public override eDialContextSupport CanDial(IDialContext dialContext)
 		{
 			if (string.IsNullOrEmpty(dialContext.DialString))
@@ -123,6 +104,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			//Parent.SendCommand("zConfiguration Call Camera mute: {0}", enabled ? "on" : "off");
 		}
 
+		public void StartPersonalMeeting()
+		{
+			Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
+			Parent.SendCommand("zCommand Dial StartPmi Duration: 30");
+		}
+
 		#endregion
 		
 		#region Private Methods
@@ -146,8 +133,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			// start meeting
 			if (m_ZoomConference.Status == eConferenceStatus.Disconnected)
 			{
-				Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting to invite user");
-				Parent.SendCommand("zCommand Dial StartPmi Duration: 30");
+				Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
+				StartPersonalMeeting();
 			}
 		}
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Nodes;
@@ -65,5 +66,13 @@ namespace ICD.Connect.Conferencing.Conferences
 		new IEnumerable<T> GetParticipants();
 
 		#endregion
+	}
+
+	public static class ConferenceExtensions
+	{
+		public static IEnumerable<IParticipant> GetOnlineParticipants(this IConference extends)
+		{
+			return extends.GetParticipants().Where(p => p.GetIsOnline());
+		} 
 	}
 }

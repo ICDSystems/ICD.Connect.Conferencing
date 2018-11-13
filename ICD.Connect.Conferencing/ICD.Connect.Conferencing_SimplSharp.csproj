@@ -92,7 +92,6 @@
     <Compile Include="DialContexts\SipDialContext.cs" />
     <Compile Include="DialContexts\ZoomContactDialContext.cs" />
     <Compile Include="DialContexts\ZoomDialContext.cs" />
-    <Compile Include="Participants\ConferenceSourceState.cs" />
     <Compile Include="Participants\IIncomingCall.cs" />
     <Compile Include="Participants\IParticipant.cs" />
     <Compile Include="Participants\EventHelpers\AbstractParticipantEventHelper.cs" />

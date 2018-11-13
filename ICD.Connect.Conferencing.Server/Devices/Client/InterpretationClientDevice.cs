@@ -31,8 +31,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 	    public event EventHandler OnInterpretationActiveChanged;
 
-	    public event EventHandler<ParticipantEventArgs> OnSourceAdded;
-	    public event EventHandler<ParticipantEventArgs> OnSourceRemoved;
+	    public event EventHandler<ParticipantEventArgs> OnParticipantAdded;
+	    public event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
 	    public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 	    public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
@@ -183,7 +183,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 	    protected override void DisposeFinal(bool disposing)
 	    {
-		    OnSourceAdded = null;
+		    OnParticipantAdded = null;
 		    OnDoNotDisturbChanged = null;
 		    OnAutoAnswerChanged = null;
 		    OnPrivacyMuteChanged = null;
@@ -330,7 +330,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 					src.Status = eParticipantStatus.Disconnected;
 					Unsubscribe(src);
 					IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-ClearSources-OnParticipantRemoved");
-					OnSourceRemoved.Raise(this, new ParticipantEventArgs(src));
+					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(src));
 				}
 
 				m_Sources.Clear();
@@ -387,7 +387,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    m_Sources.Remove(id);
 
 			    IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-RemoveCachedSource-OnParticipantRemoved");
-			    OnSourceRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
+			    OnParticipantRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
 		    }
 		    finally
 		    {
@@ -431,7 +431,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				    if (control != null)
 				    {
 						IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnParticipantAdded");
-					    OnSourceAdded.Raise(this, new ParticipantEventArgs(src));
+					    OnParticipantAdded.Raise(this, new ParticipantEventArgs(src));
 				    }
 			    }
 
@@ -443,7 +443,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			    m_Sources.Remove(id);
 
 				IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnParticipantRemoved");
-				OnSourceRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
+				OnParticipantRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
 		    }
 		    finally
 		    {

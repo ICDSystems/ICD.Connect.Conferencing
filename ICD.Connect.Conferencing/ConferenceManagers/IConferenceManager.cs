@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
@@ -22,11 +23,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Events
 
 		/// <summary>
-		/// Raised when a new conference is instantiated and becomes active.
-		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
-
-		/// <summary>
 		/// Raised when a source is added to the current active conference.
 		/// </summary>
 		event EventHandler<ParticipantEventArgs> OnRecentSourceAdded;
@@ -34,12 +30,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Raised when the active conference changes.
 		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
+		event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 
 		/// <summary>
 		/// Raised when the active conference ends.
 		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnActiveConferenceEnded;
+		event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		/// <summary>
 		/// Called when the active conference status changes.
@@ -83,7 +79,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the active conference.
 		/// </summary>
-		ITraditionalConference ActiveConference { get; }
+		IConference ActiveConference { get; }
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
@@ -115,11 +111,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Methods
 
 		/// <summary>
-		/// Dials the given number.
+		/// Dials the given context.
 		/// </summary>
-		/// <param name="number"></param>
-		/// <param name="mode"></param>
-		void Dial(string number, eCallType mode);
+		/// <param name="context"></param>
+		void Dial(IDialContext context);
 
 		/// <summary>
 		/// Enables DoNotDisturb.
@@ -140,16 +135,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void EnablePrivacyMute(bool state);
 
 		/// <summary>
-		/// Gets the recent conferences in order of time.
-		/// </summary>
-		/// <returns></returns>
-		IEnumerable<ITraditionalConference> GetRecentConferences();
-
-		/// <summary>
 		/// Gets the recent sources in order of time.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<ITraditionalParticipant> GetRecentSources();
+		IEnumerable<IParticipant> GetRecentSources();
 
 		/// <summary>
 		/// Gets the conference component for the given source type.
@@ -244,8 +233,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			ITraditionalConference active = extends.ActiveConference;
-			return active != null && active.GetOnlineSources().Length > 0;
+			IConference active = extends.ActiveConference;
+			return active != null && active.GetOnlineParticipants().Any();
 		}
 
 		/// <summary>
@@ -312,6 +301,21 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				throw new ArgumentNullException("source");
 
 			extends.Dial(source.Number, source.SourceType);
+		}
+
+		private static void Dial(this IConferenceManager extends, string number, eCallType callType)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (number == null)
+				throw new ArgumentNullException("source");
+
+			
+			if (callType == eCallType.Unknown)
+				callType = extends.DialingPlan.DefaultSourceType;
+
+			extends.Dial(new GenericDialContext { DialString = number, CallType = callType });
 		}
 
 		/// <summary>

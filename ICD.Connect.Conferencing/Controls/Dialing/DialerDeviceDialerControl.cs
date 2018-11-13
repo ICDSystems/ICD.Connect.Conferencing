@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -35,26 +32,24 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			parent.OnIncomingCallRemoved += ParentOnIncomingCallRemoved;
 		}
 
-		private void ParentOnParticipantAdded(object sender, GenericEventArgs<ITraditionalParticipant> eventArgs)
+		private void ParentOnParticipantAdded(object sender, ParticipantEventArgs eventArgs)
 		{
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnParticpantAdded-OnParticipantAdded");
-			AddParticipant(eventArgs.Data);
+			AddParticipant(eventArgs.Data as ITraditionalParticipant);
 		}
 
-		private void ParentOnParticipantRemoved(object sender, GenericEventArgs<ITraditionalParticipant> eventArgs)
+		private void ParentOnParticipantRemoved(object sender, ParticipantEventArgs eventArgs)
 		{
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnParticpantRemoved-OnParticipantRemoved");
-			RemoveParticipant(eventArgs.Data);
+			RemoveParticipant(eventArgs.Data as ITraditionalParticipant);
 		}
 
 		private void ParentOnIncomingCallAdded(object sender, GenericEventArgs<IIncomingCall> args)
 		{
-			
+			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(args.Data));
 		}
 
 		private void ParentOnIncomingCallRemoved(object sender, GenericEventArgs<IIncomingCall> args)
 		{
-			
+			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(args.Data));
 		}
 
 		private void ParentOnPrivacyMuteChanged(object sender, BoolEventArgs eventArgs)

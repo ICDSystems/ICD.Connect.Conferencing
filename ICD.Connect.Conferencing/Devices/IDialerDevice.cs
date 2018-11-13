@@ -15,12 +15,12 @@ namespace ICD.Connect.Conferencing.Devices
 		/// <summary>
 		/// Called when a participant is added to the dialing device.
 		/// </summary>
-		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantAdded;
+		event EventHandler<ParticipantEventArgs> OnParticipantAdded;
 
 		/// <summary>
 		/// Called when a participant is removed from the dialing device.
 		/// </summary>
-		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantRemoved;
+		event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
 		/// <summary>
 		/// Called when an incoming call is added to the dialing device.

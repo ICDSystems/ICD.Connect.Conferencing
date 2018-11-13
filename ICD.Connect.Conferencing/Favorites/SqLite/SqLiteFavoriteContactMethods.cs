@@ -276,7 +276,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 					command.ExecuteNonQuery();
 
 				bool migrate = true;
-				string pragmaQuery = string.Format("PRAGMA table_info({0}", TABLE);
+				string pragmaQuery = string.Format("PRAGMA table_info({0});", TABLE);
 				using (IcdSqliteCommand command = new IcdSqliteCommand(pragmaQuery, connection))
 				{
 					var result = command.ExecuteReader();

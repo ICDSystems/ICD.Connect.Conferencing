@@ -171,7 +171,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		{
 			return
 				extends.GetConferences()
-					.FirstOrDefault(c => c.Status == eConferenceStatus.Connected && c.GetParticipants().Any(p => p.GetIsActive()));
+					.FirstOrDefault(c => c.Status == eConferenceStatus.Connected);
 		}
 
 		public static T GetBestDialer<T>(this IEnumerable<T> dialers, IDialContext dialContext) where T : IConferenceDeviceControl
