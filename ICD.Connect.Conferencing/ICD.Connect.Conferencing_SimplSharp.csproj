@@ -144,9 +144,7 @@
     <Compile Include="Conferences\ITraditionalConference.cs" />
     <Compile Include="Conferences\ConferenceStatusEventArgs.cs" />
     <Compile Include="Contacts\Contact.cs" />
-    <Compile Include="Contacts\ContactMethod.cs" />
     <Compile Include="Contacts\IContact.cs" />
-    <Compile Include="Contacts\IContactMethod.cs" />
     <Compile Include="EventArguments\ParticipantEventArgs.cs" />
     <Compile Include="DialingPlans\Matchers\AbstractPlanMatcher.cs" />
     <Compile Include="DialingPlans\Matchers\IPlanMatcher.cs" />

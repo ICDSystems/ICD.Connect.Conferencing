@@ -252,22 +252,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Dials the given contact method. Call type is taken from the dialling plan.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="contactMethod"></param>
-		public static void Dial(this IConferenceManager extends, IContactMethod contactMethod)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			if (contactMethod == null)
-				throw new ArgumentNullException("contactMethod");
-
-			extends.Dial(contactMethod.Number);
-		}
-
-		/// <summary>
 		/// Dials the given contact. Call type is taken from the dialling plan.
 		/// </summary>
 		/// <param name="extends"></param>
