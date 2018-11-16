@@ -3,7 +3,7 @@
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	[ZoomRoomApiResponse("CallConnectError", eZoomRoomApiType.zEvent, false)]
-	public sealed class CallConnectErrorResponse
+	public sealed class CallConnectErrorResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("CallConnectError")]
 		public CallConnectError Error { get; private set; }
