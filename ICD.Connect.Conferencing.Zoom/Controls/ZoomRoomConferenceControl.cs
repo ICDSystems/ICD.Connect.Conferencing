@@ -45,7 +45,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public ZoomRoomConferenceControl(ZoomRoom parent, int id) : base(parent, id)
 		{
 			m_ZoomConference = Parent.Components.GetComponent<CallComponent>();
-			Subscribe(m_ZoomConference);
 			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
 			Subscribe(parent);
@@ -261,20 +260,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			var incomingCall = CreateThinIncomingCall(response.IncomingCall);
 			Parent.Log(eSeverity.Informational, "Incoming call: {0}", response.IncomingCall.CallerName);
 			AddIncomingCall(incomingCall);
-		}
-
-		#endregion
-
-		#region Conference Callbacks
-
-		private void Subscribe(CallComponent conference)
-		{
-			conference.OnStatusChanged += ConferenceOnCallStatusChanged;
-		}
-
-		private void ConferenceOnCallStatusChanged(object sender, ConferenceStatusEventArgs args)
-		{
-			
 		}
 
 		#endregion
