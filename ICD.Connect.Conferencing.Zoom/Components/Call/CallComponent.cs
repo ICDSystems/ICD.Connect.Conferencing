@@ -168,7 +168,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				Status = eConferenceStatus.Connected;
 		}
 
-		private void AddOrUpdateParticipant(ParticipantInfo info)
+		private void AddUpdateOrRemoveParticipant(ParticipantInfo info)
 		{
 			if (info.IsMyself)
 				return;
@@ -176,11 +176,21 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				var index = m_Participants.FindIndex(p => p.UserId == info.UserId);
-				if (index < 0)
-					AddParticipant(new ZoomParticipant(Parent, info));
+				if (info.Event == eUserChangedEventType.ZRCUserChangedEventLeftMeeting)
+				{
+					var remove = m_Participants.Find(p => p.UserId == info.UserId);
+					if (remove != null)
+						RemoveParticipant(remove);
+				}
 				else
-					m_Participants[index].Update(info);
+				{
+					var index = m_Participants.FindIndex(p => p.UserId == info.UserId);
+					if (index < 0)
+						AddParticipant(new ZoomParticipant(Parent, info));
+					else
+						m_Participants[index].Update(info);
+				}
+
 			}
 			finally
 			{
@@ -212,6 +222,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			{
 				if (m_Participants.Remove(participant))
 					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(participant));
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+		}
+
+		private void ClearParticipants()
+		{
+			m_ParticipantsSection.Enter();
+			try
+			{
+				foreach (var participant in GetParticipants().Cast<ZoomParticipant>().ToArray())
+					RemoveParticipant(participant);
 			}
 			finally
 			{
@@ -254,10 +278,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		private void ParticipantUpdateCallback(ZoomRoom zoomRoom, SingleParticipantResponse response)
 		{
-			AddOrUpdateParticipant(response.Participant);
+			AddUpdateOrRemoveParticipant(response.Participant);
 		}
 
-		private void ListParticipantsCallback(ZoomRoom zoomroom, ListParticipantsResponse response)
+		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)
 		{
 			m_ParticipantsSection.Enter();
 			try
@@ -269,7 +293,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 				// add or update current participants
 				foreach (var info in response.Participants)
-					AddOrUpdateParticipant(info);
+					AddUpdateOrRemoveParticipant(info);
 			}
 			finally
 			{
@@ -304,6 +328,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				case eCallStatus.NOT_IN_MEETING:
 				case eCallStatus.LOGGED_OUT:
 					Status = eConferenceStatus.Disconnected;
+					ClearParticipants();
 					break;
 				case eCallStatus.UNKNOWN:
 					Status = eConferenceStatus.Undefined;
