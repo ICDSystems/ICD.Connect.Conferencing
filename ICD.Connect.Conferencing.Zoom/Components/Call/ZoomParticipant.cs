@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -101,8 +101,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public void Kick()
 		{
-			// TODO: update when zoom supports kicking participants
-			//m_ZoomRoom.SendCommand("zCommand Call Kick {0}", UserId);
+			m_ZoomRoom.SendCommand("zCommand Call Expel Id: {0}", UserId);
 		}
 
 		public void Mute(bool mute)
