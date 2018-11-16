@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -61,8 +61,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override IEnumerable<IWebConference> GetConferences()
 		{
-			if(m_ZoomConference.Status == eConferenceStatus.Connected)
-				yield return m_ZoomConference;
+			yield return m_ZoomConference;
 		}
 
 		public override eDialContextSupport CanDial(IDialContext dialContext)
