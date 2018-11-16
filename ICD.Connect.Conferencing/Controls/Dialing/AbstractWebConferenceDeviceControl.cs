@@ -157,6 +157,8 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		public abstract eCallType Supports { get; }
 
+		public abstract bool CameraEnabled { get; protected set; }
+
 		#endregion
 
 		/// <summary>
@@ -226,6 +228,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		/// <param name="enabled"></param>
 		public abstract void SetPrivacyMute(bool enabled);
+
+		/// <summary>
+		/// Sets whether the camera should transmit video or not.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public abstract void SetCameraEnabled(bool enabled);
 
 		#endregion
 

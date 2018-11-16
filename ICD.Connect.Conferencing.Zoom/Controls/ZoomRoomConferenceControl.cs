@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -37,6 +37,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			get { return eCallType.Video; }
 		}
+
+		public override bool CameraEnabled { get; protected set; }
 
 		#endregion
 
@@ -101,7 +103,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override void SetPrivacyMute(bool enabled)
 		{
 			Parent.SendCommand("zConfiguration Call Microphone mute: {0}", enabled ? "on" : "off");
-			//Parent.SendCommand("zConfiguration Call Camera mute: {0}", enabled ? "on" : "off");
+		}
+
+		public override void SetCameraEnabled(bool enabled)
+		{
+			Parent.SendCommand("zConfiguration Call Camera mute: {0}", enabled ? "off" : "on");
 		}
 
 		public void StartPersonalMeeting()
@@ -241,6 +247,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			var configuration = response.CallConfiguration;
 			if (configuration.Microphone != null)
 				PrivacyMuted = configuration.Microphone.Mute;
+			if (configuration.Camera != null)
+				CameraEnabled = !configuration.Camera.Mute;
 		}
 
 		private void ParentOnOnInitializedChanged(object sender, BoolEventArgs e)
