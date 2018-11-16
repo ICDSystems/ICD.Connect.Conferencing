@@ -32,6 +32,7 @@ namespace ICD.Connect.Conferencing.Participants
 		private DateTime? m_Start;
 		private DateTime? m_End;
 		private eCallType m_SourceType;
+		private bool m_IsMuted;
 
 		#region Properties
 
@@ -123,6 +124,21 @@ namespace ICD.Connect.Conferencing.Participants
 				Log(eSeverity.Informational, "SourceType set to {0}", m_SourceType);
 			}
 		}
+
+		public bool IsMuted
+		{
+			get { return m_IsMuted; }
+			set
+			{
+				if (value == m_IsMuted)
+					return;
+
+				m_IsMuted = value;
+
+				Log(eSeverity.Informational, "IsMuted set to {0}", m_IsMuted);
+			}
+		}
+
 		#endregion
 
 		/// <summary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -7,6 +7,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Routing.Endpoints.Sources;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
@@ -73,6 +74,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			}
 		}
 
+		public bool IsMuted { get; private set; }
 		public string UserId { get; private set; }
 		public DateTime? Start { get; private set; }
 		public DateTime? End { get; private set; }
@@ -94,6 +96,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Name = info.UserName;
 			Status = eParticipantStatus.Connected;
 			SourceType = info.IsSendingVideo ? eCallType.Video : eCallType.Audio;
+			IsMuted = info.AudioState == eAudioState.AUDIO_MUTED;
 		}
 
 		public void Kick()

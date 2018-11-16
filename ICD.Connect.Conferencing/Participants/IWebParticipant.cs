@@ -17,5 +17,7 @@
 		/// </summary>
 		/// <returns></returns>
 		void Mute(bool mute);
+
+		bool IsMuted { get; }
 	}
 }
