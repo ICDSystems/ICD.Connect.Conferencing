@@ -640,10 +640,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			try
 			{
-				if (!m_ParserCallbacks.ContainsKey(key))
+				IcdHashSet<ParserCallback> callbacksSet;
+				if (!m_ParserCallbacks.TryGetValue(key, out callbacksSet))
 					return;
 
-				callbacks = m_ParserCallbacks[key].ToArray();
+				callbacks = callbacksSet.ToArray(callbacksSet.Count);
 			}
 			finally
 			{
