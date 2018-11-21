@@ -90,7 +90,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		};
 
 		private readonly Dictionary<string, IcdHashSet<ParserCallback>> m_ParserCallbacks;
-		private readonly Dictionary<string, Dictionary<string, int>> m_KeyedCallbackChildren; 
 		private readonly SafeCriticalSection m_ParserCallbacksSection;
 
 		private readonly ISerialBuffer m_SerialBuffer;
@@ -151,7 +150,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		public CiscoCodecDevice()
 		{
 			m_ParserCallbacks = new Dictionary<string, IcdHashSet<ParserCallback>>();
-			m_KeyedCallbackChildren = new Dictionary<string, Dictionary<string, int>>();
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
@@ -305,22 +303,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				}
 
 				callbacks.Add(callback);
-
-				// Children
-				for (int index = 1; index < path.Length - 1; index++)
-				{
-					string thisKey = XmlPathToKey(path.Take(index));
-					string nextKey = XmlPathToKey(path.Take(index + 1));
-
-					Dictionary<string, int> childKeys;
-					if (!m_KeyedCallbackChildren.TryGetValue(thisKey, out childKeys))
-					{
-						childKeys = new Dictionary<string, int>();
-						m_KeyedCallbackChildren.Add(thisKey, childKeys);
-					}
-
-					childKeys[nextKey] = childKeys.GetDefault(nextKey) + 1;
-				}
 			}
 			finally
 			{
@@ -356,26 +338,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 				if (!callbacks.Remove(callback) || callbacks.Count > 0)
 					return false;
-
-				// Children
-				for (int index = 1; index < path.Length - 1; index++)
-				{
-					string thisKey = XmlPathToKey(path.Take(index));
-					string nextKey = XmlPathToKey(path.Take(index + 1));
-
-					Dictionary<string, int> childKeys;
-					if (!m_KeyedCallbackChildren.TryGetValue(thisKey, out childKeys))
-						continue;
-
-					int count;
-					if (!childKeys.TryGetValue(nextKey, out count))
-						continue;
-
-					if (count > 1)
-						childKeys[nextKey]--;
-					else
-						childKeys.Remove(nextKey);
-				}
 			}
 			finally
 			{
@@ -659,13 +621,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 				default:
 					string key = XmlPathToKey(args.Path);
-
-					CallParserCallbacks(xml, resultId, key);
-
-					//TODO: Fix this cache, for now chris says its not worth fixing
+                    CallParserCallbacks(xml, resultId, key);
 					return true;
-					//Dictionary<string, int> children;
-					//return m_KeyedCallbackChildren.TryGetValue(key, out children) && children.Count > 0;
 			}
 		}
 
