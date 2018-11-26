@@ -70,7 +70,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\Bookings\Booking.cs" />
-    <Compile Include="Components\Call\DialingComponent.cs" />
     <Compile Include="Components\AbstractZoomRoomComponent.cs" />
     <Compile Include="Components\Call\ZoomParticipant.cs" />
     <Compile Include="Components\Camera\CameraComponent.cs" />
@@ -108,12 +107,15 @@
     <Compile Include="Responses\eUserCallType.cs" />
     <Compile Include="Responses\eUserChangedEventType.cs" />
     <Compile Include="Components\Call\eUserType.cs" />
+    <Compile Include="Responses\eZoomBoolean.cs" />
     <Compile Include="Responses\IncomingCallResponse.cs" />
     <Compile Include="Responses\InfoResultResponse.cs" />
     <Compile Include="Components\Call\ParticipantInfo.cs" />
     <Compile Include="Responses\ParticipantResponse.cs" />
     <Compile Include="Responses\PhonebookResponse.cs" />
     <Compile Include="Components\Directory\ZoomContact.cs" />
+    <Compile Include="Components\Presentation\SharingInfo.cs" />
+    <Compile Include="Responses\SharingResponse.cs" />
     <Compile Include="Responses\SystemUnitResponse.cs" />
     <Compile Include="Responses\VideoCameraLineResponse.cs" />
     <Compile Include="Responses\ZoomRoomApiResponseAttribute.cs" />

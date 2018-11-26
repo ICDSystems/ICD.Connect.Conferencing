@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
@@ -157,6 +157,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Parent.SendCommand("zConfiguration Call Camera");
 			Parent.SendCommand("zConfiguration Call Microphone");
 			Parent.SendCommand("zCommand Call ListParticipants");
+			Parent.SendCommand("zCommand Call Info");
 		}
 
 		private void UpdateSourceHoldStatus()
@@ -310,10 +311,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void CallInfoCallback(ZoomRoom zoomRoom, InfoResultResponse response)
 		{
 			CallInfo result = response.InfoResult;
+			CallInfo = response.InfoResult;
 			Number = result.MeetingId;
+			OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
 		}
 
-		private void CallStatusCallback(ZoomRoom zoomroom, CallStatusResponse response)
+		private void CallStatusCallback(ZoomRoom zoomRoom, CallStatusResponse response)
 		{
 			var status = response.CallStatus.Status;
 			switch (status)

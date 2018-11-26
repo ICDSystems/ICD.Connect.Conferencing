@@ -12,11 +12,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 			Subscribe(parent);
 		}
 
+		protected override void DisposeFinal()
+		{
+			base.DisposeFinal();
+
+			Unsubscribe(Parent);
+		}
+
 		#region Methods
 
 		protected override void Initialize()
 		{
-			//Parent.SendCommand("zStatus Video Camera Line");
+			Parent.SendCommand("zStatus Video Camera Line");
 		}
 
 		public void SetNearCameraAsVideoSource(int address)

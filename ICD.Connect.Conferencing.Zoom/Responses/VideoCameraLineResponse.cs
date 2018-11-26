@@ -3,7 +3,8 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
-	[ZoomRoomApiResponse("Video Camera Line", eZoomRoomApiType.zStatus, true)]
+	[ZoomRoomApiResponse("Video Camera Line", eZoomRoomApiType.zStatus, true),
+	 ZoomRoomApiResponse("Video Camera Line", eZoomRoomApiType.zStatus, false)]
 	public class VideoCameraLineResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("Video Camera Line")]
