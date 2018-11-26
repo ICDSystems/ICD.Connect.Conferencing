@@ -17,6 +17,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		public eConferenceStatus Status { get; private set; }
 		public DateTime? Start { get; private set; }
 		public DateTime? End { get; private set; }
+		public abstract eCallType CallType { get; }
 
 		IEnumerable<IParticipant> IConference.GetParticipants()
 		{

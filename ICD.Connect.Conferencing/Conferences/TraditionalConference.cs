@@ -108,6 +108,11 @@ namespace ICD.Connect.Conferencing.Conferences
 			}
 		}
 
+		public override eCallType CallType
+		{
+			get { return this.GetOnlineParticipants().Max(p => p.SourceType); }
+		}
+
 		#endregion
 
 		#region Constructors

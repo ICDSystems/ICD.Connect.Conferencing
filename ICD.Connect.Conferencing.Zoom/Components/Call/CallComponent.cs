@@ -82,6 +82,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public CallInfo CallInfo { get; private set; }
 
+		public eCallType CallType
+		{
+			get { return eCallType.Video; }
+		}
+
 		#endregion
 
 		#region Constructors
