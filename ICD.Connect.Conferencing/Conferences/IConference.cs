@@ -42,6 +42,8 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		DateTime? End { get; }
 
+		eCallType CallType { get; }
+
 		#endregion
 
 		#region Methods
@@ -73,6 +75,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		public static IEnumerable<IParticipant> GetOnlineParticipants(this IConference extends)
 		{
 			return extends.GetParticipants().Where(p => p.GetIsOnline());
-		} 
+		}
+
+		public static bool IsOnline(this IConference extends)
+		{
+			return extends.Status == eConferenceStatus.Connected || extends.Status == eConferenceStatus.OnHold;
+		}
+
+		public static bool IsActive(this IConference extends)
+		{
+			return extends.Status == eConferenceStatus.Connected;
+		}
 	}
 }

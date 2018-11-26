@@ -79,7 +79,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the active conference.
 		/// </summary>
-		IConference ActiveConference { get; }
+		IEnumerable<IConference> ActiveConferences { get; }
+
+		IEnumerable<IConference> OnlineConferences { get; }
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
@@ -141,14 +143,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IEnumerable<IParticipant> GetRecentSources();
 
 		/// <summary>
-		/// Gets the conference component for the given source type.
-		/// </summary>
-		/// <param name="sourceType"></param>
-		/// <returns></returns>
-		[CanBeNull]
-		IConferenceDeviceControl GetDialingProvider(eCallType sourceType);
-
-		/// <summary>
 		/// Gets the registered conference components.
 		/// </summary>
 		/// <returns></returns>
@@ -160,7 +154,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="sourceType"></param>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		bool RegisterDialingProvider(eCallType sourceType, IConferenceDeviceControl conferenceControl);
+		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
 		/// Registers the conference component, for feedback only.
@@ -174,7 +168,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
-		bool DeregisterDialingProvider(eCallType sourceType);
+		bool DeregisterDialingProvider(IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
 		/// Deregisters the conference componet from the feedback only list.
@@ -196,61 +190,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	/// </summary>
 	public static class ConferenceManagerExtensions
 	{
-		/// <summary>
-		/// Gets the call type for the given number.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="number"></param>
-		/// <returns></returns>
-		public static eCallType GetCallType(this IConferenceManager extends, string number)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			// Gets the type the number resolves to
-			eCallType type = extends.DialingPlan.GetSourceType(number);
-
-			// Gets the best provider for that call type
-			IConferenceDeviceControl provider = extends.GetDialingProvider(type);
-
-			// Return the best available type we can handle the call as.
-			eCallType providerType = provider == null ? eCallType.Unknown : provider.Supports;
-
-			// If we don't know the call type use the provider default.
-			if (type == eCallType.Unknown)
-				return providerType;
-
-			// Limit the type to what the provider can support.
-			return providerType < type ? providerType : type;
-		}
-
-		/// <summary>
-		/// Returns true if the active conference is connected.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static bool GetIsActiveConferenceOnline(this IConferenceManager extends)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			IConference active = extends.ActiveConference;
-			return active != null && active.GetOnlineParticipants().Any();
-		}
-
-		/// <summary>
-		/// Dials the given number. Call type is taken from the dialling plan.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="number"></param>
-		public static void Dial(this IConferenceManager extends, string number)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			eCallType mode = extends.GetCallType(number);
-			extends.Dial(number, mode);
-		}
-
 		/// <summary>
 		/// Dials the given contact. Call type is taken from the dialling plan.
 		/// </summary>
