@@ -2,7 +2,9 @@
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol.Network.Settings;
+using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
+using ICD.Connect.Settings.Attributes.SettingsProperties;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
@@ -11,16 +13,24 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string ROOM_ID_ELEMENT = "Room";
+		private const string ROOM_NAME_ELEMENT = "RoomName";
+		private const string ROOM_PREFIX_ELEMENT = "RoomPrefix";
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		#region Properties
 
-		[PublicAPI]
+		[PublicAPI, OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
 
 		[PublicAPI]
 		public int? Room { get; set; }
+
+		[PublicAPI]
+		public string RoomName { get; set; }
+
+		[PublicAPI]
+		public string RoomPrefix { get; set; }
 
 		#endregion
 
@@ -82,6 +92,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			writer.WriteElementString(ROOM_ID_ELEMENT, IcdXmlConvert.ToString(Room));
 			writer.WriteElementString(PORT_ELEMENT, IcdXmlConvert.ToString(Port));
+			writer.WriteElementString(ROOM_NAME_ELEMENT, IcdXmlConvert.ToString(RoomName));
+			writer.WriteElementString(ROOM_PREFIX_ELEMENT, IcdXmlConvert.ToString(RoomPrefix));
 		}
 
 		/// <summary>
@@ -94,6 +106,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			Room = XmlUtils.TryReadChildElementContentAsInt(xml, ROOM_ID_ELEMENT);
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
+			RoomName = XmlUtils.TryReadChildElementContentAsString(xml, ROOM_NAME_ELEMENT);
+			RoomPrefix = XmlUtils.TryReadChildElementContentAsString(xml, ROOM_PREFIX_ELEMENT);
 		}
 	}
 }

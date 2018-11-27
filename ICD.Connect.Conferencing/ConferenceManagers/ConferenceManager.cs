@@ -9,7 +9,7 @@ using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.ConferenceSources;
-using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;
@@ -26,7 +26,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		public event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
+		public event EventHandler<ConferenceEventArgs> OnActiveConferenceEnded;
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
+		public event EventHandler OnConferenceSourceAddedOrRemoved;
 
 		public event EventHandler<ConferenceSourceEventArgs> OnRecentSourceAdded;
 		public event EventHandler<ConferenceSourceStatusEventArgs> OnActiveSourceStatusChanged;
@@ -39,6 +41,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly IcdHashSet<IDialingDeviceControl> m_FeedbackProviders; 
 
 		private readonly SafeCriticalSection m_RecentConferencesSection;
+		private readonly SafeCriticalSection m_SourcesSection;
 		private readonly SafeCriticalSection m_RecentSourcesSection;
 		private readonly SafeCriticalSection m_SourceTypeToProviderSection;
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
@@ -78,6 +81,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				if (value == m_ActiveConference)
 					return;
 
+				var oldConference = m_ActiveConference;
+
 				Unsubscribe(m_ActiveConference);
 				m_ActiveConference = value;
 				Subscribe(m_ActiveConference);
@@ -85,6 +90,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				UpdateIsInCall();
 
 				OnActiveConferenceChanged.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+
+				if (m_ActiveConference == null)
+					OnActiveConferenceEnded.Raise(this, new ConferenceEventArgs(oldConference));
 			}
 		}
 
@@ -157,6 +165,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_FeedbackProviders = new IcdHashSet<IDialingDeviceControl>();
 
 			m_RecentConferencesSection = new SafeCriticalSection();
+			m_SourcesSection = new SafeCriticalSection();
 			m_RecentSourcesSection = new SafeCriticalSection();
 			m_SourceTypeToProviderSection = new SafeCriticalSection();
 			m_FeedbackProviderSection = new SafeCriticalSection();
@@ -195,9 +204,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				mode = DialingPlan.DefaultSourceType;
 
 			IDialingDeviceControl dialingControl = GetDialingProvider(mode);
+			if (dialingControl == null)
+			{
+				Logger.AddEntry(eSeverity.Error,
+				                "{0} failed to dial number {1} with mode {2} - No matching dialing control could be found",
+				                GetType().Name,
+				                StringUtils.ToRepresentation(number),
+				                mode);
+				return;
+			}
 
-			// Don't try to dial something the control can't support.
-			if (dialingControl.Supports < mode)
+			mode = EnumUtils.GetFlagsIntersection(dialingControl.Supports, mode);
+			if (mode == eConferenceSourceType.Unknown)
 				mode = dialingControl.Supports;
 
 			dialingControl.Dial(number, mode);
@@ -286,6 +304,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Gets the registered feedback dialing providers.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IDialingDeviceControl> GetFeedbackDialingProviders()
+		{
+			return m_FeedbackProviderSection.Execute(() => m_FeedbackProviders.ToArray());
+		}
+
+		/// <summary>
 		/// Registers the dialing provider.
 		/// </summary>
 		/// <param name="sourceType"></param>
@@ -319,34 +346,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Registers the dialing component, for feedback only.
-		/// </summary>
-		/// <param name="dialingControl"></param>
-		/// <returns></returns>
-		public bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl)
-		{
-			m_FeedbackProviderSection.Enter();
-			try
-			{
-				if (m_FeedbackProviders.Contains(dialingControl))
-					return false;
-
-				m_FeedbackProviders.Add(dialingControl);
-				UpdateProvider(dialingControl);
-
-				Subscribe(dialingControl);
-			}
-			finally
-			{
-				m_FeedbackProviderSection.Leave();
-			}
-
-			AddSources(dialingControl.GetSources());
-
-			return true;
-		}
-
-		/// <summary>
 		/// Deregisters the dialing provider.
 		/// </summary>
 		/// <param name="sourceType"></param>
@@ -369,6 +368,34 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			{
 				m_SourceTypeToProviderSection.Leave();
 			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Registers the dialing component, for feedback only.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		/// <returns></returns>
+		public bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl)
+		{
+			m_FeedbackProviderSection.Enter();
+			try
+			{
+				if (m_FeedbackProviders.Contains(dialingControl))
+					return false;
+
+				m_FeedbackProviders.Add(dialingControl);
+				UpdateFeedbackProvider(dialingControl);
+
+				Subscribe(dialingControl);
+			}
+			finally
+			{
+				m_FeedbackProviderSection.Leave();
+			}
+
+			AddSources(dialingControl.GetSources());
 
 			return true;
 		}
@@ -434,6 +461,21 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			foreach (IDialingDeviceControl provider in GetDialingProviders())
 				UpdateProvider(provider);
+
+			foreach (IDialingDeviceControl provider in GetFeedbackDialingProviders())
+				UpdateFeedbackProvider(provider);
+		}
+
+		/// <summary>
+		/// Updates the feedback dialing provider to match the state of the conference manager.
+		/// </summary>
+		/// <param name="dialingControl"></param>
+		private void UpdateFeedbackProvider(IDialingDeviceControl dialingControl)
+		{
+			bool privacyMute = PrivacyMuted;
+
+			if (dialingControl.PrivacyMuted != privacyMute)
+				dialingControl.SetPrivacyMute(privacyMute);
 		}
 
 		/// <summary>
@@ -505,6 +547,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded += ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved += ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged += ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged += ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged += ProviderOnPrivacyMuteChanged;
@@ -520,6 +563,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			dialingControl.OnSourceAdded -= ProviderOnSourceAdded;
+			dialingControl.OnSourceRemoved -= ProviderOnSourceRemoved;
 			dialingControl.OnAutoAnswerChanged -= ProviderOnAutoAnswerChanged;
 			dialingControl.OnDoNotDisturbChanged -= ProviderOnDoNotDisturbChanged;
 			dialingControl.OnPrivacyMuteChanged -= ProviderOnPrivacyMuteChanged;
@@ -565,6 +609,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			AddSource(args.Data);
 		}
 
+		private void ProviderOnSourceRemoved(object sender, ConferenceSourceEventArgs args)
+		{
+			UpdateIsInCall();
+		}
+
 		/// <summary>
 		/// Adds the sequence of sources to the active conference, creating a new
 		///	conference if one does not yet exist.
@@ -592,7 +641,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (m_ActiveConference.ContainsSource(source))
 				return;
 
-			m_ActiveConference.AddSource(source);
+			m_SourcesSection.Enter();
+			try
+			{
+				m_ActiveConference.AddSource(source);
+			}
+			finally
+			{
+				m_SourcesSection.Leave();
+			}
 
 			m_RecentSourcesSection.Enter();
 
@@ -616,7 +673,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#endregion
 
 		#region Conference Callbacks
-
 		/// <summary>
 		/// Subscribe to the conference events.
 		/// </summary>
@@ -627,6 +683,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged += ConferenceOnStatusChanged;
+			conference.OnSourcesChanged += ConferenceOnSourcesChanged;
 		}
 
 		/// <summary>
@@ -639,6 +696,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			conference.OnStatusChanged -= ConferenceOnStatusChanged;
+			conference.OnSourcesChanged -= ConferenceOnSourcesChanged;
 
 			// Unsubscribe from the sources.
 			foreach (IConferenceSource source in conference.GetSources())
@@ -655,7 +713,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnActiveConferenceStatusChanged.Raise(this, new ConferenceStatusEventArgs(args.Data));
 
 			if (args.Data == eConferenceStatus.Disconnected)
+			{
 				ActiveConference = null;
+			}
+		}
+
+		private void ConferenceOnSourcesChanged(object sender, EventArgs eventArgs)
+		{
+			OnConferenceSourceAddedOrRemoved.Raise(this);
 		}
 
 		#endregion

@@ -1,4 +1,5 @@
-﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -77,54 +78,57 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CiscoCodecSettings.cs" />
-    <Compile Include="CodecInputTypes.cs" />
-    <Compile Include="Components\AbstractCiscoComponent.cs" />
-    <Compile Include="CiscoCodec.cs" />
-    <Compile Include="Components\Cameras\AbstractCiscoCamera.cs" />
-    <Compile Include="CiscoCodecCameraDevice.cs" />
-    <Compile Include="Controls\CiscoCodecCameraDevicePowerControl.cs" />
-    <Compile Include="CiscoCodecCameraDeviceSettings.cs" />
-    <Compile Include="Components\Cameras\FarCamera.cs" />
-    <Compile Include="Components\Cameras\NearCamera.cs" />
-    <Compile Include="Components\Cameras\NearCamerasComponent.cs" />
-    <Compile Include="Components\CiscoComponentFactory.cs" />
-    <Compile Include="Components\Diagnostics\DiagnosticsComponent.cs" />
-    <Compile Include="Components\Diagnostics\DiagnosticsMessage.cs" />
-    <Compile Include="Components\Directory\DirectoryBrowser.cs" />
-    <Compile Include="Components\Directory\DirectorySearch.cs" />
-    <Compile Include="Components\Directory\Tree\Folder.cs" />
-    <Compile Include="Components\Directory\Tree\FolderEventArgs.cs" />
-    <Compile Include="Components\Directory\Tree\AbstractFolder.cs" />
-    <Compile Include="Components\Directory\Tree\CiscoContact.cs" />
-    <Compile Include="Components\Directory\Tree\CiscoContactMethod.cs" />
-    <Compile Include="Components\Directory\DirectoryComponent.cs" />
-    <Compile Include="Components\Directory\Tree\IFolder.cs" />
-    <Compile Include="Components\Directory\Tree\INode.cs" />
-    <Compile Include="Components\Directory\Tree\RootFolder.cs" />
-    <Compile Include="Components\Peripherals\PeripheralsComponent.cs" />
-    <Compile Include="Components\Presentation\LayoutEventArgs.cs" />
-    <Compile Include="Components\Presentation\PresentationModeEventArgs.cs" />
-    <Compile Include="Components\Presentation\PresentationItem.cs" />
-    <Compile Include="Components\Presentation\PresentationComponent.cs" />
-    <Compile Include="Components\Video\Connectors\VideoInputConnector.cs" />
-    <Compile Include="Components\Video\Connectors\VideoOutputConnector.cs" />
-    <Compile Include="Components\Video\MonitorsEventArgs.cs" />
-    <Compile Include="Components\Video\VideoConnectionStateEventArgs.cs" />
-    <Compile Include="Components\Video\Connectors\AbstractVideoConnector.cs" />
-    <Compile Include="Components\Video\VideoSource.cs" />
-    <Compile Include="Components\System\GatekeeperStatusArgs.cs" />
-    <Compile Include="Components\System\RegistrationEventArgs.cs" />
-    <Compile Include="Components\System\SystemComponent.cs" />
-    <Compile Include="Components\Video\SelfViewMonitorRoleEventArgs.cs" />
-    <Compile Include="Components\Video\PipPositionEventArgs.cs" />
-    <Compile Include="Components\Video\VideoComponent.cs" />
-    <Compile Include="Components\Dialing\CallComponent.cs" />
-    <Compile Include="Components\Dialing\DialingComponent.cs" />
+    <Compile Include="Devices\Codec\CiscoCodecSettings.cs" />
+    <Compile Include="Devices\Codec\Components\AbstractCiscoComponent.cs" />
+    <Compile Include="Devices\Codec\CiscoCodecDevice.cs" />
+    <Compile Include="Devices\Codec\Components\Bookings\Booking.cs" />
+    <Compile Include="Devices\Codec\Components\Bookings\BookingsComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Bookings\BookingCall.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\AbstractCiscoCamera.cs" />
+    <Compile Include="Devices\Camera\CiscoCodecCameraDevice.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoRootFolder.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoFolder.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\ePhonebookType.cs" />
+    <Compile Include="Devices\Camera\CiscoCodecCameraDevicePowerControl.cs" />
+    <Compile Include="Devices\Camera\CiscoCodecCameraDeviceSettings.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\FarCamera.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\NearCamera.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\NearCamerasComponent.cs" />
+    <Compile Include="Devices\Codec\Components\CiscoComponentFactory.cs" />
+    <Compile Include="Devices\Codec\Components\Diagnostics\DiagnosticsComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Diagnostics\DiagnosticsMessage.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\AbstractCiscoFolder.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContact.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContactMethod.cs" />
+    <Compile Include="Devices\Codec\Components\Peripherals\PeripheralsComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Presentation\LayoutEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Presentation\PresentationModeEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Presentation\PresentationItem.cs" />
+    <Compile Include="Devices\Codec\Components\Presentation\PresentationComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Video\Connectors\VideoInputConnector.cs" />
+    <Compile Include="Devices\Codec\Components\Video\Connectors\VideoOutputConnector.cs" />
+    <Compile Include="Devices\Codec\Components\Video\MonitorsEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Video\VideoConnectionStateEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Video\Connectors\AbstractVideoConnector.cs" />
+    <Compile Include="Devices\Codec\Components\Video\VideoSource.cs" />
+    <Compile Include="Devices\Codec\Components\System\GatekeeperStatusArgs.cs" />
+    <Compile Include="Devices\Codec\Components\System\RegistrationEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\System\SystemComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Video\SelfViewMonitorRoleEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Video\PipPositionEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Video\VideoComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Dialing\CallComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Dialing\DialingComponent.cs" />
     <None Include="ObfuscationSettings.cs" />
-    <Compile Include="Controls\CiscoCodecRoutingControl.cs" />
-    <Compile Include="Controls\CiscoDialingDeviceControl.cs" />
-    <Compile Include="eCodecInputType.cs" />
+    <Compile Include="Devices\Codec\Controls\Calender\CiscoBooking.cs" />
+    <Compile Include="Devices\Codec\Controls\Calender\CiscoCalendarControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecDirectoryControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecLayoutControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecPowerControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecPresentationControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecDialingControl.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />
@@ -137,6 +141,10 @@
     <ProjectReference Include="..\..\ICD.Connect.API\ICD.Connect.API\ICD.Connect.API_SimplSharp.csproj">
       <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
       <Name>ICD.Connect.API_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Calendaring\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
+      <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
+      <Name>ICD.Connect.Calendaring_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_SimplSharp.csproj">
       <Project>{B13D593D-8BBF-4E20-ABD8-47C6095E7D3E}</Project>

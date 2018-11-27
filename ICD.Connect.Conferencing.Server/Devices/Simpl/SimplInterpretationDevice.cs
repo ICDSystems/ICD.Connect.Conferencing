@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Simpl;
+using ICD.Connect.Settings.SPlusShims.EventArguments;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
@@ -13,9 +14,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
-		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
-		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
-		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
+		public event EventHandler<SPlusBoolEventArgs> OnAutoAnswerChanged;
+		public event EventHandler<SPlusBoolEventArgs> OnDoNotDisturbChanged;
+		public event EventHandler<SPlusBoolEventArgs> OnPrivacyMuteChanged;
+
+		public event EventHandler<SPlusUShortEventArgs> OnBoothIdChanged;
+		public event EventHandler<SPlusStringEventArgs> OnLanguageChanged;
 
 		#region Private Members
 
@@ -23,13 +27,40 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		private bool m_AutoAnswer;
 		private bool m_DoNotDisturb;
 		private bool m_PrivacyMute;
+		private ushort m_BoothId;
+		private string m_Language;
 
 		#endregion
 
 		#region Public Properties
 
-		public string Language { get; set; }
-		public ushort BoothId { get; set; }
+		public string Language
+		{
+			get { return m_Language; }
+			set
+			{
+				if (m_Language == value)
+					return;
+
+				m_Language = value;
+
+				OnLanguageChanged.Raise(this, new SPlusStringEventArgs(m_Language));
+			}
+		}
+
+		public ushort BoothId 
+		{ 
+			get { return m_BoothId; }
+			set
+			{
+				if(m_BoothId == value)
+					return;
+
+				m_BoothId = value;
+
+				OnBoothIdChanged.Raise(this, new SPlusUShortEventArgs(m_BoothId));
+			} 
+		}
 
 		public bool AutoAnswer
 		{
@@ -41,7 +72,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 				m_AutoAnswer = value;
 
-				OnAutoAnswerChanged.Raise(this, new BoolEventArgs(m_AutoAnswer));
+				OnAutoAnswerChanged.Raise(this, new SPlusBoolEventArgs(m_AutoAnswer));
 			}
 		}
 		public bool DoNotDisturb
@@ -54,7 +85,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 				m_DoNotDisturb = value;
 
-				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_DoNotDisturb));
+				OnDoNotDisturbChanged.Raise(this, new SPlusBoolEventArgs(m_DoNotDisturb));
 			}
 		}
 		public bool PrivacyMute
@@ -67,7 +98,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 				m_PrivacyMute = value;
 
-				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMute));
+				OnPrivacyMuteChanged.Raise(this, new SPlusBoolEventArgs(m_PrivacyMute));
 			}
 		}
 
@@ -141,14 +172,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		public void AddShimSource(IConferenceSource source)
 		{
-			if (m_Source == null)
-				SetShimSource(source);
+			SetShimSource(source);
 		}
 
 		public void RemoveShimSource(IConferenceSource source)
 		{
-			if (m_Source == source)
-				SetShimSource(null);
+			SetShimSource(null);
 		}
 
 		private void SetShimSource(IConferenceSource source)
@@ -160,7 +189,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 			m_Source = source;
 
-			if (oldSource != null)
+			if(oldSource != null)
 				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(oldSource));
 
 			if (m_Source != null)
@@ -169,12 +198,50 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		public IEnumerable<IConferenceSource> GetSources()
 		{
-			yield return m_Source;
+			if (m_Source != null)
+				yield return m_Source;
 		}
 
 		public bool ContainsSource(IConferenceSource source)
 		{
 			return source == m_Source;
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("BoothId", BoothId);
+			addRow("Language", Language);
+			addRow("AutoAnswer", AutoAnswer);
+			addRow("DND", DoNotDisturb);
+			addRow("PrivacyMute", PrivacyMute);
+		}
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
+			var source = m_Source;
+			if (source != null)
+				yield return source;
+		}
+
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		#endregion

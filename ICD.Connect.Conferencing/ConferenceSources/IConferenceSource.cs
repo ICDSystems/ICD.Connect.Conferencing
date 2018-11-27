@@ -10,9 +10,9 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 {
 	public enum eConferenceSourceDirection
 	{
-		Undefined,
-		Incoming,
-		Outgoing
+		Undefined = 0,
+		Incoming = 1,
+		Outgoing = 2
 	}
 
 	/// <summary>
@@ -20,11 +20,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 	/// </summary>
 	public enum eConferenceSourceAnswerState
 	{
-		[UsedImplicitly] Unknown,
-		[UsedImplicitly] Unanswered,
-		Ignored,
-		Autoanswered,
-		Answered
+		[UsedImplicitly] Unknown = 0,
+		[UsedImplicitly] Unanswered = 1,
+		Ignored = 2,
+		Autoanswered = 3,
+		Answered = 4
 	}
 
 	/// <summary>
@@ -101,8 +101,6 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 		DateTime DialTime { get; }
 
-		DateTime StartOrDialTime { get; }
-
 		/// <summary>
 		/// Gets the remote camera.
 		/// </summary>
@@ -116,6 +114,11 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		/// Answers the incoming source.
 		/// </summary>
 		void Answer();
+
+		/// <summary>
+		/// Rejects the incoming source.
+		/// </summary>
+		void Reject();
 
 		/// <summary>
 		/// Holds the source.
@@ -174,7 +177,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		}
 
 		/// <summary>
-		/// Returns true if the source is actively online.
+		/// Returns true if the source is connected.
 		/// </summary>
 		/// <param name="extends"></param>
 		public static bool GetIsOnline(this IConferenceSource extends)
@@ -198,6 +201,38 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				case eConferenceSourceStatus.EarlyMedia:
 				case eConferenceSourceStatus.Preserved:
 				case eConferenceSourceStatus.RemotePreserved:
+					return true;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		/// <summary>
+		/// Returns true if the source is active.
+		/// </summary>
+		/// <param name="extends"></param>
+		public static bool GetIsActive(this IConferenceSource extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			switch (extends.Status)
+			{
+				case eConferenceSourceStatus.Undefined:
+				case eConferenceSourceStatus.Disconnected:
+				case eConferenceSourceStatus.Idle:
+					return false;
+
+				case eConferenceSourceStatus.Connected:
+				case eConferenceSourceStatus.OnHold:
+				case eConferenceSourceStatus.EarlyMedia:
+				case eConferenceSourceStatus.Preserved:
+				case eConferenceSourceStatus.RemotePreserved:
+				case eConferenceSourceStatus.Dialing:
+				case eConferenceSourceStatus.Connecting:
+				case eConferenceSourceStatus.Ringing:
+				case eConferenceSourceStatus.Disconnecting:
 					return true;
 
 				default:
@@ -291,6 +326,19 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		/// <summary>
+		/// Gets the start time, falls through to dial time if no start time specified.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static DateTime GetStartOrDialTime(this IConferenceSource extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			return extends.Start ?? extends.DialTime;
 		}
 	}
 }

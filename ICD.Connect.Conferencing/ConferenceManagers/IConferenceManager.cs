@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
-using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;
@@ -35,6 +36,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
 
 		/// <summary>
+		/// Raised when the active conference ends.
+		/// </summary>
+		event EventHandler<ConferenceEventArgs> OnActiveConferenceEnded;
+
+		/// <summary>
 		/// Called when the active conference status changes.
 		/// </summary>
 		event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
@@ -53,6 +59,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Raises when the in call state changes.
 		/// </summary>
 		event EventHandler<InCallEventArgs> OnInCallChanged;
+
+		/// <summary>
+		/// Raises when the conference adds or removes a source.
+		/// </summary>
+		event EventHandler OnConferenceSourceAddedOrRemoved;
 
 		#endregion
 
@@ -144,6 +155,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		IDialingDeviceControl GetDialingProvider(eConferenceSourceType sourceType);
 
 		/// <summary>

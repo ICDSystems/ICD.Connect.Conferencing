@@ -98,11 +98,6 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		/// <summary>
-		/// Gets the number of sources in the conference.
-		/// </summary>
-		public int SourcesCount { get { return m_SourcesSection.Execute(() => m_Sources.Count); } }
-
-		/// <summary>
 		/// Gets the number of online sources in the conference.
 		/// </summary>
 		public int OnlineSourcesCount

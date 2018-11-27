@@ -6,15 +6,17 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.ConferenceSources;
-using ICD.Connect.Conferencing.Controls;
+using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Server.Devices.Simpl.Server;
+using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Devices;
-using ICD.Connect.Devices.EventArguments;
+using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
-using ICD.Connect.Protocol.Heartbeat;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.Ports;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
@@ -24,34 +26,31 @@ using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
-	public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>,
-	                                                 IClientInterpretationDevice, IConnectable
-	{
-		#region Events
+    public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>, IClientInterpretationDevice
+    {
+	    #region Events
 
-		public event EventHandler OnInterpretationActiveChanged;
+	    public event EventHandler OnInterpretationActiveChanged;
 
-		[PublicAPI]
-		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
+	    public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+	    public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
 
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+	    public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
+	    public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
+	    public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
-		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
-		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
-		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
-
-		#endregion
+	    #endregion
 
 		#region RPC Constants
 
-		public const string SET_INTERPRETATION_STATE_RPC = "SetInterpretationState";
+	    public const string SET_INTERPRETATION_STATE_RPC = "SetInterpretationState";
 
-		public const string SET_CACHED_PRIVACY_MUTE_STATE = "SetCachedPrivacyMuteState";
+	    public const string SET_CACHED_PRIVACY_MUTE_STATE = "SetCachedPrivacyMuteState";
 		public const string SET_CACHED_AUTO_ANSWER_STATE = "SetCachedAutoAnswerState";
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
 
-		public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
+	    public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
+	    public const string REMOVE_CACHED_SOURCE = "RemoveCachedSource";
 
 		#endregion
 
@@ -59,192 +58,261 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
-		private readonly ClientSerialRpcController m_RpcController;
-
-		private readonly Dictionary<Guid, ThinConferenceSource> m_Sources;
-		private readonly SafeCriticalSection m_SourcesCriticalSection;
+	    private readonly ClientSerialRpcController m_RpcController;
+	    private readonly Dictionary<Guid, ThinConferenceSource> m_Sources;
+		private readonly ConnectionStateManager m_ConnectionStateManager;
+	    private readonly SafeCriticalSection m_SourcesCriticalSection;
 
 		private bool m_IsConnected;
-		private ISerialPort m_Port;
-		private bool m_PrivacyMuted;
-		private bool m_DoNotDisturb;
-		private bool m_AutoAnswer;
-		private int m_Room;
 		private bool m_IsInterpretationActive;
+	    private bool m_PrivacyMuted;
+	    private bool m_DoNotDisturb;
+	    private bool m_AutoAnswer;
+	    private int m_RoomId;
 
-		#endregion
+	    #endregion
 
-		#region Public Properties
+	    #region Public Properties
 
-		public bool IsConnected
-		{
-			get { return m_IsConnected; }
-			private set
-			{
-				if (value == m_IsConnected)
-					return;
+	    public bool IsConnected
+	    {
+		    get { return m_IsConnected; }
+		    private set
+		    {
+			    if (value == m_IsConnected)
+				    return;
 
-				m_IsConnected = value;
+			    m_IsConnected = value;
 
-				UpdateCachedOnlineStatus();
+			    UpdateCachedOnlineStatus();
 
-				if (m_IsConnected)
-				{
-					Log(eSeverity.Informational, "Connected To Server");
-				}
-				else
-				{
-					Log(eSeverity.Alert, "Lost Connection To Server");
-				}
+			    if (m_IsConnected)
+			    {
+				    Log(eSeverity.Informational, "Connected To Server");
+					Register();
+			    }
+			    else
+			    {
+				    Log(eSeverity.Alert, "Lost Connection To Server");
+			    }
+		    }
 
-				OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
-			}
-
+			
 		}
 
-		public Heartbeat Heartbeat { get; private set; }
+	    public string RoomName { get; private set; }
 
-		public bool IsInterpretationActive
-		{
-			get { return m_IsInterpretationActive; }
-			private set
-			{
-				if (m_IsInterpretationActive == value)
-					return;
+		public string RoomPrefix { get; private set; }
 
-				m_IsInterpretationActive = value;
+	    public bool IsInterpretationActive
+	    {
+		    get { return m_IsInterpretationActive; }
+		    private set
+		    {
+			    if (m_IsInterpretationActive == value)
+				    return;
 
+			    m_IsInterpretationActive = value;
+			    
 				OnInterpretationActiveChanged.Raise(this);
-			}
-		}
+		    }
+	    }
 
-		public bool PrivacyMuted
-		{
-			get { return m_PrivacyMuted; }
-			private set
-			{
-				if (value == m_PrivacyMuted)
-					return;
-
+	    public bool PrivacyMuted
+	    {
+		    get
+		    {
+			    return m_PrivacyMuted;
+		    }
+		    private set
+		    {
+			    if (value == m_PrivacyMuted)
+				    return;
+				
 				m_PrivacyMuted = value;
-
+		    
 				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMuted));
 			}
-		}
+	    }
 
-		public bool DoNotDisturb
-		{
-			get { return m_DoNotDisturb; }
-			private set
-			{
-				if (value == m_DoNotDisturb)
-					return;
+	    public bool DoNotDisturb
+	    {
+		    get
+		    {
+			    return m_DoNotDisturb;
+		    }
+		    private set
+		    {
+			    if (value == m_DoNotDisturb)
+				    return;
 
-				m_DoNotDisturb = value;
+			    m_DoNotDisturb = value;
 
 				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_DoNotDisturb));
-			}
-		}
+		    }
+	    }
 
-		public bool AutoAnswer
-		{
-			get { return m_AutoAnswer; }
-			private set
-			{
-				if (value == m_AutoAnswer)
-					return;
-
+	    public bool AutoAnswer
+	    {
+		    get
+		    {
+			    return m_AutoAnswer;
+		    }
+		    private set
+		    {
+			    if (value == m_AutoAnswer)
+				    return;
+				
 				m_AutoAnswer = value;
 
 				OnAutoAnswerChanged.Raise(this, new BoolEventArgs(m_AutoAnswer));
-			}
-		}
+		    }
+	    }
 
-		#endregion
+	    #endregion
 
-		/// <summary>
-		/// Constructor.
-		/// </summary>
 		public InterpretationClientDevice()
-		{
+	    {
 			m_NetworkProperties = new SecureNetworkProperties();
-			m_RpcController = new ClientSerialRpcController(this);
+		    m_RpcController = new ClientSerialRpcController(this);
 			m_Sources = new Dictionary<Guid, ThinConferenceSource>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
 
 			Controls.Add(new DialerDeviceDialerControl(this, 0));
 
-			Heartbeat = new Heartbeat(this);
-		}
+			m_ConnectionStateManager = new ConnectionStateManager(this){ConfigurePort = ConfigurePort};
+			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
+			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectedStateChanged;
+	    }
 
-		/// <summary>
-		/// Release resources.
-		/// </summary>
-		/// <param name="disposing"></param>
-		protected override void DisposeFinal(bool disposing)
-		{
-			OnInterpretationActiveChanged = null;
-			OnConnectedStateChanged = null;
-			OnSourceAdded = null;
-			OnSourceRemoved = null;
-			OnDoNotDisturbChanged = null;
-			OnAutoAnswerChanged = null;
-			OnPrivacyMuteChanged = null;
+	    protected override void DisposeFinal(bool disposing)
+	    {
+		    OnSourceAdded = null;
+		    OnDoNotDisturbChanged = null;
+		    OnAutoAnswerChanged = null;
+		    OnPrivacyMuteChanged = null;
 
-			base.DisposeFinal(disposing);
+		    base.DisposeFinal(disposing);
 
-			Heartbeat.Dispose();
+		    m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
+		    m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectedStateChanged;
+			m_ConnectionStateManager.Dispose();
 
-			SetPort(null);
-			m_RpcController.Dispose();
-		}
+		    m_RpcController.Dispose();
+	    }
 
 		#region	Public Methods
 
-		public void Register()
-		{
+	    public void SetRoomNameIfNullOrEmpty(string name)
+	    {
+			// Only allow the room name to be set externally if an override isn't provided in settings.
+		    if (string.IsNullOrEmpty(RoomName))
+		    {
+			    RoomName = name;
+		    }
+	    }
+
+	    public void SetRoomPrefixIfNullOrEmpty(string prefix)
+	    {
+		    // Only allow the room prefix to be set externally if an override isn't provided in settings.
+		    if (string.IsNullOrEmpty(RoomPrefix))
+		    {
+			    RoomPrefix = prefix;
+		    }
+	    }
+
+	    public void Register()
+	    {
+		    if(IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_RoomId, RoomName, RoomPrefix);
+	    }
+
+	    public void Unregister()
+	    {
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_Room);
+				m_RpcController.CallMethod(InterpretationServerDevice.UNREGISTER_ROOM_RPC, m_RoomId);
+	    }
+
+	    public void Dial(string number)
+	    {
+		    if(IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_RPC, m_RoomId, number);
+	    }
+
+	    public void Dial(string number, eConferenceSourceType callType)
+	    {
+		    if(IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_TYPE_RPC, m_RoomId, number, callType);
+	    }
+
+	    public void Dial(IContact contact)
+	    {
+		    var contactMethod = contact.GetContactMethods().FirstOrDefault();
+			if(contactMethod != null)
+				Dial(contactMethod.Number);
+	    }
+
+		/// <summary>
+		/// Returns the level of support the dialer has for the given booking.
+		/// </summary>
+		/// <param name="bookingNumber"></param>
+		/// <returns></returns>
+		public eBookingSupport CanDial(IBookingNumber bookingNumber)
+		{
+			var sipBooking = bookingNumber as ISipBookingNumber;
+			if (sipBooking != null && sipBooking.IsValidSipUri())
+				return eBookingSupport.Supported;
+
+			var potsBooking = bookingNumber as IPstnBookingNumber;
+			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+				return eBookingSupport.Supported;
+
+			return eBookingSupport.Unsupported;
 		}
 
-		public void Unregister()
+		/// <summary>
+		/// Dials the given booking.
+		/// </summary>
+		/// <param name="bookingNumber"></param>
+		public void Dial(IBookingNumber bookingNumber)
 		{
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.UNREGISTER_ROOM_RPC, m_Room);
-		}
+			var sipBooking = bookingNumber as ISipBookingNumber;
+			if (sipBooking != null && sipBooking.IsValidSipUri())
+			{
+				Dial(sipBooking.SipUri);
+				return;
+			}
 
-		public void Dial(string number)
-		{
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_RPC, m_Room, number);
-		}
+			var potsBooking = bookingNumber as IPstnBookingNumber;
+			if (potsBooking != null && !string.IsNullOrEmpty(potsBooking.PhoneNumber))
+			{
+				Dial(potsBooking.PhoneNumber);
+				return;
+			}
 
-		public void Dial(string number, eConferenceSourceType callType)
-		{
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DIAL_TYPE_RPC, m_Room, number, callType);
+			Log(eSeverity.Error, "No supported methods for dialing the booking were found.");
 		}
 
 		public void SetPrivacyMute(bool enabled)
-		{
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.PRIVACY_MUTE_RPC, m_Room, enabled);
-		}
+	    {
+		    if(IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.PRIVACY_MUTE_RPC, m_RoomId, enabled);
+	    }
 
 		public void SetAutoAnswer(bool enabled)
 		{
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.AUTO_ANSWER_RPC, m_Room, enabled);
+				m_RpcController.CallMethod(InterpretationServerDevice.AUTO_ANSWER_RPC, m_RoomId, enabled);
 		}
 
-		public void SetDoNotDisturb(bool enabled)
-		{
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.DO_NOT_DISTURB_RPC, m_Room, enabled);
-		}
+	    public void SetDoNotDisturb(bool enabled)
+	    {
+		    if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.DO_NOT_DISTURB_RPC, m_RoomId, enabled);
+	    }
 
 		[PublicAPI]
-		public IEnumerable<IConferenceSource> GetSources()
+	    public IEnumerable<IConferenceSource> GetSources()
 		{
 			m_SourcesCriticalSection.Enter();
 			try
@@ -255,28 +323,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			{
 				m_SourcesCriticalSection.Leave();
 			}
-		}
-
-		/// <summary>
-		/// Connect the instance to the remote endpoint.
-		/// </summary>
-		public void Connect()
-		{
-			if (m_Port != null && !m_Port.IsConnected)
-				m_Port.Connect();
-
-			Register();
-		}
-
-		/// <summary>
-		/// Disconnects the instance from the remote endpoint.
-		/// </summary>
-		public void Disconnect()
-		{
-			Unregister();
-
-			if (m_Port != null && m_Port.IsConnected)
-				m_Port.Disconnect();
+			
 		}
 
 		#endregion
@@ -288,8 +335,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_SourcesCriticalSection.Enter();
 			try
 			{
-				foreach (var src in m_Sources.Values)
+				foreach (ThinConferenceSource src in m_Sources.Values)
+				{
+					src.Status = eConferenceSourceStatus.Disconnected;
 					Unsubscribe(src);
+					IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-ClearSources-OnSourceRemoved");
+					OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(src));
+				}
 
 				m_Sources.Clear();
 			}
@@ -301,21 +353,21 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#endregion
 
-		#region RPCs
+	    #region RPCs
 
-		[Rpc(SET_INTERPRETATION_STATE_RPC), UsedImplicitly]
-		private void SetInterpretationState(bool state)
-		{
-			IsInterpretationActive = state;
+	    [Rpc(SET_INTERPRETATION_STATE_RPC), UsedImplicitly]
+	    private void SetInterpretationState(bool state)
+	    {
+		    IsInterpretationActive = state;
 
-			ClearSources();
-		}
+		    ClearSources();
+	    }
 
-		[Rpc(SET_CACHED_PRIVACY_MUTE_STATE), UsedImplicitly]
-		private void SetCachedPrivacyMuteState(bool state)
-		{
+	    [Rpc(SET_CACHED_PRIVACY_MUTE_STATE), UsedImplicitly]
+	    private void SetCachedPrivacyMuteState(bool state)
+	    {
 			PrivacyMuted = state;
-		}
+	    }
 
 		[Rpc(SET_CACHED_AUTO_ANSWER_STATE), UsedImplicitly]
 		private void SetCachedAutoAnswerState(bool state)
@@ -329,55 +381,84 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			DoNotDisturb = state;
 		}
 
-		[Rpc(UPDATE_CACHED_SOURCE_STATE), UsedImplicitly]
-		private void UpdateCachedSourceState(Guid id, ConferenceSourceState sourceState)
-		{
-			m_SourcesCriticalSection.Enter();
+	    [Rpc(REMOVE_CACHED_SOURCE), UsedImplicitly]
+	    private void RemoveCachedSource(Guid id)
+	    {
+		    m_SourcesCriticalSection.Enter();
 
-			try
-			{
-				bool added = false;
-
-				if (!m_Sources.ContainsKey(id))
-				{
-					var newSrc = new ThinConferenceSource();
-					m_Sources[id] = newSrc;
-					Subscribe(newSrc);
-
-					added = true;
-				}
-
-				var src = m_Sources[id];
-
-				src.Name = sourceState.Name;
-				src.Number = sourceState.Number;
-				src.Status = sourceState.Status;
-				src.AnswerState = sourceState.AnswerState;
-				src.DialTime = sourceState.DialTime;
-				src.Direction = sourceState.Direction;
-				src.End = sourceState.End;
-				src.Start = sourceState.Start;
-
-				if (added)
-				{
-					var control = Controls.GetControl<DialerDeviceDialerControl>();
-					if (control != null)
-						OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
-				}
-
-				if (sourceState.Status != eConferenceSourceStatus.Disconnected)
+		    try
+		    {
+				if(!m_Sources.ContainsKey(id))
 					return;
 
-				var sourceToRemove = m_Sources[id];
-				Unsubscribe(sourceToRemove);
-				m_Sources.Remove(id);
+			    var sourceToRemove = m_Sources[id];
+				sourceToRemove.Status = eConferenceSourceStatus.Disconnected;
+			    Unsubscribe(sourceToRemove);
+			    m_Sources.Remove(id);
 
+			    IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-RemoveCachedSource-OnSourceRemoved");
+			    OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
+		    }
+		    finally
+		    {
+			    m_SourcesCriticalSection.Leave();
+		    }
+	    }
+
+	    [Rpc(UPDATE_CACHED_SOURCE_STATE), UsedImplicitly]
+	    private void UpdateCachedSourceState(Guid id, ConferenceSourceState sourceState)
+	    {
+			m_SourcesCriticalSection.Enter();
+
+		    try
+		    {
+			    bool added = false;
+
+			    if (!m_Sources.ContainsKey(id))
+			    {
+				    var newSrc = new ThinConferenceSource();
+				    m_Sources[id] = newSrc;
+				    Subscribe(newSrc);
+
+				    added = true;
+			    }
+
+			    var src = m_Sources[id];
+
+			    src.Name = string.Format("({0}) {1}", sourceState.Language, sourceState.Name);
+			    src.Number = sourceState.Number;
+			    src.Status = sourceState.Status;
+			    src.AnswerState = sourceState.AnswerState;
+			    src.DialTime = sourceState.DialTime;
+			    src.Direction = sourceState.Direction;
+			    src.End = sourceState.End;
+			    src.Start = sourceState.Start;
+			    src.SourceType = sourceState.SourceType;
+
+			    if (added)
+			    {
+					var control = Controls.GetControl<DialerDeviceDialerControl>();
+				    if (control != null)
+				    {
+						IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnSourceAdded");
+					    OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(src));
+				    }
+			    }
+
+			    if (sourceState.Status != eConferenceSourceStatus.Disconnected)
+				    return;
+
+			    var sourceToRemove = m_Sources[id];
+			    Unsubscribe(sourceToRemove);
+			    m_Sources.Remove(id);
+
+				IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnSourceRemoved");
 				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(sourceToRemove));
-			}
-			finally
-			{
-				m_SourcesCriticalSection.Leave();
-			}
+		    }
+		    finally
+		    {
+			    m_SourcesCriticalSection.Leave();
+		    }
 		}
 
 		#endregion
@@ -391,23 +472,23 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			source.ResumeCallback += SourceOnCallResumed;
 			source.SendDtmfCallback += SourceOnDtmfSent;
 			source.HangupCallback += SourceOnCallEnded;
-		}
-
-		private void Unsubscribe(ThinConferenceSource source)
-		{
+	    }
+		
+	    private void Unsubscribe(ThinConferenceSource source)
+	    {
 			source.AnswerCallback = null;
 			source.HoldCallback = null;
 			source.ResumeCallback = null;
 			source.SendDtmfCallback = null;
 			source.HangupCallback = null;
-
+		    
 		}
 
 		private void SourceOnCallAnswered(ThinConferenceSource source)
 		{
 			if (source == null)
 				return;
-
+			
 			m_SourcesCriticalSection.Enter();
 			Guid id;
 			try
@@ -423,13 +504,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, id);
+				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnCallHeld(ThinConferenceSource source)
-		{
+	    {
 			if (source == null)
-				return;
+			    return;
 
 			m_SourcesCriticalSection.Enter();
 			Guid id;
@@ -445,14 +526,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_SourcesCriticalSection.Leave();
 			}
 
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, id);
+		    if (IsConnected)
+			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnCallResumed(ThinConferenceSource source)
-		{
+	    {
 			if (source == null)
-				return;
+			    return;
 
 			m_SourcesCriticalSection.Enter();
 			Guid id;
@@ -468,8 +549,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_SourcesCriticalSection.Leave();
 			}
 
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, id);
+		    if (IsConnected)
+			    m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnCallEnded(ThinConferenceSource source)
@@ -492,14 +573,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, id);
+				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, m_RoomId, id);
 		}
 
 		private void SourceOnDtmfSent(ThinConferenceSource source, string data)
-		{
+	    {
 			if (source == null)
-				return;
-
+			    return;
+			
 			m_SourcesCriticalSection.Enter();
 			Guid id;
 			try
@@ -514,109 +595,79 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_SourcesCriticalSection.Leave();
 			}
 
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, id, data);
+		    if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, m_RoomId, id, data);
 		}
 
 		#endregion
 
 		#region Port
 
+		[PublicAPI]
+	    public void SetPort(ISerialPort port)
+	    {
+		    m_ConnectionStateManager.SetPort(port);
+	    }
+
 		/// <summary>
 		/// Sets the port for communication with the server.
 		/// </summary>
 		/// <param name="port"></param>
 		[PublicAPI]
-		public void SetPort(ISerialPort port)
-		{
-			if (port == m_Port)
-				return;
-
-			ConfigurePort(port);
-
-			Unsubscribe(m_Port);
-
-			m_Port = port;
-			m_RpcController.SetPort(m_Port);
-
-			Subscribe(m_Port);
-
-			m_Port.Connect();
-
-			UpdateCachedOnlineStatus();
-		}
-
-		/// <summary>
-		/// Configures the given port for communication with the device.
-		/// </summary>
-		/// <param name="port"></param>
-		private void ConfigurePort(ISerialPort port)
-		{
+	    public void ConfigurePort(ISerialPort port)
+	    {
 			// Network (TCP, UDP, SSH)
 			if (port is ISecureNetworkPort)
 				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 			else if (port is INetworkPort)
 				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
-		}
 
-		/// <summary>
-		/// Subscribe to the port events.
-		/// </summary>
-		/// <param name="port"></param>
-		private void Subscribe(ISerialPort port)
-		{
-			if (port == null)
-				return;
+			m_RpcController.SetPort(port);
 
-			port.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-			port.OnConnectedStateChanged += PortOnConnectedStateChanged;
-		}
+		    UpdateCachedOnlineStatus();
 
-		/// <summary>
-		/// Unsubscribe from the port events.
-		/// </summary>
-		/// <param name="port"></param>
-		private void Unsubscribe(ISerialPort port)
-		{
-			if (port == null)
-				return;
+			if(m_ConnectionStateManager.IsConnected)
+				Register();
+	    }
 
-			port.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
-			port.OnConnectedStateChanged += PortOnConnectedStateChanged;
-		}
+	    /// <summary>
+	    /// Called when the port online status changes.
+	    /// </summary>
+	    /// <param name="sender"></param>
+	    /// <param name="args"></param>
+	    private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs args)
+	    {
+		    UpdateCachedOnlineStatus();
+	    }
 
-		/// <summary>
-		/// Called when the port online status changes.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		private void PortOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
-		{
-			UpdateCachedOnlineStatus();
-		}
+	    /// <summary>
+	    /// Called when the port connection state changes.
+	    /// </summary>
+	    /// <param name="sender"></param>
+	    /// <param name="args"></param>
+	    private void PortOnConnectedStateChanged(object sender, BoolEventArgs args)
+	    {
+		    IsConnected = m_ConnectionStateManager != null && m_ConnectionStateManager.IsConnected;
 
-		/// <summary>
-		/// Called when the port connection state changes.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		private void PortOnConnectedStateChanged(object sender, BoolEventArgs args)
-		{
-			IsConnected = m_Port != null && m_Port.IsConnected;
-		}
+		    if (IsConnected)
+			    return;
+
+		    IsInterpretationActive = false;
+		    ClearSources();
+	    }
 
 		#endregion
 
-		#region Settings
+	    #region Settings
 
-		/// <summary>
-		/// Override to apply settings to the instance.
-		/// </summary>
-		/// <param name="settings"></param>
-		/// <param name="factory"></param>
 		protected override void ApplySettingsFinal(InterpretationClientDeviceSettings settings, IDeviceFactory factory)
-		{
-			base.ApplySettingsFinal(settings, factory);
+	    {
+		    base.ApplySettingsFinal(settings, factory);
+
+			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
+
+			RoomName = settings.RoomName;
+			RoomPrefix = settings.RoomPrefix;
 
 			m_NetworkProperties.Copy(settings);
 
@@ -624,80 +675,96 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			if (settings.Port != null)
 			{
-				port = factory.GetPortById(settings.Port.Value) as ISerialPort;
-				if (port == null)
+				try
+				{
+					port = factory.GetPortById(settings.Port.Value) as ISerialPort;
+				}
+				catch (KeyNotFoundException)
+				{
 					Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+				}
 			}
 
 			SetPort(port);
+	    }
 
-			m_Room = settings.Room == null ? 0 : settings.Room.Value;
+	    protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
+	    {
+		    base.CopySettingsFinal(settings);
 
-			Heartbeat.StartMonitoring();
-		}
-
-		/// <summary>
-		/// Override to apply properties to the settings instance.
-		/// </summary>
-		/// <param name="settings"></param>
-		protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
-		{
-			base.CopySettingsFinal(settings);
-
-			settings.Port = m_Port == null ? (int?)null : m_Port.Id;
-			settings.Room = m_Room;
+		    settings.Port = m_ConnectionStateManager.PortNumber;
+		    settings.Room = m_RoomId;
+		    settings.RoomName = RoomName;
+		    settings.RoomPrefix = RoomPrefix;
 
 			settings.Copy(m_NetworkProperties);
-		}
+	    }
 
-		/// <summary>
-		/// Override to clear the instance settings.
-		/// </summary>
-		protected override void ClearSettingsFinal()
-		{
-			base.ClearSettingsFinal();
+	    protected override void ClearSettingsFinal()
+	    {
+		    base.ClearSettingsFinal();
 
-			SetPort(null);
 			m_NetworkProperties.Clear();
 
-			Heartbeat.StopMonitoring();
-		}
+			SetPort(null);
+	    }
 
-		#endregion
+	    #endregion
 
 		#region Console
 
-		/// <summary>
-		/// Calls the delegate for each console status item.
-		/// </summary>
-		/// <param name="addRow"></param>
-		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-			base.BuildConsoleStatus(addRow);
+	    /// <summary>
+	    /// Calls the delegate for each console status item.
+	    /// </summary>
+	    /// <param name="addRow"></param>
+	    public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+	    {
+		    base.BuildConsoleStatus(addRow);
 
-			var sources = GetSources();
-			addRow("Remote Sources", "Count: " + sources.Count());
-			foreach (var src in GetSources())
-			{
+		    var sources = GetSources();
+		    addRow("Interpretation Active", m_IsInterpretationActive);
+		    addRow("Remote Sources", "Count: " + sources.Count());
+		    foreach (var src in GetSources())
+		    {
 				addRow("-----", "-----");
-				addRow("Name", src.Name);
-				addRow("Number", src.Number);
-				addRow("Status", src.Status);
-				addRow("State", src.AnswerState);
-				addRow("Start", src.StartOrDialTime);
-			}
+			    addRow("Name", src.Name);
+			    addRow("Number", src.Number);
+			    addRow("Status", src.Status);
+			    addRow("State", src.AnswerState);
+			    addRow("Start", src.GetStartOrDialTime());
+		    }
 			addRow("-----", "-----");
+	    }
+
+	    /// <summary>
+	    /// Gets the child console commands.
+	    /// </summary>
+	    /// <returns></returns>
+	    public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+	    {
+		    foreach (IConsoleCommand command in GetBaseConsolCommands())
+			    yield return command;
+
+			yield return new ConsoleCommand("Connect", "Connect to the server", () => m_ConnectionStateManager.Connect());
+			yield return new ConsoleCommand("Disconnect", "Disconnect from the server", () => m_ConnectionStateManager.Disconnect());
+			yield return new ConsoleCommand("Register", "Register the room with the server", () => Register());
+			yield return new ConsoleCommand("Unregister", "Unregister the room with the server", () => Unregister());
 		}
 
-		#endregion
+	    private IEnumerable<IConsoleCommand> GetBaseConsolCommands()
+	    {
+		    return base.GetConsoleCommands();
+	    }
+
+	    #endregion
 
 		#region IDevice
 
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_Port != null && m_Port.IsOnline;
+			return m_ConnectionStateManager != null && m_ConnectionStateManager.IsOnline;
 		}
 
-		#endregion
+	    #endregion
 	}
 }

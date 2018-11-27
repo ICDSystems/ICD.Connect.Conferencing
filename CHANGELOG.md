@@ -6,6 +6,96 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [11.1.1] - 2018-11-20
+### Changed
+ - Small performance improvement for Cisco feedback parsing
+
+## [11.1.0] - 2018-11-08
+### Added
+ - Added far-end zoom for Cisco remote cameras.
+
+### Changed
+ - Improved thread safety in Server SimplInterpretationShim
+ - Fixed bug where Polycom GroupSeries would not initialize unless getting the SSH welcome message
+
+## [11.0.1] - 2018-10-30
+### Changed
+ - Fixed loading issue where devices would not fail gracefully when a port was not available
+
+## [11.0.0] - 2018-10-18
+### Added
+ - Conference manager now enforces privacy mute state on feedback providers
+ - Support CE 9.3 for the cisco codec
+ - Fallback to root directory folder when getfolder would otherwise fail
+ - XML Bookig numbers parsing
+ - Added Feedback Resubscription to Polycom
+ 
+### Changed
+ - Fixed bug where if the client interpretation device was initialized before the server, it would not connect
+ - Overhaul XML parsing to improve performance
+
+## [10.0.2] - 2018-10-04
+### Changed
+ - Fixed bug where Polycom failed calls would get stuck in "disconnecting" state
+
+## [10.0.1] - 2018-09-25
+### Changed
+ - Fixed bugs with Polycom initialization commands being cleared prematurely
+ - Fixed bug where Polycom call state would bounce between disconnected and connected
+
+## [10.0.0] - 2018-09-14
+### Added
+ - Added Polycom calendar parsing
+
+### Changed
+ - Fixed bug with Cisco VTC awake state
+ - Cisco routing control does not depend on feedback from the device
+ - Significant routing performance improvements
+
+## [9.1.0] - 2018-07-19
+### Added
+ - Added Polycom button features for emulating remote control
+
+### Changed
+ - Default camera IDs to 1 when deserializing settings and no ID is specified
+ - Fixed issues with multiple Polycom conference sources being created
+ - ThinConferenceSource SourceTypes specified
+ - Reduced spamming Polycom with addressbook commands
+ - Polycom contacts are added as a flat list
+
+## [9.0.0] - 2018-07-02
+### Added
+ - Added Polycom Group Series conferencing device
+ - Added Polycom camera device
+ 
+### Changed
+ - CiscoCodec console improvements
+ - Phonebook directory/folder improvements
+
+## [8.0.0] - 2018-06-19
+### Added
+ - Added video conferencing abstractions and interfaces for devices and controls 
+ - Added functionality to S+ InterpretationServerShim to support S+ requirements
+ - Added console commands to InterpretationServerDevice
+
+### Changed
+ - Cisco codec driver overhaul to use new abstractions
+ - Changed data type for booth ID on interpretation devices to be ushort
+ - Fixed potential thread-unsafety in interpretation server
+ - ConnectionStateManager now used to maintain RPC connection for InterpretationClient/Server
+ - Fixed language setting not propegating to client from server
+ - Fixed major issue where only the first adapter for the InterpretationServerDevice would be utilied/transmitted to client
+ - Fixed issue where disconnections wouldn't clear the calls from the client, causing them to duplicate when reconnected
+
+## [7.1.0] - 2018-06-04
+### Changed
+ - CiscoCodec phonebook type is configured via settings
+ - Serial devices use ConnectionStateManager for maintaining connection to remote endpoints
+
+## [7.0.0] - 2018-05-24
+### Changed
+ - Significant Interpretation device refactoring
+ 
 ## [6.0.0] - 2018-05-09
 ### Added
  - Adding Interpretation client and server devices

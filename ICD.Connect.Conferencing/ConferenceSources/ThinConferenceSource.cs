@@ -14,6 +14,8 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 {
 	public delegate void ThinConferenceSourceAnswerCallback(ThinConferenceSource sender);
 
+	public delegate void ThinConferenceSourceRejectCallback(ThinConferenceSource sender);
+
 	public delegate void ThinConferenceSourceHoldCallback(ThinConferenceSource sender);
 
 	public delegate void ThinConferenceSourceResumeCallback(ThinConferenceSource sender);
@@ -31,6 +33,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		public event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
 
 		public ThinConferenceSourceAnswerCallback AnswerCallback { get; set; }
+		public ThinConferenceSourceRejectCallback RejectCallback { get; set; }
 		public ThinConferenceSourceHoldCallback HoldCallback { get; set; }
 		public ThinConferenceSourceResumeCallback ResumeCallback { get; set; }
 		public ThinConferenceSourceSendDtmfCallback SendDtmfCallback { get; set; }
@@ -44,6 +47,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		private DateTime? m_End;
 		private DateTime m_DialTime;
 		private eConferenceSourceDirection m_Direction;
+		private eConferenceSourceType m_SourceType;
 
 		#region Properties
 
@@ -188,12 +192,22 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			}
 		}
 
-		public DateTime StartOrDialTime { get { return Start ?? DialTime; } }
-
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
-		eConferenceSourceType IConferenceSource.SourceType { get { return eConferenceSourceType.Audio; } }
+		public eConferenceSourceType SourceType
+		{
+			get { return m_SourceType; }
+			set
+			{
+				if (value == m_SourceType)
+					return;
+
+				m_SourceType = value;
+
+				Log(eSeverity.Informational, "SourceType set to {0}", m_SourceType);
+			}
+		}
 
 		/// <summary>
 		/// Gets the remote camera.
@@ -202,14 +216,27 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 
 		#endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		public ThinConferenceSource()
 		{
 			DialTime = IcdEnvironment.GetLocalTime();
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		public void Dispose()
 		{
+			OnAnswerStateChanged = null;
+			OnStatusChanged = null;
+			OnNameChanged = null;
+			OnNumberChanged = null;
+			OnSourceTypeChanged = null;
+
 			AnswerCallback = null;
+			RejectCallback = null;
 			HoldCallback = null;
 			ResumeCallback = null;
 			SendDtmfCallback = null;
@@ -243,6 +270,16 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		}
 
 		/// <summary>
+		/// Rejects the incoming source.
+		/// </summary>
+		public void Reject()
+		{
+			ThinConferenceSourceRejectCallback handler = RejectCallback;
+			if (handler != null)
+				handler(this);
+		}
+
+		/// <summary>
 		/// Holds the source.
 		/// </summary>
 		public void Hold()
@@ -270,7 +307,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 		{
 			ThinConferenceSourceSendDtmfCallback handler = SendDtmfCallback;
 			if (handler != null)
-				handler(this, data);
+				handler(this, data ?? string.Empty);
 		}
 
 		/// <summary>
@@ -338,6 +375,7 @@ namespace ICD.Connect.Conferencing.ConferenceSources
 			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
 			yield return new ConsoleCommand("Hangup", "Ends the call", () => Hangup());
 			yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
+			yield return new ConsoleCommand("Reject", "Rejects the incoming call", () => Reject());
 			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
 		}
 
