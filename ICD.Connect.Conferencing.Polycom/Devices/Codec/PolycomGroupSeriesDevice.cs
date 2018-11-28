@@ -170,6 +170,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			Unsubscribe(m_SerialBuffer);
 
+			m_FeedbackTimer.Dispose();
+
 			base.DisposeFinal(disposing);
 
 			m_CommandQueue.Dispose();
