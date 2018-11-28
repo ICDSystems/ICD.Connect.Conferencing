@@ -40,6 +40,23 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private const long RATE_LIMIT_MS = 300;
 
 		/// <summary>
+		/// Timer interval used for resubscribing to feedbacks.
+		/// </summary>
+		private const int TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL = 30 * 60 * 1000;
+
+		private static readonly ComSpec s_DefaultComSpec = new ComSpec
+		{
+			BaudRate = eComBaudRates.ComspecBaudRate115200,
+			NumberOfDataBits = eComDataBits.ComspecDataBits8,
+			ParityType = eComParityType.ComspecParityNone,
+			NumberOfStopBits = eComStopBits.ComspecStopBits1,
+			ProtocolType = eComProtocolType.ComspecProtocolRS232,
+			HardwareHandShake = eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
+			SoftwareHandshake = eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
+			ReportCtsChanges = false
+		};
+
+		/// <summary>
 		/// Raised when the class initializes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
@@ -48,11 +65,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// Raised when the device becomes connected or disconnected.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
-
-		/// <summary>
-		/// Timer interval used for resubscribing to feedbacks.
-		/// </summary>
-		private const int TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL = 30 * 60 * 1000;
 
 		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
 		private readonly Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>> m_RangeFeedbackHandlers;
@@ -207,14 +219,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		[PublicAPI]
 		public static void ConfigureComPort(IComPort port)
 		{
-			port.SetComPortSpec(eComBaudRates.ComspecBaudRate115200,
-			                    eComDataBits.ComspecDataBits8,
-			                    eComParityType.ComspecParityNone,
-			                    eComStopBits.ComspecStopBits1,
-			                    eComProtocolType.ComspecProtocolRS232,
-			                    eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
-			                    eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
-			                    false);
+			port.SetComPortSpec(s_DefaultComSpec);
 		}
 
 		/// <summary>
