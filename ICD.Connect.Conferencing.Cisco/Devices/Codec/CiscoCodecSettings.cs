@@ -153,10 +153,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// <summary>
 		/// Gets/sets the configurable hardware handshake type.
 		/// </summary>
-		public eComHardwareHandshakeType? ComSpecHardwareHandShake
+		public eComHardwareHandshakeType? ComSpecHardwareHandshake
 		{
-			get { return m_ComSpecProperties.ComSpecHardwareHandShake; }
-			set { m_ComSpecProperties.ComSpecHardwareHandShake = value; }
+			get { return m_ComSpecProperties.ComSpecHardwareHandshake; }
+			set { m_ComSpecProperties.ComSpecHardwareHandshake = value; }
 		}
 
 		/// <summary>

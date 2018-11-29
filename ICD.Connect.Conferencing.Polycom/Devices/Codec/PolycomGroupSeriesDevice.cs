@@ -51,7 +51,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			ParityType = eComParityType.None,
 			NumberOfStopBits = eComStopBits.StopBits1,
 			ProtocolType = eComProtocolType.Rs232,
-			HardwareHandShake = eComHardwareHandshakeType.None,
+			HardwareHandshake = eComHardwareHandshakeType.None,
 			SoftwareHandshake = eComSoftwareHandshakeType.None,
 			ReportCtsChanges = false
 		};
