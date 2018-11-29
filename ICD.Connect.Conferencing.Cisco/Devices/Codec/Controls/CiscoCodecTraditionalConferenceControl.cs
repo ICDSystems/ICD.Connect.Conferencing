@@ -162,7 +162,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void ComponentOnParticipantRemoved(object sender, GenericEventArgs<ITraditionalParticipant> args)
 		{
-			AddParticipant(args.Data);
+			RemoveParticipant(args.Data);
 		}
 
 		private void ComponentOnPrivacyMuteChanged(object sender, BoolEventArgs args)
