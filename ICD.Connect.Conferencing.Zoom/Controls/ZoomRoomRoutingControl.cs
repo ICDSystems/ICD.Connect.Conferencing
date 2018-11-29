@@ -5,6 +5,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Connect.Conferencing.Controls.Routing;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
+using ICD.Connect.Conferencing.Zoom.Components.Presentation;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
@@ -13,6 +14,12 @@ using ICD.Connect.Routing.Utils;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
 {
+	/// <summary>
+	/// Routing control for the Zoom Room.
+	/// </summary>
+	/// <remarks>
+	/// Input address 1 is reserved for the officially supported HDMI->USB dongles. Input addresses 2+ are for USB camera inputs.
+	/// </remarks>
 	public class ZoomRoomRoutingControl : AbstractVideoConferenceRouteControl<ZoomRoom>
 	{
 		public override event EventHandler<SourceDetectionStateChangeEventArgs> OnSourceDetectionStateChange;
@@ -22,6 +29,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private readonly SwitcherCache m_SwitcherCache;
 
 		private readonly CameraComponent m_CameraComponent;
+		private readonly PresentationComponent m_PresentationComponent;
 
 		private IRoutingGraph m_CachedRoutingGraph;
 
@@ -39,6 +47,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			Subscribe(m_SwitcherCache);
 
 			m_CameraComponent = parent.Components.GetComponent<CameraComponent>();
+			m_PresentationComponent = parent.Components.GetComponent<PresentationComponent>();
 		}
 
 		/// <summary>
@@ -65,7 +74,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <returns></returns>
 		public override bool ContainsInput(int input)
 		{
-			return RoutingGraph.Connections.GetInputConnection(this, input) != null;
+			return GetInputs().Any(i => i.Address == input);
 		}
 
 		/// <summary>
@@ -74,10 +83,22 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
-			return
-				RoutingGraph.Connections
-							.GetInputConnections(Parent.Id, Id)
-							.Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
+			if (m_PresentationComponent != null && m_PresentationComponent.InputConnected)
+				yield return new ConnectorInfo(1, eConnectionType.Video);
+
+			int cameraCount = m_CameraComponent == null 
+				? 0
+				: m_CameraComponent.GetCameras().Count();
+			foreach (var i in Enumerable.Range(2, cameraCount))
+			{
+				//should somehow map ids or names to addresses? IDK?!?!?!
+				yield return new ConnectorInfo(i, eConnectionType.Video);
+			}
+
+			//return
+			//    RoutingGraph.Connections
+			//                .GetInputConnections(Parent.Id, Id)
+			//                .Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
 		}
 
 		/// <summary>
@@ -87,6 +108,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// </summary>
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
+			if (input == 1)
+				return m_PresentationComponent != null && m_PresentationComponent.InputConnected && m_PresentationComponent.Sharing;
 			return true;
 		}
 
@@ -97,11 +120,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <returns></returns>
 		public override ConnectorInfo GetInput(int input)
 		{
-			Connection connection = RoutingGraph.Connections.GetInputConnection(this, input);
-			if (connection == null)
-				throw new ArgumentOutOfRangeException("input");
-
-			return new ConnectorInfo(connection.Destination.Address, connection.ConnectionType);
+			return GetInputs().Single(i => i.Address == input);
 		}
 
 		/// <summary>
@@ -112,6 +131,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <returns></returns>
 		public override bool GetSignalDetectedState(int input, eConnectionType type)
 		{
+			if (input == 1)
+				return m_PresentationComponent != null && m_PresentationComponent.InputConnected && m_PresentationComponent.SignalDetected;
 			return true;
 		}
 
@@ -131,7 +152,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <returns></returns>
 		public override bool ContainsOutput(int output)
 		{
-			return RoutingGraph.Connections.GetOutputConnection(this, output) != null;
+			return GetOutputs().Any(o => o.Address == output);
 		}
 
 		/// <summary>
