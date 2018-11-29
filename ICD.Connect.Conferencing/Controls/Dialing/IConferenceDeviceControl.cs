@@ -158,7 +158,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0}", contact.Name));
 
 			var groupedAndSorted = contactDialContexts.ToLookup(dc => control.CanDial(dc))
-				.Where(g => g.Key > eDialContextSupport.ParsedSupported)
+				.Where(g => g.Key != eDialContextSupport.Unsupported)
 				.OrderByDescending(g => g.Key);
 			if(!groupedAndSorted.Any())
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0} that this control supports dialing", contact.Name));
