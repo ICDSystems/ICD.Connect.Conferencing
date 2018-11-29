@@ -1,6 +1,6 @@
 ﻿using ICD.Connect.Conferencing.Cisco.Devices.Codec;
+using ICD.Connect.Protocol.Mock.Ports.ComPort;
 using ICD.Connect.Protocol.Ports;
-using ICD.Connect.Protocol.Ports.ComPort;
 using NUnit.Framework;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components
@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components
 		[SetUp]
 		public virtual void Setup()
 		{
-			Port = new ComPortPlus(1);
+			Port = new MockComPort();
 			Codec = new CiscoCodecDevice();
 
 			Codec.SetPort(Port);
