@@ -46,13 +46,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 		private static readonly ComSpec s_DefaultComSpec = new ComSpec
 		{
-			BaudRate = eComBaudRates.ComspecBaudRate115200,
-			NumberOfDataBits = eComDataBits.ComspecDataBits8,
-			ParityType = eComParityType.ComspecParityNone,
-			NumberOfStopBits = eComStopBits.ComspecStopBits1,
-			ProtocolType = eComProtocolType.ComspecProtocolRS232,
-			HardwareHandShake = eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
-			SoftwareHandshake = eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
+			BaudRate = eComBaudRates.BaudRate115200,
+			NumberOfDataBits = eComDataBits.DataBits8,
+			ParityType = eComParityType.None,
+			NumberOfStopBits = eComStopBits.StopBits1,
+			ProtocolType = eComProtocolType.Rs232,
+			HardwareHandShake = eComHardwareHandshakeType.None,
+			SoftwareHandshake = eComSoftwareHandshakeType.None,
 			ReportCtsChanges = false
 		};
 

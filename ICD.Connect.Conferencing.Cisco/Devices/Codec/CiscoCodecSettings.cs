@@ -250,13 +250,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		private void UpdateComSpecDefaults()
 		{
-			m_ComSpecProperties.ApplyDefaultValues(eComBaudRates.ComspecBaudRate115200,
-												   eComDataBits.ComspecDataBits8,
-												   eComParityType.ComspecParityNone,
-												   eComStopBits.ComspecStopBits1,
-												   eComProtocolType.ComspecProtocolRS232,
-												   eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
-												   eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
+			m_ComSpecProperties.ApplyDefaultValues(eComBaudRates.BaudRate115200,
+												   eComDataBits.DataBits8,
+												   eComParityType.None,
+												   eComStopBits.StopBits1,
+												   eComProtocolType.Rs232,
+												   eComHardwareHandshakeType.None,
+												   eComSoftwareHandshakeType.None,
 												   false);
 		}
 	}
