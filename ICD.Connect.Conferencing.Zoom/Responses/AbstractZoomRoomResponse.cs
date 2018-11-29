@@ -36,7 +36,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		zCommand,
 		zConfiguration,
 		zStatus,
-		zEvent
+		zEvent,
+		zError
 	}
 
 	public class ZoomRoomResponseStatus

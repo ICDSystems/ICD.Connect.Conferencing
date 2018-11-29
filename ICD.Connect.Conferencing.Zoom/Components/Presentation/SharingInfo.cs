@@ -32,27 +32,27 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		/// When this entry is set to true, you know that you are now in a sharing meeting, and you can remove the airplay.
 		/// </summary>
 		[JsonProperty("isAirHostClientConnected")]
-		public eZoomBoolean IsAirHostClientConnected { get; private set; }
+		public bool IsAirHostClientConnected { get; private set; }
 
 		/// <summary>
 		/// Set to on if a compatible HDMI capture device is connected via USB to the Zoom Room.
 		/// We support Magewell and INOGENI. (Zoom's supported devices, not Krang's)
 		/// </summary>
 		[JsonProperty("isBlackMagicConnected")]
-		public eZoomBoolean IsBlackMagicConnected { get; private set; }
+		public bool IsBlackMagicConnected { get; private set; }
 
 		/// <summary>
 		/// Set to on, if the user has connected an HDMI cable from a laptop to the HDMI capture card,
 		/// and the HDMI capture card sees HDMI video coming from the Laptop.
 		/// </summary>
 		[JsonProperty("isBlackMagicDataAvailable")]
-		public eZoomBoolean IsBlackMagicDataAvailable { get; private set; }
+		public bool IsBlackMagicDataAvailable { get; private set; }
 
 		/// <summary>
 		/// Whether HDMI is currently actively sharing.
 		/// </summary>
 		[JsonProperty("isSharingBlackMagic")]
-		public eZoomBoolean IsSharingBlackMagic { get; private set; }
+		public bool IsSharingBlackMagic { get; private set; }
 
 		/// <summary>
 		/// This is the paring code that is broadcast via an ultrasonic signal from the ZRC.
@@ -73,7 +73,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		/// The laptop has connected to the ZR, either via HDMI, or via network sharing.
 		/// </summary>
 		[JsonProperty("isDirectPresentationConnected")]
-		public eZoomBoolean IsDirectPresentationConnected { get; private set; }
+		public bool IsDirectPresentationConnected { get; private set; }
 
 		/// <summary>
 		/// Gets the instructions the ZR is displaying on the monitor
