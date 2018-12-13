@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+ - Fail more gracefully when a Cisco Camera is added without a parent Cisco Codec
 
 ## [11.1.1] - 2018-11-20
 ### Changed
