@@ -8,6 +8,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
 
@@ -311,6 +312,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			Codec.Log(eSeverity.Informational, "Setting PresenterTrack mode to {0}", mode);
 		}
 
+		/// <summary>
+		/// Activates the speaker track.
+		/// </summary>
+		[PublicAPI]
+		public void ActivateSpeakerTrack()
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Activate");
+			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack active");
+		}
+
+		/// <summary>
+		/// Deactivates the speaker track.
+		/// </summary>
+		[PublicAPI]
+		public void DeactivateSpeakerTrack()
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Deactivate");
+			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack inactive");
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -517,6 +538,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		#region Console
 
 		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("PresenterTrack Availability", PresenterTrackAvailability);
+			addRow("PresenterTrack Presenter Detected", PresenterDetected);
+			addRow("PresenterTrack Mode", PresenterTrackMode);
+			addRow("SpeakerTrack Availability", SpeakerTrackAvailability);
+			addRow("SpeakerTrack Status", SpeakerTrackStatus);
+		}
+
+		/// <summary>
 		/// Gets the child console node groups.
 		/// </summary>
 		/// <returns></returns>
@@ -535,6 +571,34 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
 		{
 			return base.GetConsoleNodes();
+		}
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			string presenterTrackModeHelp = string.Format("SetPresenterTrackMode <{0}>",
+			                                              StringUtils.ArrayFormat(EnumUtils.GetValues<ePresenterTrackMode>()));
+
+			yield return new GenericConsoleCommand<ePresenterTrackMode>("SetPresenterTrackMode",
+			                                                            presenterTrackModeHelp, m => SetPresenterTrackMode(m));
+
+			yield return new ConsoleCommand("ActivateSpeakerTrack", "Activates the SpeakerTrack", () => ActivateSpeakerTrack());
+			yield return new ConsoleCommand("DeactivateSpeakerTrack", "Deactivates the SpeakerTrack", () => DeactivateSpeakerTrack());
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion
