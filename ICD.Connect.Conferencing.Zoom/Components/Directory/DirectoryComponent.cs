@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Properties;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Directory.Tree;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
 	public class DirectoryComponent : AbstractZoomRoomComponent
 	{
+		private const string ROOMS_FOLDER = "Rooms";
 		private readonly ZoomFolder m_RootFolder;
 
 		public DirectoryComponent(ZoomRoom parent) : base(parent)
@@ -36,11 +40,48 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		#endregion
 
+		#region Private Methods
+
+		private static string GetFolderNameForContact(ZoomContact contact)
+		{
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
+			return contact.IsZoomRoom ? ROOMS_FOLDER : contact.LastName.ToUpper()[0].ToString();
+		}
+
+		private void AddOrUpdateContact(ZoomContact contact)
+		{
+			var folder = GetFolder(contact);
+			var existingContact = folder.GetContacts().OfType<ZoomContact>().SingleOrDefault(c => c.JoinId == contact.JoinId);
+			if (existingContact == null)
+				folder.AddContact(contact);
+			else
+				existingContact.Update(contact);
+		}
+
+		[NotNull]
+		private IDirectoryFolder GetFolder(ZoomContact contact)
+		{
+			var folderName = GetFolderNameForContact(contact);
+			var folder = m_RootFolder.GetFolder(folderName);
+			if (folder == null)
+			{
+				folder = new ZoomFolder(folderName);
+				m_RootFolder.AddFolder(folder);
+			}
+
+			return folder;
+		}
+
+		#endregion
+
 		#region Zoom Room Callbacks
 
 		private void Subscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.RegisterResponseCallback<PhonebookListCommandResponse>(PhonebookListCallback);
+			zoomRoom.RegisterResponseCallback<PhonebookContactUpdatedResponse>(ContactUpdatedCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom zoomRoom)
@@ -48,39 +89,31 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 			zoomRoom.UnregisterResponseCallback<PhonebookListCommandResponse>(PhonebookListCallback);
 		}
 
+		protected override void Initialize()
+		{
+			base.Initialize();
+
+			Populate();
+		}
+
 		private void PhonebookListCallback(ZoomRoom zoomRoom, PhonebookListCommandResponse response)
 		{
 			foreach (var contact in response.PhonebookListResult.Contacts)
 			{
-				if (contact.IsZoomRoom)
-				{
-					var roomsFolder = m_RootFolder.GetFolder("Rooms");
-					if (roomsFolder == null)
-					{
-						roomsFolder = new ZoomFolder("Rooms");
-						m_RootFolder.AddFolder(roomsFolder);
-					}
-					roomsFolder.AddContact(contact);
-				}
-				else
-				{
-					try
-					{
-						string lastNameLetter = contact.LastName.ToUpper()[0].ToString();
-						var letterFolder = m_RootFolder.GetFolder(lastNameLetter);
-						if (letterFolder == null)
-						{
-							letterFolder = new ZoomFolder(lastNameLetter);
-							m_RootFolder.AddFolder(letterFolder);
-						}
-						letterFolder.AddContact(contact);
-					}
-					catch (Exception)
-					{
-						//skip contact
-					}
-				}
+				if (contact == null)
+					continue;
+
+				AddOrUpdateContact(contact);
 			}
+		}
+
+		private void ContactUpdatedCallback(ZoomRoom zoomRoom, PhonebookContactUpdatedResponse response)
+		{
+			var contact = response.Data.Contact;
+			if (contact == null)
+				return;
+
+			AddOrUpdateContact(contact);
 		}
 
 		#endregion

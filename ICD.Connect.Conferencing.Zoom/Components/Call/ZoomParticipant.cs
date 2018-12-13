@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -94,6 +94,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		}
 
 		public string UserId { get; private set; }
+		public string AvatarUrl { get; private set; }
 		public DateTime? Start { get; private set; }
 		public DateTime? End { get; private set; }
 
@@ -115,6 +116,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Status = eParticipantStatus.Connected;
 			SourceType = info.IsSendingVideo ? eCallType.Video : eCallType.Audio;
 			IsMuted = info.AudioState == eAudioState.AUDIO_MUTED;
+			AvatarUrl = info.AvatarUrl;
 		}
 
 		public void Kick()
@@ -127,12 +129,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ZoomRoom.SendCommand("zCommand Call MuteParticipant mute: {0} Id: {1}", 
 				mute ? "on" : "off", 
 				UserId);
-		}
-
-		public void LeftConference()
-		{
-			End = IcdEnvironment.GetLocalTime();
-			Status = eParticipantStatus.Disconnected;
 		}
 
 		#endregion

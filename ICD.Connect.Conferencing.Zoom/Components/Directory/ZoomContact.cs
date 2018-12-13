@@ -1,12 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
+using ICD.Connect.Conferencing.EventArguments;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
 	public sealed class ZoomContact : IContactWithSurname, IContactWithOnlineState
 	{
+		public event EventHandler<OnlineStateEventArgs> OnOnlineStateChanged;
 		/// <summary>
 		/// Use this ID when inviting the user, or when accepting / rejecting a user who is joining the conversation
 		/// </summary>
@@ -62,7 +66,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		{
 			yield return new ZoomContactDialContext { DialString = JoinId };
 		}
-
+		
 		public eOnlineState OnlineState
 		{
 			get
@@ -83,6 +87,24 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 						return eOnlineState.Unknown;
 				}
 			}
+		}
+
+		public void Update(ZoomContact contact)
+		{
+			FirstName = contact.FirstName;
+			LastName = contact.LastName;
+			JoinId = contact.JoinId;
+			ScreenName = contact.ScreenName;
+			AvatarUrl = contact.AvatarUrl;
+			Email = contact.Email;
+			Index = contact.Index;
+			IsZoomRoom = contact.IsZoomRoom;
+			PhoneNumber = contact.PhoneNumber;
+
+			var oldPresence = Presence;
+			Presence = contact.Presence;
+			if (oldPresence != Presence)
+				OnOnlineStateChanged.Raise(this, new OnlineStateEventArgs(OnlineState));
 		}
 	}
 }
