@@ -54,6 +54,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			m_Sources = new BiDictionary<int, ThinTraditionalParticipant>();
 			m_SourcesSection = new SafeCriticalSection();
+			m_IncomingCalls = new BiDictionary<int, ThinIncomingCall>();
+			m_IncomingCallsSection = new SafeCriticalSection();
 
 			m_DialComponent = parent.Components.GetComponent<DialComponent>();
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
