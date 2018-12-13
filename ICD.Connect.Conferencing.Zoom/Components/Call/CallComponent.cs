@@ -87,6 +87,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			get { return eCallType.Video; }
 		}
 
+		public bool AmIHost { get; set; }
+
 		#endregion
 
 		#region Constructors
@@ -109,24 +111,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		#endregion
 
 		#region Methods
-
-		//public void Hold()
-		//{
-		//    if (Status == eParticipantStatus.OnHold)
-		//        return;
-
-		//    Parent.SendCommand("zConfiguration Call Microphone mute: on");
-		//    Parent.SendCommand("zConfiguration Call Camera mute: on");
-		//}
-
-		//public void Resume()
-		//{
-		//    if (Status != eParticipantStatus.OnHold)
-		//        return;
-
-		//    Parent.SendCommand("zConfiguration Call Microphone mute: off");
-		//    Parent.SendCommand("zConfiguration Call Camera mute: off");
-		//}
 
 		public IEnumerable<IWebParticipant> GetParticipants()
 		{
@@ -159,8 +143,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			base.Initialize();
 
 			Parent.SendCommand("zStatus Call Status");
-			Parent.SendCommand("zConfiguration Call Camera");
-			Parent.SendCommand("zConfiguration Call Microphone");
+			Parent.SendCommand("zConfiguration Call Camera mute");
+			Parent.SendCommand("zConfiguration Call Microphone mute");
 			Parent.SendCommand("zCommand Call ListParticipants");
 			Parent.SendCommand("zCommand Call Info");
 		}
@@ -177,7 +161,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void AddUpdateOrRemoveParticipant(ParticipantInfo info)
 		{
 			if (info.IsMyself)
+			{
+				AmIHost = info.IsHost || info.IsCohost;
 				return;
+			}
 
 			m_ParticipantsSection.Enter();
 			try
