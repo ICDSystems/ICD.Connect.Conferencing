@@ -1,4 +1,7 @@
-﻿namespace ICD.Connect.Conferencing.Participants
+﻿using System;
+using ICD.Common.Utils.EventArguments;
+
+namespace ICD.Connect.Conferencing.Participants
 {
 	/// <summary>
 	/// A web participant represents a conference participant using web-based
@@ -6,6 +9,7 @@
 	/// </summary>
 	public interface IWebParticipant : IParticipant
 	{
+		event EventHandler<BoolEventArgs> OnIsMutedChanged;
 		/// <summary>
 		/// Kick the participant from the conference.
 		/// </summary>

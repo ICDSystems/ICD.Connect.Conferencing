@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -29,9 +29,15 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public event EventHandler<StringEventArgs> OnNameChanged;
 
+		/// <summary>
+		/// Raised when the participant's mute state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnIsMutedChanged;
+
 		private string m_Name;
 		private eCallType m_SourceType;
 		private eParticipantStatus m_Status;
+		private bool m_IsMuted;
 		private ZoomRoom m_ZoomRoom;
 
 		#region Properties
@@ -74,7 +80,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			}
 		}
 
-		public bool IsMuted { get; private set; }
+		public bool IsMuted
+		{
+			get { return m_IsMuted; }
+			private set
+			{
+				if (m_IsMuted == value)
+					return;
+
+				m_IsMuted = value;
+				OnIsMutedChanged.Raise(this, new BoolEventArgs(m_IsMuted));
+			}
+		}
+
 		public string UserId { get; private set; }
 		public DateTime? Start { get; private set; }
 		public DateTime? End { get; private set; }

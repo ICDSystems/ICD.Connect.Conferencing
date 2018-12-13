@@ -22,6 +22,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public event EventHandler<ParticipantStatusEventArgs> OnStatusChanged;
 		public event EventHandler<StringEventArgs> OnNameChanged;
 		public event EventHandler<ParticipantTypeEventArgs> OnSourceTypeChanged;
+		public event EventHandler<BoolEventArgs> OnIsMutedChanged;
 
 		public ThinWebParticipantKickCallback KickCallback { get; set; }
 
@@ -136,6 +137,7 @@ namespace ICD.Connect.Conferencing.Participants
 				m_IsMuted = value;
 
 				Log(eSeverity.Informational, "IsMuted set to {0}", m_IsMuted);
+				OnIsMutedChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
 
