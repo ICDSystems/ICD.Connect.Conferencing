@@ -55,11 +55,17 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
+		/// <summary>
+		/// Raised when the camera is enabled/disabled.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
+
 		private readonly SafeCriticalSection m_StateSection;
 
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
+		private bool m_CameraEnabled;
 
 		private IWebConference m_ActiveConference;
 
@@ -156,8 +162,18 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public abstract eCallType Supports { get; }
-
-		public abstract bool CameraEnabled { get; protected set; }
+		
+		public bool CameraEnabled
+		{
+			get { return m_CameraEnabled;}
+			protected set
+			{
+				if (m_CameraEnabled == value)
+					return;
+				m_CameraEnabled = value;
+				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
 
 		#endregion
 

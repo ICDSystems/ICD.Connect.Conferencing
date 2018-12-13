@@ -24,7 +24,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
-		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved; 
+		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
+
+		public event EventHandler<GenericEventArgs<CallConnectError>> OnCallError;
 
 		private readonly CallComponent m_ZoomConference;
 
@@ -37,8 +39,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			get { return eCallType.Video; }
 		}
-
-		public override bool CameraEnabled { get; protected set; }
 
 		#endregion
 
@@ -228,14 +228,22 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			parent.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
+			parent.RegisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
 
 			parent.OnInitializedChanged += ParentOnOnInitializedChanged;
+		}
+
+		private void CallConnectErrorCallback(ZoomRoom zoomRoom, CallConnectErrorResponse response)
+		{
+			if (response.Error != null)
+				OnCallError.Raise(this, new GenericEventArgs<CallConnectError>(response.Error));
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			parent.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
+			parent.UnregisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
 
 			parent.OnInitializedChanged += ParentOnOnInitializedChanged;
 		}
