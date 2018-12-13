@@ -526,12 +526,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		private void UpdateIsInCall()
 		{
-			eInCall inCall;
+			if (!OnlineConferences.Any())
+			{
+				IsInCall = eInCall.None;
+				return;
+			}
 
-			if (m_ActiveConference == null || !m_ActiveConference.IsOnline())
-				inCall = eInCall.None;
-			else
-				switch (m_ActiveConference.CallType)
+			eInCall inCall = eInCall.None;
+			foreach (var conference in OnlineConferences)
+			{
+				switch (conference.CallType)
 				{
 					case eCallType.Unknown:
 					case eCallType.Audio:
@@ -545,6 +549,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					default:
 						throw new ArgumentOutOfRangeException();
 				}
+
+				if (inCall == eInCall.Video)
+					break;
+			}
 
 			IsInCall = inCall;
 		}
@@ -675,6 +683,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="args"></param>
 		private void ConferenceOnStatusChanged(object sender, ConferenceStatusEventArgs args)
 		{
+			UpdateIsInCall();
 			OnActiveConferenceStatusChanged.Raise(this, new ConferenceStatusEventArgs(args.Data));
 		}
 
