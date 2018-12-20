@@ -65,6 +65,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		event EventHandler OnConferenceSourceAddedOrRemoved;
 
+		event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
+
+		event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
+
 		#endregion
 
 		#region Properties
