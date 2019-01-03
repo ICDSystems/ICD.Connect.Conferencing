@@ -8,38 +8,44 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Calendaring.CalendarControl;
-using ICD.Connect.Calendaring.Comparers;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 {
     public sealed class PolycomCalendarControl : AbstractCalendarControl<PolycomGroupSeriesDevice>
     {
-        private const string TODAY = "today";
-        private const string TOMORROW = "tomorrow";
-        private const int TIMERREFRESHINTERVAL = 10 * 60 * 1000;
+	    private const int REFRESH_INTERVAL = 10 * 60 * 1000;
 
-        private readonly CalendarComponent m_BookingsComponent;
-	    private readonly SafeTimer m_RefreshTimer;
-	    private readonly List<PolycomBooking> m_SortedBookings;
-	    private readonly IcdHashSet<PolycomBooking> m_HashBooking;
+	    private const string TODAY = "today";
+        private const string TOMORROW = "tomorrow";
 
 	    /// <summary>
 	    /// Raised when bookings are added/removed.
 	    /// </summary>
 	    public override event EventHandler OnBookingsChanged;
 
-		/// <summary>
-		/// Sort bookings by start time.
+	    private readonly CalendarComponent m_BookingsComponent;
+	    private readonly SafeTimer m_RefreshTimer;
+		private readonly IcdOrderedDictionary<MeetingInfo, PolycomBooking> m_MeetingInfoToBooking;
+	    private readonly SafeCriticalSection m_CriticalSection;
+
+	    /// <summary>
+		/// Sort meeting infos by start time.
 		/// </summary>
-		private static readonly PredicateComparer<PolycomBooking, DateTime> s_BookingComparer;
+		private static readonly PredicateComparer<MeetingInfo, DateTime> s_MeetingInfoComparer;
+
+		/// <summary>
+		/// Compare meeting infos by id.
+		/// </summary>
+		private static readonly PredicateEqualityComparer<MeetingInfo, string> s_MeetingInfoEqualityComparer;
 
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
 		static PolycomCalendarControl()
 	    {
-			s_BookingComparer = new PredicateComparer<PolycomBooking, DateTime>(b => b.StartTime);
+			s_MeetingInfoComparer = new PredicateComparer<MeetingInfo, DateTime>(m => m.Start);
+			s_MeetingInfoEqualityComparer = new PredicateEqualityComparer<MeetingInfo, string>(m => m.Id);
 		}
 
 		/// <summary>
@@ -50,10 +56,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 		public PolycomCalendarControl(PolycomGroupSeriesDevice parent, int id)
 		    : base(parent, id)
 	    {
-		    m_RefreshTimer = new SafeTimer(Refresh, TIMERREFRESHINTERVAL, TIMERREFRESHINTERVAL);
+		    m_RefreshTimer = new SafeTimer(Refresh, REFRESH_INTERVAL, REFRESH_INTERVAL);
 
-		    m_SortedBookings = new List<PolycomBooking>();
-		    m_HashBooking = new IcdHashSet<PolycomBooking>(new BookingsComparer<PolycomBooking>());
+		    m_MeetingInfoToBooking = new IcdOrderedDictionary<MeetingInfo, PolycomBooking>(s_MeetingInfoComparer, s_MeetingInfoEqualityComparer);
+			m_CriticalSection = new SafeCriticalSection();
 
 		    m_BookingsComponent = Parent.Components.GetComponent<CalendarComponent>();
 		    Subscribe(m_BookingsComponent);
@@ -74,19 +80,67 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 			Unsubscribe(m_BookingsComponent);
 	    }
 
-		/// <summary>
-		/// Subscribe to the bookings events.
-		/// </summary>
-		/// <param name="bookings"></param>
+	    #region Methods
+
+	    public override void Refresh()
+	    {
+			m_BookingsComponent.CalendarList(TODAY, TOMORROW);
+	    }
+
+		public override IEnumerable<IBooking> GetBookings()
+	    {
+		    return m_CriticalSection.Execute(() => m_MeetingInfoToBooking.Values.ToArray(m_MeetingInfoToBooking.Count));
+	    }
+
+	    #endregion
+
+	    #region Private Methods
+
+	    private bool AddBooking(MeetingInfo meeting)
+	    {
+		    if (meeting == null)
+			    throw new ArgumentNullException("booking");
+
+			m_CriticalSection.Enter();
+
+		    try
+		    {
+				if (m_MeetingInfoToBooking.ContainsKey(meeting))
+					return false;
+
+				PolycomBooking polycomBooking = new PolycomBooking(meeting);
+				m_MeetingInfoToBooking.Add(meeting, polycomBooking);
+		    }
+		    finally
+		    {
+			    m_CriticalSection.Leave();
+		    }
+
+		    return true;
+	    }
+
+		private bool RemoveBooking(MeetingInfo meeting)
+		{
+			return m_CriticalSection.Execute(() => m_MeetingInfoToBooking.Remove(meeting));
+		}
+
+	    #endregion
+
+	    #region Component Callbacks
+
+	    /// <summary>
+	    /// Subscribe to the bookings events.
+	    /// </summary>
+	    /// <param name="bookings"></param>
 	    private void Subscribe(CalendarComponent bookings)
 	    {
 		    bookings.OnMeetingsChanged += BookingsOnOnBookingsUpdated;
 	    }
 
-		/// <summary>
-		/// Unsubscribe from the bookings events.
-		/// </summary>
-		/// <param name="bookings"></param>
+	    /// <summary>
+	    /// Unsubscribe from the bookings events.
+	    /// </summary>
+	    /// <param name="bookings"></param>
 	    private void Unsubscribe(CalendarComponent bookings)
 	    {
 		    bookings.OnMeetingsChanged -= BookingsOnOnBookingsUpdated;
@@ -101,62 +155,33 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 	    {
 		    bool change = false;
 
-	        MeetingInfo[] bookings = m_BookingsComponent.GetMeetingInfos()
-	                                                    .Where(b => b.End > IcdEnvironment.GetLocalTime())
-	                                                    .Distinct()
-	                                                    .ToArray();
+		    MeetingInfo[] meetings = m_BookingsComponent.GetMeetingInfos()
+		                                                .Where(b => b.End > IcdEnvironment.GetLocalTime())
+		                                                .Distinct()
+		                                                .ToArray();
 
-		    IcdHashSet<PolycomBooking> existing = m_SortedBookings.ToIcdHashSet(new BookingsComparer<PolycomBooking>());
-		    IcdHashSet<PolycomBooking> current = bookings.Select(b => new PolycomBooking(b)).ToIcdHashSet(new BookingsComparer<PolycomBooking>());
+			m_CriticalSection.Enter();
 
-		    IcdHashSet<PolycomBooking> removeBookingList = existing.Subtract(current);
-		    foreach (PolycomBooking booking in removeBookingList)
-			    change |= RemoveBooking(booking);
+		    try
+		    {
+				IcdHashSet<MeetingInfo> existing = m_MeetingInfoToBooking.Keys.ToIcdHashSet(s_MeetingInfoEqualityComparer);
+				IcdHashSet<MeetingInfo> removeBookingList = existing.Subtract(meetings);
 
-		    foreach (var booking in bookings)
-			    change |= AddBooking(booking);
+				foreach (MeetingInfo meeting in removeBookingList)
+					change |= RemoveBooking(meeting);
+
+				foreach (MeetingInfo meeting in meetings)
+					change |= AddBooking(meeting);
+		    }
+		    finally
+		    {
+			    m_CriticalSection.Leave();
+		    }
 
 		    if (change)
 			    OnBookingsChanged.Raise(this);
-
 	    }
 
-	    public override void Refresh()
-	    {
-			m_BookingsComponent.CalendarList(TODAY, TOMORROW);
-	    }
-
-		public override IEnumerable<IBooking> GetBookings()
-	    {
-		    return m_SortedBookings.ToArray(m_SortedBookings.Count);
-	    }
-
-	    private bool AddBooking(MeetingInfo booking)
-	    {
-		    if (booking == null)
-			    throw new ArgumentNullException("booking");
-
-		    PolycomBooking polycomBooking = new PolycomBooking(booking);
-
-		    if (m_HashBooking.Contains(polycomBooking))
-			    return false;
-
-		    m_HashBooking.Add(polycomBooking);
-
-		    m_SortedBookings.AddSorted(polycomBooking, s_BookingComparer);
-
-		    return true;
-	    }
-
-	    private bool RemoveBooking(PolycomBooking polycomBooking)
-	    {
-		    if (!m_HashBooking.Contains(polycomBooking))
-			    return false;
-
-		    m_HashBooking.Remove(polycomBooking);
-		    m_SortedBookings.Remove(polycomBooking);
-
-		    return true;
-	    }
+	    #endregion
     }
 }
