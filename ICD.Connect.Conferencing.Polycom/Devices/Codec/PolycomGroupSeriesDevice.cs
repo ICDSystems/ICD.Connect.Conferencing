@@ -63,7 +63,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private readonly RateLimitedEventQueue<string> m_CommandQueue;
 		private readonly SafeTimer m_FeedbackTimer;
 
-		private readonly SecureNetworkProperties m_NetworkProperties;
+		private readonly NetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private readonly PolycomComponentFactory m_Components;
@@ -130,7 +130,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
-			m_NetworkProperties = new SecureNetworkProperties();
+			m_NetworkProperties = new NetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
 			m_CurrentMutliLines = new List<string>();

@@ -21,7 +21,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private const string DEFAULT_USERNAME = "admin";
 		private const string DEFAULT_PASSWORD = "admin";
 
-		private readonly SecureNetworkProperties m_NetworkProperties;
+		private readonly NetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private string m_Username;
@@ -74,24 +74,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		#endregion
 
 		#region Network
-
-		/// <summary>
-		/// Gets/sets the configurable network username.
-		/// </summary>
-		public string NetworkUsername
-		{
-			get { return m_NetworkProperties.NetworkUsername; }
-			set { m_NetworkProperties.NetworkUsername = value; }
-		}
-
-		/// <summary>
-		/// Gets/sets the configurable network password.
-		/// </summary>
-		public string NetworkPassword
-		{
-			get { return m_NetworkProperties.NetworkPassword; }
-			set { m_NetworkProperties.NetworkPassword = value; }
-		}
 
 		/// <summary>
 		/// Gets/sets the configurable network address.
@@ -210,7 +192,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesSettings()
 		{
-			m_NetworkProperties = new SecureNetworkProperties();
+			m_NetworkProperties = new NetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
 			UpdateNetworkDefaults();
