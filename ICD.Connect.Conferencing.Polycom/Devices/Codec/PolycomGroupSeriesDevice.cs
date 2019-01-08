@@ -16,8 +16,11 @@ using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
+using ICD.Connect.Protocol.Network.Ports;
+using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
+using ICD.Connect.Protocol.Settings;
 using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
@@ -44,18 +47,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		private const int TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL = 30 * 60 * 1000;
 
-		private static readonly ComSpec s_DefaultComSpec = new ComSpec
-		{
-			BaudRate = eComBaudRates.BaudRate115200,
-			NumberOfDataBits = eComDataBits.DataBits8,
-			ParityType = eComParityType.None,
-			NumberOfStopBits = eComStopBits.StopBits1,
-			ProtocolType = eComProtocolType.Rs232,
-			HardwareHandshake = eComHardwareHandshakeType.None,
-			SoftwareHandshake = eComSoftwareHandshakeType.None,
-			ReportCtsChanges = false
-		};
-
 		/// <summary>
 		/// Raised when the class initializes.
 		/// </summary>
@@ -71,6 +62,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 		private readonly RateLimitedEventQueue<string> m_CommandQueue;
 		private readonly SafeTimer m_FeedbackTimer;
+
+		private readonly SecureNetworkProperties m_NetworkProperties;
+		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private readonly PolycomComponentFactory m_Components;
 		private readonly PolycomGroupSeriesSerialBuffer m_SerialBuffer;
@@ -136,6 +130,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
+			m_NetworkProperties = new SecureNetworkProperties();
+			m_ComSpecProperties = new ComSpecProperties();
+
 			m_CurrentMutliLines = new List<string>();
 
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
@@ -208,18 +205,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 		private void ConfigurePort(ISerialPort port)
 		{
+			// Com
 			if (port is IComPort)
-				ConfigureComPort(port as IComPort);
-		}
+				(port as IComPort).ApplyDeviceConfiguration(m_ComSpecProperties);
 
-		/// <summary>
-		/// Configures a com port for communication with the hardware.
-		/// </summary>
-		/// <param name="port"></param>
-		[PublicAPI]
-		public static void ConfigureComPort(IComPort port)
-		{
-			port.SetComPortSpec(s_DefaultComSpec);
+			// TCP
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -634,6 +626,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			settings.Username = Username;
 			settings.Password = Password;
 			settings.AddressbookType = AddressbookType;
+
+			settings.Copy(m_ComSpecProperties);
+			settings.Copy(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -647,6 +642,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Password = null;
 			AddressbookType = eAddressbookType.Global;
 
+			m_ComSpecProperties.Clear();
+			m_NetworkProperties.Clear();
+
 			SetPort(null);
 		}
 
@@ -658,6 +656,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		protected override void ApplySettingsFinal(PolycomGroupSeriesSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
+
+			m_ComSpecProperties.Copy(settings);
+			m_NetworkProperties.Copy(settings);
 
 			Username = settings.Username;
 			Password = settings.Password;
