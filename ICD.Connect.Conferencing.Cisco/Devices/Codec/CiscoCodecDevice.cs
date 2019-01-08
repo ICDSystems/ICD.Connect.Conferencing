@@ -688,8 +688,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			PeripheralsId = null;
 			PhonebookType = ePhonebookType.Corporate;
 
-			m_ComSpecProperties.Clear();
-			m_NetworkProperties.Clear();
+			m_ComSpecProperties.ClearComSpecProperties();
+			m_NetworkProperties.ClearNetworkProperties();
 
 			SetPort(null);
 		}

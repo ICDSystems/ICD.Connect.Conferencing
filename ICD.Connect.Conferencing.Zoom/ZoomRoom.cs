@@ -465,7 +465,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			base.ClearSettingsFinal();
 
-			m_NetworkProperties.Clear();
+			m_NetworkProperties.ClearNetworkProperties();
 
 			SetPort(null);
 		}

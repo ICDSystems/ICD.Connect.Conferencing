@@ -75,9 +75,9 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Clears the configured values.
 		/// </summary>
-		void INetworkProperties.Clear()
+		void INetworkProperties.ClearNetworkProperties()
 		{
-			m_NetworkProperties.Clear();
+			m_NetworkProperties.ClearNetworkProperties();
 		}
 
 		#endregion

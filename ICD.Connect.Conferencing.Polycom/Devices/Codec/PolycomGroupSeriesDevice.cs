@@ -642,8 +642,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Password = null;
 			AddressbookType = eAddressbookType.Global;
 
-			m_ComSpecProperties.Clear();
-			m_NetworkProperties.Clear();
+			m_ComSpecProperties.ClearComSpecProperties();
+			m_NetworkProperties.ClearNetworkProperties();
 
 			SetPort(null);
 		}

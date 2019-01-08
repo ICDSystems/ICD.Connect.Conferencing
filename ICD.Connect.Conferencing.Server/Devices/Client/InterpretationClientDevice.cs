@@ -704,7 +704,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    {
 		    base.ClearSettingsFinal();
 
-			m_NetworkProperties.Clear();
+			m_NetworkProperties.ClearNetworkProperties();
 
 			SetPort(null);
 	    }
