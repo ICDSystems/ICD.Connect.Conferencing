@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [11.2.0] - 2019-01-02
+### Added
+ - Added OnProviderAdded and OnProviderRemoved events to IConferenceManager
+
+### Changed
+ - Fail more gracefully when a Cisco Camera is added without a parent Cisco Codec
+
 ## [11.1.1] - 2018-11-20
 ### Changed
  - Small performance improvement for Cisco feedback parsing

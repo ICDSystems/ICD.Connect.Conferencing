@@ -35,6 +35,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 		public event EventHandler<InCallEventArgs> OnInCallChanged;
 
+		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
+		public event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
+
 		private readonly ScrollQueue<IConference> m_RecentConferences;
 		private readonly ScrollQueue<IConferenceSource> m_RecentSources;
 		private readonly Dictionary<eConferenceSourceType, IDialingDeviceControl> m_SourceTypeToProvider;
@@ -340,6 +343,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_SourceTypeToProviderSection.Leave();
 			}
 
+			OnProviderAdded.Raise(this, new ConferenceProviderEventArgs(sourceType, dialingControl));
+
 			AddSources(dialingControl.GetSources());
 
 			return true;
@@ -352,6 +357,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <returns></returns>
 		public bool DeregisterDialingProvider(eConferenceSourceType sourceType)
 		{
+			IDialingDeviceControl dialingControl;
 			m_SourceTypeToProviderSection.Enter();
 
 			try
@@ -359,7 +365,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				if (!m_SourceTypeToProvider.ContainsKey(sourceType))
 					return false;
 
-				IDialingDeviceControl dialingControl = m_SourceTypeToProvider[sourceType];
+				dialingControl = m_SourceTypeToProvider[sourceType];
 				m_SourceTypeToProvider.Remove(sourceType);
 
 				Unsubscribe(dialingControl);
@@ -368,6 +374,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			{
 				m_SourceTypeToProviderSection.Leave();
 			}
+
+			OnProviderRemoved.Raise(this, new ConferenceProviderEventArgs(sourceType, dialingControl));
 
 			return true;
 		}

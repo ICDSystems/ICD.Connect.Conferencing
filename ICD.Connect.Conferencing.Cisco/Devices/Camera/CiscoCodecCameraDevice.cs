@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -27,9 +28,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public event EventHandler OnPresetsChanged;
 
+		[CanBeNull]
 		private CiscoCodecDevice m_Codec;
+
+		[CanBeNull]
 		private NearCamerasComponent m_CamerasComponent;
+
+		[CanBeNull]
 		private NearCamera m_Camera;
+
 		private int? m_PanTiltSpeed;
 		private int? m_ZoomSpeed;
 
@@ -156,7 +163,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public IEnumerable<CameraPreset> GetPresets()
 		{
-			return m_CamerasComponent.GetCameraPresets(CameraId);
+			return m_CamerasComponent == null ? Enumerable.Empty<CameraPreset>() : m_CamerasComponent.GetCameraPresets(CameraId);
 		}
 
 		/// <summary>
@@ -219,6 +226,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		{
 			base.ClearSettingsFinal();
 
+			m_PanTiltSpeed = null;
+			m_ZoomSpeed = null;
+
 			CameraId = 0;
 			SetCodec(null);
 		}
@@ -233,16 +243,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			base.ApplySettingsFinal(settings, factory);
 
 			if (settings.CameraId == null)
-			{
-				Log(eSeverity.Error, "No camera id set for camera: {0}", Name);
-				return;
-			}
+				Log(eSeverity.Error, "No Camera Id");
 
-			CameraId = (int)settings.CameraId;
+			CameraId = settings.CameraId ?? 0;
 
 			CiscoCodecDevice codec = null;
-			if (settings.CodecId != null)
-				codec = factory.GetOriginatorById<CiscoCodecDevice>(settings.CodecId.Value);
+
+			if (settings.CodecId.HasValue)
+			{
+				try
+				{
+					codec = factory.GetOriginatorById<CiscoCodecDevice>(settings.CodecId.Value);
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No Cisco Codec Device with id {0}", settings.CodecId.Value);
+				}
+			}
 
 			SetCodec(codec);
 
@@ -259,7 +276,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			base.CopySettingsFinal(settings);
 
 			settings.CodecId = m_Codec == null ? null : (int?)m_Codec.Id;
-			settings.CameraId = CameraId;
+			settings.CameraId = CameraId == 0 ? (int?)null : CameraId;
 			settings.PanTiltSpeed = m_PanTiltSpeed;
 			settings.ZoomSpeed = m_ZoomSpeed;
 		}
