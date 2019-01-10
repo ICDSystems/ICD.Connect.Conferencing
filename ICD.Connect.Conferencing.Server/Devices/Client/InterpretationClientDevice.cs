@@ -18,9 +18,11 @@ using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
+using ICD.Connect.Protocol.Network.Ports;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
+using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
@@ -53,7 +55,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		#endregion
 
 		#region Private Members
-		
+
+		private readonly SecureNetworkProperties m_NetworkProperties;
+
 	    private readonly ClientSerialRpcController m_RpcController;
 	    private readonly Dictionary<Guid, ThinConferenceSource> m_Sources;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
@@ -169,6 +173,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		public InterpretationClientDevice()
 	    {
+			m_NetworkProperties = new SecureNetworkProperties();
 		    m_RpcController = new ClientSerialRpcController(this);
 			m_Sources = new Dictionary<Guid, ThinConferenceSource>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
@@ -598,6 +603,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region Port
 
+		[PublicAPI]
+	    public void SetPort(ISerialPort port)
+	    {
+		    m_ConnectionStateManager.SetPort(port);
+	    }
+
 		/// <summary>
 		/// Sets the port for communication with the server.
 		/// </summary>
@@ -605,6 +616,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		[PublicAPI]
 	    public void ConfigurePort(ISerialPort port)
 	    {
+			// Network (TCP, UDP, SSH)
+			if (port is ISecureNetworkPort)
+				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
+
 			m_RpcController.SetPort(port);
 
 		    UpdateCachedOnlineStatus();
@@ -650,8 +667,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
 
 			RoomName = settings.RoomName;
-
 			RoomPrefix = settings.RoomPrefix;
+
+			m_NetworkProperties.Copy(settings);
 
 			ISerialPort port = null;
 
@@ -667,7 +685,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				}
 			}
 
-			m_ConnectionStateManager.SetPort(port);
+			SetPort(port);
 	    }
 
 	    protected override void CopySettingsFinal(InterpretationClientDeviceSettings settings)
@@ -676,13 +694,19 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		    settings.Port = m_ConnectionStateManager.PortNumber;
 		    settings.Room = m_RoomId;
+		    settings.RoomName = RoomName;
+		    settings.RoomPrefix = RoomPrefix;
+
+			settings.Copy(m_NetworkProperties);
 	    }
 
 	    protected override void ClearSettingsFinal()
 	    {
 		    base.ClearSettingsFinal();
 
-			ConfigurePort(null);
+			m_NetworkProperties.ClearNetworkProperties();
+
+			SetPort(null);
 	    }
 
 	    #endregion

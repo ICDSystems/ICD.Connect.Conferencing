@@ -11,7 +11,7 @@ using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Devices.EventArguments;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 {
@@ -42,6 +42,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the ID for the specific camera being controlled on the wrapped Cisco SX unit.
+		/// </summary>
+		[PublicAPI]
 		public int CameraId { get; private set; }
 
 		#endregion

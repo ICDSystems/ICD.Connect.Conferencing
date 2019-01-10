@@ -106,12 +106,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 			}
 #if SIMPLSHARP
 			//Added to catch JsonExceptions in SimplSharp. JsonException causing build to fail.
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return null;
 			}
 #else
-			catch (JsonException ex)
+			catch (JsonException)
 			{
 				return null;
 			}

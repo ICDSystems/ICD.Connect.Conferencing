@@ -17,10 +17,13 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
+using ICD.Connect.Protocol.Network.Ports;
+using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Protocol.Settings;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
@@ -99,6 +102,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 		private readonly CiscoComponentFactory m_Components;
 
+		private readonly SecureNetworkProperties m_NetworkProperties;
+		private readonly ComSpecProperties m_ComSpecProperties;
+
 		private bool m_Initialized;
 		
 		#region Properties
@@ -149,6 +155,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		public CiscoCodecDevice()
 		{
+			m_NetworkProperties = new SecureNetworkProperties();
+			m_ComSpecProperties = new ComSpecProperties();
+
 			m_ParserCallbacks = new Dictionary<string, IcdHashSet<ParserCallback>>();
 			m_ParserCallbacksSection = new SafeCriticalSection();
 
@@ -228,20 +237,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		}
 
 		/// <summary>
-		/// Configures a com port for communication with the hardware.
+		/// Configures the given port for communication with the device.
 		/// </summary>
 		/// <param name="port"></param>
-		[PublicAPI]
-		public static void ConfigureComPort(IComPort port)
+		private void ConfigurePort(ISerialPort port)
 		{
-			port.SetComPortSpec(eComBaudRates.ComspecBaudRate115200,
-			                    eComDataBits.ComspecDataBits8,
-			                    eComParityType.ComspecParityNone,
-			                    eComStopBits.ComspecStopBits1,
-			                    eComProtocolType.ComspecProtocolRS232,
-			                    eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
-			                    eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
-			                    false);
+			// Com
+			if (port is IComPort)
+				(port as IComPort).ApplyDeviceConfiguration(m_ComSpecProperties);
+
+			// Network (TCP, UDP, SSH)
+			if (port is ISecureNetworkPort)
+				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -494,12 +503,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 		#region Port Callbacks
 
-		private void ConfigurePort(ISerialPort port)
-		{
-			if (port is IComPort)
-				ConfigureComPort(port as IComPort);
-		}
-
 		/// <summary>
 		/// Called when serial data is recieved from the port.
 		/// </summary>
@@ -670,6 +673,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			settings.Port = m_ConnectionStateManager.PortNumber;
 			settings.PeripheralsId = PeripheralsId;
 			settings.PhonebookType = PhonebookType;
+
+			settings.Copy(m_ComSpecProperties);
+			settings.Copy(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -682,7 +688,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			PeripheralsId = null;
 			PhonebookType = ePhonebookType.Corporate;
 
-			m_ConnectionStateManager.SetPort(null);
+			m_ComSpecProperties.ClearComSpecProperties();
+			m_NetworkProperties.ClearNetworkProperties();
+
+			SetPort(null);
 		}
 
 		/// <summary>
@@ -693,6 +702,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		protected override void ApplySettingsFinal(CiscoCodecSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
+
+			m_ComSpecProperties.Copy(settings);
+			m_NetworkProperties.Copy(settings);
 
 			PeripheralsId = settings.PeripheralsId;
 			PhonebookType = settings.PhonebookType;
@@ -711,7 +723,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				}
 			}
 
-			m_ConnectionStateManager.SetPort(port);
+			SetPort(port);
 		}
 
 		#endregion
