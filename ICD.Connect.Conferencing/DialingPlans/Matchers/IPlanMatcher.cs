@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <summary>
 		/// The source type of the plan.
 		/// </summary>
-		eConferenceSourceType SourceType { get; }
+		eCallType SourceType { get; }
 
 		/// <summary>
 		/// Returns true if the number matches this plan.

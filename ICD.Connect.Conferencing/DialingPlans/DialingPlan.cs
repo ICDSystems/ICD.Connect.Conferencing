@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans.Matchers;
 using ICD.Connect.Conferencing.EventArguments;
 
@@ -18,14 +19,14 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		private readonly Dictionary<IPlanMatcher, int> m_Matchers;
 		private readonly SafeCriticalSection m_MatchersSection;
 
-		private eConferenceSourceType m_DefaultSourceType;
+		private eCallType m_DefaultSourceType;
 
 		#region Properties
 
 		/// <summary>
 		/// The default source type.
 		/// </summary>
-		public eConferenceSourceType DefaultSourceType { get { return m_DefaultSourceType; } }
+		public eCallType DefaultSourceType { get { return m_DefaultSourceType; } }
 
 		#endregion
 
@@ -39,7 +40,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 			m_Matchers = new Dictionary<IPlanMatcher, int>();
 			m_MatchersSection = new SafeCriticalSection();
 
-			m_DefaultSourceType = eConferenceSourceType.Audio;
+			m_DefaultSourceType = eCallType.Audio;
 		}
 
 		#endregion
@@ -69,7 +70,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 				string matchingXml = XmlUtils.GetChildElementAsString(xml, "Matching");
 				string defaultString = XmlUtils.GetAttributeAsString(matchingXml, "default");
 
-				m_DefaultSourceType = EnumUtils.Parse<eConferenceSourceType>(defaultString, true);
+				m_DefaultSourceType = EnumUtils.Parse<eCallType>(defaultString, true);
 
 				foreach (IcdXmlReader child in XmlUtils.GetChildElements(matchingXml))
 				{
@@ -92,13 +93,13 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// </summary>
 		/// <param name="number"></param>
 		/// <returns></returns>
-		public eConferenceSourceType GetSourceType(string number)
+		public eCallType GetSourceType(string number)
 		{
 			if (string.IsNullOrEmpty(number))
-				return eConferenceSourceType.Unknown;
+				return eCallType.Unknown;
 
 			IPlanMatcher matcher = GetMatcher(number);
-			return matcher == null ? eConferenceSourceType.Unknown : matcher.SourceType;
+			return matcher == null ? eCallType.Unknown : matcher.SourceType;
 		}
 
 		/// <summary>
@@ -117,26 +118,27 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// </summary>
 		/// <param name="contact"></param>
 		/// <returns></returns>
-		public eConferenceSourceType GetSourceType(IContact contact)
+		public eCallType GetSourceType(IContact contact)
 		{
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			IContactMethod contactMethod = GetContactMethod(contact);
-			return contactMethod == null ? eConferenceSourceType.Unknown : GetSourceType(contactMethod);
+			IDialContext dialContext = GetDialContext(contact);
+			return dialContext == null ? eCallType.Unknown : GetSourceType(dialContext);
 		}
 
 		/// <summary>
 		/// Gets the source type for the given contact method.
 		/// </summary>
-		/// <param name="contactMethod"></param>
+		/// <param name="dialContext"></param>
 		/// <returns></returns>
-		public eConferenceSourceType GetSourceType(IContactMethod contactMethod)
+		public eCallType GetSourceType(IDialContext dialContext)
 		{
-			if (contactMethod == null)
-				throw new ArgumentNullException("contactMethod");
+			if (dialContext == null)
+				throw new ArgumentNullException("dialContext");
 
-			return GetSourceType(contactMethod.Number);
+			// TODO: parse string maybe if call type is unknown?
+			return dialContext.CallType;
 		}
 
 		/// <summary>
@@ -145,12 +147,12 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// <param name="contact"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		public IContactMethod GetContactMethod(IContact contact)
+		public IDialContext GetDialContext(IContact contact)
 		{
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			return GetContactMethod(contact, DefaultSourceType);
+			return GetDialContext(contact, DefaultSourceType);
 		}
 
 		/// <summary>
@@ -160,13 +162,13 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// <param name="mode"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		public IContactMethod GetContactMethod(IContact contact, eConferenceSourceType mode)
+		public IDialContext GetDialContext(IContact contact, eCallType mode)
 		{
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			IContactMethod[] contactMethods = contact.GetContactMethods().ToArray();
-			return contactMethods.FirstOrDefault(m => GetSourceType(m) == mode) ?? contactMethods.FirstOrDefault();
+			IDialContext[] dialContexts = contact.GetDialContexts().ToArray();
+			return dialContexts.FirstOrDefault(m => m.CallType == mode) ?? dialContexts.FirstOrDefault();
 		}
 
 		#endregion
@@ -195,7 +197,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 
 			IPlanMatcher matcher;
 
-			eConferenceSourceType sourceType = EnumUtils.Parse<eConferenceSourceType>(reader.Name, true);
+			eCallType sourceType = EnumUtils.Parse<eCallType>(reader.Name, true);
 			string name = reader.GetAttribute("name");
 			int order = reader.GetAttributeAsInt("order");
 

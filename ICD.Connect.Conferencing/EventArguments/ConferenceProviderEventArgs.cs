@@ -6,18 +6,18 @@ namespace ICD.Connect.Conferencing.EventArguments
 
 	public sealed class ConferenceProviderInfo
 	{
-		public eConferenceSourceType ProviderType { get; set; }
+		public eCallType ProviderType { get; set; }
 
-		public IDialingDeviceControl Provider { get; set; }
+		public IConferenceDeviceControl Provider { get; set; }
 	}
 
 	public sealed class ConferenceProviderEventArgs : GenericEventArgs<ConferenceProviderInfo>
 	{
-		public eConferenceSourceType ProviderType {get { return Data.ProviderType; }}
+		public eCallType ProviderType { get { return Data.ProviderType; } }
 
-		public IDialingDeviceControl Provider {get { return Data.Provider; }}
+		public IConferenceDeviceControl Provider { get { return Data.Provider; } }
 
-		public ConferenceProviderEventArgs(eConferenceSourceType providerType, IDialingDeviceControl provider)
+		public ConferenceProviderEventArgs(eCallType providerType, IConferenceDeviceControl provider)
 			: base(new ConferenceProviderInfo {Provider = provider, ProviderType = providerType})
 		{
 			

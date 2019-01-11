@@ -20,7 +20,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		private static readonly Dictionary<Type, Func<ZoomRoom, AbstractZoomRoomComponent>> s_Factories =
 			new Dictionary<Type, Func<ZoomRoom, AbstractZoomRoomComponent>>
 			{
-				{typeof(DialingComponent), zoomRoom => new DialingComponent(zoomRoom)},
 				{typeof(DirectoryComponent), zoomRoom => new DirectoryComponent(zoomRoom)},
 				{typeof(PresentationComponent), zoomRoom => new PresentationComponent(zoomRoom)},
 				{typeof(SystemComponent), zoomRoom => new SystemComponent(zoomRoom)},

@@ -5,6 +5,7 @@ using ICD.Common.Utils;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Controls.Directory
@@ -100,23 +101,23 @@ namespace ICD.Connect.Conferencing.Controls.Directory
 			builder.AppendLine(contact.Name);
 
 			// Add the contact methods
-			foreach (IContactMethod child in contact.GetContactMethods())
-				PrintContactMethod(builder, child, depth + 1);
+			foreach (IDialContext child in contact.GetDialContexts())
+				PrintDialContext(builder, child, depth + 1);
 		}
 
-		private static void PrintContactMethod(StringBuilder builder, IContactMethod contactMethod, int depth)
+		private static void PrintDialContext(StringBuilder builder, IDialContext dialContext, int depth)
 		{
 			if (builder == null)
 				throw new ArgumentNullException("builder");
 
-			if (contactMethod == null)
-				throw new ArgumentNullException("contactMethod");
+			if (dialContext == null)
+				throw new ArgumentNullException("dialContext");
 
 			string tab = StringUtils.Repeat('\t', depth);
 
 			// Add the contact method
 			builder.Append(tab);
-			builder.AppendLine(contactMethod.Number);
+			builder.AppendLine(dialContext.DialString);
 		}
 	}
 }

@@ -5,13 +5,14 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 {
     public sealed class CiscoBooking : AbstractBooking
     {
 	    private readonly Booking m_Booking;
-	    private readonly List<IBookingNumber> m_BookingNumbers;
+	    private readonly List<IDialContext> m_BookingNumbers;
 
 	    public override string MeetingName
 	    {
@@ -43,7 +44,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		    get { return m_Booking.Privacy == Booking.ePrivacy.Private; }
 	    }
 
-	    public override IEnumerable<IBookingNumber> GetBookingNumbers()
+	    public override IEnumerable<IDialContext> GetBookingNumbers()
 	    {
 			return m_BookingNumbers.ToArray(m_BookingNumbers.Count);
 		}
@@ -54,17 +55,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		    m_BookingNumbers = ParseBookingNumbers().ToList();
 	    }
 
-        private static eMeetingType FromCallType(eCallType type)
+        private static eMeetingType FromCallType(eCiscoCallType type)
         {
             switch (type)
             {
-                case eCallType.Unknown:
-                case eCallType.Video:
+                case eCiscoCallType.Unknown:
+                case eCiscoCallType.Video:
                     return eMeetingType.VideoConference;
 
-                case eCallType.Audio:
-                case eCallType.AudioCanEscalate:
-                case eCallType.ForwardAllCall:
+                case eCiscoCallType.Audio:
+                case eCiscoCallType.AudioCanEscalate:
+                case eCiscoCallType.ForwardAllCall:
                     return eMeetingType.AudioConference;
 
                 default:
@@ -72,14 +73,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
             }
         }
 
-	    private IEnumerable<IBookingNumber> ParseBookingNumbers()
+	    private IEnumerable<IDialContext> ParseBookingNumbers()
 	    {
 		    foreach (BookingCall call in m_Booking.GetCalls())
 		    {
 			    switch (call.Protocol.ToUpper())
 			    {
 				    case "SIP":
-					    yield return new SipBookingNumber(call.Number);
+					    yield return new SipDialContext { DialString = call.Number };
 					    continue;
 			    }
 			}

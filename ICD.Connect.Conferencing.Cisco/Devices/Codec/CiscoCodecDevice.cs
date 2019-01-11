@@ -173,7 +173,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			Subscribe(m_SerialBuffer);
 
 			Controls.Add(new CiscoCodecRoutingControl(this, 0));
-			Controls.Add(new CiscoCodecDialingControl(this, 1));
+			Controls.Add(new CiscoCodecTraditionalConferenceControl(this, 1));
 			Controls.Add(new CiscoCodecDirectoryControl(this, 2));
 			Controls.Add(new CiscoCodecLayoutControl(this, 3));
 			Controls.Add(new CiscoCodecPresentationControl(this, 4));

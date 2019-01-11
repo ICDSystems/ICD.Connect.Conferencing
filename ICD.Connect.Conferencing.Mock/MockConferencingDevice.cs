@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Calendaring.Booking;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices;
 
 namespace ICD.Connect.Conferencing.Mock
 {
 	public sealed class MockConferencingDevice : AbstractDevice<MockConferencingDeviceSettings>, IMockConferencingDevice
 	{
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantAdded;
+		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantRemoved;
+		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
+		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		#region Private Memebers
 
 		private bool m_Online;
-		private readonly List<IConferenceSource> m_Sources;
+		private readonly List<ITraditionalParticipant> m_Sources;
 
 		#endregion
 
@@ -29,10 +32,10 @@ namespace ICD.Connect.Conferencing.Mock
 		/// </summary>
 		public MockConferencingDevice()
 		{
-			m_Sources = new List<IConferenceSource>();
+			m_Sources = new List<ITraditionalParticipant>();
 			m_Online = true;
 
-			Controls.Add(new MockDialingDeviceControl(this, 0));
+			Controls.Add(new MockTraditionalConferenceDeviceControl(this, 0));
 			Controls.Add(new MockDirectoryControl(this, 1));
 		}
 
@@ -41,8 +44,8 @@ namespace ICD.Connect.Conferencing.Mock
 		/// </summary>
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnSourceAdded = null;
-			OnSourceRemoved = null;
+			OnParticipantAdded = null;
+			OnParticipantRemoved = null;
 
 			base.DisposeFinal(disposing);
 
@@ -102,6 +105,7 @@ namespace ICD.Connect.Conferencing.Mock
 				yield return command;
 
 			yield return new GenericConsoleCommand<bool>("SetOnline", "Sets the online state of this device", val => m_Online = val);
+			yield return new ConsoleCommand("MockIncomingCall", "Generates a mock incoming call", () => MockIncomingCall());
 		}
 
 		/// <summary>
@@ -128,56 +132,51 @@ namespace ICD.Connect.Conferencing.Mock
 
 		#endregion
 
-		public IEnumerable<IConferenceSource> GetSources()
+		public IEnumerable<ITraditionalParticipant> GetSources()
 		{
 			return m_Sources.ToArray(m_Sources.Count);
 		}
 
-		public void Dial(string number, eConferenceSourceType type)
+		private void Dial(string number, eCallType type)
 		{
-			IConferenceSource source =
-				new ThinConferenceSource
+			ITraditionalParticipant source =
+				new ThinTraditionalParticipant
 				{
-					AnswerState = eConferenceSourceAnswerState.Answered,
 					DialTime = DateTime.Now,
-					Direction = eConferenceSourceDirection.Outgoing,
+					Direction = eCallDirection.Outgoing,
 					Number = number,
 					Name = "Mock Call To: " + number,
-					Status = eConferenceSourceStatus.Connected,
-					SourceType = type
+					Status = eParticipantStatus.Connected,
+					SourceType = type,
+					HangupCallback = HangupCallback
 				};
 
 			m_Sources.Add(source);
 
-			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(source));
+			OnParticipantAdded.Raise(this, new GenericEventArgs<ITraditionalParticipant>(source));
 		}
 
-		public eBookingSupport CanDial(IBookingNumber bookingNumber)
+		private void HangupCallback(ThinTraditionalParticipant sender)
 		{
-			return eBookingSupport.Supported;
+			m_Sources.Remove(sender);
+
+			OnParticipantRemoved.Raise(this, new GenericEventArgs<ITraditionalParticipant>(sender));
 		}
 
-		public void Dial(IBookingNumber bookingNumber)
+		public eDialContextSupport CanDial(IDialContext dialContext)
 		{
-			var zoomNumber = bookingNumber as IZoomBookingNumber;
-			if (zoomNumber != null)
-			{
-				Dial(zoomNumber.MeetingNumber, eConferenceSourceType.Video);
-			}
+			return eDialContextSupport.Supported;
+		}
 
-			var sipNumber = bookingNumber as ISipBookingNumber;
-			if (sipNumber != null)
-			{
-				Dial(sipNumber.SipUri, eConferenceSourceType.Video);
-				return;
-			}
+		public void Dial(IDialContext dialContext)
+		{
+			Dial(dialContext.DialString, dialContext.CallType);
+		}
 
-			var potsNumber = bookingNumber as IPstnBookingNumber;
-			if (potsNumber != null)
-			{
-				Dial(potsNumber.PhoneNumber, eConferenceSourceType.Audio);
-				return;
-			}
+		private void MockIncomingCall()
+		{
+			var incomingCall = new ThinIncomingCall();
+			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(incomingCall));
 		}
 	}
 }

@@ -1,4 +1,7 @@
-﻿using ICD.Common.Utils;
+﻿using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Utils;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Camera
@@ -12,11 +15,23 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 			Subscribe(parent);
 		}
 
+		protected override void DisposeFinal()
+		{
+			base.DisposeFinal();
+
+			Unsubscribe(Parent);
+		}
+
 		#region Methods
 
 		protected override void Initialize()
 		{
-			//Parent.SendCommand("zStatus Video Camera Line");
+			Parent.SendCommand("zStatus Video Camera Line");
+		}
+
+		public IEnumerable<CameraInfo> GetCameras()
+		{
+			return m_Cameras == null ? Enumerable.Empty<CameraInfo>() : m_Cameras.ToArray(m_Cameras.Length);
 		}
 
 		public void SetNearCameraAsVideoSource(int address)

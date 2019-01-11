@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -13,11 +14,5 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		[JsonProperty("success")]
 		public eZoomBoolean Success { get; private set; }
-	}
-
-	public enum eZoomBoolean
-	{
-		off,
-		on
 	}
 }

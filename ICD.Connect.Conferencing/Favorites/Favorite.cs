@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Favorites
 {
@@ -9,7 +10,7 @@ namespace ICD.Connect.Conferencing.Favorites
 	/// </summary>
 	public sealed class Favorite : IContact
 	{
-		private FavoriteContactMethod[] m_ContactMethods;
+		private FavoriteDialContext[] m_DialContexts;
 
 		#region Properties
 
@@ -29,7 +30,7 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// </summary>
 		public Favorite()
 		{
-			m_ContactMethods = new FavoriteContactMethod[0];
+			m_DialContexts = new FavoriteDialContext[0];
 		}
 
 		/// <summary>
@@ -40,7 +41,8 @@ namespace ICD.Connect.Conferencing.Favorites
 		public static Favorite FromContact(IContact contact)
 		{
 			Favorite output = new Favorite {Name = contact.Name};
-			output.SetContactMethods(contact.GetContactMethods().Select(m => FavoriteContactMethod.FromContactMethod(m)));
+			output.SetContactMethods(contact.GetDialContexts()
+				.Select(m => FavoriteDialContext.FromDialContext(m)).Where(f => f != null));
 			return output;
 		}
 
@@ -50,23 +52,23 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// Sets the contact methods.
 		/// </summary>
 		/// <param name="contactMethods"></param>
-		public void SetContactMethods(IEnumerable<FavoriteContactMethod> contactMethods)
+		public void SetContactMethods(IEnumerable<FavoriteDialContext> contactMethods)
 		{
-			m_ContactMethods = contactMethods.ToArray();
+			m_DialContexts = contactMethods.ToArray();
 		}
 
 		/// <summary>
 		/// Gets the contact methods.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<FavoriteContactMethod> GetContactMethods()
+		public IEnumerable<IDialContext> GetDialContexts()
 		{
-			return m_ContactMethods;
+			return m_DialContexts;
 		}
 
-		IEnumerable<IContactMethod> IContact.GetContactMethods()
+		public IEnumerable<FavoriteDialContext> GetContactMethods()
 		{
-			return GetContactMethods().Cast<IContactMethod>();
-		}
+			return m_DialContexts;
+		} 
 	}
 }

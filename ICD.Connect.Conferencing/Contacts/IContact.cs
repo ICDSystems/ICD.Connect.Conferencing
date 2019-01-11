@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Contacts
 {
@@ -13,6 +14,6 @@ namespace ICD.Connect.Conferencing.Contacts
 		/// Gets the contact methods.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IContactMethod> GetContactMethods();
+		IEnumerable<IDialContext> GetDialContexts();
 	}
 }

@@ -18,7 +18,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <param name="formatMode"></param>
 		/// <param name="regexString"></param>
 		/// <param name="format"></param>
-		public RegexPlanMatcher(string name, eConferenceSourceType sourceType, string format, eFormatMode formatMode,
+		public RegexPlanMatcher(string name, eCallType sourceType, string format, eFormatMode formatMode,
 		                        string regexString)
 			: base(name, sourceType, format, formatMode)
 		{

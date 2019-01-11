@@ -2,7 +2,8 @@
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
-	[ZoomRoomApiResponse("Call", eZoomRoomApiType.zConfiguration, false)]
+	[ZoomRoomApiResponse("Call", eZoomRoomApiType.zConfiguration, false),
+	 ZoomRoomApiResponse("Call", eZoomRoomApiType.zConfiguration, true)]
 	public sealed class CallConfigurationResponse : AbstractZoomRoomResponse
 	{
 		[JsonProperty("Call")]

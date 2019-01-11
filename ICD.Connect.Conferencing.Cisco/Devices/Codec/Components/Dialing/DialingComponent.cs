@@ -9,14 +9,14 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {
 	// Ignore missing comment warnings
 #pragma warning disable 1591
-	public enum eDialProtocol
+	public enum eCiscoDialProtocol
 	{
 		[UsedImplicitly] H320,
 		[UsedImplicitly] H323,
@@ -35,12 +35,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Called when a source is added to the dialing component.
 		/// </summary>
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
+		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnSourceAdded;
 
 		/// <summary>
 		/// Called when a source is removed from the dialing component.
 		/// </summary>
-		public event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnSourceRemoved;
 
 		/// <summary>
 		/// Raised when the Do Not Disturb state changes.
@@ -170,7 +170,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IConferenceSource> GetSources()
+		public IEnumerable<ITraditionalParticipant> GetSources()
 		{
 			return m_CallComponentsSection.Execute(() => m_CallComponents.OrderValuesByKey().ToArray());
 		}
@@ -181,7 +181,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="number"></param>
 		public void Dial(string number)
 		{
-			Dial(number, eConferenceSourceType.Video);
+			Dial(number, eCallType.Video);
 		}
 
 		/// <summary>
@@ -189,9 +189,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		/// <param name="number"></param>
 		/// <param name="callType"></param>
-		public void Dial(string number, eConferenceSourceType callType)
+		public void Dial(string number, eCallType callType)
 		{
-			Dial(number, eDialProtocol.Sip, callType);
+			Dial(number, eCiscoDialProtocol.Sip, callType);
 		}
 
 		/// <summary>
@@ -205,7 +205,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="protocol"></param>
 		/// <param name="callType"></param>
 		[PublicAPI]
-		public void Dial(string number, eDialProtocol protocol, eConferenceSourceType callType)
+		public void Dial(string number, eCiscoDialProtocol protocol, eCallType callType)
 		{
 			CallComponent existing = GetCallComponents().Where(c => c.GetIsOnline()).FirstOrDefault();
 			if (existing != null)
@@ -304,12 +304,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				return output;
 
 			// Join the new call to an existing, held call
-			CallComponent other = GetCallComponents().Where(c => c.Status == eConferenceSourceStatus.OnHold)
+			CallComponent other = GetCallComponents().Where(c => c.Status == eParticipantStatus.OnHold)
 			                                         .FirstOrDefault();
 			if (other != null)
 				output.Join(other.CallId);
 
-			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(output));
+			OnSourceAdded.Raise(this, new GenericEventArgs<ITraditionalParticipant>(output));
 
 			return output;
 		}
@@ -367,7 +367,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// Subscribes to the call events.
 		/// </summary>
 		/// <param name="call"></param>
-		private void Subscribe(IConferenceSource call)
+		private void Subscribe(IParticipant call)
 		{
 			call.OnStatusChanged += CallOnStatusChanged;
 		}
@@ -376,7 +376,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// Unsubscribes from the call events.
 		/// </summary>
 		/// <param name="call"></param>
-		private void Unsubscribe(IConferenceSource call)
+		private void Unsubscribe(IParticipant call)
 		{
 			call.OnStatusChanged -= CallOnStatusChanged;
 		}
@@ -386,18 +386,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void CallOnStatusChanged(object sender, ConferenceSourceStatusEventArgs args)
+		private void CallOnStatusChanged(object sender, ParticipantStatusEventArgs args)
 		{
 			CallComponent call = sender as CallComponent;
 			if (call == null)
 				return;
 
-			if (args.Data != eConferenceSourceStatus.Disconnected)
+			if (args.Data != eParticipantStatus.Disconnected)
 				return;
 
 			bool removed = RemoveCall(call.CallId);
 			if (removed)
-				OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(call));
+				OnSourceRemoved.Raise(this, new GenericEventArgs<ITraditionalParticipant>(call));
 		}
 
 		/// <summary>
@@ -518,7 +518,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 			CallComponent call = LazyLoadCall(id, xml);
 
-			if (!exists && call.Direction == eConferenceSourceDirection.Incoming)
+			if (!exists && call.Direction == eCallDirection.Incoming)
 				Codec.Log(eSeverity.Informational, "Incoming VTC Call");
 		}
 

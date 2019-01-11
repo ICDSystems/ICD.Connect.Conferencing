@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Favorites
 {
@@ -28,11 +29,11 @@ namespace ICD.Connect.Conferencing.Favorites
 		IEnumerable<Favorite> GetFavoritesByName(string name);
 
 		/// <summary>
-		/// Gets the favorites with the given contact number.
+		/// Gets the favorites with the given dialContext.
 		/// </summary>
-		/// <param name="contactNumber"></param>
+		/// <param name="dialContext"></param>
 		/// <returns></returns>
-		IEnumerable<Favorite> GetFavoritesByContactNumber(string contactNumber);
+		IEnumerable<Favorite> GetFavoritesByDialContext(IDialContext dialContext);
 
 		/// <summary>
 		/// Adds the favorite. Returns null if a favorite with the same id already exists.
@@ -106,9 +107,8 @@ namespace ICD.Connect.Conferencing.Favorites
 		public static Favorite GetFavorite(this IFavorites extends, IContact contact)
 		{
 			// First try to find the favorite by looking up the contact number
-			Favorite output = contact.GetContactMethods()
-			                         .Select(m => m.Number)
-			                         .SelectMany(n => extends.GetFavoritesByContactNumber(n))
+			Favorite output = contact.GetDialContexts()
+			                         .SelectMany(d => extends.GetFavoritesByDialContext(d))
 			                         .FirstOrDefault();
 
 			// Then try to find the favorite by name

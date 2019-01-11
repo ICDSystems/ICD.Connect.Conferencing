@@ -2,25 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
-using ICD.Common.Utils;
-using ICD.Connect.Conferencing.ConferenceSources;
+using ICD.Common.Utils.EventArguments;
+using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Conferences
 {
-	/// <summary>
-	/// A IConference is a collection of IConferenceSources.
-	/// </summary>
-	public interface IConference
+	public interface IConference : IConsoleNode
 	{
+		/// <summary>
+		/// Raised when a participant is added to the conference.
+		/// </summary>
+		event EventHandler<ParticipantEventArgs> OnParticipantAdded;
+
+		/// <summary>
+		/// Raised when a participant is removed from the conference.
+		/// </summary>
+		event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 		/// <summary>
 		/// Raised when the conference status changes.
 		/// </summary>
 		event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
-
-		/// <summary>
-		/// Raised when a source is added or removed to the conference.
-		/// </summary>
-		event EventHandler OnSourcesChanged;
 
 		#region Properties
 
@@ -39,10 +42,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		DateTime? End { get; }
 
-		/// <summary>
-		/// Gets the number of online sources in the conference.
-		/// </summary>
-		int OnlineSourcesCount { get; }
+		eCallType CallType { get; }
 
 		#endregion
 
@@ -52,95 +52,39 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Gets the sources in this conference.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IConferenceSource> GetSources();
-
-		/// <summary>
-		/// Adds the source to the conference.
-		/// </summary>
-		/// <param name="source"></param>
-		/// <returns>False if the source is already in the conference.</returns>
-		[PublicAPI]
-		bool AddSource(IConferenceSource source);
-
-		/// <summary>
-		/// Removes the source from the conference.
-		/// </summary>
-		/// <param name="source"></param>
-		/// <returns>False if the source is not in the conference.</returns>
-		[PublicAPI]
-		bool RemoveSource(IConferenceSource source);
+		IEnumerable<IParticipant> GetParticipants();
 
 		#endregion
 	}
 
-	/// <summary>
-	/// Extension methods for IConferences.
-	/// </summary>
+	public interface IConference<T> : IConference where T : IParticipant
+	{
+		#region Methods
+
+		/// <summary>
+		/// Gets the sources in this conference.
+		/// </summary>
+		/// <returns></returns>
+		new IEnumerable<T> GetParticipants();
+
+		#endregion
+	}
+
 	public static class ConferenceExtensions
 	{
-		/// <summary>
-		/// Holds all sources.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static void Hold(this IConference extends)
+		public static IEnumerable<IParticipant> GetOnlineParticipants(this IConference extends)
 		{
-			foreach (IConferenceSource source in extends.GetSources().Reverse())
-				source.Hold();
+			return extends.GetParticipants().Where(p => p.GetIsOnline());
 		}
 
-		/// <summary>
-		/// Resumes all sources.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static void Resume(this IConference extends)
+		public static bool IsOnline(this IConference extends)
 		{
-			foreach (IConferenceSource source in extends.GetSources().Reverse())
-				source.Resume();
+			return extends.Status == eConferenceStatus.Connected || extends.Status == eConferenceStatus.OnHold;
 		}
 
-		/// <summary>
-		/// Disconnects all sources.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static void Hangup(this IConference extends)
+		public static bool IsActive(this IConference extends)
 		{
-			foreach (IConferenceSource source in extends.GetSources().Reverse())
-				source.Hangup();
-		}
-
-		/// <summary>
-		/// Gets the duration of the call in milliseconds.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static TimeSpan GetDuration(this IConference extends)
-		{
-			if (extends.Start == null)
-				return new TimeSpan();
-
-			DateTime end = (extends.End != null) ? (DateTime)extends.End : IcdEnvironment.GetLocalTime();
-
-			return end - (DateTime)extends.Start;
-		}
-
-		/// <summary>
-		/// Returns true if the conference contains the given source.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="source"></param>
-		/// <returns></returns>
-		public static bool ContainsSource(this IConference extends, IConferenceSource source)
-		{
-			return extends.GetSources().Contains(source);
-		}
-
-		/// <summary>
-		/// Returns an array of online sources.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <returns></returns>
-		public static IConferenceSource[] GetOnlineSources(this IConference extends)
-		{
-			return extends.GetSources().Where(s => s.GetIsOnline()).ToArray();
+			return extends.Status == eConferenceStatus.Connected;
 		}
 	}
 }

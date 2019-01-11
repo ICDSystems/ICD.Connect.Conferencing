@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
@@ -8,64 +8,40 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Connect.Conferencing.Conferences;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class CallComponent : AbstractZoomRoomComponent, IConferenceSource
+	public sealed class CallComponent : AbstractZoomRoomComponent, IWebConference
 	{
 		private bool m_CameraMute;
 		private bool m_MicrophoneMute;
 		private string m_Name;
-		private eConferenceSourceStatus m_Status;
-		private eConferenceSourceAnswerState m_AnswerState;
+		private eConferenceStatus m_Status;
+
+		private List<ZoomParticipant> m_Participants;
+		private SafeCriticalSection m_ParticipantsSection;
 
 		#region Events
 
-		public event EventHandler<ConferenceSourceAnswerStateEventArgs> OnAnswerStateChanged;
+		public event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
-		public event EventHandler<ConferenceSourceStatusEventArgs> OnStatusChanged;
+		public event EventHandler<ParticipantEventArgs> OnParticipantAdded;
 
-		public event EventHandler<StringEventArgs> OnNameChanged;
-
-		public event EventHandler<StringEventArgs> OnNumberChanged;
-
-		public event EventHandler<ConferenceSourceTypeEventArgs> OnSourceTypeChanged;
-
-		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantRemoved;
-
-		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantAdded;
-
-		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantUpdated;
+		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
 		#endregion
 
 		#region Properties
 
-		public string Name
-		{
-			get { return m_Name; }
-			private set
-			{
-				if (value == m_Name)
-					return;
-
-				m_Name = value;
-
-				OnNameChanged.Raise(this, new StringEventArgs(m_Name));
-			}
-		}
-
 		public string Number { get; private set; }
 
-		public eConferenceSourceType SourceType
-		{
-			get { return eConferenceSourceType.Video; }
-		}
+		public string Name { get; private set; }
 
-		public eConferenceSourceStatus Status
+		public eConferenceStatus Status
 		{
 			get { return m_Status; }
 			private set
@@ -76,44 +52,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				m_Status = value;
 				Parent.Log(eSeverity.Informational, "Call {0} status changed: {1}", Number, StringUtils.NiceName(m_Status));
 
-				OnStatusChanged.Raise(this, new ConferenceSourceStatusEventArgs(m_Status));
-			}
-		}
-
-		public eConferenceSourceDirection Direction { get; private set; }
-
-		public eConferenceSourceAnswerState AnswerState 
-		{
-			get { return m_AnswerState; }
-			private set
-			{
-				if (value == m_AnswerState)
-					return;
-
-				m_AnswerState = value;
-				Parent.Log(eSeverity.Informational, "Call {0} answer state changed: {1}", Number, StringUtils.NiceName(m_AnswerState));
-
-				OnAnswerStateChanged.Raise(this, new ConferenceSourceAnswerStateEventArgs(m_AnswerState));
+				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(m_Status));
 			}
 		}
 
 		public DateTime? Start { get; private set; }
 		
 		public DateTime? End { get; private set; }
-
-		public DateTime DialTime { get; private set; }
-
-		public DateTime StartOrDialTime
-		{
-			get { return Start ?? DialTime; }
-		}
-
-		public IRemoteCamera Camera
-		{
-			get { return null; }
-		}
-
-		public string CallerJoinId { get; private set; }
 
 		public bool CameraMute
 		{
@@ -137,27 +82,22 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public CallInfo CallInfo { get; private set; }
 
-		public List<ParticipantInfo> Participants { get; private set; }
+		public eCallType CallType
+		{
+			get { return eCallType.Video; }
+		}
+
+		public bool AmIHost { get; set; }
 
 		#endregion
 
 		#region Constructors
 
-		public CallComponent(IncomingCall call, ZoomRoom parent) : this(parent)
-		{
-			CallerJoinId = call.CallerJoinId;
-			Start = IcdEnvironment.GetLocalTime();
-			Name = call.CallerName;
-			Number = call.MeetingNumber;
-			Direction = eConferenceSourceDirection.Incoming;
-			Status = eConferenceSourceStatus.Ringing;
-		}
-
 		public CallComponent(ZoomRoom parent) : base(parent)
 		{
-			Name = "Meeting";
-			Direction = eConferenceSourceDirection.Outgoing;
-			Participants = new List<ParticipantInfo>();
+			Name = "Zoom Meeting";
+			m_Participants = new List<ZoomParticipant>();
+			m_ParticipantsSection = new SafeCriticalSection();
 			Subscribe(Parent);
 		}
 
@@ -172,46 +112,26 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#region Methods
 
-		public void Answer()
+		public IEnumerable<IWebParticipant> GetParticipants()
 		{
-			AnswerState = eConferenceSourceAnswerState.Answered;
-			Parent.SendCommand("zCommand Call Accept callerJid: {0}", CallerJoinId);
+			return m_ParticipantsSection.Execute(() => m_Participants.Cast<IWebParticipant>().ToList());
 		}
 
-		public void Reject()
+		IEnumerable<IParticipant> IConference.GetParticipants()
 		{
-			AnswerState = eConferenceSourceAnswerState.Ignored;
-			Parent.SendCommand("zCommand Call Reject callerJid: {0}", CallerJoinId);
+			return GetParticipants().Cast<IParticipant>();
 		}
 
-		public void Hold()
+		public void LeaveConference()
 		{
-			if (Status == eConferenceSourceStatus.OnHold)
-				return;
-
-			Parent.SendCommand("zConfiguration Call Microphone mute: on");
-			Parent.SendCommand("zConfiguration Call Camera mute: on");
-		}
-
-		public void Resume()
-		{
-			if (Status != eConferenceSourceStatus.OnHold)
-				return;
-
-			Parent.SendCommand("zConfiguration Call Microphone mute: off");
-			Parent.SendCommand("zConfiguration Call Camera mute: off");
-		}
-
-		public void Hangup()
-		{
-			Parent.Log(eSeverity.Debug, "Disconnecting call {0}", Name);
+			Parent.Log(eSeverity.Debug, "Leaving Zoom Meeting {0}", Number);
 			Parent.SendCommand("zCommand Call Leave");
-			Status = eConferenceSourceStatus.Disconnecting;
 		}
 
-		public void SendDtmf(string data)
+		public void EndConference()
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support sending DTMF");
+			Parent.Log(eSeverity.Debug, "Ending Zoom Meeting {0}", Number);
+			Parent.SendCommand("zCommand Call Disconnect");
 		}
 
 		#endregion
@@ -223,33 +143,97 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			base.Initialize();
 
 			Parent.SendCommand("zStatus Call Status");
-			Parent.SendCommand("zConfiguration Call Camera");
-			Parent.SendCommand("zConfiguration Call Microphone");
+			Parent.SendCommand("zConfiguration Call Camera mute");
+			Parent.SendCommand("zConfiguration Call Microphone mute");
 			Parent.SendCommand("zCommand Call ListParticipants");
+			Parent.SendCommand("zCommand Call Info");
 		}
 
 		private void UpdateSourceHoldStatus()
 		{
-			if (Status == eConferenceSourceStatus.Connected && CameraMute && MicrophoneMute)
-				Status = eConferenceSourceStatus.OnHold;
+			if (Status == eConferenceStatus.Connected && CameraMute && MicrophoneMute)
+				Status = eConferenceStatus.OnHold;
 
-			else if (Status == eConferenceSourceStatus.OnHold && !(CameraMute && MicrophoneMute))
-				Status = eConferenceSourceStatus.Connected;
+			else if (Status == eConferenceStatus.OnHold && !(CameraMute && MicrophoneMute))
+				Status = eConferenceStatus.Connected;
 		}
 
-		private void AddOrUpdateParticipant(ParticipantInfo participant)
+		private void AddUpdateOrRemoveParticipant(ParticipantInfo info)
 		{
-			if (participant.IsMyself)
-				return;
-
-			var index = Participants.FindIndex(p => p.UserId == participant.UserId);
-			if (index < 0)
+			if (info.IsMyself)
 			{
-				Participants.Add(participant);
-				OnParticipantAdded.Raise(this, new GenericEventArgs<ParticipantInfo>(participant));
+				AmIHost = info.IsHost || info.IsCohost;
+				return;
 			}
-			else
-				OnParticipantUpdated.Raise(this, new GenericEventArgs<ParticipantInfo>(participant));
+
+			m_ParticipantsSection.Enter();
+			try
+			{
+				if (info.Event == eUserChangedEventType.ZRCUserChangedEventLeftMeeting)
+				{
+					var remove = m_Participants.Find(p => p.UserId == info.UserId);
+					if (remove != null)
+						RemoveParticipant(remove);
+				}
+				else
+				{
+					var index = m_Participants.FindIndex(p => p.UserId == info.UserId);
+					if (index < 0)
+						AddParticipant(new ZoomParticipant(Parent, info));
+					else
+						m_Participants[index].Update(info);
+				}
+
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+		}
+
+		private void AddParticipant(ZoomParticipant participant)
+		{
+			m_ParticipantsSection.Enter();
+			try
+			{
+				if (m_Participants.Contains(participant))
+					return;
+
+				m_Participants.Add(participant);
+				OnParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+		}
+
+		private void RemoveParticipant(ZoomParticipant participant)
+		{
+			m_ParticipantsSection.Enter();
+			try
+			{
+				if (m_Participants.Remove(participant))
+					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(participant));
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+		}
+
+		private void ClearParticipants()
+		{
+			m_ParticipantsSection.Enter();
+			try
+			{
+				foreach (var participant in GetParticipants().Cast<ZoomParticipant>().ToArray())
+					RemoveParticipant(participant);
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
 		}
 
 		#endregion
@@ -287,64 +271,65 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		private void ParticipantUpdateCallback(ZoomRoom zoomRoom, SingleParticipantResponse response)
 		{
-			AddOrUpdateParticipant(response.Participant);
+			AddUpdateOrRemoveParticipant(response.Participant);
 		}
 
-		private void ListParticipantsCallback(ZoomRoom zoomroom, ListParticipantsResponse response)
+		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)
 		{
-			// remove participants that have left
-			var participantsToRemove = new List<ParticipantInfo>();
-			foreach (var participant in Participants)
+			m_ParticipantsSection.Enter();
+			try
 			{
-				ParticipantInfo participantCopy = participant;
-				if(!response.Participants.Any(p => p.UserId == participantCopy.UserId))
-				{
-					participantsToRemove.Add(participant);
-					OnParticipantRemoved.Raise(this, new GenericEventArgs<ParticipantInfo>(participant));
-				}
-			}
-			foreach (var removal in participantsToRemove)
-				Participants.Remove(removal);
+				// remove participants that have left
+				var participantsToRemove = m_Participants.Where(p => !response.Participants.Any(i => i.UserId == p.UserId)).ToList();
+				foreach (var removal in participantsToRemove)
+					RemoveParticipant(removal);
 
-			// add or update current participants
-			foreach (var participant in response.Participants)
-				AddOrUpdateParticipant(participant);
+				// add or update current participants
+				foreach (var info in response.Participants)
+					AddUpdateOrRemoveParticipant(info);
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
 		}
 
 		private void DisconnectCallback(ZoomRoom zoomRoom, CallDisconnectResponse response)
 		{
 			if (response.Disconnect.Success == eZoomBoolean.on)
-				Status = eConferenceSourceStatus.Disconnected;
+				Status = eConferenceStatus.Disconnected;
 		}
 
 		private void CallInfoCallback(ZoomRoom zoomRoom, InfoResultResponse response)
 		{
 			CallInfo result = response.InfoResult;
+			CallInfo = response.InfoResult;
 			Number = result.MeetingId;
+			OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
 		}
 
-		private void CallStatusCallback(ZoomRoom zoomroom, CallStatusResponse response)
+		private void CallStatusCallback(ZoomRoom zoomRoom, CallStatusResponse response)
 		{
 			var status = response.CallStatus.Status;
 			switch (status)
 			{
 				case eCallStatus.CONNECTING_MEETING:
-					Status = eConferenceSourceStatus.Connecting;
-					DialTime = IcdEnvironment.GetLocalTime();
+					Status = eConferenceStatus.Connecting;
 					break;
 				case eCallStatus.IN_MEETING:
-					Status = eConferenceSourceStatus.Connected;
+					Status = eConferenceStatus.Connected;
 					Start = IcdEnvironment.GetLocalTime();
 					break;
 				case eCallStatus.NOT_IN_MEETING:
 				case eCallStatus.LOGGED_OUT:
-					Status = eConferenceSourceStatus.Disconnected;
+					Status = eConferenceStatus.Disconnected;
+					ClearParticipants();
 					break;
 				case eCallStatus.UNKNOWN:
-					Status = eConferenceSourceStatus.Undefined;
+					Status = eConferenceStatus.Undefined;
 					break;
 				default:
-					Status = eConferenceSourceStatus.Undefined;
+					Status = eConferenceStatus.Undefined;
 					break;
 			}
 		}
@@ -360,7 +345,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public override string ConsoleHelp
 		{
-			get { return "Zoom Room Call"; }
+			get { return "Zoom Room Conference"; }
+		}
+
+        public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (var participant in GetParticipants())
+				yield return participant;
 		}
 
 		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
@@ -369,27 +360,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 			addRow("Name", Name);
 			addRow("Number", Number);
-			addRow("Start Time", StartOrDialTime);
-			addRow("Direction", Direction);
 			addRow("Status", Status);
-			addRow("Caller Join Id", CallerJoinId);
+			addRow("Participants", GetParticipants().Count());
 		}
 
 		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
-
-			if (Status == eConferenceSourceStatus.Ringing)
-				yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
-			else
-			{
-				yield return new ConsoleCommand("Hangup", "Hangs up the call", () => Hangup());
-				if (Status == eConferenceSourceStatus.OnHold)
-					yield return new ConsoleCommand("Resume", "Unmutes the audio and video of the call", () => Resume());
-				else
-					yield return new ConsoleCommand("Hold", "Mutes the audio and video of the call", () => Hold());
-			}
+				
+			yield return new ConsoleCommand("Leave", "Leaves the conference", () => LeaveConference());
+			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
+			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
+			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()

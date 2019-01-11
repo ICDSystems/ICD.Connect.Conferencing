@@ -96,12 +96,12 @@
     <Compile Include="Devices\Codec\Components\Sleep\SleepComponent.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\PolycomBooking.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\PolycomCalendarControl.cs" />
-    <Compile Include="Devices\Codec\Controls\PolycomCodecDialingControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecDirectoryControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecLayoutControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecPowerControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecRoutingControl.cs" />
+    <Compile Include="Devices\Codec\Controls\PolycomCodecTraditionalConferenceControl.cs" />
     <Compile Include="Devices\Codec\PolycomGroupSeriesDevice.cs" />
     <Compile Include="Devices\Codec\PolycomGroupSeriesSerialBuffer.cs" />
     <Compile Include="Devices\Codec\PolycomGroupSeriesSettings.cs" />

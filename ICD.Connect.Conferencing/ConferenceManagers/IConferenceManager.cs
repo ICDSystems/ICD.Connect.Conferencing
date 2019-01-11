@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
-using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
+using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;
+using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {
@@ -21,24 +21,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Events
 
 		/// <summary>
-		/// Raised when a new conference is instantiated and becomes active.
-		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
-
-		/// <summary>
 		/// Raised when a source is added to the current active conference.
 		/// </summary>
-		event EventHandler<ConferenceSourceEventArgs> OnRecentSourceAdded;
+		event EventHandler<ParticipantEventArgs> OnRecentSourceAdded;
 
 		/// <summary>
 		/// Raised when the active conference changes.
 		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
+		event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 
 		/// <summary>
 		/// Raised when the active conference ends.
 		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnActiveConferenceEnded;
+		event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		/// <summary>
 		/// Called when the active conference status changes.
@@ -48,7 +43,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Called when an active source status changes.
 		/// </summary>
-		event EventHandler<ConferenceSourceStatusEventArgs> OnActiveSourceStatusChanged;
+		event EventHandler<ParticipantStatusEventArgs> OnActiveSourceStatusChanged;
 
 		/// <summary>
 		/// Raised when the privacy mute status changes.
@@ -86,7 +81,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the active conference.
 		/// </summary>
-		IConference ActiveConference { get; }
+		IEnumerable<IConference> ActiveConferences { get; }
+
+		IEnumerable<IConference> OnlineConferences { get; }
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
@@ -118,11 +115,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Methods
 
 		/// <summary>
-		/// Dials the given number.
+		/// Dials the given context.
 		/// </summary>
-		/// <param name="number"></param>
-		/// <param name="mode"></param>
-		void Dial(string number, eConferenceSourceType mode);
+		/// <param name="context"></param>
+		void Dial(IDialContext context);
 
 		/// <summary>
 		/// Enables DoNotDisturb.
@@ -143,62 +139,48 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void EnablePrivacyMute(bool state);
 
 		/// <summary>
-		/// Gets the recent conferences in order of time.
-		/// </summary>
-		/// <returns></returns>
-		IEnumerable<IConference> GetRecentConferences();
-
-		/// <summary>
 		/// Gets the recent sources in order of time.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IConferenceSource> GetRecentSources();
+		IEnumerable<IParticipant> GetRecentSources();
 
 		/// <summary>
-		/// Gets the dialing component for the given source type.
+		/// Gets the registered conference components.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<IConferenceDeviceControl> GetDialingProviders();
+
+		/// <summary>
+		/// Registers the conference component.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <param name="conferenceControl"></param>
+		/// <returns></returns>
+		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl);
+
+		/// <summary>
+		/// Registers the conference component, for feedback only.
+		/// </summary>
+		/// <param name="conferenceControl"></param>
+		/// <returns></returns>
+		bool RegisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl);
+
+		/// <summary>
+		/// Deregisters the conference component.
 		/// </summary>
 		/// <param name="sourceType"></param>
 		/// <returns></returns>
-		[CanBeNull]
-		IDialingDeviceControl GetDialingProvider(eConferenceSourceType sourceType);
+		bool DeregisterDialingProvider(IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Gets the registered dialing components.
+		/// Deregisters the conference componet from the feedback only list.
 		/// </summary>
+		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		IEnumerable<IDialingDeviceControl> GetDialingProviders();
+		bool DeregisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Registers the dialing component.
-		/// </summary>
-		/// <param name="sourceType"></param>
-		/// <param name="dialingControl"></param>
-		/// <returns></returns>
-		bool RegisterDialingProvider(eConferenceSourceType sourceType, IDialingDeviceControl dialingControl);
-
-		/// <summary>
-		/// Registers the dialing component, for feedback only.
-		/// </summary>
-		/// <param name="dialingControl"></param>
-		/// <returns></returns>
-		bool RegisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
-
-		/// <summary>
-		/// Deregisters the dialing component.
-		/// </summary>
-		/// <param name="sourceType"></param>
-		/// <returns></returns>
-		bool DeregisterDialingProvider(eConferenceSourceType sourceType);
-
-		/// <summary>
-		/// Deregisters the dialing componet from the feedback only list.
-		/// </summary>
-		/// <param name="dialingControl"></param>
-		/// <returns></returns>
-		bool DeregisterFeedbackDialingProvider(IDialingDeviceControl dialingControl);
-
-		/// <summary>
-		/// Deregisters all of the dialing components.
+		/// Deregisters all of the conference components.
 		/// </summary>
 		void ClearDialingProviders();
 
@@ -210,77 +192,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	/// </summary>
 	public static class ConferenceManagerExtensions
 	{
-		/// <summary>
-		/// Gets the call type for the given number.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="number"></param>
-		/// <returns></returns>
-		public static eConferenceSourceType GetCallType(this IConferenceManager extends, string number)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			// Gets the type the number resolves to
-			eConferenceSourceType type = extends.DialingPlan.GetSourceType(number);
-
-			// Gets the best provider for that call type
-			IDialingDeviceControl provider = extends.GetDialingProvider(type);
-
-			// Return the best available type we can handle the call as.
-			eConferenceSourceType providerType = provider == null ? eConferenceSourceType.Unknown : provider.Supports;
-
-			// If we don't know the call type use the provider default.
-			if (type == eConferenceSourceType.Unknown)
-				return providerType;
-
-			// Limit the type to what the provider can support.
-			return providerType < type ? providerType : type;
-		}
-
-		/// <summary>
-		/// Returns true if the active conference is connected.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static bool GetIsActiveConferenceOnline(this IConferenceManager extends)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			IConference active = extends.ActiveConference;
-			return active != null && active.GetOnlineSources().Length > 0;
-		}
-
-		/// <summary>
-		/// Dials the given number. Call type is taken from the dialling plan.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="number"></param>
-		public static void Dial(this IConferenceManager extends, string number)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			eConferenceSourceType mode = extends.GetCallType(number);
-			extends.Dial(number, mode);
-		}
-
-		/// <summary>
-		/// Dials the given contact method. Call type is taken from the dialling plan.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="contactMethod"></param>
-		public static void Dial(this IConferenceManager extends, IContactMethod contactMethod)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			if (contactMethod == null)
-				throw new ArgumentNullException("contactMethod");
-
-			extends.Dial(contactMethod.Number);
-		}
-
 		/// <summary>
 		/// Dials the given contact. Call type is taken from the dialling plan.
 		/// </summary>
@@ -294,11 +205,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			IContactMethod contactMethod = extends.DialingPlan.GetContactMethod(contact);
-			if (contactMethod == null)
-				throw new ArgumentException("Contact has no contact methods", "contact");
+			IDialContext dialContext = extends.DialingPlan.GetDialContext(contact);
+			if (dialContext == null)
+				throw new ArgumentException("Contact has no dial contexts", "contact");
 
-			extends.Dial(contactMethod);
+			extends.Dial(dialContext);
 		}
 
 		/// <summary>
@@ -306,7 +217,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="source"></param>
-		public static void Dial(this IConferenceManager extends, IConferenceSource source)
+		public static void Dial(this IConferenceManager extends, ITraditionalParticipant source)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -315,6 +226,21 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				throw new ArgumentNullException("source");
 
 			extends.Dial(source.Number, source.SourceType);
+		}
+
+		private static void Dial(this IConferenceManager extends, string number, eCallType callType)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (number == null)
+				throw new ArgumentNullException("source");
+
+			
+			if (callType == eCallType.Unknown)
+				callType = extends.DialingPlan.DefaultSourceType;
+
+			extends.Dial(new GenericDialContext { DialString = number, CallType = callType });
 		}
 
 		/// <summary>
