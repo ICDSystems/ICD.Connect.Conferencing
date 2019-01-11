@@ -314,6 +314,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_DialingProviderSection.Leave();
 			}
 
+			OnProviderRemoved.Raise(this, new ConferenceProviderEventArgs(sourceType, dialingControl));
+
 			return true;
 		}
 

@@ -16,9 +16,12 @@ using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
+using ICD.Connect.Protocol.Network.Ports;
+using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Protocol.Settings;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 {
@@ -40,6 +43,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private const long RATE_LIMIT_MS = 300;
 
 		/// <summary>
+		/// Timer interval used for resubscribing to feedbacks.
+		/// </summary>
+		private const int TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL = 30 * 60 * 1000;
+
+		/// <summary>
 		/// Raised when the class initializes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
@@ -49,16 +57,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
-		/// <summary>
-		/// Timer interval used for resubscribing to feedbacks.
-		/// </summary>
-		private const int TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL = 30 * 60 * 1000;
-
 		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
 		private readonly Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>> m_RangeFeedbackHandlers;
 
 		private readonly RateLimitedEventQueue<string> m_CommandQueue;
 		private readonly SafeTimer m_FeedbackTimer;
+
+		private readonly NetworkProperties m_NetworkProperties;
+		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private readonly PolycomComponentFactory m_Components;
 		private readonly PolycomGroupSeriesSerialBuffer m_SerialBuffer;
@@ -124,6 +130,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
+			m_NetworkProperties = new NetworkProperties();
+			m_ComSpecProperties = new ComSpecProperties();
+
 			m_CurrentMutliLines = new List<string>();
 
 			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<string>>>();
@@ -170,6 +179,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			Unsubscribe(m_SerialBuffer);
 
+			m_FeedbackTimer.Dispose();
+
 			base.DisposeFinal(disposing);
 
 			m_CommandQueue.Dispose();
@@ -194,25 +205,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 		private void ConfigurePort(ISerialPort port)
 		{
+			// Com
 			if (port is IComPort)
-				ConfigureComPort(port as IComPort);
-		}
+				(port as IComPort).ApplyDeviceConfiguration(m_ComSpecProperties);
 
-		/// <summary>
-		/// Configures a com port for communication with the hardware.
-		/// </summary>
-		/// <param name="port"></param>
-		[PublicAPI]
-		public static void ConfigureComPort(IComPort port)
-		{
-			port.SetComPortSpec(eComBaudRates.ComspecBaudRate115200,
-			                    eComDataBits.ComspecDataBits8,
-			                    eComParityType.ComspecParityNone,
-			                    eComStopBits.ComspecStopBits1,
-			                    eComProtocolType.ComspecProtocolRS232,
-			                    eComHardwareHandshakeType.ComspecHardwareHandshakeNone,
-			                    eComSoftwareHandshakeType.ComspecSoftwareHandshakeNone,
-			                    false);
+			// TCP
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -627,6 +626,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			settings.Username = Username;
 			settings.Password = Password;
 			settings.AddressbookType = AddressbookType;
+
+			settings.Copy(m_ComSpecProperties);
+			settings.Copy(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -640,6 +642,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			Password = null;
 			AddressbookType = eAddressbookType.Global;
 
+			m_ComSpecProperties.ClearComSpecProperties();
+			m_NetworkProperties.ClearNetworkProperties();
+
 			SetPort(null);
 		}
 
@@ -651,6 +656,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		protected override void ApplySettingsFinal(PolycomGroupSeriesSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
+
+			m_ComSpecProperties.Copy(settings);
+			m_NetworkProperties.Copy(settings);
 
 			Username = settings.Username;
 			Password = settings.Password;

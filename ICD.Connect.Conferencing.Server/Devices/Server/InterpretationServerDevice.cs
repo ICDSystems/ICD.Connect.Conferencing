@@ -15,9 +15,9 @@ using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices.Simpl;
 using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
+using ICD.Connect.Protocol.Network.Ports.Tcp;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
-using ICD.Connect.Protocol.Network.Tcp;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings;
 using ICD.Connect.Settings.SPlusShims.EventArguments;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Server

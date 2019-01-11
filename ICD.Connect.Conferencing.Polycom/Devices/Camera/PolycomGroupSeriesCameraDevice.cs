@@ -10,7 +10,7 @@ using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
 using ICD.Connect.Devices.EventArguments;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 {
@@ -237,7 +237,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 
 			PolycomGroupSeriesDevice codec = null;
 			if (settings.CodecId != null)
-				codec = factory.GetOriginatorById<PolycomGroupSeriesDevice>(settings.CodecId.Value);
+			{
+				try
+				{
+					codec = factory.GetOriginatorById<PolycomGroupSeriesDevice>(settings.CodecId.Value);
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No codec with id {0}", settings.CodecId);
+				}
+			}
 
 			SetCodec(codec);
 		}

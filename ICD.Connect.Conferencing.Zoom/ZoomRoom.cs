@@ -10,9 +10,12 @@ using ICD.Connect.Conferencing.Zoom.Controls;
 using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Protocol;
+using ICD.Connect.Protocol.Extensions;
+using ICD.Connect.Protocol.Network.Ports;
+using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
-using ICD.Connect.Settings.Core;
+using ICD.Connect.Settings;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -59,6 +62,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly JsonSerialBuffer m_SerialBuffer;
 		private readonly Dictionary<Type, List<ResponseCallbackPair>> m_ResponseCallbacks;
 		private readonly SafeCriticalSection m_ResponseCallbacksSection;
+
+		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		private bool m_Initialized;
 		private bool m_IsConnected;
@@ -110,10 +115,12 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		public ZoomRoom()
 		{
+			m_NetworkProperties = new SecureNetworkProperties();
+
 			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallbackPair>>();
 			m_ResponseCallbacksSection = new SafeCriticalSection();
 
-			m_ConnectionStateManager = new ConnectionStateManager(this);
+			m_ConnectionStateManager = new ConnectionStateManager(this) {ConfigurePort = ConfigurePort};
 			Subscribe(m_ConnectionStateManager);
 
 			m_SerialBuffer = new JsonSerialBuffer();
@@ -155,6 +162,17 @@ namespace ICD.Connect.Conferencing.Zoom
 		public void SetPort(ISerialPort port)
 		{
 			m_ConnectionStateManager.SetPort(port);
+		}
+
+		/// <summary>
+		/// Configures the given port for communication with the device.
+		/// </summary>
+		/// <param name="port"></param>
+		private void ConfigurePort(ISerialPort port)
+		{
+			// SSH
+			if (port is ISecureNetworkPort)
+				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -424,18 +442,32 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			base.ApplySettingsFinal(settings, factory);
 
+			m_NetworkProperties.Copy(settings);
+
+			ISerialPort port = null;
+
 			if (settings.Port != null)
 			{
-				var port = factory.GetOriginatorById<ISerialPort>(settings.Port.Value);
-				SetPort(port);
+				try
+				{
+					port = factory.GetPortById((int)settings.Port) as ISerialPort;
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
+				}
 			}
+
+			SetPort(port);
 		}
 
 		protected override void ClearSettingsFinal()
 		{
 			base.ClearSettingsFinal();
 
-			m_ConnectionStateManager.SetPort(null);
+			m_NetworkProperties.ClearNetworkProperties();
+
+			SetPort(null);
 		}
 
 		protected override void CopySettingsFinal(ZoomRoomSettings settings)
@@ -443,6 +475,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
+
+			settings.Copy(m_NetworkProperties);
 		}
 
 		#endregion

@@ -10,10 +10,14 @@ namespace ICD.Connect.Conferencing.Devices
 		private const string INPUT_3_ELEMENT = "Input3Type";
 		private const string INPUT_4_ELEMENT = "Input4Type";
 
+		#region Inputs
+
 		public eCodecInputType Input1CodecInputType { get; set; }
 		public eCodecInputType Input2CodecInputType { get; set; }
 		public eCodecInputType Input3CodecInputType { get; set; }
 		public eCodecInputType Input4CodecInputType { get; set; }
+
+		#endregion
 
 		/// <summary>
 		/// Writes property elements to xml.

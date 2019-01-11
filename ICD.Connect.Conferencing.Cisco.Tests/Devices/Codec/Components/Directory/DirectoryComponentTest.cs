@@ -214,7 +214,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 
 			Port.Receive(rX);
 
-			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
+			ThreadingUtils.Wait(() => results.Count == 11, 10 * 1000);
 
 			Assert.AreEqual(11, results.Count);
 		}
@@ -231,7 +231,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Director
 
 			Port.Receive(rX);
 
-			ThreadingUtils.Wait(() => component.GetRoot(ePhonebookType.Local).ChildCount == 21, 5 * 1000);
+			ThreadingUtils.Wait(() => results.Count == 10, 10 * 1000);
 
 			Assert.AreEqual(10, results.Count);
 		}
