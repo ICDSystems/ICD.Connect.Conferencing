@@ -1,12 +1,16 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Connect.Protocol.FeedbackDebounce;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 {
 	public sealed class PresentationComponent : AbstractZoomRoomComponent
 	{
+		private const long STOP_SHARING_DEBOUNCE_TIME = 5 * 1000;
+
 		public event EventHandler<BoolEventArgs> OnInputConnectedUpdated;
 		public event EventHandler<BoolEventArgs> OnSignalDetectedUpdated;
 		public event EventHandler<BoolEventArgs> OnSharingChanged;
@@ -14,6 +18,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		private bool m_InputConnected;
 		private bool m_SignalDetected;
 		private bool m_Sharing;
+		private bool m_RequestedSharing;
+
+		private SafeTimer m_StopSharingDebounceTimer;
 
 		#region Properties
 
@@ -59,6 +66,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 		public PresentationComponent(ZoomRoom parent) : base(parent)
 		{
+			m_StopSharingDebounceTimer = SafeTimer.Stopped(() => Sharing = false);
 			Subscribe(parent);
 		}
 
@@ -73,12 +81,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 		public void StartPresentation()
 		{
+			m_RequestedSharing = true;
 			if (InputConnected && !Sharing)
 				Parent.SendCommand("zCommand Call Sharing HDMI Start");
 		}
 
 		public void StopPresentation()
 		{
+			m_RequestedSharing = false;
 			if (Sharing)
 				Parent.SendCommand("zCommand Call Sharing HDMI Stop");
 		}
@@ -111,7 +121,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 			InputConnected = response.Sharing.IsBlackMagicConnected;
 			SignalDetected = response.Sharing.IsBlackMagicDataAvailable;
-			Sharing = response.Sharing.IsSharingBlackMagic;
+
+			// debounce the sharing state when switching sources
+			if (Sharing && m_RequestedSharing)
+			{
+				// start a 1 second timer to make sure it stays at not sharing
+				if (!response.Sharing.IsSharingBlackMagic)
+					m_StopSharingDebounceTimer.Reset(STOP_SHARING_DEBOUNCE_TIME);
+				else
+					m_StopSharingDebounceTimer.Stop();
+			}
+			else
+				Sharing = response.Sharing.IsSharingBlackMagic;
 		}
 
 		#endregion
