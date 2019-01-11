@@ -29,6 +29,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
 		public event EventHandler OnConferenceSourceAddedOrRemoved;
+		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
+		public event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
 
 		public event EventHandler<ParticipantEventArgs> OnRecentSourceAdded;
 		public event EventHandler<ParticipantStatusEventArgs> OnActiveSourceStatusChanged;
@@ -288,6 +290,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_DialingProviderSection.Leave();
 			}
 
+			OnProviderAdded.Raise(this, new ConferenceProviderEventArgs(conferenceControl.Supports, conferenceControl));
+
 			return true;
 		}
 
@@ -314,7 +318,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_DialingProviderSection.Leave();
 			}
 
-			OnProviderRemoved.Raise(this, new ConferenceProviderEventArgs(sourceType, dialingControl));
+			OnProviderRemoved.Raise(this, new ConferenceProviderEventArgs(conferenceControl.Supports, conferenceControl));
 
 			return true;
 		}
@@ -368,6 +372,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			{
 				m_FeedbackProviderSection.Leave();
 			}
+
+			RemoveConferences(conferenceControl.GetConferences());
 
 			return true;
 		}
