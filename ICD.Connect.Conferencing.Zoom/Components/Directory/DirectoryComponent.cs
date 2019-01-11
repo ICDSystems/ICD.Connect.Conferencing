@@ -11,6 +11,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
 	public class DirectoryComponent : AbstractZoomRoomComponent
 	{
+		private const bool USE_FOLDERS = false; // put this to true to have zoom rooms and contacts sorted into folders
+
 		private const string ROOMS_FOLDER = "Rooms";
 		private readonly ZoomFolder m_RootFolder;
 
@@ -52,7 +54,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		private void AddOrUpdateContact(ZoomContact contact)
 		{
-			var folder = GetFolder(contact);
+			var folder = USE_FOLDERS ? GetFolder(contact) : m_RootFolder;
 			var existingContact = folder.GetContacts().OfType<ZoomContact>().SingleOrDefault(c => c.JoinId == contact.JoinId);
 			if (existingContact == null)
 				folder.AddContact(contact);
@@ -87,6 +89,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<PhonebookListCommandResponse>(PhonebookListCallback);
+			zoomRoom.RegisterResponseCallback<PhonebookContactUpdatedResponse>(ContactUpdatedCallback);
 		}
 
 		protected override void Initialize()
