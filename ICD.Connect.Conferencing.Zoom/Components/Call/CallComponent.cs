@@ -346,8 +346,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			get { return "Zoom Room Conference"; }
 		}
 
-        public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
+        public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+        {
+	        foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+		        yield return node;
+
 			foreach (var participant in GetParticipants())
 				yield return participant;
 		}
@@ -371,6 +374,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
 			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
 			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
+		}
+
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()

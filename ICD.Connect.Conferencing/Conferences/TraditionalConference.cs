@@ -56,24 +56,12 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// Current conference status.
 		/// </summary>
-		public eConferenceStatus Status
-		{
-			get { return m_Status; }
-			private set
-			{
-				if (value == m_Status)
-					return;
-
-				m_Status = value;
-
-				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(m_Status));
-			}
-		}
+		public override eConferenceStatus Status { get { return m_Status; } }
 
 		/// <summary>
 		/// The time the conference started.
 		/// </summary>
-		public DateTime? Start
+		public override DateTime? Start
 		{
 			get
 			{
@@ -91,7 +79,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// The time the conference ended.
 		/// </summary>
-		public DateTime? End
+		public override DateTime? End
 		{
 			get
 			{
@@ -253,7 +241,13 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		private void UpdateStatus()
 		{
-			Status = GetStatusFromSources();
+			eConferenceStatus status = GetStatusFromSources();
+			if (status == m_Status)
+				return;
+
+			m_Status = status;
+
+			OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(m_Status));
 		}
 
 		private eConferenceStatus GetStatusFromSources()
