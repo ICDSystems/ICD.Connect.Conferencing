@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [13.0.0] - 2019-01-14
+### Changed
+ - Significant refactoring to make the distinction between audio, video and web conferencing
+
 ## [12.0.0] - 2019-01-10
 ### Added
  - Added port configuration features to conferencing devices
