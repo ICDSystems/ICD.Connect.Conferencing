@@ -3,7 +3,6 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Zoom.Responses;
-using ICD.Connect.Protocol.FeedbackDebounce;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 {
@@ -20,7 +19,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		private bool m_Sharing;
 		private bool m_RequestedSharing;
 
-		private SafeTimer m_StopSharingDebounceTimer;
+		private readonly SafeTimer m_StopSharingDebounceTimer;
 
 		#region Properties
 

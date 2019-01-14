@@ -120,7 +120,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <summary>
 		/// Gets the favorites with the given contact number.
 		/// </summary>
-		/// <param name="contactNumber"></param>
+		/// <param name="dialContext"></param>
 		/// <returns></returns>
 		public IEnumerable<Favorite> GetFavoritesByDialContext(IDialContext dialContext)
 		{

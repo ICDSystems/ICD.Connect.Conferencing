@@ -1,10 +1,7 @@
 ﻿using System;
 using ICD.Common.Properties;
-using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
-using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
-using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
 {
@@ -95,6 +92,7 @@ namespace ICD.Connect.Conferencing.Participants
 			extends.SendDtmf(data.ToString());
 		}
 
+		/*
 		/// <summary>
 		/// Returns true if the source is incoming and actively ringing.
 		/// </summary>
@@ -157,6 +155,7 @@ namespace ICD.Connect.Conferencing.Participants
 		//            throw new ArgumentOutOfRangeException();
 		//    }
 		//}
+		*/
 
 		/// <summary>
 		/// Gets the start time, falls through to dial time if no start time specified.

@@ -1,39 +1,12 @@
 ﻿using System;
-using System.Linq;
 using System.Text.RegularExpressions;
+using ICD.Common.Utils;
 
 namespace ICD.Connect.Conferencing.Utils
 {
 	public static class SipUtils
 	{
 		private const string SIP_NUMBER_REGEX = @"^sip:([^@]*)@";
-
-		// https://stackoverflow.com/questions/1547899/which-characters-make-a-url-invalid
-		private static readonly char[] s_UriDisallowed =
-		{
-			(char)0x1F,
-			(char)0x7F,
-			(char)0x20,
-			'<',
-			'>',
-			'#',
-			'%',
-			'"'
-		};
-
-		private static readonly char[] s_UriReserved =
-		{
-			';',
-			'/',
-			'?',
-			':',
-			'@',
-			'&',
-			'=',
-			'+',
-			'$',
-			','
-		};
 
 		/// <summary>
 		/// Returns the number portion from the given uri.
@@ -45,10 +18,8 @@ namespace ICD.Connect.Conferencing.Utils
 			if (uri == null)
 				throw new ArgumentNullException("uri");
 
-			Regex regex = new Regex(SIP_NUMBER_REGEX);
-			Match match = regex.Match(uri);
-
-			return match.Success ? match.Groups[1].Value : null;
+			Match match;
+			return RegexUtils.Matches(uri, SIP_NUMBER_REGEX, out match) ? match.Groups[1].Value : null;
 		}
 
 		public static bool IsValidSipUri(string number)

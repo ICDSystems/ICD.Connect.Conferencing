@@ -8,11 +8,10 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Responses;
-using ICD.Connect.Routing.Endpoints.Sources;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public class ZoomParticipant : IWebParticipant
+	public sealed class ZoomParticipant : IWebParticipant
 	{
 		/// <summary>
 		/// Raised when the participant's status changes.
@@ -38,7 +37,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private eCallType m_SourceType;
 		private eParticipantStatus m_Status;
 		private bool m_IsMuted;
-		private ZoomRoom m_ZoomRoom;
+		private readonly ZoomRoom m_ZoomRoom;
 
 		#region Properties
 
@@ -156,7 +155,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
-			yield return new GenericConsoleCommand<bool>("Mute", "Usage: Mute <true/false>", (m) => Mute(m));
+			yield return new GenericConsoleCommand<bool>("Mute", "Usage: Mute <true/false>", m => Mute(m));
 			yield return new ConsoleCommand("Kick", "Kick the participant", () => Kick());
 		}
 		#endregion

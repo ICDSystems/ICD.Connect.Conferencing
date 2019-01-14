@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Responses;
@@ -22,8 +20,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private string m_Name;
 		private eConferenceStatus m_Status;
 
-		private List<ZoomParticipant> m_Participants;
-		private SafeCriticalSection m_ParticipantsSection;
+		private readonly List<ZoomParticipant> m_Participants;
+		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		#region Events
 

@@ -1,6 +1,4 @@
-﻿using ICD.Connect.Conferencing.EventArguments;
-
-namespace ICD.Connect.Conferencing.DialContexts
+﻿namespace ICD.Connect.Conferencing.DialContexts
 {
 	public sealed class PstnDialContext : AbstractDialContext
 	{

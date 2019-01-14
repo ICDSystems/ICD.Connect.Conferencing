@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using ICD.Common.Properties;
 using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Conferences

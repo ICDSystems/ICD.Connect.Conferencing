@@ -6,13 +6,11 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Conferences;
-using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
-using ICD.Connect.Conferencing.Zoom.Components.Directory;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
@@ -154,7 +152,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private ThinIncomingCall CreateThinIncomingCall(IncomingCall call)
 		{
-			return new ThinIncomingCall()
+			return new ThinIncomingCall
 			{
 				Name = call.CallerName,
 				Number = call.MeetingNumber,
@@ -167,7 +165,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private ThinIncomingCallAnswerCallback IncomingCallAnswerCallback(IncomingCall call)
 		{
-			return (source) =>
+			return source =>
 			{
 				Parent.SendCommand("zCommand Call Accept callerJid: {0}", call.CallerJoinId);
 				source.AnswerState = eCallAnswerState.Answered;
@@ -177,7 +175,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private ThinIncomingCallRejectCallback IncomingCallRejectCallback(IncomingCall call)
 		{
-			return (source) =>
+			return source =>
 			{
 				Parent.SendCommand("zCommand Call Reject callerJid: {0}", call.CallerJoinId);
 				source.AnswerState = eCallAnswerState.Ignored;
