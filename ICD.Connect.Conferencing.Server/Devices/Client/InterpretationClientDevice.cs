@@ -386,7 +386,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 	    }
 
 	    [Rpc(UPDATE_CACHED_SOURCE_STATE), UsedImplicitly]
-	    private void UpdateCachedSourceState(Guid id, ConferenceSourceState sourceState)
+	    private void UpdateCachedSourceState(Guid id, ParticipantState sourceState)
 	    {
 			m_SourcesCriticalSection.Enter();
 
