@@ -258,6 +258,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Gets the registered conference controls that support the given type.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType type)
+		{
+			return m_DialingProviderSection.Execute(() => m_DialingProviders.Where(p => p.Supports.HasFlags(type)).ToArray());
+		}
+
+		/// <summary>
 		/// Gets the registered feedback conference providers.
 		/// </summary>
 		/// <returns></returns>

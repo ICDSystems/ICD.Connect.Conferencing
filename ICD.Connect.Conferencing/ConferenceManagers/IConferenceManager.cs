@@ -145,10 +145,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IEnumerable<IParticipant> GetRecentSources();
 
 		/// <summary>
-		/// Gets the registered conference components.
+		/// Gets the registered conference controls.
 		/// </summary>
 		/// <returns></returns>
 		IEnumerable<IConferenceDeviceControl> GetDialingProviders();
+
+		/// <summary>
+		/// Gets the registered conference controls that support the given type.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType type);
 
 		/// <summary>
 		/// Registers the conference component.
