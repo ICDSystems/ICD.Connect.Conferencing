@@ -78,6 +78,12 @@
     <Compile Include="Cameras\IRemoteCamera.cs" />
     <Compile Include="ConferenceManagers\ConferenceManager.cs" />
     <Compile Include="ConferenceManagers\IConferenceManager.cs" />
+    <Compile Include="ConferencePoints\AbstractConferencePoint.cs" />
+    <Compile Include="ConferencePoints\AbstractConferencePointSettings.cs" />
+    <Compile Include="ConferencePoints\ConferencePoint.cs" />
+    <Compile Include="ConferencePoints\ConferencePointSettings.cs" />
+    <Compile Include="ConferencePoints\IConferencePoint.cs" />
+    <Compile Include="ConferencePoints\IConferencePointSettings.cs" />
     <Compile Include="Conferences\AbstractConference.cs" />
     <Compile Include="Conferences\TraditionalConference.cs" />
     <Compile Include="Controls\Dialing\AbstractTraditionalConferenceDeviceControl.cs" />
@@ -93,6 +99,7 @@
     <Compile Include="DialContexts\ZoomContactDialContext.cs" />
     <Compile Include="DialContexts\ZoomDialContext.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
+    <Compile Include="KrangPlugin.cs" />
     <Compile Include="Participants\EventHelpers\WebParticipantEventHelper.cs" />
     <Compile Include="Participants\IIncomingCall.cs" />
     <Compile Include="Participants\IParticipant.cs" />
