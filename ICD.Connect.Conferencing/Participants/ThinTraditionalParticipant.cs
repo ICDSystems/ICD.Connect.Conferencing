@@ -12,7 +12,6 @@ using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
 {
-
 	public delegate void ThinParticipantHoldCallback(ThinTraditionalParticipant sender);
 
 	public delegate void ThinParticipantResumeCallback(ThinTraditionalParticipant sender);
@@ -36,7 +35,6 @@ namespace ICD.Connect.Conferencing.Participants
 		private string m_Name;
 		private string m_Number;
 		private eParticipantStatus m_Status;
-		private eCallAnswerState m_AnswerState;
 		private DateTime? m_Start;
 		private DateTime? m_End;
 		private DateTime m_DialTime;
