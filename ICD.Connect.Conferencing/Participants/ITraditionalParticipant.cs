@@ -42,6 +42,14 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		string Number { get; }
 
+		/// <summary>
+		/// Call Direction
+		/// </summary>
+		eCallDirection Direction { get; }
+
+		/// <summary>
+		/// Gets the time the call was dialed.
+		/// </summary>
 		DateTime DialTime { get; }
 
 		/// <summary>
