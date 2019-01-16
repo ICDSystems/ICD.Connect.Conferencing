@@ -169,6 +169,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IEnumerable<IDialingDeviceControl> GetDialingProviders();
 
 		/// <summary>
+		///  Gets the dialing provider for the given source type, falling back when unable to find a dialer for the type.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		IDialingDeviceControl GetBestDialingProvider(eConferenceSourceType sourceType);
+
+		/// <summary>
 		/// Registers the dialing component.
 		/// </summary>
 		/// <param name="sourceType"></param>
@@ -225,7 +232,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			eConferenceSourceType type = extends.DialingPlan.GetSourceType(number);
 
 			// Gets the best provider for that call type
-			IDialingDeviceControl provider = extends.GetDialingProvider(type);
+			IDialingDeviceControl provider = extends.GetBestDialingProvider(type);
 
 			// Return the best available type we can handle the call as.
 			eConferenceSourceType providerType = provider == null ? eConferenceSourceType.Unknown : provider.Supports;
