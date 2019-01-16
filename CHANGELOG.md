@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.3.0] - 2019-01-16
+### Changed
+ - Fixed ConferenceManager issue that was yielding audio dialers when requesting a video dialer
+
 ## [11.2.0] - 2019-01-02
 ### Added
  - Added OnProviderAdded and OnProviderRemoved events to IConferenceManager
