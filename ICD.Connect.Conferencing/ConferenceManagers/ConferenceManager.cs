@@ -37,9 +37,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 		public event EventHandler<InCallEventArgs> OnInCallChanged;
 
-		private readonly IcdHashSet<IConference> m_Conferences; 
+		private readonly IcdHashSet<IConference> m_Conferences;
 		private readonly ScrollQueue<IParticipant> m_RecentSources;
-		private readonly IcdHashSet<IConferenceDeviceControl> m_DialingProviders;
+		private readonly Dictionary<IConferenceDeviceControl, eCallType> m_DialingProviders; 
 		private readonly IcdHashSet<IConferenceDeviceControl> m_FeedbackProviders;
 
 		private readonly SafeCriticalSection m_ConferencesSection;
@@ -48,8 +48,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
 
 		private readonly DialingPlan m_DialingPlan;
-
-		private IConference m_ActiveConference;
 
 		private eInCall m_IsInCall;
 
@@ -71,17 +69,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public IFavorites Favorites { get; set; }
 
 		/// <summary>
-		/// Gets the active conference.
+		/// Gets the active conferences.
 		/// </summary>
-		public IEnumerable<IConference> ActiveConferences
-		{
-			get { return m_Conferences.Where(c => c.IsActive()); }
-		}
+		public IEnumerable<IConference> ActiveConferences { get { return m_Conferences.Where(c => c.IsActive()); } }
 
-		public IEnumerable<IConference> OnlineConferences
-		{
-			get { return m_Conferences.Where(c => c.IsOnline()); }
-		}
+		/// <summary>
+		/// Gets the online conferences.
+		/// </summary>
+		public IEnumerable<IConference> OnlineConferences { get { return m_Conferences.Where(c => c.IsOnline()); } }
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
@@ -120,22 +115,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the number of registered dialing providers.
 		/// </summary>
-		public int DialingProvidersCount
-		{
-			get
-			{
-				m_DialingProviderSection.Enter();
-
-				try
-				{
-					return m_DialingProviders.Count;
-				}
-				finally
-				{
-					m_DialingProviderSection.Leave();
-				}
-			}
-		}
+		public int DialingProvidersCount { get { return m_DialingProviderSection.Execute(() => m_DialingProviders.Count); } }
 
 		#endregion
 
@@ -146,7 +126,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			m_Conferences = new IcdHashSet<IConference>();
 			m_RecentSources = new ScrollQueue<IParticipant>(RECENT_LENGTH);
-			m_DialingProviders = new IcdHashSet<IConferenceDeviceControl>();
+
+			m_DialingProviders = new Dictionary<IConferenceDeviceControl, eCallType>();
 			m_FeedbackProviders = new IcdHashSet<IConferenceDeviceControl>();
 
 			m_ConferencesSection = new SafeCriticalSection();
@@ -254,7 +235,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <returns></returns>
 		public IEnumerable<IConferenceDeviceControl> GetDialingProviders()
 		{
-			return m_DialingProviderSection.Execute(() => m_DialingProviders.ToArray());
+			return m_DialingProviderSection.Execute(() => m_DialingProviders.Keys.ToArray());
+		}
+
+		/// <summary>
+		/// Gets the registered conference components.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		public IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType sourceType)
+		{
+			m_DialingProviderSection.Enter();
+
+			try
+			{
+				return m_DialingProviders.Where(kvp => kvp.Value.HasFlags(sourceType))
+				                         .Select(kvp => kvp.Key)
+				                         .ToArray();
+			}
+			finally
+			{
+				m_DialingProviderSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -270,27 +272,34 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Registers the conference provider.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
+		/// <param name="callType"></param>
 		/// <returns></returns>
-		public bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl)
+		public bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl, eCallType callType)
 		{
+			if (conferenceControl == null)
+				throw new ArgumentNullException("conferenceControl");
+
+			if (!conferenceControl.Supports.HasFlags(callType))
+				throw new ArgumentException("Conference control does not support given call type.");
+
 			m_DialingProviderSection.Enter();
 
 			try
 			{
-				if (m_DialingProviders.Contains(conferenceControl))
+				if (m_DialingProviders.ContainsKey(conferenceControl))
 					return false;
 
-				m_DialingProviders.Add(conferenceControl);
-				UpdateProvider(conferenceControl);
-
+				m_DialingProviders.Add(conferenceControl, callType);
 				Subscribe(conferenceControl);
+
+				UpdateProvider(conferenceControl);
 			}
 			finally
 			{
 				m_DialingProviderSection.Leave();
 			}
 
-			OnProviderAdded.Raise(this, new ConferenceProviderEventArgs(conferenceControl.Supports, conferenceControl));
+			OnProviderAdded.Raise(this, new ConferenceProviderEventArgs(callType, conferenceControl));
 
 			return true;
 		}
@@ -302,23 +311,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <returns></returns>
 		public bool DeregisterDialingProvider(IConferenceDeviceControl conferenceControl)
 		{
+			if (conferenceControl == null)
+				throw new ArgumentNullException("conferenceControl");
+
+			eCallType callType;
+
 			m_DialingProviderSection.Enter();
 
 			try
 			{
-				if (!m_DialingProviders.Contains(conferenceControl))
+				if (!m_DialingProviders.TryGetValue(conferenceControl, out callType))
 					return false;
-				
-				m_DialingProviders.Remove(conferenceControl);
 
 				Unsubscribe(conferenceControl);
+
+				m_DialingProviders.Remove(conferenceControl);
 			}
 			finally
 			{
 				m_DialingProviderSection.Leave();
 			}
 
-			OnProviderRemoved.Raise(this, new ConferenceProviderEventArgs(conferenceControl.Supports, conferenceControl));
+			OnProviderRemoved.Raise(this, new ConferenceProviderEventArgs(callType, conferenceControl));
 
 			return true;
 		}
@@ -330,16 +344,20 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <returns></returns>
 		public bool RegisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl)
 		{
+			if (conferenceControl == null)
+				throw new ArgumentNullException("conferenceControl");
+
 			m_FeedbackProviderSection.Enter();
+
 			try
 			{
 				if (m_FeedbackProviders.Contains(conferenceControl))
 					return false;
 
 				m_FeedbackProviders.Add(conferenceControl);
-				UpdateFeedbackProvider(conferenceControl);
-
 				Subscribe(conferenceControl);
+
+				UpdateFeedbackProvider(conferenceControl);
 			}
 			finally
 			{
@@ -364,9 +382,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				if (!m_FeedbackProviders.Contains(conferenceControl))
 					return false;
 
-				m_FeedbackProviders.Remove(conferenceControl);
-
 				Unsubscribe(conferenceControl);
+
+				m_FeedbackProviders.Remove(conferenceControl);
 			}
 			finally
 			{
@@ -384,16 +402,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public void ClearDialingProviders()
 		{
 			m_DialingProviderSection.Enter();
+
 			try
 			{
-				foreach (IConferenceDeviceControl conferenceControl in m_DialingProviders.ToArray(m_DialingProviders.Count))
+				foreach (IConferenceDeviceControl conferenceControl in m_DialingProviders.Keys.ToArray(m_DialingProviders.Count))
 					DeregisterDialingProvider(conferenceControl);
 			}
 			finally
 			{
 				m_DialingProviderSection.Leave();
 			}
+
 			m_FeedbackProviderSection.Enter();
+
 			try
 			{
 				foreach (IConferenceDeviceControl provider in m_FeedbackProviders.ToArray(m_FeedbackProviders.Count))
@@ -412,7 +433,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		private void AddConferences(IEnumerable<IConference> conferences)
 		{
-			foreach(var conference in conferences)
+			foreach (IConference conference in conferences)
 				AddConference(conference);
 		}
 
@@ -426,6 +447,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			m_ConferencesSection.Enter();
+
 			try
 			{
 				if (!m_Conferences.Add(conference))
@@ -435,7 +457,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 				OnConferenceAdded.Raise(this, new ConferenceEventArgs(conference));
 
-				foreach (var participant in conference.GetParticipants())
+				foreach (IParticipant participant in conference.GetParticipants())
 					AddParticipant(participant);
 			}
 			finally
@@ -448,7 +470,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		private void RemoveConferences(IEnumerable<IConference> conferences)
 		{
-			foreach(var conference in conferences)
+			foreach (IConference conference in conferences)
 				RemoveConference(conference);
 		}
 
@@ -458,6 +480,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			m_ConferencesSection.Enter();
+
 			try
 			{
 				if (!m_Conferences.Remove(conference))
@@ -465,7 +488,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 				Unsubscribe(conference);
 
-				foreach (var participant in conference.GetParticipants())
+				foreach (IParticipant participant in conference.GetParticipants())
 					Unsubscribe(participant);
 			}
 			finally
@@ -534,35 +557,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		private void UpdateIsInCall()
 		{
-			if (!OnlineConferences.Any())
-			{
-				IsInCall = eInCall.None;
-				return;
-			}
-
-			eInCall inCall = eInCall.None;
-			foreach (var conference in OnlineConferences)
-			{
-				switch (conference.CallType)
-				{
-					case eCallType.Unknown:
-					case eCallType.Audio:
-						inCall = eInCall.Audio;
-						break;
-
-					case eCallType.Video:
-						inCall = eInCall.Video;
-						break;
-
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-
-				if (inCall == eInCall.Video)
-					break;
-			}
-
-			IsInCall = inCall;
+			IsInCall = (eInCall)OnlineConferences.Max(c => (int)c.CallType);
 		}
 
 		#endregion

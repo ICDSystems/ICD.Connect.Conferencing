@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Services;
+using ICD.Connect.Conferencing.ConferencePoints;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
@@ -9,6 +11,8 @@ using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Devices;
+using ICD.Connect.Settings.Cores;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {
@@ -151,11 +155,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IEnumerable<IConferenceDeviceControl> GetDialingProviders();
 
 		/// <summary>
+		/// Gets the registered conference components.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType sourceType);
+
+		/// <summary>
 		/// Registers the conference component.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
+		/// <param name="sourceType"></param>
 		/// <returns></returns>
-		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl);
+		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl, eCallType sourceType);
 
 		/// <summary>
 		/// Registers the conference component, for feedback only.
@@ -191,6 +203,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	/// </summary>
 	public static class ConferenceManagerExtensions
 	{
+		/// <summary>
+		/// Registers the dialing provider at the given conference point.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="conferencePoint"></param>
+		public static void RegisterDialingProvider(this IConferenceManager extends, IConferencePoint conferencePoint)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (conferencePoint == null)
+				throw new ArgumentNullException("conferencePoint");
+
+			IDeviceBase device = ServiceProvider.GetService<ICore>()
+			                                    .Originators
+			                                    .GetChild<IDeviceBase>(conferencePoint.DeviceId);
+
+			IConferenceDeviceControl control = device.Controls.GetControl<IConferenceDeviceControl>(conferencePoint.ControlId);
+
+			extends.RegisterDialingProvider(control, conferencePoint.Type);
+		}
+
 		/// <summary>
 		/// Dials the given contact. Call type is taken from the dialling plan.
 		/// </summary>
@@ -234,7 +268,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			if (number == null)
 				throw new ArgumentNullException("source");
-
 			
 			if (callType == eCallType.Unknown)
 				callType = extends.DialingPlan.DefaultSourceType;
