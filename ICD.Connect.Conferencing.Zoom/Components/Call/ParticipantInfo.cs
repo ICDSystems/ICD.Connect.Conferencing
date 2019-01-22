@@ -1,9 +1,10 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Responses;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class ParticipantInfo
+	public sealed class ParticipantInfo : AbstractZoomRoomData
 	{
 		[JsonProperty("user_name")]
 		public string UserName { get; private set; }
@@ -73,5 +74,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		[JsonProperty("event")]
 		public eUserChangedEventType Event { get; private set; }
+
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			UserName = jObject["user_name"].ToString();
+			UserId = jObject["user_id"].ToString();
+			IsHost = jObject["is_host"].ToObject<bool>();
+			IsMyself = jObject["is_myself"].ToObject<bool>();
+			AvatarUrl = jObject["avatar_url"].ToString();
+			IsCohost = jObject["isCohost"].ToObject<bool>();
+			AudioState = jObject["audio_status state"].ToObject<eAudioState>();
+			IsSendingVideo = jObject["video_status is_sending"].ToObject<bool>();
+			Event = jObject["event"].ToObject<eUserChangedEventType>();
+		}
 	}
 }

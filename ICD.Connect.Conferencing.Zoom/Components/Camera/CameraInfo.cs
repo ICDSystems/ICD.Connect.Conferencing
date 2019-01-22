@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using ICD.Connect.Conferencing.Zoom.Responses;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 {
-	public class CameraInfo
+	public sealed class CameraInfo : AbstractZoomRoomData
 	{
 		/// <summary>
 		/// ???
@@ -25,5 +27,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		/// </summary>
 		[JsonProperty("id")]
 		public string UsbId { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			Alias = jObject["Alias"].ToString();
+			Name = jObject["Name"].ToString();
+			UsbId = jObject["id"].ToString();
+		}
 	}
 }

@@ -123,7 +123,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		private void UpdateNetworkDefaults()
 		{
-			m_NetworkProperties.ApplyDefaultValues(null, 22, "zoom", "zoomus123");
+			m_NetworkProperties.ApplyDefaultValues(null, 2244, "zoom", "zoomus123");
 		}
 	}
 }

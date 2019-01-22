@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using ICD.Connect.Conferencing.Zoom.Responses;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 {
-	public sealed class SharingInfo
+	public sealed class SharingInfo : AbstractZoomRoomData
 	{
 		/// <summary>
 		/// If the ZR uses a WiFi access point, then the name of that WiFi hot spot appears here.
@@ -79,6 +81,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		/// </summary>
 		[JsonProperty("dispState")]
 		public eSharingDisplayState DisplayState { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			IsBlackMagicConnected = jObject["isBlackMagicConnected"].ToObject<bool>();
+			IsBlackMagicDataAvailable = jObject["isBlackMagicDataAvailable"].ToObject<bool>();
+			IsSharingBlackMagic = jObject["isSharingBlackMagic"].ToObject<bool>();
+		}
 	}
 
 	public enum eSharingDisplayState
