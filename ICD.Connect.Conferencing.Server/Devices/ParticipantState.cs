@@ -1,11 +1,12 @@
 ﻿using System;
 using ICD.Common.Properties;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 using Newtonsoft.Json;
 
-namespace ICD.Connect.Conferencing.Participants
+namespace ICD.Connect.Conferencing.Server.Devices
 {
-	public sealed class ConferenceSourceState
+	public sealed class ParticipantState
 	{
 		[PublicAPI, JsonProperty]
 		public string Name { get; private set; }
@@ -31,27 +32,27 @@ namespace ICD.Connect.Conferencing.Participants
 		public string Language { get; set; }
 
 		[JsonConstructor]
-		public ConferenceSourceState()
+		public ParticipantState()
 		{
 		}
 
-		public static ConferenceSourceState FromSource(ITraditionalParticipant source, string language)
+		public static ParticipantState FromParticipant(ITraditionalParticipant participant, string language)
 		{
-			if (source == null)
+			if (participant == null)
 				throw new ArgumentNullException("source");
 
-			return new ConferenceSourceState
+			return new ParticipantState
 			{
-				Name = source.Name,
-				Number = source.Number,
-				SourceType = source.SourceType,
-				Status = source.Status,
-				Direction = source.Direction,
-				AnswerState = source.AnswerState,
-				Start = source.Start,
-				End = source.End,
-				DialTime = source.DialTime,
-				StartOrDialTime = source.GetStartOrDialTime(),
+				Name = participant.Name,
+				Number = participant.Number,
+				SourceType = participant.SourceType,
+				Status = participant.Status,
+				Direction = participant.Direction,
+				AnswerState = participant.AnswerState,
+				Start = participant.Start,
+				End = participant.End,
+				DialTime = participant.DialTime,
+				StartOrDialTime = participant.GetStartOrDialTime(),
 				Language = language
 			};
 		}

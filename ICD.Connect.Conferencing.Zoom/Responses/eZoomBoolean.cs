@@ -12,12 +12,15 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		public static bool ToBool(this eZoomBoolean extends)
 		{
-			if (extends == eZoomBoolean.on)
-				return true;
-			else if (extends == eZoomBoolean.off)
-				return false;
-			else
-				throw new ArgumentOutOfRangeException();
+			switch (extends)
+			{
+				case eZoomBoolean.on:
+					return true;
+				case eZoomBoolean.off:
+					return false;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 	}
 }

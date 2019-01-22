@@ -1,5 +1,4 @@
-﻿using ICD.Connect.Conferencing.Contacts;
-using ICD.Connect.Conferencing.DialContexts;
+﻿using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Favorites

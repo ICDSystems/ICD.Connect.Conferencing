@@ -1,6 +1,4 @@
-﻿using ICD.Connect.Conferencing.EventArguments;
-
-namespace ICD.Connect.Conferencing.DialContexts
+﻿namespace ICD.Connect.Conferencing.DialContexts
 {
 	/// <summary>
 	/// Represents a dial context which is either sip or pstn, but it doesn't really matter.

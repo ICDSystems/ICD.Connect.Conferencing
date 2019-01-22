@@ -482,7 +482,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				{
 					foreach (ITraditionalParticipant source in adapter.GetSources())
 					{
-						ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, adapter.Language);
+						ParticipantState sourceState = ParticipantState.FromParticipant(source, adapter.Language);
 						Guid id = m_Sources.GetKey(source);
 						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
 					}
@@ -939,7 +939,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				ISimplInterpretationDevice targetAdapter = adapters.FirstOrDefault(a => a.ContainsSource(source));
 
-				ConferenceSourceState sourceState = ConferenceSourceState.FromSource(source, targetAdapter != null
+				ParticipantState sourceState = ParticipantState.FromParticipant(source, targetAdapter != null
 					                                                                             ? targetAdapter.Language
 					                                                                             : null);
 

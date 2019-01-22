@@ -1,10 +1,7 @@
 ﻿using System;
 using ICD.Common.Properties;
-using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
-using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
-using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
 {
@@ -45,6 +42,14 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		string Number { get; }
 
+		/// <summary>
+		/// Call Direction
+		/// </summary>
+		eCallDirection Direction { get; }
+
+		/// <summary>
+		/// Gets the time the call was dialed.
+		/// </summary>
 		DateTime DialTime { get; }
 
 		/// <summary>
@@ -94,69 +99,6 @@ namespace ICD.Connect.Conferencing.Participants
 
 			extends.SendDtmf(data.ToString());
 		}
-
-		/// <summary>
-		/// Returns true if the source is incoming and actively ringing.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <returns></returns>
-		// TODO: REMOVE OLD CODE
-		//[PublicAPI]
-		//public static bool GetIsRingingIncomingCall(this ITraditionalParticipant extends)
-		//{
-		//    if (extends == null)
-		//        throw new ArgumentNullException("extends");
-
-		//    switch (extends.Direction)
-		//    {
-		//        case eCallDirection.Undefined:
-		//        case eCallDirection.Outgoing:
-		//            return false;
-
-		//        case eCallDirection.Incoming:
-		//            break;
-
-		//        default:
-		//            throw new ArgumentOutOfRangeException();
-		//    }
-
-		//    switch (extends.AnswerState)
-		//    {
-		//        case eCallAnswerState.Answered:
-		//        case eCallAnswerState.Autoanswered:
-		//        case eCallAnswerState.Ignored:
-		//            return false;
-
-		//        case eCallAnswerState.Unknown:
-		//        case eCallAnswerState.Unanswered:
-		//            break;
-
-		//        default:
-		//            throw new ArgumentOutOfRangeException();
-		//    }
-
-		//    switch (extends.Status)
-		//    {
-		//        case eParticipantStatus.Undefined:
-		//        case eParticipantStatus.Connected:
-		//        case eParticipantStatus.Disconnecting:
-		//        case eParticipantStatus.OnHold:
-		//        case eParticipantStatus.EarlyMedia:
-		//        case eParticipantStatus.Preserved:
-		//        case eParticipantStatus.RemotePreserved:
-		//        case eParticipantStatus.Disconnected:
-		//        case eParticipantStatus.Idle:
-		//            return false;
-
-		//        case eParticipantStatus.Dialing:
-		//        case eParticipantStatus.Ringing:
-		//        case eParticipantStatus.Connecting:
-		//            return true;
-
-		//        default:
-		//            throw new ArgumentOutOfRangeException();
-		//    }
-		//}
 
 		/// <summary>
 		/// Gets the start time, falls through to dial time if no start time specified.

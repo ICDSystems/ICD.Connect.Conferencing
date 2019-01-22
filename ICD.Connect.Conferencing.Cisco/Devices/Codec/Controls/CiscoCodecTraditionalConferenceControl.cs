@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
-using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Utils;
 using eCallType = ICD.Connect.Conferencing.EventArguments.eCallType;

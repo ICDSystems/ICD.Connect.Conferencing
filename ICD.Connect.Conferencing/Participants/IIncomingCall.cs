@@ -28,16 +28,6 @@ namespace ICD.Connect.Conferencing.Participants
 		eCallDirection Direction { get; }
 
 		/// <summary>
-		/// Answers the incoming call.
-		/// </summary>
-		void Answer();
-
-		/// <summary>
-		/// Rejects the incoming call.
-		/// </summary>
-		void Reject();
-
-		/// <summary>
 		/// Gets the number of the incoming call
 		/// </summary>
 		string Number { get; }
@@ -46,6 +36,16 @@ namespace ICD.Connect.Conferencing.Participants
 		/// Optional name associated with the incoming call
 		/// </summary>
 		string Name { get; }
+
+		/// <summary>
+		/// Answers the incoming call.
+		/// </summary>
+		void Answer();
+
+		/// <summary>
+		/// Rejects the incoming call.
+		/// </summary>
+		void Reject();
 	}
 
 	public static class IncomingCallExtensions

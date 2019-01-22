@@ -35,17 +35,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 		private static readonly PredicateComparer<MeetingInfo, DateTime> s_MeetingInfoComparer;
 
 		/// <summary>
-		/// Compare meeting infos by id.
-		/// </summary>
-		private static readonly PredicateEqualityComparer<MeetingInfo, string> s_MeetingInfoEqualityComparer;
-
-		/// <summary>
 		/// Static constructor.
 		/// </summary>
 		static PolycomCalendarControl()
 	    {
 			s_MeetingInfoComparer = new PredicateComparer<MeetingInfo, DateTime>(m => m.Start);
-			s_MeetingInfoEqualityComparer = new PredicateEqualityComparer<MeetingInfo, string>(m => m.Id);
 		}
 
 		/// <summary>
@@ -58,7 +52,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 	    {
 		    m_RefreshTimer = new SafeTimer(Refresh, REFRESH_INTERVAL, REFRESH_INTERVAL);
 
-		    m_MeetingInfoToBooking = new IcdOrderedDictionary<MeetingInfo, PolycomBooking>(s_MeetingInfoComparer, s_MeetingInfoEqualityComparer);
+		    m_MeetingInfoToBooking = new IcdOrderedDictionary<MeetingInfo, PolycomBooking>(s_MeetingInfoComparer);
 			m_CriticalSection = new SafeCriticalSection();
 
 		    m_BookingsComponent = Parent.Components.GetComponent<CalendarComponent>();
@@ -164,7 +158,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 
 		    try
 		    {
-				IcdHashSet<MeetingInfo> existing = m_MeetingInfoToBooking.Keys.ToIcdHashSet(s_MeetingInfoEqualityComparer);
+				IcdHashSet<MeetingInfo> existing = m_MeetingInfoToBooking.Keys.ToIcdHashSet();
 				IcdHashSet<MeetingInfo> removeBookingList = existing.Subtract(meetings);
 
 				foreach (MeetingInfo meeting in removeBookingList)

@@ -153,7 +153,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Registers the conference component.
 		/// </summary>
-		/// <param name="sourceType"></param>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
 		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl);
@@ -168,7 +167,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Deregisters the conference component.
 		/// </summary>
-		/// <param name="sourceType"></param>
+		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
 		bool DeregisterDialingProvider(IConferenceDeviceControl conferenceControl);
 

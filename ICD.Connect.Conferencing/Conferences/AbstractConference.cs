@@ -14,9 +14,9 @@ namespace ICD.Connect.Conferencing.Conferences
         public abstract event EventHandler<ParticipantEventArgs> OnParticipantAdded;
 		public abstract event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
-		public eConferenceStatus Status { get; private set; }
-		public DateTime? Start { get; private set; }
-		public DateTime? End { get; private set; }
+		public abstract eConferenceStatus Status { get; }
+		public abstract DateTime? Start { get; }
+		public abstract DateTime? End { get; }
 		public abstract eCallType CallType { get; }
 
 		IEnumerable<IParticipant> IConference.GetParticipants()
@@ -32,7 +32,7 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		public virtual string ConsoleHelp { get { return string.Empty; }  }
 
-		public virtual  IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		public virtual IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
 			foreach (var participant in GetParticipants())
 				yield return participant;

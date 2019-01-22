@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Responses;
@@ -22,8 +20,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private string m_Name;
 		private eConferenceStatus m_Status;
 
-		private List<ZoomParticipant> m_Participants;
-		private SafeCriticalSection m_ParticipantsSection;
+		private readonly List<ZoomParticipant> m_Participants;
+		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		#region Events
 
@@ -346,8 +344,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			get { return "Zoom Room Conference"; }
 		}
 
-        public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
+        public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+        {
+	        foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+		        yield return node;
+
 			foreach (var participant in GetParticipants())
 				yield return participant;
 		}
@@ -371,6 +372,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
 			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
 			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
+		}
+
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()

@@ -7,12 +7,10 @@ using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
 {
-
 	public delegate void ThinWebParticipantKickCallback(ThinWebParticipant sender);
 
 	public delegate void ThinWebParticipantMuteCallback(ThinWebParticipant sender, bool mute);
@@ -144,13 +142,6 @@ namespace ICD.Connect.Conferencing.Participants
 		#endregion
 
 		/// <summary>
-		/// Constructor.
-		/// </summary>
-		public ThinWebParticipant()
-		{
-		}
-
-		/// <summary>
 		/// Release resources.
 		/// </summary>
 		public void Dispose()
@@ -158,6 +149,7 @@ namespace ICD.Connect.Conferencing.Participants
 			OnStatusChanged = null;
 			OnNameChanged = null;
 			OnSourceTypeChanged = null;
+			OnIsMutedChanged = null;
 
 			KickCallback = null;
 			MuteCallback = null;
@@ -246,7 +238,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
 			yield return new ConsoleCommand("Kick", "Kicks the participant", () => Kick());
-			yield return new GenericConsoleCommand<bool>("Mute", "Usage: Mute <true/false>", (m) => Mute(m));
+			yield return new GenericConsoleCommand<bool>("Mute", "Usage: Mute <true/false>", m => Mute(m));
 		}
 
 		#endregion
