@@ -1,8 +1,14 @@
+using System.Text.RegularExpressions;
+#if SIMPLSHARP
+using Crestron.SimplSharp.Reflection;
+using Activator = Crestron.SimplSharp.Reflection.Activator;
+#endif
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Zoom.Components;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
@@ -20,11 +26,124 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
 	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>
-	{
+	{/// <summary>
+		/// Key to the property in the json which stores where the actual response data is stored
+		/// </summary>
+		private const string RESPONSE_KEY = "topKey";
+
+		/// <summary>
+		/// Key to the property in the json that stores the type of response (zCommand, zConfiguration, zEvent, zStatus)
+		/// </summary>
+		private const string API_RESPONSE_TYPE = "type";
+
+		/// <summary>
+		/// Key to the property in the json that stores whether the response was synchronous to a command, or an async event
+		/// </summary>
+		private const string SYNCHRONOUS = "Sync";
+
+		private static readonly Dictionary<AttributeKey, Type> s_TypeDict;
+
+		public sealed class AttributeKey : IEquatable<AttributeKey>
+		{
+			private readonly string m_Key;
+			private readonly eZoomRoomApiType m_ResponseType;
+			private readonly bool m_Synchronous;
+
+			public string Key
+			{
+				get { return m_Key; }
+			}
+			public eZoomRoomApiType ResponseType
+			{
+				get { return m_ResponseType; }
+			}
+			public bool Synchronous
+			{
+				get { return m_Synchronous; }
+			}
+
+			public AttributeKey(string key, eZoomRoomApiType type, bool synchronous)
+			{
+				m_Key = key;
+				m_ResponseType = type;
+				m_Synchronous = synchronous;
+			}
+
+			public AttributeKey(ZoomRoomApiResponseAttribute attribute)
+				: this(attribute.ResponseKey, attribute.CommandType, attribute.Synchronous)
+			{
+			}
+
+			public bool Equals(AttributeKey other)
+			{
+				if (ReferenceEquals(null, other))
+				{
+					return false;
+				}
+
+				if (ReferenceEquals(this, other))
+				{
+					return true;
+				}
+
+				return string.Equals(m_Key, other.m_Key) && m_ResponseType == other.m_ResponseType && m_Synchronous == other.m_Synchronous;
+			}
+
+			public override bool Equals(object obj)
+			{
+				if (ReferenceEquals(null, obj))
+				{
+					return false;
+				}
+
+				if (ReferenceEquals(this, obj))
+				{
+					return true;
+				}
+
+				return obj is AttributeKey && Equals((AttributeKey)obj);
+			}
+
+			public override int GetHashCode()
+			{
+				unchecked
+				{
+					var hashCode = (m_Key != null ? m_Key.GetHashCode() : 0);
+					hashCode = (hashCode * 397) ^ (int)m_ResponseType;
+					hashCode = (hashCode * 397) ^ m_Synchronous.GetHashCode();
+					return hashCode;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Static constructor.
+		/// </summary>
+		static ZoomRoom()
+		{
+			s_TypeDict = new Dictionary<AttributeKey, Type>();
+
+			foreach (
+#if SIMPLSHARP
+				CType
+#else
+				Type
+#endif
+					type in typeof(ZoomRoom).GetAssembly().GetTypes())
+			{
+				foreach (ZoomRoomApiResponseAttribute attribute in type.GetCustomAttributes<ZoomRoomApiResponseAttribute>())
+				{
+					AttributeKey key = new AttributeKey(attribute);
+					s_TypeDict.Add(key, type);
+				}
+			}
+		}
 		/// <summary>
 		/// Wrapper callback for responses that casts to the appropriate type.
 		/// </summary>
@@ -354,8 +473,12 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			if (args.Data.Contains("Login"))
 				Initialize();
-			else 
-				m_SerialBuffer.Enqueue(args.Data);
+			else
+				//m_SerialBuffer.Enqueue(args.Data);
+			{
+				if (args.Data.StartsWith("{"))
+					SerialBufferCompletedSerial(sender, args);
+			}
 		}
 
 		/// <summary>
@@ -406,6 +529,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			buffer.OnCompletedSerial -= SerialBufferCompletedSerial;
 		}
 
+
+		private const string ATTR_KEY_REGEX =
+			"\"Sync\": (?'sync'true|false),\r\n  \"topKey\": \"(?'topKey'.*)\",\r\n  \"type\": \"(?'type'zConfiguration|zEvent|zStatus|zCommand)\"";
 		/// <summary>
 		/// Called when the buffer completes a string.
 		/// </summary>
@@ -414,17 +540,48 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
 			string json = args.Data;
-			var settings = new JsonSerializerSettings();
-			settings.Converters.Add(new ZoomRoomResponseConverter());
 
 			AbstractZoomRoomResponse response = null;
 			try
 			{
-				response = JsonConvert.DeserializeObject<AbstractZoomRoomResponse>(json, settings);
+				Match match;
+				if (!RegexUtils.Matches(args.Data, ATTR_KEY_REGEX, out match))
+					return;
+
+				string responseKey = match.Groups["topKey"].Value;
+				eZoomRoomApiType apiResponseType;
+				if (!EnumUtils.TryParse(match.Groups["type"].Value, true, out apiResponseType))
+					return;
+				bool synchronous = bool.Parse(match.Groups["sync"].Value);
+
+				AttributeKey key = new AttributeKey(responseKey, apiResponseType, synchronous);
+
+				// find concrete type that matches the json values
+				Type responseType;
+				if (!s_TypeDict.TryGetValue(key, out responseType))
+				{
+					return;
+				}
+				
+				if (responseType != null)
+				{
+					var jObject = JObject.Parse(json);
+					// shitty zoom api sometimes sends a single object instead of array
+					if (responseType == typeof (ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
+					{
+						responseType = typeof (SingleParticipantResponse);
+					}
+					response = (AbstractZoomRoomResponse)Activator.CreateInstance(responseType);
+					response.LoadFromJObject(jObject);
+					//serializer.Deserialize(new JTokenReader(jObject), responseType)
+				}
+
+				//response = null;
 			}
-			catch (JsonReaderException)
+			catch (Exception ex)
 			{
 				// zoom gives us bad json (unescaped characters) in some error messages
+				Log(eSeverity.Debug, ex, "Failed to deserialize JSON");
 			}
 
 			if (response != null)

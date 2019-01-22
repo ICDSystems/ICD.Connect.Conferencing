@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -8,11 +9,24 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		[JsonProperty("CallDisconnect")]
 		public CallDisconnect Disconnect { get; private set; }
+
+		public override void LoadFromJObject(Newtonsoft.Json.Linq.JObject jObject)
+		{
+			base.LoadFromJObject(jObject);
+
+			Disconnect = new CallDisconnect();
+			Disconnect.LoadFromJObject((JObject) jObject["CallDisconnect"]);
+		}
 	}
 
-	public sealed class CallDisconnect
+	public sealed class CallDisconnect : AbstractZoomRoomData
 	{
 		[JsonProperty("success")]
 		public eZoomBoolean Success { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			Success = jObject["success"].ToObject<eZoomBoolean>();
+		}
 	}
 }

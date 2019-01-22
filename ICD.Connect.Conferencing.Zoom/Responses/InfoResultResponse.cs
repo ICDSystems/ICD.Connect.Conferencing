@@ -1,5 +1,6 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Components.Call;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -12,5 +13,13 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		[JsonProperty("InfoResult")]
 		public CallInfo InfoResult { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			base.LoadFromJObject(jObject);
+
+			InfoResult = new CallInfo();
+			InfoResult.LoadFromJObject((JObject) jObject["InfoResult"]);
+		}
 	}
 }

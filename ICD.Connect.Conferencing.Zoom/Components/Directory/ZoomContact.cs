@@ -4,11 +4,13 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Zoom.Responses;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
-	public sealed class ZoomContact : IContactWithSurname, IContactWithOnlineState
+	public sealed class ZoomContact : AbstractZoomRoomData, IContactWithSurname, IContactWithOnlineState
 	{
 		public event EventHandler<OnlineStateEventArgs> OnOnlineStateChanged;
 		/// <summary>
@@ -105,6 +107,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 			Presence = contact.Presence;
 			if (oldPresence != Presence)
 				OnOnlineStateChanged.Raise(this, new OnlineStateEventArgs(OnlineState));
+		}
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			FirstName = jObject["firstName"].ToString();
+			LastName = jObject["lastName"].ToString();
+			JoinId = jObject["jid"].ToString();
+			ScreenName = jObject["screenName"].ToString();
+			AvatarUrl = jObject["avatarURL"].ToString();
+			Email = jObject["email"].ToString();
+			Index = jObject["index"] == null ? (int?)null : jObject["index"].ToObject<int>();
+			PhoneNumber = jObject["phoneNumber"].ToString();
+			IsZoomRoom = jObject["isZoomRoom"].ToObject<bool>();
+			Presence = jObject["presence"].ToObject<eContactPresence>();
 		}
 	}
 }

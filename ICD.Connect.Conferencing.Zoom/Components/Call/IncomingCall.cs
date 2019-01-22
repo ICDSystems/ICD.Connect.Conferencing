@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using ICD.Connect.Conferencing.Zoom.Responses;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class IncomingCall
+	public sealed class IncomingCall : AbstractZoomRoomData
 	{
 		/// <summary>
 		/// Join ID of the caller. Used to accept the caller using <code>zCommand Call Accept</code>.
@@ -50,9 +52,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public string AvatarUrl { get; private set; }
 
 		/// <summary>
-		/// ???
+		/// Scheduled duration of the meeting
 		/// </summary>
 		[JsonProperty("lifeTime")]
 		public string Lifetime { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			CallerJoinId = jObject["callerJID"].ToString();
+			MeetingNumber = jObject["meetingNumber"].ToString();
+			CallerName = jObject["callerName"].ToString();
+		}
 	}
 }

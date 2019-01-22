@@ -1,9 +1,11 @@
 ﻿using System;
+using ICD.Connect.Conferencing.Zoom.Responses;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 {
-	public sealed class Booking : IEquatable<Booking>
+	public sealed class Booking : AbstractZoomRoomData, IEquatable<Booking>
 	{
 		#region Properties
 
@@ -98,6 +100,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 				hash = hash * 23 + (HostName == null ? 0 : HostName.GetHashCode());
 				return hash;
 			}
+		}
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			MeetingName = jObject["meetingName"].ToString();
+			StartTime = jObject["startTime"].ToObject<DateTime>();
+			EndTime = jObject["endTime"].ToObject<DateTime>();
+			OrganizerName = jObject["creatorName"].ToString();
+			OrganizerEmail = jObject["creatorEmail"].ToString();
+			MeetingNumber = jObject["meetingNumber"].ToString();
+			IsPrivate = jObject["isPrivate"].ToObject<bool>();
+			HostName = jObject["hostName"].ToString();
 		}
 
 		#endregion
