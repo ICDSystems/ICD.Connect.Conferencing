@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added ConferencePoint originators and settings
 
+### Changed
+ - Fixed issue with calendar booking de-duplication that was preventing bookings from updating
+
 ## [13.0.0] - 2019-01-14
 ### Changed
  - Significant refactoring to make the distinction between audio, video and web conferencing
