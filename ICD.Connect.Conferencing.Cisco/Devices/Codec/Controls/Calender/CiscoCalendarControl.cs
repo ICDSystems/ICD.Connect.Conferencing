@@ -32,17 +32,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		private static readonly PredicateComparer<Booking, DateTime> s_BookingComparer;
 
 		/// <summary>
-		/// Compare bookings by id.
-		/// </summary>
-		private static readonly PredicateEqualityComparer<Booking, int> s_BookingEqualityComparer;
-
-		/// <summary>
 		/// Static constructor.
 		/// </summary>
 		static CiscoCalendarControl()
 		{
 			s_BookingComparer = new PredicateComparer<Booking, DateTime>(b => b.StartTime);
-			s_BookingEqualityComparer = new PredicateEqualityComparer<Booking, int>(b => b.Id);
 		}
 
 		/// <summary>
@@ -55,8 +49,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		{
 			m_RefreshTimer = new SafeTimer(Refresh, REFRESH_INTERVAL, REFRESH_INTERVAL);
 
-			m_BookingToCiscoBookings = new IcdOrderedDictionary<Booking, CiscoBooking>(s_BookingComparer,
-			                                                                           s_BookingEqualityComparer);
+			m_BookingToCiscoBookings = new IcdOrderedDictionary<Booking, CiscoBooking>(s_BookingComparer);
 			m_CriticalSection = new SafeCriticalSection();
 
 			m_BookingsComponent = Parent.Components.GetComponent<BookingsComponent>();
@@ -165,7 +158,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 
 			try
 			{
-				IcdHashSet<Booking> existing = m_BookingToCiscoBookings.Keys.ToIcdHashSet(s_BookingEqualityComparer);
+				IcdHashSet<Booking> existing = m_BookingToCiscoBookings.Keys.ToIcdHashSet();
 				IcdHashSet<Booking> removeBookingList = existing.Subtract(bookings);
 
 				foreach (Booking booking in removeBookingList)
