@@ -37,7 +37,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		public void Populate()
 		{
-			Parent.SendCommand("zCommand Phonebook List offset: 0 limit: 9999999");
+			if (Initialized)
+				Parent.SendCommand("zCommand Phonebook List offset: 0 limit: 1000");
 		}
 
 		#endregion
@@ -101,13 +102,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		private void PhonebookListCallback(ZoomRoom zoomRoom, PhonebookListCommandResponse response)
 		{
-			foreach (var contact in response.PhonebookListResult.Contacts)
+			var result = response.PhonebookListResult;
+			foreach (var contact in result.Contacts)
 			{
 				if (contact == null)
 					continue;
 
 				AddOrUpdateContact(contact);
 			}
+			if (result.Contacts.Count() >= result.Limit)
+				Parent.SendCommand("zCommand Phonebook List offset: {0} limit: 1000", result.Offset + result.Limit);
 		}
 
 		private void ContactUpdatedCallback(ZoomRoom zoomRoom, PhonebookContactUpdatedResponse response)

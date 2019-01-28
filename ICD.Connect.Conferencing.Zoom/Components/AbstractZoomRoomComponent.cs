@@ -25,6 +25,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// </summary>
 		public virtual string ConsoleHelp { get { return string.Empty; } }
 
+		public bool Initialized { get; private set; }
+
 		#endregion
 
 		#region Constructors
@@ -157,6 +159,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		{
 			if (args.Data)
 				Initialize();
+			Initialized = args.Data;
 		}
 
 		/// <summary>

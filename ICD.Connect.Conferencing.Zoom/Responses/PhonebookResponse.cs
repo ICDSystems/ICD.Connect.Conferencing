@@ -68,7 +68,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public override void LoadFromJObject(JObject jObject)
 		{
 			Contact = new ZoomContact();
-			Contact.LoadFromJObject((JObject) jObject["Updated Contact"]);
+			if (jObject["Updated Contact"] != null)
+				Contact.LoadFromJObject((JObject) jObject["Updated Contact"]);
+			else if (jObject["Added Contact"] != null)
+				Contact.LoadFromJObject((JObject) jObject["Added Contact"]);
 		}
 	}
 }

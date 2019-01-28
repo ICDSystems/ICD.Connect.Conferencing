@@ -28,6 +28,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using ICD.Connect.Conferencing.Zoom.Components.System;
+using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
@@ -165,15 +167,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		private const string END_OF_LINE = "\r";
 
-		/// <summary>
-		/// System Configuration Commands
-		/// </summary>
-		private readonly string[] m_ConfigurationCommands =
-		{
-			"echo off",
-			"format json"
-		};
-
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
 
@@ -246,6 +239,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			Subscribe(m_SerialBuffer);
 
 			Components = new ZoomRoomComponentFactory(this);
+			// create new system component
+			Components.GetComponent<SystemComponent>();
 
 			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
@@ -408,8 +403,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		private void Initialize()
 		{
-			SendCommands(m_ConfigurationCommands);
-			Initialized = true;
+			m_ConnectionStateManager.Send("echo off");
+			m_ConnectionStateManager.Send("\r");
+			m_ConnectionStateManager.Send("format json");
+			m_ConnectionStateManager.Send("\r");
+			//m_ConnectionStateManager.Send("zStatus CallStatus\r");
 		}
 
 		private void CallResponseCallbacks(AbstractZoomRoomResponse response)
@@ -471,14 +469,15 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void PortOnSerialDataReceived(object sender, StringEventArgs args)
 		{
-			if (args.Data.Contains("Login"))
-				Initialize();
-			else
-				//m_SerialBuffer.Enqueue(args.Data);
+			if (args.Data.StartsWith("{"))
 			{
-				if (args.Data.StartsWith("{"))
-					SerialBufferCompletedSerial(sender, args);
+				SerialBufferCompletedSerial(sender, args);
+				Initialized = true;
 			}
+			else if (args.Data.Contains("Login") || args.Data.StartsWith("*"))
+				Initialize();
+			else if (!Initialized && args.Data == "\n")
+				SendCommand("zStatus Call Status");
 		}
 
 		/// <summary>
@@ -644,6 +643,13 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Gets the help information for the node.
 		/// </summary>
 		public override string ConsoleHelp { get { return "The Zoom Room conferencing device"; } }
+
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			yield return Components;
+			foreach (var node in base.GetConsoleNodes())
+				yield return node;
+		}
 
 		#endregion
 	}

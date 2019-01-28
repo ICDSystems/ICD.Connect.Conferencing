@@ -50,12 +50,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// </remarks>
 		public void UpdateBookings()
 		{
-			Parent.SendCommand("zCommand Bookings Update");
+			if (Initialized)
+				Parent.SendCommand("zCommand Bookings Update");
 		}
 
 		public void ListBookings()
 		{
-			Parent.SendCommand("zCommand Bookings List");
+			if (Initialized)
+				Parent.SendCommand("zCommand Bookings List");
 		}
 
 		protected override void Initialize()
