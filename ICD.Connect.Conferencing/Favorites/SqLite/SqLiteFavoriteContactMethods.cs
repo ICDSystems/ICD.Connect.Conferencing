@@ -167,8 +167,8 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				{
 					command.Parameters.Add(PARAM_FAVORITE_ID, eDbType.Int64).Value = favoriteId;
 					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.String).Value = dialContext.DialString;
-					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.Int32).Value = dialContext.Protocol;
-					command.Parameters.Add(PARAM_DIAL_STRING, eDbType.Int32).Value = dialContext.CallType;
+					command.Parameters.Add(PARAM_DIAL_PROTOCOL, eDbType.Int32).Value = dialContext.Protocol;
+					command.Parameters.Add(PARAM_CALL_TYPE, eDbType.Int32).Value = dialContext.CallType;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
@@ -252,8 +252,8 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 			{
 				Id = (long)reader[COLUMN_ID],
 				DialString = reader[COLUMN_DIAL_STRING] as string,
-				Protocol = (eDialProtocol)reader[COLUMN_DIAL_PROTOCOL],
-				CallType = (eCallType)reader[COLUMN_CALL_TYPE]
+				Protocol = reader[COLUMN_DIAL_PROTOCOL] is System.DBNull ? eDialProtocol.Unknown : (eDialProtocol)reader[COLUMN_DIAL_PROTOCOL],
+				CallType = reader[COLUMN_CALL_TYPE] is System.DBNull ? eCallType.Unknown : (eCallType)reader[COLUMN_CALL_TYPE]
 			};
 		}
 
