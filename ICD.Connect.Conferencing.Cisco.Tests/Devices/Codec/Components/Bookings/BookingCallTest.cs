@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 			Assert.AreEqual("432@firstrepublic.com", info.Number);
 			Assert.AreEqual("SIP", info.Protocol);
 			Assert.AreEqual(4096, info.CallRate);
-			Assert.AreEqual(eCallType.Video, info.CiscoCallType);
+			Assert.AreEqual(eCiscoCallType.Video, info.CiscoCallType);
 		}
 	}
 }

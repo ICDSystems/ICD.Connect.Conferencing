@@ -21,7 +21,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			string number = XmlUtils.TryReadChildElementContentAsString(xml, "Number");
 			string protocol = XmlUtils.TryReadChildElementContentAsString(xml, "Protocol");
 			int callRate = XmlUtils.TryReadChildElementContentAsInt(xml, "CallRate") ?? 0;
-			eCiscoCallType ciscoCallType = XmlUtils.TryReadChildElementContentAsEnum<eCiscoCallType>(xml, "CiscoCallType", true) ??
+			eCiscoCallType ciscoCallType = XmlUtils.TryReadChildElementContentAsEnum<eCiscoCallType>(xml, "CallType", true) ??
 			                     eCiscoCallType.Unknown;
 
 			return new BookingCall
