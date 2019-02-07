@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
@@ -12,7 +13,7 @@ using ICD.Connect.Conferencing.Zoom.Components.System;
 
 namespace ICD.Connect.Conferencing.Zoom.Components
 {
-	public sealed class ZoomRoomComponentFactory : IDisposable
+	public sealed class ZoomRoomComponentFactory : IDisposable, IConsoleNodeGroup
 	{
 		private readonly IcdHashSet<AbstractZoomRoomComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
@@ -29,6 +30,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 			};
 
 		private readonly ZoomRoom m_ZoomRoom;
+
+		public string ConsoleName { get { return "Components"; } }
+
+		public string ConsoleHelp { get { return "Zoom Room Components"; } }
 
 		/// <summary>
 		/// Constructor.
@@ -113,5 +118,21 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 				m_ComponentsSection.Leave();
 			}
 		}
+		
+		#region Console
+
+		public IDictionary<uint, IConsoleNodeBase> GetConsoleNodes()
+		{
+			return m_ComponentsSection.Execute(() =>
+				ConsoleNodeGroup.IndexNodeMap("Components", "Zoom Room Components", m_Components).GetConsoleNodes()
+			);
+		}
+
+		IEnumerable<IConsoleNodeBase> IConsoleNodeBase.GetConsoleNodes()
+		{
+			return GetConsoleNodes().Select(kvp => kvp.Value);
+		}
+
+		#endregion
 	}
 }

@@ -1,10 +1,21 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
-	// do not put a [JsonConverter(typeof(ZoomRoomResponseConverter)] attribute here, will infinite loop
-	public abstract class AbstractZoomRoomResponse
+	public abstract class AbstractZoomRoomData
 	{
+		public abstract void LoadFromJObject(JObject jObject);
+	}
+
+	// do not put a [JsonConverter(typeof(ZoomRoomResponseConverter)] attribute here, will infinite loop
+	public abstract class AbstractZoomRoomResponse : AbstractZoomRoomData
+	{
+		private const string ATTR_TOP_KEY = "topKey";
+		private const string ATTR_TYPE = "type";
+		private const string ATTR_SYNC = "Sync";
+		private const string ATTR_STATUS = "Status";
+
 		/// <summary>
 		/// Property key of where the actual response data is stored
 		/// </summary>
@@ -29,6 +40,16 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		/// </summary>
 		[JsonProperty("Sync")]
 		public bool Sync { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			TopKey = jObject[ATTR_TOP_KEY].ToString();
+			Type = jObject[ATTR_TYPE].ToObject<eZoomRoomApiType>();
+			Sync = jObject[ATTR_SYNC].ToObject<bool>();
+
+			Status = new ZoomRoomResponseStatus();
+			Status.LoadFromJObject((JObject)jObject[ATTR_STATUS]);
+		}
 	}
 
 	public enum eZoomRoomApiType
@@ -40,12 +61,18 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		zError
 	}
 
-	public class ZoomRoomResponseStatus
+	public class ZoomRoomResponseStatus : AbstractZoomRoomData
 	{
 		[JsonProperty("message")]
 		public string Message { get; private set; }
 		[JsonProperty("state")]
 		public eZoomRoomResponseState State { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			Message = jObject["message"].ToString();
+			State = jObject["state"].ToObject<eZoomRoomResponseState>();
+		}
 	}
 
 	public enum eZoomRoomResponseState

@@ -1,5 +1,6 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Components.Presentation;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -9,5 +10,13 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		[JsonProperty("Sharing")]
 		public SharingInfo Sharing { get; set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			base.LoadFromJObject(jObject);
+
+			Sharing = new SharingInfo();
+			Sharing.LoadFromJObject((JObject) jObject["Sharing"]);
+		}
 	}
 }

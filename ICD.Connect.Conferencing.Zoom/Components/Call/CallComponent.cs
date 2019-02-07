@@ -161,6 +161,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			if (info.IsMyself)
 			{
 				AmIHost = info.IsHost || info.IsCohost;
+				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
 				return;
 			}
 
@@ -324,9 +325,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					ClearParticipants();
 					break;
 				case eCallStatus.UNKNOWN:
-					Status = eConferenceStatus.Undefined;
-					break;
-				default:
 					Status = eConferenceStatus.Undefined;
 					break;
 			}

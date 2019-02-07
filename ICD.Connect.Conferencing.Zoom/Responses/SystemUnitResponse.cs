@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -7,9 +8,17 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		[JsonProperty("SystemUnit")]
 		public SystemInfo SystemInfo { get; private set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			base.LoadFromJObject(jObject);
+
+			SystemInfo = new SystemInfo();
+			SystemInfo.LoadFromJObject((JObject) jObject["SystemUnit"]);
+		}
 	}
 
-	public sealed class SystemInfo
+	public sealed class SystemInfo : AbstractZoomRoomData
 	{
 		[JsonProperty("email")]
 		public string Email { get; set; }
@@ -31,6 +40,18 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 
 		[JsonProperty("room_version")]
 		public string RoomVersion { get; set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			Email = jObject["email"].ToString();
+			LoginType = jObject["login_type"].ToObject<eLoginType>();
+			MeetingNumber = jObject["meeting_number"].ToString();
+			Platform = jObject["platform"].ToString();
+			RoomVersion = jObject["room_version"].ToString();
+
+			RoomInfo = new RoomInfo();
+			RoomInfo.LoadFromJObject((JObject) jObject["room_info"]);
+		}
 	}
 
 	public enum eLoginType
@@ -39,7 +60,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		work_email
 	}
 
-	public sealed class RoomInfo
+	public sealed class RoomInfo : AbstractZoomRoomData
 	{
 		[JsonProperty("room_name")]
 		public string RoomName { get; set; }
@@ -52,5 +73,13 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 
 		[JsonProperty("account_email")]
 		public string AccountEmail { get; set; }
+
+		public override void LoadFromJObject(JObject jObject)
+		{
+			RoomName = jObject["room_name"].ToString();
+			IsAutoAnswerEnabled = jObject["is_auto_answer_enabled"].ToObject<bool>();
+			IsAutoAnswerSelected = jObject["is_auto_answer_selected"].ToObject<bool>();
+			AccountEmail = jObject["account_email"].ToString();
+		}
 	}
 }

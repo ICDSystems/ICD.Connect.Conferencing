@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -227,8 +227,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			parent.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.RegisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
-
-			parent.OnInitializedChanged += ParentOnOnInitializedChanged;
 		}
 
 		private void CallConnectErrorCallback(ZoomRoom zoomRoom, CallConnectErrorResponse response)
@@ -242,8 +240,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			parent.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.UnregisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
-
-			parent.OnInitializedChanged += ParentOnOnInitializedChanged;
 		}
 
 		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
@@ -253,11 +249,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 				PrivacyMuted = configuration.Microphone.Mute;
 			if (configuration.Camera != null)
 				CameraEnabled = !configuration.Camera.Mute;
-		}
-
-		private void ParentOnOnInitializedChanged(object sender, BoolEventArgs e)
-		{
-			Parent.SendCommand("zConfiguration Call Microphone");
 		}
 
 		private void IncomingCallCallback(ZoomRoom zoomroom, IncomingCallResponse response)

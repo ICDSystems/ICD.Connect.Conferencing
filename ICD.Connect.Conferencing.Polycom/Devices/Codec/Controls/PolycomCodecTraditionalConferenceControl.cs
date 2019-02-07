@@ -114,7 +114,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="dialContext"></param>
 		public override void Dial(IDialContext dialContext)
 		{
-			if (dialContext.CallType == eCallType.Video)
+			if (dialContext.CallType == eCallType.Video || dialContext.CallType == eCallType.Unknown)
 				m_DialComponent.DialAuto(dialContext.DialString);
 
 			else if (dialContext.CallType == eCallType.Audio)
@@ -552,7 +552,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			bool? outgoing = callStatus.Outgoing;
 			if (outgoing == null)
-				call.Direction = eCallDirection.Undefined;
+				call.Direction = eCallDirection.Incoming;
 			else
 				call.Direction = (bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming;
 

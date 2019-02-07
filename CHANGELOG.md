@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Added ConferencePoint originators and settings
 
 ### Changed
+- Fixed up Polycom driver for conferencing refactor
+
+## [13.0.1] - 2019-01-29
+### Changed
  - Fixed issue with calendar booking de-duplication that was preventing bookings from updating
+ - Small Zoom fixes
 
 ## [13.0.0] - 2019-01-14
 ### Changed
