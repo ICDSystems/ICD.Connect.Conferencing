@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.3.1] - 2019-02-11
+### Changed
+ - Fixed bug where Polycom Group Series 500 dial string was being truncated, causing OBTP to fail
+
 ## [11.3.0] - 2019-01-16
 ### Changed
  - Fixed ConferenceManager issue that was yielding audio dialers when requesting a video dialer
