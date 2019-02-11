@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [11.3.1] - 2019-02-11
 ### Changed
  - Fixed bug where Polycom Group Series 500 dial string was being truncated, causing OBTP to fail
 
