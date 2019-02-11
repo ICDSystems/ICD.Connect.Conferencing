@@ -517,7 +517,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				if (m_IncomingCalls.ContainsKey(callStatus.CallId))
 					return;
 
-				call = new ThinIncomingCall() { AnswerState = eCallAnswerState.Unanswered };
+				call = new ThinIncomingCall { AnswerState = eCallAnswerState.Unanswered };
 				m_IncomingCalls.Add(callStatus.CallId, call);
 
 				UpdateIncomingCall(callStatus);
