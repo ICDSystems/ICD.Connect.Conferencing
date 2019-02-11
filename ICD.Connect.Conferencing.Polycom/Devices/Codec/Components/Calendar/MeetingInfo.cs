@@ -237,12 +237,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
 				if (!match.Success)
 					throw new ArgumentException("Unable to parse dialing number", "line");
 
-				string number = CallStatus.CleanupNumber(match.Groups["number"].Value);
-
 				return new DialingNumber
 				{
 					Video = match.Groups["video"].Value == "video",
-					Number = number,
+					Number = match.Groups["number"].Value,
 					Protocol = match.Groups["protocol"].Value,
 				};
 			}
