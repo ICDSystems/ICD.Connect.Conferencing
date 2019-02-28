@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar
 {
