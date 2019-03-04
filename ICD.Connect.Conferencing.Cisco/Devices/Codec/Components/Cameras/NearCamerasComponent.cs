@@ -27,8 +27,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// </summary>
 		public event EventHandler<IntEventArgs> OnPresetsChanged;
 
-		private readonly Dictionary<int, NearCamera> m_Cameras;
-		private readonly Dictionary<int, Dictionary<int, CameraPreset>> m_Presets;
+		private readonly IcdOrderedDictionary<int, NearCamera> m_Cameras;
+
+		// CameraId -> PresetId -> Preset
+		private readonly IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>> m_Presets;
 
 		private readonly SafeCriticalSection m_CamerasSection;
 		private readonly SafeCriticalSection m_PresetsSection;
@@ -47,8 +49,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <param name="codec"></param>
 		public NearCamerasComponent(CiscoCodecDevice codec) : base(codec)
 		{
-			m_Cameras = new Dictionary<int, NearCamera>();
-			m_Presets = new Dictionary<int, Dictionary<int, CameraPreset>>();
+			m_Cameras = new IcdOrderedDictionary<int, NearCamera>();
+			m_Presets = new IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>>();
 
 			m_CamerasSection = new SafeCriticalSection();
 			m_PresetsSection = new SafeCriticalSection();
@@ -83,11 +85,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public NearCamera GetCamera(int cameraId)
 		{
 			m_CamerasSection.Enter();
+
 			try
 			{
-				if (!m_Cameras.ContainsKey(cameraId))
-					m_Cameras[cameraId] = new NearCamera(cameraId, Codec);
-				return m_Cameras[cameraId];
+				NearCamera camera;
+				if (!m_Cameras.TryGetValue(cameraId, out camera))
+				{
+					camera = new NearCamera(cameraId, Codec);
+					m_Cameras[cameraId] = camera;
+				}
+				return camera;
 			}
 			finally
 			{
@@ -102,7 +109,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<NearCamera> GetCameras()
 		{
-			return m_CamerasSection.Execute(() => m_Cameras.Select(p => p.Value));
+			return m_CamerasSection.Execute(() => m_Cameras.Values.ToArray());
 		}
 
 		/// <summary>
@@ -122,7 +129,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<CameraPreset> GetCameraPresets()
 		{
-			return m_PresetsSection.Execute(() => m_Presets.SelectMany(kvp => kvp.Value).Select(kvp => kvp.Value));
+			return m_PresetsSection.Execute(() => m_Presets.SelectMany(kvp => kvp.Value).Select(kvp => kvp.Value).ToArray());
 		}
 
 		/// <summary>
@@ -137,9 +144,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			try
 			{
-				return !m_Presets.ContainsKey(cameraId)
-					? Enumerable.Empty<CameraPreset>()
-					: m_Presets[cameraId].Values.ToArray();
+				IcdOrderedDictionary<int, CameraPreset> presetMap;
+				return m_Presets.TryGetValue(cameraId, out presetMap)
+					? presetMap.Values.ToArray()
+					: Enumerable.Empty<CameraPreset>();
 			}
 			finally
 			{
@@ -207,10 +215,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 				foreach (string child in XmlUtils.GetChildElementsAsString(xml, "Camera"))
 				{
 					int cameraId = XmlUtils.GetAttributeAsInt(child, "item");
-
-					if (!m_Cameras.ContainsKey(cameraId))
-						m_Cameras[cameraId] = new NearCamera(cameraId, Codec);
-					m_Cameras[cameraId].Parse(child);
+					GetCamera(cameraId).Parse(child);
 				}
 			}
 			finally
@@ -242,9 +247,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 					int cameraId;
 					CameraPreset preset = CameraPresetFromXml(child, out cameraId);
 
-					if (!m_Presets.ContainsKey(cameraId))
-						m_Presets[cameraId] = new Dictionary<int, CameraPreset>();
-					m_Presets[cameraId][preset.PresetId] = preset;
+					IcdOrderedDictionary<int, CameraPreset> cameraPresetsMap;
+					if (!m_Presets.TryGetValue(cameraId, out cameraPresetsMap))
+					{
+						cameraPresetsMap = new IcdOrderedDictionary<int, CameraPreset>();
+						m_Presets.Add(cameraId, cameraPresetsMap);
+					}
+
+					cameraPresetsMap.Add(preset.PresetId, preset);
 
 					cameras.Add(cameraId);
 				}
@@ -315,8 +325,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			foreach (IConsoleNodeBase group in GetBaseConsoleNodes())
 				yield return group;
 
-			NearCamera[] cameras = m_CamerasSection.Execute(() => m_Cameras.Values.ToArray());
-			yield return ConsoleNodeGroup.KeyNodeMap("Cameras", "The collection of near cameras", cameras, c => (uint)c.CameraId);
+			yield return ConsoleNodeGroup.KeyNodeMap("Cameras", "The collection of near cameras", GetCameras(), c => (uint)c.CameraId);
 		}
 
 		/// <summary>
