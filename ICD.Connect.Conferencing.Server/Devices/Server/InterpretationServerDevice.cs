@@ -484,7 +484,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					{
 						ParticipantState sourceState = ParticipantState.FromParticipant(source, adapter.Language);
 						Guid id = m_Sources.GetKey(source);
-						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE, id, sourceState);
+						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_PARTICIPANT_STATE, id, sourceState);
 					}
 				}
 			}
@@ -601,7 +601,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			if (!GetTargetSource(id, out source))
 				return;
 
-			source.Answer();
+			//source.Answer();
+			throw new NotImplementedException();
 		}
 
 		[Rpc(HOLD_ENABLE_RPC), UsedImplicitly]
@@ -810,7 +811,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			Subscribe(source);
 
-			SourceOnPropertyChanged(source, EventArgs.Empty);
+			ParticipantOnPropertyChanged(source, EventArgs.Empty);
 		}
 
 		private void RemoveSource(ITraditionalParticipant source)
@@ -828,7 +829,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				if (!GetClientIdForSource(id, out clientId))
 					return;
 
-				const string key = InterpretationClientDevice.REMOVE_CACHED_SOURCE;
+				const string key = InterpretationClientDevice.REMOVE_CACHED_PARTICIPANT;
 				m_RpcController.CallMethod(clientId, key, id);
 
 				m_Sources.RemoveAllValues(source);
@@ -866,7 +867,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				if (!GetClientIdForAdapter(adapter, out clientId))
 					return;
 
-				const string key = InterpretationClientDevice.REMOVE_CACHED_SOURCE;
+				const string key = InterpretationClientDevice.REMOVE_CACHED_PARTICIPANT;
 				m_RpcController.CallMethod(clientId, key, id);
 
 				m_Sources.RemoveAllValues(source);
@@ -894,25 +895,23 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		private void Subscribe(ITraditionalParticipant source)
+		private void Subscribe(ITraditionalParticipant participant)
 		{
-			source.OnStatusChanged += SourceOnPropertyChanged;
-			source.OnAnswerStateChanged += SourceOnPropertyChanged;
-			source.OnNameChanged += SourceOnPropertyChanged;
-			source.OnNumberChanged += SourceOnPropertyChanged;
-			source.OnSourceTypeChanged += SourceOnPropertyChanged;
+			participant.OnStatusChanged += ParticipantOnPropertyChanged;
+			participant.OnNameChanged += ParticipantOnPropertyChanged;
+			participant.OnNumberChanged += ParticipantOnPropertyChanged;
+			participant.OnSourceTypeChanged += ParticipantOnPropertyChanged;
 		}
 
-		private void Unsubscribe(ITraditionalParticipant source)
+		private void Unsubscribe(ITraditionalParticipant participant)
 		{
-			source.OnStatusChanged -= SourceOnPropertyChanged;
-			source.OnAnswerStateChanged -= SourceOnPropertyChanged;
-			source.OnNameChanged -= SourceOnPropertyChanged;
-			source.OnNumberChanged -= SourceOnPropertyChanged;
-			source.OnSourceTypeChanged -= SourceOnPropertyChanged;
+			participant.OnStatusChanged -= ParticipantOnPropertyChanged;
+			participant.OnNameChanged -= ParticipantOnPropertyChanged;
+			participant.OnNumberChanged -= ParticipantOnPropertyChanged;
+			participant.OnSourceTypeChanged -= ParticipantOnPropertyChanged;
 		}
 
-		private void SourceOnPropertyChanged(object sender, EventArgs args)
+		private void ParticipantOnPropertyChanged(object sender, EventArgs args)
 		{
 			m_SafeCriticalSection.Enter();
 
@@ -943,7 +942,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					                                                                             ? targetAdapter.Language
 					                                                                             : null);
 
-				const string key = InterpretationClientDevice.UPDATE_CACHED_SOURCE_STATE;
+				const string key = InterpretationClientDevice.UPDATE_CACHED_PARTICIPANT_STATE;
 				m_RpcController.CallMethod(clientId, key, id, sourceState);
 
 				if (source.Status == eParticipantStatus.Disconnected)

@@ -267,7 +267,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				{
 					m_Source.Name = name;
 					m_Source.Number = number;
-					m_Source.AnswerState = (eCallAnswerState)answerState;
 					m_Source.Direction = (eCallDirection)direction;
 					m_Source.Status = (eParticipantStatus)status;
 					m_Source.SourceType = eCallType.Audio;
@@ -280,7 +279,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					{
 						Name = name,
 						Number = number,
-						AnswerState = (eCallAnswerState)answerState,
 						Direction = (eCallDirection)direction,
 						Status = (eParticipantStatus)status,
 						Start = IcdEnvironment.GetLocalTime(),
@@ -340,8 +338,9 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			try
 			{
 				m_CallAnswerState = (eCallAnswerState)answerState;
-				if (m_Source != null)
-					m_Source.AnswerState = m_CallAnswerState;
+				//if (m_Source != null)
+				//	m_Source.AnswerState = m_CallAnswerState;
+				throw new NotImplementedException();
 			}
 			finally
 			{
@@ -383,7 +382,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					{
 						Name = m_CallName,
 						Number = m_CallNumber,
-						AnswerState = m_CallAnswerState,
 						Direction = m_CallDirection,
 						Status = m_CallStatus,
 						Start = IcdEnvironment.GetLocalTime(),
@@ -518,59 +516,57 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		#region Source Callbacks
 
-		private void Subscribe(ThinTraditionalParticipant source)
+		private void Subscribe(ThinTraditionalParticipant participant)
 		{
-			if (source == null)
+			if (participant == null)
 				return;
 
-			source.AnswerCallback = SourceAnswerCallback;
-			source.HoldCallback = SourceHoldCallback;
-			source.ResumeCallback = SourceResumeCallback;
-			source.SendDtmfCallback = SourceSendDtmfCallback;
-			source.HangupCallback = SourceHangupCallback;
+			participant.HoldCallback = ParticipantHoldCallback;
+			participant.ResumeCallback = ParticipantResumeCallback;
+			participant.SendDtmfCallback = ParticipantSendDtmfCallback;
+			participant.HangupCallback = ParticipantHangupCallback;
 		}
 
-		private void Unsubscribe(ThinTraditionalParticipant source)
+		private void Unsubscribe(ThinTraditionalParticipant participant)
 		{
-			if (source == null)
+			if (participant == null)
 				return;
 
-			source.AnswerCallback = null;
-			source.HoldCallback = null;
-			source.ResumeCallback = null;
-			source.SendDtmfCallback = null;
-			source.HangupCallback = null;
+			participant.HoldCallback = null;
+			participant.ResumeCallback = null;
+			participant.SendDtmfCallback = null;
+			participant.HangupCallback = null;
 		}
 
-		private void SourceAnswerCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantAnswerCallback(ThinTraditionalParticipant thinParticipant)
 		{
 			SPlusDialerShimAnswerCallback handler = AnswerCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void SourceHoldCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantHoldCallback(ThinTraditionalParticipant thinParticipant)
 		{
 			SPlusDialerShimSetHoldCallback handler = HoldCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void SourceResumeCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantResumeCallback(ThinTraditionalParticipant thinParticipant)
 		{
 			SPlusDialerShimSetResumeCallback handler = ResumeCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void SourceSendDtmfCallback(ThinTraditionalParticipant thinParticipant, string data)
+		private void ParticipantSendDtmfCallback(ThinTraditionalParticipant thinParticipant, string data)
 		{
 			SPlusDialerShimSendDtmfCallback handler = SendDtmfCallback;
 			if (handler != null)
 				handler(data);
 		}
 
-		private void SourceHangupCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantHangupCallback(ThinTraditionalParticipant thinParticipant)
 		{
 			SPlusDialerShimEndCallCallback handler = EndCallCallback;
 			if (handler != null)

@@ -19,8 +19,6 @@ namespace ICD.Connect.Conferencing.Server.Devices
 		[PublicAPI, JsonProperty]
 		public eCallDirection Direction { get; private set; }
 		[PublicAPI, JsonProperty]
-		public eCallAnswerState AnswerState { get; private set; }
-		[PublicAPI, JsonProperty]
 		public DateTime? Start { get; private set; }
 		[PublicAPI, JsonProperty]
 		public DateTime? End { get; private set; }
@@ -48,7 +46,6 @@ namespace ICD.Connect.Conferencing.Server.Devices
 				SourceType = participant.SourceType,
 				Status = participant.Status,
 				Direction = participant.Direction,
-				AnswerState = participant.AnswerState,
 				Start = participant.Start,
 				End = participant.End,
 				DialTime = participant.DialTime,

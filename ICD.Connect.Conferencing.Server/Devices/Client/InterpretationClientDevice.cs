@@ -54,8 +54,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		public const string SET_CACHED_AUTO_ANSWER_STATE = "SetCachedAutoAnswerState";
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
 
-		public const string UPDATE_CACHED_SOURCE_STATE = "UpdateCachedSourceState";
-		public const string REMOVE_CACHED_SOURCE = "RemoveCachedSource";
+		public const string UPDATE_CACHED_PARTICIPANT_STATE = "UpdateCachedSourceState";
+		public const string REMOVE_CACHED_PARTICIPANT = "RemoveCachedSource";
 
 		#endregion
 
@@ -295,7 +295,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region Private Helper Methods
 
-		private void ClearSources()
+		private void ClearParticipants()
 		{
 			m_SourcesCriticalSection.Enter();
 			try
@@ -325,7 +325,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			IsInterpretationActive = state;
 
-			ClearSources();
+			ClearParticipants();
 		}
 
 		[Rpc(SET_CACHED_PRIVACY_MUTE_STATE), UsedImplicitly]
@@ -346,7 +346,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			DoNotDisturb = state;
 		}
 
-		[Rpc(REMOVE_CACHED_SOURCE), UsedImplicitly]
+		[Rpc(REMOVE_CACHED_PARTICIPANT), UsedImplicitly]
 		private void RemoveCachedSource(Guid id)
 		{
 			m_SourcesCriticalSection.Enter();
@@ -370,8 +370,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 		}
 
-		[Rpc(UPDATE_CACHED_SOURCE_STATE), UsedImplicitly]
-		private void UpdateCachedSourceState(Guid id, ParticipantState sourceState)
+		[Rpc(UPDATE_CACHED_PARTICIPANT_STATE), UsedImplicitly]
+		private void UpdateCachedSourceState(Guid id, ParticipantState participantState)
 		{
 			m_SourcesCriticalSection.Enter();
 
@@ -390,34 +390,29 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 				var src = m_Sources.GetValue(id);
 
-				src.Name = string.Format("({0}) {1}", sourceState.Language, sourceState.Name);
-				src.Number = sourceState.Number;
-				src.Status = sourceState.Status;
-				src.AnswerState = sourceState.AnswerState;
-				src.DialTime = sourceState.DialTime;
-				src.Direction = sourceState.Direction;
-				src.End = sourceState.End;
-				src.Start = sourceState.Start;
-				src.SourceType = sourceState.SourceType;
+				src.Name = string.Format("({0}) {1}", participantState.Language, participantState.Name);
+				src.Number = participantState.Number;
+				src.Status = participantState.Status;
+				src.DialTime = participantState.DialTime;
+				src.Direction = participantState.Direction;
+				src.End = participantState.End;
+				src.Start = participantState.Start;
+				src.SourceType = participantState.SourceType;
 
 				if (added)
 				{
 					var control = Controls.GetControl<DialerDeviceDialerControl>();
 					if (control != null)
-					{
-						IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnParticipantAdded");
 						OnParticipantAdded.Raise(this, new ParticipantEventArgs(src));
-					}
 				}
 
-				if (sourceState.Status != eParticipantStatus.Disconnected)
+				if (participantState.Status != eParticipantStatus.Disconnected)
 					return;
 
 				var sourceToRemove = m_Sources.GetValue(id);
 				Unsubscribe(sourceToRemove);
 				m_Sources.RemoveKey(id);
 
-				IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-UpdateCachedSourceState-OnParticipantRemoved");
 				OnParticipantRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
 			}
 			finally
@@ -428,27 +423,25 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#endregion
 
-		#region Sources
+		#region Participants
 
-		private void Subscribe(ThinTraditionalParticipant source)
+		private void Subscribe(ThinTraditionalParticipant participant)
 		{
-			source.AnswerCallback += SourceOnCallAnswered;
-			source.HoldCallback += SourceOnCallHeld;
-			source.ResumeCallback += SourceOnCallResumed;
-			source.SendDtmfCallback += SourceOnDtmfSent;
-			source.HangupCallback += SourceOnCallEnded;
+			participant.HoldCallback += ParticipantOnCallHeld;
+			participant.ResumeCallback += ParticipantOnCallResumed;
+			participant.SendDtmfCallback += ParticipantOnDtmfSent;
+			participant.HangupCallback += ParticipantOnCallEnded;
 		}
 
-		private void Unsubscribe(ThinTraditionalParticipant source)
+		private void Unsubscribe(ThinTraditionalParticipant participant)
 		{
-			source.AnswerCallback = null;
-			source.HoldCallback = null;
-			source.ResumeCallback = null;
-			source.SendDtmfCallback = null;
-			source.HangupCallback = null;
+			participant.HoldCallback = null;
+			participant.ResumeCallback = null;
+			participant.SendDtmfCallback = null;
+			participant.HangupCallback = null;
 		}
 
-		private void SourceOnCallAnswered(ThinTraditionalParticipant source)
+		private void ParticipantOnCallAnswered(ThinTraditionalParticipant source)
 		{
 			if (source == null)
 				return;
@@ -461,7 +454,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnCallHeld(ThinTraditionalParticipant source)
+		private void ParticipantOnCallHeld(ThinTraditionalParticipant source)
 		{
 			if (source == null)
 				return;
@@ -474,7 +467,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnCallResumed(ThinTraditionalParticipant source)
+		private void ParticipantOnCallResumed(ThinTraditionalParticipant source)
 		{
 			if (source == null)
 				return;
@@ -487,7 +480,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnCallEnded(ThinTraditionalParticipant source)
+		private void ParticipantOnCallEnded(ThinTraditionalParticipant source)
 		{
 			if (source == null)
 				return;
@@ -500,7 +493,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, m_RoomId, id);
 		}
 
-		private void SourceOnDtmfSent(ThinTraditionalParticipant source, string data)
+		private void ParticipantOnDtmfSent(ThinTraditionalParticipant source, string data)
 		{
 			if (source == null)
 				return;
@@ -581,7 +574,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				return;
 
 			IsInterpretationActive = false;
-			ClearSources();
+			ClearParticipants();
 		}
 
 		#endregion
@@ -658,7 +651,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				addRow("Name", src.Name);
 				addRow("Number", src.Number);
 				addRow("Status", src.Status);
-				addRow("State", src.AnswerState);
 				addRow("Start", src.GetStartOrDialTime());
 			}
 			addRow("-----", "-----");
@@ -674,8 +666,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				yield return command;
 
 			yield return new ConsoleCommand("Connect", "Connect to the server", () => m_ConnectionStateManager.Connect());
-			yield return
-				new ConsoleCommand("Disconnect", "Disconnect from the server", () => m_ConnectionStateManager.Disconnect());
+			yield return new ConsoleCommand("Disconnect", "Disconnect from the server", () => m_ConnectionStateManager.Disconnect());
 			yield return new ConsoleCommand("Register", "Register the room with the server", () => Register());
 			yield return new ConsoleCommand("Unregister", "Unregister the room with the server", () => Unregister());
 		}
