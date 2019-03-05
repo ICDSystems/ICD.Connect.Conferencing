@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
@@ -18,7 +19,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 	public sealed class NearCamerasComponent : AbstractCiscoComponent
 	{
 		/// <summary>
-		/// Raises when the cameras are rebuilt.
+		/// Raised when the cameras are rebuilt.
 		/// </summary>
 		public event EventHandler OnCamerasChanged;
 
@@ -26,6 +27,31 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// Raises the camera id when presets change.
 		/// </summary>
 		public event EventHandler<IntEventArgs> OnPresetsChanged;
+
+		/// <summary>
+		/// Raised when the presenter track availability changes.
+		/// </summary>
+		public event EventHandler<PresenterTrackAvailabilityEventArgs> OnPresenterTrackAvailabilityChanged;
+
+		/// <summary>
+		/// Raised when a presenter is detected or no longer detected.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnPresenterDetectedStateChanged; 
+
+		/// <summary>
+		/// Raised when the presenter track mode changes.
+		/// </summary>
+		public event EventHandler<PresenterTrackModeEventArgs> OnPresenterTrackModeChanged;
+
+		/// <summary>
+		/// Raised when the speaker track availability changes.
+		/// </summary>
+		public event EventHandler<SpeakerTrackAvailabilityEventArgs> OnSpeakerTrackAvailabilityChanged;
+
+		/// <summary>
+		/// Raised when the speaker track status changes.
+		/// </summary>
+		public event EventHandler<SpeakerTrackStatusEventArgs> OnSpeakerTrackStatusChanged; 
 
 		private readonly IcdOrderedDictionary<int, NearCamera> m_Cameras;
 
@@ -35,11 +61,123 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		private readonly SafeCriticalSection m_CamerasSection;
 		private readonly SafeCriticalSection m_PresetsSection;
 
+		private ePresenterTrackMode m_PresenterTrackMode;
+		private ePresenterTrackAvailability m_PresenterTrackAvailability;
+		private bool m_PresenterDetected;
+
+		private eSpeakerTrackAvailability m_SpeakerTrackAvailability;
+		private eSpeakerTrackStatus m_SpeakerTrackStatus;
+
+		#region Properties
+
 		/// <summary>
 		/// Gets the number of cameras.
 		/// </summary>
 		[PublicAPI]
 		public int CamerasCount { get { return m_Cameras.Count; } }
+
+		/// <summary>
+		/// Gets the presenter track availability.
+		/// </summary>
+		[PublicAPI]
+		public ePresenterTrackAvailability PresenterTrackAvailability
+		{
+			get { return m_PresenterTrackAvailability; }
+			private set
+			{
+				if (value == m_PresenterTrackAvailability)
+					return;
+
+				m_PresenterTrackAvailability = value;
+
+				Codec.Log(eSeverity.Informational, "PresenterTrack availability is {0}", m_PresenterTrackAvailability);
+
+				OnPresenterTrackAvailabilityChanged.Raise(this,
+				                                          new PresenterTrackAvailabilityEventArgs(m_PresenterTrackAvailability));
+			}
+		}
+
+		/// <summary>
+		/// Gets the presenter detected state.
+		/// </summary>
+		[PublicAPI]
+		public bool PresenterDetected
+		{
+			get { return m_PresenterDetected; }
+			private set
+			{
+				if (value == m_PresenterDetected)
+					return;
+
+				m_PresenterDetected = value;
+
+				Codec.Log(eSeverity.Informational, "PresenterTrack detected is {0}", m_PresenterDetected);
+
+				OnPresenterDetectedStateChanged.Raise(this, new BoolEventArgs(m_PresenterDetected));
+			}
+		}
+
+		/// <summary>
+		/// Gets the presenter track mode.
+		/// </summary>
+		[PublicAPI]
+		public ePresenterTrackMode PresenterTrackMode
+		{
+			get { return m_PresenterTrackMode; }
+			private set
+			{
+				if (value == m_PresenterTrackMode)
+					return;
+				
+				m_PresenterTrackMode = value;
+
+				Codec.Log(eSeverity.Informational, "PresenterTrack mode is {0}", m_PresenterTrackMode);
+
+				OnPresenterTrackModeChanged.Raise(this, new PresenterTrackModeEventArgs(m_PresenterTrackMode));
+			}
+		}
+
+		/// <summary>
+		/// Gets the speaker track availability.
+		/// </summary>
+		[PublicAPI]
+		public eSpeakerTrackAvailability SpeakerTrackAvailability
+		{
+			get { return m_SpeakerTrackAvailability; }
+			private set
+			{
+				if (value == m_SpeakerTrackAvailability)
+					return;
+				
+				m_SpeakerTrackAvailability = value;
+
+				Codec.Log(eSeverity.Informational, "SpeakerTrack availability is {0}", m_SpeakerTrackAvailability);
+
+				OnSpeakerTrackAvailabilityChanged.Raise(this, new SpeakerTrackAvailabilityEventArgs(m_SpeakerTrackAvailability));
+			}
+		}
+
+		/// <summary>
+		/// Gets the speaker track status.
+		/// </summary>
+		[PublicAPI]
+		public eSpeakerTrackStatus SpeakerTrackStatus
+		{
+			get { return m_SpeakerTrackStatus; }
+			private set
+			{
+				if (value == m_SpeakerTrackStatus)
+					return;
+
+				m_SpeakerTrackStatus = value;
+
+				Codec.Log(eSeverity.Informational, "SpeakerTrack status is {0}", m_SpeakerTrackStatus);
+
+				OnSpeakerTrackStatusChanged.Raise(this, new SpeakerTrackStatusEventArgs(m_SpeakerTrackStatus));
+			}
+		}
+
+		#endregion
 
 		#region Constructors
 
@@ -68,6 +206,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			OnCamerasChanged = null;
 			OnPresetsChanged = null;
+
+			OnPresenterTrackAvailabilityChanged = null;
+			OnPresenterDetectedStateChanged = null;
+			OnPresenterTrackModeChanged = null;
+
+			OnSpeakerTrackAvailabilityChanged = null;
+			OnSpeakerTrackStatusChanged = null;
 
 			base.Dispose(disposing);
 		}
@@ -155,6 +300,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			}
 		}
 
+		/// <summary>
+		/// Sets the presenter track mode.
+		/// </summary>
+		/// <param name="mode"></param>
+		[PublicAPI]
+		public void SetPresenterTrackMode(ePresenterTrackMode mode)
+		{
+			Codec.SendCommand("xCommand Cameras PresenterTrack Set Mode: {0}", mode);
+			Codec.Log(eSeverity.Informational, "Setting PresenterTrack mode to {0}", mode);
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -183,6 +339,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			codec.RegisterParserCallback(ParseCameraStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras");
 			codec.RegisterParserCallback(ParseCameraPresets, "PresetListResult");
+
+			codec.RegisterParserCallback(ParsePresenterTrackAvailability, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "PresenterTrack", "Availability");
+			codec.RegisterParserCallback(ParsePresenterTrackPresenterDetected, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "PresenterTrack", "PresenterDetected");
+			codec.RegisterParserCallback(ParsePresenterTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "PresenterTrack", "Status");
+
+			codec.RegisterParserCallback(ParseSpeakerTrackAvailability, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Availability");
+			codec.RegisterParserCallback(ParseSpeakerTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Status");
 		}
 
 		/// <summary>
@@ -198,6 +361,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			codec.UnregisterParserCallback(ParseCameraStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras");
 			codec.UnregisterParserCallback(ParseCameraPresets, "PresetListResult");
+
+			codec.UnregisterParserCallback(ParsePresenterTrackAvailability, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "PresenterTrack", "Availability");
+			codec.UnregisterParserCallback(ParsePresenterTrackPresenterDetected, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "PresenterTrack", "PresenterDetected");
+			codec.UnregisterParserCallback(ParsePresenterTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "PresenterTrack", "Status");
+
+			codec.UnregisterParserCallback(ParseSpeakerTrackAvailability, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Availability");
+			codec.UnregisterParserCallback(ParseSpeakerTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Status");
 		}
 
 		/// <summary>
@@ -266,6 +436,36 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			foreach (int camera in cameras)
 				OnPresetsChanged.Raise(this, new IntEventArgs(camera));
+		}
+
+		private void ParsePresenterTrackAvailability(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			string content = XmlUtils.GetInnerXml(xml);
+			PresenterTrackAvailability = EnumUtils.Parse<ePresenterTrackAvailability>(content, true);
+		}
+
+		private void ParsePresenterTrackPresenterDetected(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			string content = XmlUtils.GetInnerXml(xml);
+			PresenterDetected = bool.Parse(content);
+		}
+
+		private void ParsePresenterTrackStatus(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			string content = XmlUtils.GetInnerXml(xml);
+			PresenterTrackMode = EnumUtils.Parse<ePresenterTrackMode>(content, true);
+		}
+
+		private void ParseSpeakerTrackAvailability(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			string content = XmlUtils.GetInnerXml(xml);
+			SpeakerTrackAvailability = EnumUtils.Parse<eSpeakerTrackAvailability>(content, true);
+		}
+
+		private void ParseSpeakerTrackStatus(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			string content = XmlUtils.GetInnerXml(xml);
+			SpeakerTrackStatus = EnumUtils.Parse<eSpeakerTrackStatus>(content, true);
 		}
 
 		/// <summary>
