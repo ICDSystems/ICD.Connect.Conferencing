@@ -470,9 +470,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 						case "Name":
 							name = child.ReadElementContentAsString();
 							break;
-
-						default:
-							throw new ArgumentException("Unknown element: " + child.Name);
 					}
 
 					child.Dispose();
