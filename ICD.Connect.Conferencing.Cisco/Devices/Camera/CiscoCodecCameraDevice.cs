@@ -163,7 +163,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public IEnumerable<CameraPreset> GetPresets()
 		{
-			return m_CamerasComponent == null ? Enumerable.Empty<CameraPreset>() : m_CamerasComponent.GetCameraPresets(CameraId);
+			return m_CamerasComponent == null
+				       ? Enumerable.Empty<CameraPreset>()
+				       : m_CamerasComponent.GetRemappedCameraPresets(CameraId);
 		}
 
 		/// <summary>

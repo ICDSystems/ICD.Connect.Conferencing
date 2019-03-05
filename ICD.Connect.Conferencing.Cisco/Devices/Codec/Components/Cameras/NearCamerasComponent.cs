@@ -57,7 +57,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		private readonly IcdOrderedDictionary<int, NearCamera> m_Cameras;
 
 		// CameraId -> PresetId -> Preset
-		private readonly IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>> m_Presets;
+		private readonly IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>> m_CameraToPresets;
+		private readonly IcdOrderedDictionary<int, CameraPreset> m_Presets;
 
 		private readonly SafeCriticalSection m_CamerasSection;
 		private readonly SafeCriticalSection m_PresetsSection;
@@ -189,7 +190,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public NearCamerasComponent(CiscoCodecDevice codec) : base(codec)
 		{
 			m_Cameras = new IcdOrderedDictionary<int, NearCamera>();
-			m_Presets = new IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>>();
+			m_CameraToPresets = new IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>>();
+			m_Presets = new IcdOrderedDictionary<int, CameraPreset>();
 
 			m_CamerasSection = new SafeCriticalSection();
 			m_PresetsSection = new SafeCriticalSection();
@@ -275,7 +277,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<CameraPreset> GetCameraPresets()
 		{
-			return m_PresetsSection.Execute(() => m_Presets.SelectMany(kvp => kvp.Value).Select(kvp => kvp.Value).ToArray());
+			return m_PresetsSection.Execute(() => m_Presets.Values.ToArray());
 		}
 
 		/// <summary>
@@ -291,7 +293,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			try
 			{
 				IcdOrderedDictionary<int, CameraPreset> presetMap;
-				return m_Presets.TryGetValue(cameraId, out presetMap)
+				return m_CameraToPresets.TryGetValue(cameraId, out presetMap)
 					? presetMap.Values.ToArray()
 					: Enumerable.Empty<CameraPreset>();
 			}
@@ -299,6 +301,64 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			{
 				m_PresetsSection.Leave();
 			}
+		}
+
+		/// <summary>
+		/// Gets the presets for the given camera id and remaps them starting from preset id 1.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <returns></returns>
+		public IEnumerable<CameraPreset> GetRemappedCameraPresets(int cameraId)
+		{
+			int newId = 1;
+			return GetCameraPresets(cameraId).OrderBy(p => p.PresetId)
+			                                 .Select(p => new CameraPreset(newId++, p.Name));
+		}
+
+		/// <summary>
+		/// Looks up the preset id for the camera id and preset index and activates it.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="presetIndex"></param>
+		public void ActivatePreset(int cameraId, int presetIndex)
+		{
+			int presetId = GetPresetId(cameraId, presetIndex);
+			ActivatePresetById(presetId);
+		}
+
+		/// <summary>
+		/// Activates the preset with the given id.
+		/// </summary>
+		/// <param name="presetId"></param>
+		public void ActivatePresetById(int presetId)
+		{
+			Codec.SendCommand("xCommand Camera Preset Activate PresetId: {0}", presetId);
+			Codec.Log(eSeverity.Informational, "Activating Preset {0}", presetId);
+		}
+
+		/// <summary>
+		/// Looks up the preset id for the camera id and preset index and stores it.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="presetIndex"></param>
+		public void StorePreset(int cameraId, int presetIndex)
+		{
+			int presetId = GetPresetId(cameraId, presetIndex);
+			StorePresetById(cameraId, presetId);
+		}
+
+		/// <summary>
+		/// Stores the given camera position as the preset with the given id.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="presetId"></param>
+		public void StorePresetById(int cameraId, int presetId)
+		{
+			Codec.SendCommand("xCommand Camera Preset Store CameraId: {0} PresetId: \"{1}\"", cameraId, presetId);
+			Codec.Log(eSeverity.Informational, "Storing preset {0} for Camera {1}", presetId, cameraId);
+
+			// Updates the presets
+			Codec.SendCommand("xCommand Camera Preset List");
 		}
 
 		/// <summary>
@@ -335,6 +395,96 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		#endregion
 
 		#region Private Methods
+
+		/// <summary>
+		/// Gets the existing preset id reserved for this camera at the given preset index,
+		/// or generates a new one if none has been assigned.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="presetIndex"></param>
+		/// <returns></returns>
+		private int GetPresetId(int cameraId, int presetIndex)
+		{
+			m_PresetsSection.Enter();
+
+			try
+			{
+				IcdOrderedDictionary<int, CameraPreset> presetsMap;
+				int id;
+
+				if (m_CameraToPresets.TryGetValue(cameraId, out presetsMap) &&
+				    presetsMap.Keys.TryElementAt(presetIndex, out id))
+					return id;
+
+				return GetNextPresetId();
+			}
+			finally
+			{
+				m_PresetsSection.Leave();
+			}
+		}
+
+		private int GetNextPresetId()
+		{
+			m_PresetsSection.Enter();
+
+			try
+			{
+				return Enumerable.Range(1, int.MaxValue).First(i => !m_Presets.ContainsKey(i));
+			}
+			finally
+			{
+				m_PresetsSection.Leave();
+			}
+		}
+
+		/// <summary>
+		/// Instantiates a camera preset from a Preset element.
+		/// </summary>
+		/// <param name="xml"></param>
+		/// <param name="cameraId"></param>
+		/// <returns></returns>
+		private static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
+		{
+			cameraId = 0;
+
+			using (IcdXmlReader reader = new IcdXmlReader(xml))
+			{
+				reader.ReadToNextElement();
+
+				int presetId = 0;
+				string name = null;
+
+				foreach (IcdXmlReader child in reader.GetChildElements())
+				{
+					switch (child.Name)
+					{
+						case "CameraId":
+							cameraId = child.ReadElementContentAsInt();
+							break;
+
+						case "PresetId":
+							presetId = child.ReadElementContentAsInt();
+							break;
+
+						case "Name":
+							name = child.ReadElementContentAsString();
+							break;
+
+						default:
+							throw new ArgumentException("Unknown element: " + child.Name);
+					}
+
+					child.Dispose();
+				}
+
+				return new CameraPreset(presetId, name);
+			}
+		}
+
+		#endregion
+
+		#region Codec Feedback
 
 		/// <summary>
 		/// Called to initialize the component.
@@ -431,6 +581,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			try
 			{
+				m_CameraToPresets.Clear();
 				m_Presets.Clear();
 
 				foreach (string child in XmlUtils.GetChildElementsAsString(xml))
@@ -439,13 +590,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 					CameraPreset preset = CameraPresetFromXml(child, out cameraId);
 
 					IcdOrderedDictionary<int, CameraPreset> cameraPresetsMap;
-					if (!m_Presets.TryGetValue(cameraId, out cameraPresetsMap))
+					if (!m_CameraToPresets.TryGetValue(cameraId, out cameraPresetsMap))
 					{
 						cameraPresetsMap = new IcdOrderedDictionary<int, CameraPreset>();
-						m_Presets.Add(cameraId, cameraPresetsMap);
+						m_CameraToPresets.Add(cameraId, cameraPresetsMap);
 					}
 
 					cameraPresetsMap.Add(preset.PresetId, preset);
+					m_Presets.Add(preset.PresetId, preset);
 
 					cameras.Add(cameraId);
 				}
@@ -487,50 +639,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			SpeakerTrackStatus = EnumUtils.Parse<eSpeakerTrackStatus>(content, true);
-		}
-
-		/// <summary>
-		/// Instantiates a camera preset from a Preset element.
-		/// </summary>
-		/// <param name="xml"></param>
-		/// <param name="cameraId"></param>
-		/// <returns></returns>
-		private static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
-		{
-			cameraId = 0;
-
-			using (IcdXmlReader reader = new IcdXmlReader(xml))
-			{
-				reader.ReadToNextElement();
-
-				int presetId = 0;
-				string name = null;
-
-				foreach (IcdXmlReader child in reader.GetChildElements())
-				{
-					switch (child.Name)
-					{
-						case "CameraId":
-							cameraId = child.ReadElementContentAsInt();
-							break;
-
-						case "PresetId":
-							presetId = child.ReadElementContentAsInt();
-							break;
-
-						case "Name":
-							name = child.ReadElementContentAsString();
-							break;
-
-						default:
-							throw new ArgumentException("Unknown element: " + child.Name);
-					}
-
-					child.Dispose();
-				}
-
-				return new CameraPreset(presetId, name);
-			}
 		}
 
 		#endregion
