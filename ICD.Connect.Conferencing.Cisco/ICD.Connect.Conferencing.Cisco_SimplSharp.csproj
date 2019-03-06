@@ -106,6 +106,7 @@
     <Compile Include="Devices\Codec\Components\Directory\Tree\AbstractCiscoFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContact.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContactMethod.cs" />
+    <Compile Include="Devices\Codec\Components\ICiscoComponent.cs" />
     <Compile Include="Devices\Codec\Components\Peripherals\PeripheralsComponent.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\LayoutEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\PresentationModeEventArgs.cs" />

@@ -19,11 +19,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 	/// </summary>
 	public sealed class CiscoComponentFactory : IDisposable
 	{
-		private readonly Dictionary<Type, AbstractCiscoComponent> m_Components;
-		private readonly SafeCriticalSection m_ComponentsSection;
-
-		private static readonly Dictionary<Type, Func<CiscoCodecDevice, AbstractCiscoComponent>> s_Factories =
-			new Dictionary<Type, Func<CiscoCodecDevice, AbstractCiscoComponent>>
+		private static readonly Dictionary<Type, Func<CiscoCodecDevice, ICiscoComponent>> s_Factories =
+			new Dictionary<Type, Func<CiscoCodecDevice, ICiscoComponent>>
 			{
 				{typeof(BookingsComponent), codec => new BookingsComponent(codec)},
 				{typeof(DiagnosticsComponent), codec => new DiagnosticsComponent(codec)},
@@ -36,6 +33,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 				{typeof(VideoComponent), codec => new VideoComponent(codec)}
 			};
 
+		private readonly Dictionary<Type, ICiscoComponent> m_Components;
+		private readonly SafeCriticalSection m_ComponentsSection;
+
 		private readonly CiscoCodecDevice m_Codec;
 
 		/// <summary>
@@ -44,14 +44,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		/// <param name="codec"></param>
 		public CiscoComponentFactory(CiscoCodecDevice codec)
 		{
-			m_Components = new Dictionary<Type, AbstractCiscoComponent>();
+			m_Components = new Dictionary<Type, ICiscoComponent>();
 			m_ComponentsSection = new SafeCriticalSection();
 
 			m_Codec = codec;
 
-			// Add some default components
-			GetComponent<DiagnosticsComponent>();
-			GetComponent<PeripheralsComponent>();
+			// Load components
+			foreach (Type type in s_Factories.Keys)
+				GetComponent(type);
 		}
 
 		/// <summary>
@@ -62,8 +62,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 			Dispose(false);
 		}
 
-		#region Methods
-
 		/// <summary>
 		/// Release resources.
 		/// </summary>
@@ -71,46 +69,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		{
 			Dispose(true);
 		}
-
-		/// <summary>
-		/// Gets the component with the given type.
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		public T GetComponent<T>()
-			where T : AbstractCiscoComponent
-		{
-			Type key = typeof(T);
-
-			m_ComponentsSection.Enter();
-
-			try
-			{
-				AbstractCiscoComponent component;
-				if (!m_Components.TryGetValue(key, out component))
-				{
-					component = s_Factories[key](m_Codec) as T;
-					m_Components.Add(key, component);
-				}
-
-				return component as T;
-			}
-			finally
-			{
-				m_ComponentsSection.Leave();
-			}
-		}
-
-		/// <summary>
-		/// Returns the cached components.
-		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<AbstractCiscoComponent> GetComponents()
-		{
-			return m_ComponentsSection.Execute(() => m_Components.Values.ToArray());
-		}
-
-		#endregion
 
 		/// <summary>
 		/// Release resources.
@@ -122,7 +80,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 
 			try
 			{
-				foreach (AbstractCiscoComponent component in m_Components.Values)
+				foreach (ICiscoComponent component in m_Components.Values)
 					component.Dispose();
 				m_Components.Clear();
 			}
@@ -131,5 +89,55 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 				m_ComponentsSection.Leave();
 			}
 		}
+
+		#region Methods
+
+		/// <summary>
+		/// Gets the component with the given type.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T GetComponent<T>()
+			where T : ICiscoComponent
+		{
+			return (T)GetComponent(typeof(T));
+		}
+
+		/// <summary>
+		/// Gets the component with the given type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public ICiscoComponent GetComponent(Type type)
+		{
+			m_ComponentsSection.Enter();
+
+			try
+			{
+				ICiscoComponent component;
+				if (!m_Components.TryGetValue(type, out component))
+				{
+					component = s_Factories[type](m_Codec);
+					m_Components.Add(type, component);
+				}
+
+				return component;
+			}
+			finally
+			{
+				m_ComponentsSection.Leave();
+			}
+		}
+
+		/// <summary>
+		/// Returns the cached components.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<ICiscoComponent> GetComponents()
+		{
+			return m_ComponentsSection.Execute(() => m_Components.Values.OrderBy(c => c.GetType().Name).ToArray());
+		}
+
+		#endregion
 	}
 }
