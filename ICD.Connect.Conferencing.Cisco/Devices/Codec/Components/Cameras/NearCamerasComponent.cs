@@ -427,7 +427,33 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void SetSpeakerTrackWhiteboardMode(eSpeakerTrackWhiteboardMode mode)
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard Mode: {0}", mode);
-			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack {0}", mode);
+			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack Whiteboard Mode to {0}", mode);
+		}
+
+		/// <summary>
+		/// Activates the SpeakerTrack Whiteboard Position for the given camera.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		[PublicAPI]
+		public void ActivateSpeakerTrackWhiteboardPosition(int cameraId)
+		{
+			// Documentation says only whiteboard 1 is supported
+			ActivateSpeakerTrackWhiteboardPosition(cameraId, 1);
+		}
+
+		/// <summary>
+		/// Activates the SpeakerTrack Whiteboard Position for the given camera and whiteboard.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="whiteboardId"></param>
+		[PublicAPI]
+		public void ActivateSpeakerTrackWhiteboardPosition(int cameraId, int whiteboardId)
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard ActivatePosition CameraId: {0} WhiteboardId: {1}",
+			                  cameraId, whiteboardId);
+			Codec.Log(eSeverity.Informational,
+			          "Activating SpeakerTrack Whiteboard Position for CameraId {0} and WhiteboardId {1}",
+			          cameraId, whiteboardId);
 		}
 
 		#endregion
