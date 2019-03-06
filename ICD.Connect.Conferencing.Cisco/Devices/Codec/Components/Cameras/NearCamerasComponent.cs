@@ -670,7 +670,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			codec.UnregisterParserCallback(ParseSpeakerTrackAvailability, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Availability");
 			codec.UnregisterParserCallback(ParseSpeakerTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Status");
 
-			codec.RegisterParserCallback(ParseSpeakerTrackWhiteboardMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Mode");
+			codec.UnregisterParserCallback(ParseSpeakerTrackWhiteboardMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Mode");
 		}
 
 		/// <summary>
