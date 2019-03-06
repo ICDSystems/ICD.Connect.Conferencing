@@ -457,6 +457,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		}
 
 		/// <summary>
+		/// Aligns the SpeakerTrack Whiteboard Position for the given camera and distance in centimeters.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="centimeters"></param>
+		[PublicAPI]
+		public void AlignSpeakerTrackWhiteboardPosition(int cameraId, ushort centimeters)
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard AlignPosition CameraId: {0} Distance: {1}",
+			                  cameraId, centimeters);
+			Codec.Log(eSeverity.Informational,
+			          "Aligning SpeakerTrack Whiteboard Position for CameraId {0} with Distance {1}cm",
+			          cameraId, centimeters);
+		}
+
+		/// <summary>
 		/// Activates the SpeakerTrack Whiteboard Position for the given camera.
 		/// </summary>
 		/// <param name="cameraId"></param>
@@ -483,18 +498,29 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		}
 
 		/// <summary>
-		/// Aligns the SpeakerTrack Whiteboard Position for the given camera and distance in centimeters.
+		/// Stores the SpeakerTrack Whiteboard Position for the given camera.
 		/// </summary>
 		/// <param name="cameraId"></param>
-		/// <param name="centimeters"></param>
 		[PublicAPI]
-		public void AlignSpeakerTrackWhiteboardPosition(int cameraId, ushort centimeters)
+		public void StoreSpeakerTrackWhiteboardPosition(int cameraId)
 		{
-			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard AlignPosition CameraId: {0} Distance: {1}",
-							  cameraId, centimeters);
+			// Documentation says only whiteboard 1 is supported
+			StoreSpeakerTrackWhiteboardPosition(cameraId, 1);
+		}
+
+		/// <summary>
+		/// Stores the SpeakerTrack Whiteboard Position for the given camera and whiteboard.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="whiteboardId"></param>
+		[PublicAPI]
+		public void StoreSpeakerTrackWhiteboardPosition(int cameraId, int whiteboardId)
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard StorePosition CameraId: {0} WhiteboardId: {1}",
+							  cameraId, whiteboardId);
 			Codec.Log(eSeverity.Informational,
-					  "Aligning SpeakerTrack Whiteboard Position for CameraId {0} with Distance {1}cm",
-					  cameraId, centimeters);
+					  "Storing SpeakerTrack Whiteboard Position for CameraId {0} and WhiteboardId {1}",
+					  cameraId, whiteboardId);
 		}
 
 		#endregion
@@ -823,6 +849,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			yield return new GenericConsoleCommand<int, ushort>("AlignSpeakerTrackWhiteboardPosition",
 			                                                    "AlignSpeakerTrackWhiteboardPosition <CameraId, Centimeters>",
 			                                                    (c, d) => AlignSpeakerTrackWhiteboardPosition(c, d));
+
+			yield return new GenericConsoleCommand<int>("StoreSpeakerTrackWhiteboardPosition",
+														"StoreSpeakerTrackWhiteboardPosition <CameraId>",
+														i => StoreSpeakerTrackWhiteboardPosition(i));
 
 			yield return new GenericConsoleCommand<int>("ActivateSpeakerTrackWhiteboardPosition",
 			                                            "ActivateSpeakerTrackWhiteboardPosition <CameraId>",
