@@ -90,6 +90,7 @@
     <Compile Include="Devices\Codec\Components\Cameras\PresenterTrackModeEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackAvailabilityEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackStatusEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackWhiteboardModeEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoRootFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoFolder.cs" />

@@ -52,7 +52,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <summary>
 		/// Raised when the speaker track status changes.
 		/// </summary>
-		public event EventHandler<SpeakerTrackStatusEventArgs> OnSpeakerTrackStatusChanged; 
+		public event EventHandler<SpeakerTrackStatusEventArgs> OnSpeakerTrackStatusChanged;
+
+		/// <summary>
+		/// Raised when the speaker track whiteboard mode changes.
+		/// </summary>
+		public event EventHandler<SpeakerTrackWhiteboardModeEventArgs> OnSpeakerTrackWhiteboardModeChanged; 
 
 		private readonly IcdOrderedDictionary<int, NearCamera> m_Cameras;
 
@@ -69,6 +74,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 		private eSpeakerTrackAvailability m_SpeakerTrackAvailability;
 		private eSpeakerTrackStatus m_SpeakerTrackStatus;
+		private eSpeakerTrackWhiteboardMode m_SpeakerTrackWhiteboardMode;
 
 		#region Properties
 
@@ -179,6 +185,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			}
 		}
 
+		/// <summary>
+		/// Gets the speaker track whiteboard mode.
+		/// </summary>
+		[PublicAPI]
+		public eSpeakerTrackWhiteboardMode SpeakerTrackWhiteboardMode
+		{
+			get { return m_SpeakerTrackWhiteboardMode; }
+			private set
+			{
+				if (value == m_SpeakerTrackWhiteboardMode)
+					return;
+
+				m_SpeakerTrackWhiteboardMode = value;
+
+				Codec.Log(eSeverity.Informational, "SpeakerTrack Whiteboard Mode is {0}", m_SpeakerTrackWhiteboardMode);
+
+				OnSpeakerTrackWhiteboardModeChanged.Raise(this, new SpeakerTrackWhiteboardModeEventArgs(m_SpeakerTrackWhiteboardMode));
+			}
+		}
+
 		#endregion
 
 		#region Constructors
@@ -216,6 +242,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			OnSpeakerTrackAvailabilityChanged = null;
 			OnSpeakerTrackStatusChanged = null;
+			OnSpeakerTrackWhiteboardModeChanged = null;
 
 			base.Dispose(disposing);
 		}
@@ -392,6 +419,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack inactive");
 		}
 
+		/// <summary>
+		/// Sets the SpeakerTrack Whiteboard Mode.
+		/// </summary>
+		/// <param name="mode"></param>
+		[PublicAPI]
+		public void SetSpeakerTrackWhiteboardMode(eSpeakerTrackWhiteboardMode mode)
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard Mode: {0}", mode);
+			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack {0}", mode);
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -514,6 +552,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			codec.RegisterParserCallback(ParseSpeakerTrackAvailability, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Availability");
 			codec.RegisterParserCallback(ParseSpeakerTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Status");
+
+			codec.RegisterParserCallback(ParseSpeakerTrackWhiteboardMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Mode");
 		}
 
 		/// <summary>
@@ -536,6 +576,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			codec.UnregisterParserCallback(ParseSpeakerTrackAvailability, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Availability");
 			codec.UnregisterParserCallback(ParseSpeakerTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Status");
+
+			codec.RegisterParserCallback(ParseSpeakerTrackWhiteboardMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Mode");
 		}
 
 		/// <summary>
@@ -610,8 +652,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 		private void ParsePresenterTrackAvailability(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			string content = XmlUtils.GetInnerXml(xml);
-			PresenterTrackAvailability = EnumUtils.Parse<ePresenterTrackAvailability>(content, true);
+			PresenterTrackAvailability = XmlUtils.ReadElementContentAsEnum<ePresenterTrackAvailability>(xml, true);
 		}
 
 		private void ParsePresenterTrackPresenterDetected(CiscoCodecDevice codec, string resultid, string xml)
@@ -622,20 +663,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 		private void ParsePresenterTrackStatus(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			string content = XmlUtils.GetInnerXml(xml);
-			PresenterTrackMode = EnumUtils.Parse<ePresenterTrackMode>(content, true);
+			PresenterTrackMode = XmlUtils.ReadElementContentAsEnum<ePresenterTrackMode>(xml, true);
 		}
 
 		private void ParseSpeakerTrackAvailability(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			string content = XmlUtils.GetInnerXml(xml);
-			SpeakerTrackAvailability = EnumUtils.Parse<eSpeakerTrackAvailability>(content, true);
+			SpeakerTrackAvailability = XmlUtils.ReadElementContentAsEnum<eSpeakerTrackAvailability>(xml, true);
 		}
 
 		private void ParseSpeakerTrackStatus(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			string content = XmlUtils.GetInnerXml(xml);
-			SpeakerTrackStatus = EnumUtils.Parse<eSpeakerTrackStatus>(content, true);
+			SpeakerTrackStatus = XmlUtils.ReadElementContentAsEnum<eSpeakerTrackStatus>(xml, true);
+		}
+
+		private void ParseSpeakerTrackWhiteboardMode(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			SpeakerTrackWhiteboardMode = XmlUtils.ReadElementContentAsEnum<eSpeakerTrackWhiteboardMode>(xml, true);
 		}
 
 		#endregion
@@ -655,6 +698,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			addRow("PresenterTrack Mode", PresenterTrackMode);
 			addRow("SpeakerTrack Availability", SpeakerTrackAvailability);
 			addRow("SpeakerTrack Status", SpeakerTrackStatus);
+			addRow("SpeakerTrack Whiteboard Mode", SpeakerTrackWhiteboardMode);
 		}
 
 		/// <summary>
@@ -695,6 +739,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			yield return new ConsoleCommand("ActivateSpeakerTrack", "Activates the SpeakerTrack", () => ActivateSpeakerTrack());
 			yield return new ConsoleCommand("DeactivateSpeakerTrack", "Deactivates the SpeakerTrack", () => DeactivateSpeakerTrack());
+
+			string speakerTrackWhiteboardMode = string.Format("SetSpeakerTrackWhiteboardMode <{0}>",
+															  StringUtils.ArrayFormat(EnumUtils.GetValues<eSpeakerTrackWhiteboardMode>()));
+
+			yield return new GenericConsoleCommand<eSpeakerTrackWhiteboardMode>("SetSpeakerTrackWhiteboardMode",
+			                                                                    speakerTrackWhiteboardMode,
+			                                                                    m => SetSpeakerTrackWhiteboardMode(m));
 		}
 
 		/// <summary>
