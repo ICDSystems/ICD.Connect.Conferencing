@@ -482,6 +482,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			          cameraId, whiteboardId);
 		}
 
+		/// <summary>
+		/// Aligns the SpeakerTrack Whiteboard Position for the given camera and distance in centimeters.
+		/// </summary>
+		/// <param name="cameraId"></param>
+		/// <param name="centimeters"></param>
+		[PublicAPI]
+		public void AlignSpeakerTrackWhiteboardPosition(int cameraId, ushort centimeters)
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard AlignPosition CameraId: {0} Distance: {1}",
+							  cameraId, centimeters);
+			Codec.Log(eSeverity.Informational,
+					  "Aligning SpeakerTrack Whiteboard Position for CameraId {0} with Distance {1}cm",
+					  cameraId, centimeters);
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -804,6 +819,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			yield return new GenericConsoleCommand<ushort>("SetSpeakerTrackWhiteboardDistance",
 			                                               "SetSpeakerTrackWhiteboardDistance <Centimeters>",
 			                                               i => SetSpeakerTrackWhiteboardDistance(i));
+
+			yield return new GenericConsoleCommand<int, ushort>("AlignSpeakerTrackWhiteboardPosition",
+			                                                    "AlignSpeakerTrackWhiteboardPosition <CameraId, Centimeters>",
+			                                                    (c, d) => AlignSpeakerTrackWhiteboardPosition(c, d));
 
 			yield return new GenericConsoleCommand<int>("ActivateSpeakerTrackWhiteboardPosition",
 			                                            "ActivateSpeakerTrackWhiteboardPosition <CameraId>",
