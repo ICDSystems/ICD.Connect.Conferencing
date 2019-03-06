@@ -8,40 +8,6 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.System
 	[TestFixture]
 	public sealed class SystemComponentTest : AbstractCiscoComponentTest
 	{
-		[Test]
-		public void SipRegistrationStatusChangeFeedbackTest()
-		{
-			SystemComponent component = new SystemComponent(Codec);
-
-			List<RegistrationEventArgs> responses = new List<RegistrationEventArgs>();
-
-			component.OnSipRegistrationChange += (sender, e) => responses.Add(e);
-
-			const string rX =
-				"<XmlDoc resultId=\"\">"
-				+ "<Status>"
-				+ "<SIP item=\"1\">"
-				+ "<Registration item=\"1\">"
-				+ "<Status item=\"1\">{0}</Status>"
-				+ "</Registration>"
-				+ "</SIP>"
-				+ "</Status>"
-				+ "</XmlDoc>";
-
-			string failed = string.Format(rX, eRegState.Failed);
-			string inactive = string.Format(rX, eRegState.Inactive);
-			string registered = string.Format(rX, eRegState.Registered);
-
-			Port.Receive(failed);
-			Port.Receive(inactive);
-			Port.Receive(registered);
-
-			Assert.AreEqual(3, responses.Count);
-			Assert.AreEqual(eRegState.Failed, responses[0].Data);
-			Assert.AreEqual(eRegState.Inactive, responses[1].Data);
-			Assert.AreEqual(eRegState.Registered, responses[2].Data);
-			Assert.AreEqual(eRegState.Registered, component.SipRegistration);
-		}
 
 		[Test]
 		public void GatekeeperStatusChangeFeedbackTest()
@@ -258,29 +224,6 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.System
 			Port.Receive(disabled);
 
 			Assert.AreEqual(false, component.H323Enabled);
-		}
-
-		[Test]
-		public void NoSipRegistrationTest()
-		{
-			SystemComponent component = new SystemComponent(Codec);
-
-			const string rX =
-				"<XmlDoc resultId=\"\">"
-				+ "<Status>"
-				+ "<SIP item=\"1\">"
-				+ "<Registration item=\"1\">"
-				+ "<Status item=\"1\">{0}</Status>"
-				+ "</Registration>"
-				+ "</SIP>"
-				+ "</Status>"
-				+ "</XmlDoc>";
-
-			string failed = string.Format(rX, eRegState.Failed);
-
-			Port.Receive(failed);
-
-			Assert.AreEqual(eRegState.Failed, component.SipRegistration);
 		}
 	}
 }
