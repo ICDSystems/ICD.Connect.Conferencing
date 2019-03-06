@@ -431,6 +431,32 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		}
 
 		/// <summary>
+		/// Sets the SpeakerTrack Whiteboard Distance in centimeters.
+		/// </summary>
+		/// <param name="centimeters"></param>
+		[PublicAPI]
+		public void SetSpeakerTrackWhiteboardDistance(ushort centimeters)
+		{
+			// Documentation says only whiteboard 1 is supported
+			SetSpeakerTrackWhiteboardDistance(centimeters, 1);
+		}
+
+		/// <summary>
+		/// Sets the SpeakerTrack Whiteboard Distance in centimeters for the given whiteboard.
+		/// </summary>
+		/// <param name="centimeters"></param>
+		/// <param name="whiteboardId"></param>
+		[PublicAPI]
+		public void SetSpeakerTrackWhiteboardDistance(ushort centimeters, int whiteboardId)
+		{
+			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard SetDistance Distance: {0} WhiteboardId: {1}",
+							  centimeters, whiteboardId);
+			Codec.Log(eSeverity.Informational,
+					  "Setting SpeakerTrack Whiteboard Distance of {0}cm for WhiteboardId {1}",
+					  centimeters, whiteboardId);
+		}
+
+		/// <summary>
 		/// Activates the SpeakerTrack Whiteboard Position for the given camera.
 		/// </summary>
 		/// <param name="cameraId"></param>
@@ -757,8 +783,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			string presenterTrackModeHelp = string.Format("SetPresenterTrackMode <{0}>",
-			                                              StringUtils.ArrayFormat(EnumUtils.GetValues<ePresenterTrackMode>()));
+			string presenterTrackModeHelp =
+				string.Format("SetPresenterTrackMode <{0}>",
+				              StringUtils.ArrayFormat(EnumUtils.GetValues<ePresenterTrackMode>()));
 
 			yield return new GenericConsoleCommand<ePresenterTrackMode>("SetPresenterTrackMode",
 			                                                            presenterTrackModeHelp, m => SetPresenterTrackMode(m));
@@ -766,12 +793,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			yield return new ConsoleCommand("ActivateSpeakerTrack", "Activates the SpeakerTrack", () => ActivateSpeakerTrack());
 			yield return new ConsoleCommand("DeactivateSpeakerTrack", "Deactivates the SpeakerTrack", () => DeactivateSpeakerTrack());
 
-			string speakerTrackWhiteboardMode = string.Format("SetSpeakerTrackWhiteboardMode <{0}>",
-															  StringUtils.ArrayFormat(EnumUtils.GetValues<eSpeakerTrackWhiteboardMode>()));
+			string speakerTrackWhiteboardModeHelp =
+				string.Format("SetSpeakerTrackWhiteboardMode <{0}>",
+				              StringUtils.ArrayFormat(EnumUtils.GetValues<eSpeakerTrackWhiteboardMode>()));
 
 			yield return new GenericConsoleCommand<eSpeakerTrackWhiteboardMode>("SetSpeakerTrackWhiteboardMode",
-			                                                                    speakerTrackWhiteboardMode,
+			                                                                    speakerTrackWhiteboardModeHelp,
 			                                                                    m => SetSpeakerTrackWhiteboardMode(m));
+
+			yield return new GenericConsoleCommand<ushort>("SetSpeakerTrackWhiteboardDistance",
+			                                               "SetSpeakerTrackWhiteboardDistance <Centimeters>",
+			                                               i => SetSpeakerTrackWhiteboardDistance(i));
+
+			yield return new GenericConsoleCommand<int>("ActivateSpeakerTrackWhiteboardPosition",
+			                                            "ActivateSpeakerTrackWhiteboardPosition <CameraId>",
+			                                            i => ActivateSpeakerTrackWhiteboardPosition(i));
 		}
 
 		/// <summary>
