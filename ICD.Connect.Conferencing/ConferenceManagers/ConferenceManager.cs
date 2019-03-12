@@ -557,7 +557,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		private void UpdateIsInCall()
 		{
-			IsInCall = (eInCall)OnlineConferences.Max(c => (int)c.CallType);
+			if (!OnlineConferences.Any())
+				IsInCall = eInCall.None;
+			else
+				IsInCall = (eInCall)OnlineConferences.Max(c => (int)c.CallType);
 		}
 
 		#endregion
