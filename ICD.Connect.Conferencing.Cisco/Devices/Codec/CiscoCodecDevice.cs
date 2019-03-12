@@ -72,12 +72,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
 		/// <summary>
-		/// Raised when the codec sends an error.
-		/// </summary>
-		[PublicAPI]
-		public event EventHandler<StringEventArgs> OnParsedError;
-
-		/// <summary>
 		/// System Configuration Commands
 		/// </summary>
 		private readonly string[] m_ConfigurationCommands =
@@ -201,7 +195,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
         [PublicAPI]
         public void SetPort(ISerialPort port)
         {
-            m_ConnectionStateManager.SetPort(port);
+	        m_ConnectionStateManager.SetPort(port);
         }
         
         /// <summary>
@@ -211,7 +205,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		{
 			OnInitializedChanged = null;
 			OnConnectedStateChanged = null;
-			OnParsedError = null;
 
 			m_FeedbackTimer.Dispose();
 
@@ -457,8 +450,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 
 			Log(eSeverity.Error, message);
-
-			OnParsedError.Raise(this, new StringEventArgs(message));
 		}
 
 		/// <summary>
@@ -682,7 +673,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			PeripheralsId = null;
 			PhonebookType = ePhonebookType.Corporate;
 
-			m_ConnectionStateManager.SetPort(null);
+			SetPort(null);
 		}
 
 		/// <summary>
@@ -711,7 +702,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				}
 			}
 
-			m_ConnectionStateManager.SetPort(port);
+			SetPort(port);
 		}
 
 		#endregion
