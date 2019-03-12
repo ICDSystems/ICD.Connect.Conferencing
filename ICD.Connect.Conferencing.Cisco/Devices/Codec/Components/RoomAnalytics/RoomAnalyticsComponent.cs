@@ -21,8 +21,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnPeoplePresenceDetectorEnabledChanged;
 
+		/// <summary>
+		/// Raised when the current number of people detected in the room changes.
+		/// </summary>
+		public event EventHandler<IntEventArgs> OnPeopleCountCurrentChanged;
+
+		/// <summary>
+		/// Raised when the people presence state changes.
+		/// </summary>
+		public event EventHandler<PeoplePresenceEventArgs> OnPeoplePresenceChanged; 
+
 		private bool m_PeopleCountOutOfCallEnabled;
 		private bool m_PeoplePresenceDetectorEnabled;
+		private int m_PeopleCountCurrent;
+		private ePeoplePresence m_PeoplePresence;
+
+		#region Properties
 
 		/// <summary>
 		/// Gets the PeopleCount out-of-call enabled state.
@@ -59,6 +73,42 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 		}
 
 		/// <summary>
+		/// Gets the number of people detected in the room.
+		/// </summary>
+		public int PeopleCountCurrent
+		{
+			get { return m_PeopleCountCurrent; }
+			private set
+			{
+				if (value == m_PeopleCountCurrent)
+					return;
+
+				m_PeopleCountCurrent = value;
+
+				OnPeopleCountCurrentChanged.Raise(this, new IntEventArgs(m_PeopleCountCurrent));
+			}
+		}
+
+		/// <summary>
+		/// Gets the people presence state.
+		/// </summary>
+		public ePeoplePresence PeoplePresence
+		{
+			get { return m_PeoplePresence; }
+			private set
+			{
+				if (value == m_PeoplePresence)
+					return;
+
+				m_PeoplePresence = value;
+
+				OnPeoplePresenceChanged.Raise(this, new PeoplePresenceEventArgs(m_PeoplePresence));
+			}
+		}
+
+		#endregion
+
+		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
@@ -79,9 +129,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 		{
 			OnPeopleCountOutOfCallEnabledChanged = null;
 			OnPeoplePresenceDetectorEnabledChanged = null;
+			OnPeopleCountCurrentChanged = null;
+			OnPeoplePresenceChanged = null;
 
 			base.Dispose(disposing);
 		}
+
+		#region Methods
 
 		/// <summary>
 		/// Enables/disables PeopleCount while not in a call.
@@ -107,6 +161,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 			Codec.Log(eSeverity.Informational, "Setting RoomAnalytics PeoplePresenceDetector {0}", value);
 		}
 
+		#endregion
+
 		#region Codec Feedback
 
 		/// <summary>
@@ -122,6 +178,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 
 			codec.RegisterParserCallback(ParsePeopleCountOutOfCall, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "RoomAnalytics", "PeopleOutOfCall");
 			codec.RegisterParserCallback(ParsePeoplePresenceDetector, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "RoomAnalytics", "PeoplePresenceDetector");
+			codec.RegisterParserCallback(ParsePeopleCountCurrent, CiscoCodecDevice.XSTATUS_ELEMENT, "RoomAnalytics", "PeopleCount", "Current");
+			codec.RegisterParserCallback(ParsePeoplePresence, CiscoCodecDevice.XSTATUS_ELEMENT, "RoomAnalytics", "PeoplePresence");
 		}
 
 		/// <summary>
@@ -137,6 +195,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 
 			codec.UnregisterParserCallback(ParsePeopleCountOutOfCall, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "RoomAnalytics", "PeopleOutOfCall");
 			codec.UnregisterParserCallback(ParsePeoplePresenceDetector, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "RoomAnalytics", "PeoplePresenceDetector");
+			codec.UnregisterParserCallback(ParsePeopleCountCurrent, CiscoCodecDevice.XSTATUS_ELEMENT, "RoomAnalytics", "PeopleCount", "Current");
+			codec.UnregisterParserCallback(ParsePeoplePresence, CiscoCodecDevice.XSTATUS_ELEMENT, "RoomAnalytics", "PeoplePresence");
 		}
 
 		private void ParsePeopleCountOutOfCall(CiscoCodecDevice codec, string resultid, string xml)
@@ -149,6 +209,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			PeoplePresenceDetectorEnabled = string.Equals(content, "On", StringComparison.OrdinalIgnoreCase);
+		}
+
+		private void ParsePeopleCountCurrent(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			PeopleCountCurrent = XmlUtils.ReadElementContentAsInt(xml);
+		}
+
+		private void ParsePeoplePresence(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			PeoplePresence = XmlUtils.ReadElementContentAsEnum<ePeoplePresence>(xml, true);
 		}
 
 		#endregion
@@ -164,7 +234,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 			base.BuildConsoleStatus(addRow);
 
 			addRow("PeopleCount OutOfCall Enabled", PeopleCountOutOfCallEnabled);
+			addRow("PeopleCount Current", PeopleCountCurrent);
 			addRow("PeoplePresence Detector Enabled", PeoplePresenceDetectorEnabled);
+			addRow("PeoplePresence", PeoplePresence);
 		}
 
 		/// <summary>
@@ -180,7 +252,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 			                                             b => EnablePeopleCountOutOfCall(b));
 			yield return
 				new GenericConsoleCommand<bool>("EnablePeoplePresenceDetector", "EnablePeoplePresenceDetector <true/false>",
-				                                b => EnablePeopleCountOutOfCall(b));
+				                                b => EnablePeoplePresenceDetector(b));
 		}
 
 		/// <summary>
