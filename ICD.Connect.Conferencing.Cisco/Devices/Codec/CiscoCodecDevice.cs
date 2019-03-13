@@ -164,6 +164,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			Controls.Add(new CiscoCodecPresentationControl(this, 4));
 			Controls.Add(new CiscoCodecPowerControl(this, 5));
 			Controls.Add(new CiscoCodecCalendarControl(this, 6));
+			Controls.Add(new CiscoCodecOccupancySensorControl(this, 7));
 		}
 
 		#endregion
