@@ -163,7 +163,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			Controls.Add(new CiscoCodecLayoutControl(this, 3));
 			Controls.Add(new CiscoCodecPresentationControl(this, 4));
 			Controls.Add(new CiscoCodecPowerControl(this, 5));
-			Controls.Add(new CiscoCalendarControl(this, 6));
+			Controls.Add(new CiscoCodecCalendarControl(this, 6));
 		}
 
 		#endregion

@@ -131,7 +131,7 @@
     <Compile Include="Devices\Codec\Components\Dialing\DialingComponent.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoBooking.cs" />
-    <Compile Include="Devices\Codec\Controls\Calender\CiscoCalendarControl.cs" />
+    <Compile Include="Devices\Codec\Controls\Calender\CiscoCodecCalendarControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDirectoryControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecLayoutControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecPowerControl.cs" />

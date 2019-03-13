@@ -12,7 +12,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 {
-	public sealed class CiscoCalendarControl : AbstractCalendarControl<CiscoCodecDevice>
+	public sealed class CiscoCodecCalendarControl : AbstractCalendarControl<CiscoCodecDevice>
 	{
 		private const int REFRESH_INTERVAL = 10 * 60 * 1000;
 
@@ -39,7 +39,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
-		static CiscoCalendarControl()
+		static CiscoCodecCalendarControl()
 		{
 			s_BookingComparer = new PredicateComparer<Booking, DateTime>(b => b.StartTime);
 			s_BookingEqualityComparer = new PredicateEqualityComparer<Booking, int>(b => b.Id);
@@ -50,7 +50,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public CiscoCalendarControl(CiscoCodecDevice parent, int id)
+		public CiscoCodecCalendarControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
 			m_RefreshTimer = new SafeTimer(Refresh, REFRESH_INTERVAL, REFRESH_INTERVAL);
