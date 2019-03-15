@@ -258,6 +258,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				command = string.Format(command, args);
 
 			m_ConnectionStateManager.Send(command + END_OF_LINE);
+
+#if !SIMPLSHARP
+			// Too fast!
+			ThreadingUtils.Sleep(10);
+#endif
 		}
 
 		/// <summary>
