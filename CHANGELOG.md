@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Added PresenterTrack and SpeakerTrack items to Cisco Cameras component.
  - Added Cisco RoomAnalytics component
  - Added CiscoCodecOccupancySensorControl
+ - Added console features to Cisco and Polycom camera devices
 
 ### Changed
  - Better Cisco support for multiple SIP registrations

@@ -5,6 +5,8 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
@@ -51,6 +53,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// Gets the maximum number of presets this camera can support.
 		/// </summary>
 		public int MaxPresets { get { return 35; } }
+
+		private int PanSpeed { get { return m_PanTiltSpeed ?? (m_Camera == null ? 0 : m_Camera.PanSpeed); } }
+
+		private int TiltSpeed { get { return m_PanTiltSpeed ?? (m_Camera == null ? 0 : m_Camera.TiltSpeed); } }
+
+		private int ZoomSpeed { get { return m_ZoomSpeed ?? (m_Camera == null ? 0 : m_Camera.ZoomSpeed); } }
 
 		#endregion
 
@@ -112,32 +120,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			switch (action)
 			{
 				case eCameraPanTiltAction.Left:
-					if (m_PanTiltSpeed == null)
-						m_Camera.Pan(eCameraPan.Left);
-					else
-						m_Camera.Pan(eCameraPan.Left, m_PanTiltSpeed.Value);
+					m_Camera.Pan(eCameraPan.Left, PanSpeed);
 					break;
+
 				case eCameraPanTiltAction.Right:
-					if (m_PanTiltSpeed == null)
-						m_Camera.Pan(eCameraPan.Right);
-					else
-						m_Camera.Pan(eCameraPan.Right, m_PanTiltSpeed.Value);
+					m_Camera.Pan(eCameraPan.Right, PanSpeed);
 					break;
+
 				case eCameraPanTiltAction.Up:
-					if (m_PanTiltSpeed == null)
-						m_Camera.Tilt(eCameraTilt.Up);
-					else
-						m_Camera.Tilt(eCameraTilt.Up, m_PanTiltSpeed.Value);
+					m_Camera.Tilt(eCameraTilt.Up, TiltSpeed);
 					break;
+
 				case eCameraPanTiltAction.Down:
-					if (m_PanTiltSpeed == null)
-						m_Camera.Tilt(eCameraTilt.Down);
-					else
-						m_Camera.Tilt(eCameraTilt.Down, m_PanTiltSpeed.Value);
+					m_Camera.Tilt(eCameraTilt.Down, TiltSpeed);
 					break;
+
 				case eCameraPanTiltAction.Stop:
 					m_Camera.StopPanTilt();
 					break;
+
 				default:
 					throw new ArgumentOutOfRangeException("action");
 			}
@@ -155,20 +156,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			switch (action)
 			{
 				case eCameraZoomAction.ZoomIn:
-					if (m_ZoomSpeed == null)
-						m_Camera.Zoom(eCameraZoom.In);
-					else
-						m_Camera.Zoom(eCameraZoom.In, m_ZoomSpeed.Value);
+					m_Camera.Zoom(eCameraZoom.In, ZoomSpeed);
 					break;
+
 				case eCameraZoomAction.ZoomOut:
-					if (m_ZoomSpeed == null)
-						m_Camera.Zoom(eCameraZoom.Out);
-					else
-						m_Camera.Zoom(eCameraZoom.Out, m_ZoomSpeed.Value);
+					m_Camera.Zoom(eCameraZoom.Out, ZoomSpeed);
 					break;
+
 				case eCameraZoomAction.Stop:
 					m_Camera.StopZoom();
 					break;
+
 				default:
 					throw new ArgumentOutOfRangeException("action");
 			}
@@ -195,7 +193,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			if (presetId < 1 || presetId > MaxPresets)
 			{
-				Log(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not activated.", MaxPresets);
+				Log(eSeverity.Error, "Camera preset must be between 1 and {0}, preset was not activated.", MaxPresets);
 				return;
 			}
 
@@ -213,7 +211,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			if (presetId < 1 || presetId > MaxPresets)
 			{
-				Log(eSeverity.Warning, "Camera preset must be between 1 and {0}, preset was not stored.", MaxPresets);
+				Log(eSeverity.Error, "Camera preset must be between 1 and {0}, preset was not stored.", MaxPresets);
 				return;
 			}
 
@@ -372,6 +370,86 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			settings.CameraId = CameraId == 0 ? (int?)null : CameraId;
 			settings.PanTiltSpeed = m_PanTiltSpeed;
 			settings.ZoomSpeed = m_ZoomSpeed;
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("Codec", Codec);
+			addRow("Camera Id", CameraId);
+
+			addRow("Pan Speed", PanSpeed);
+			addRow("Tilt Speed", TiltSpeed);
+			addRow("Zoom Speed", ZoomSpeed);
+
+			CameraWithPanTiltConsole.BuildConsoleStatus(this, addRow);
+			CameraWithZoomConsole.BuildConsoleStatus(this, addRow);
+			CameraWithPresetsConsole.BuildConsoleStatus(this, addRow);
+		}
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			foreach (IConsoleCommand command in CameraWithPanTiltConsole.GetConsoleCommands(this))
+				yield return command;
+
+			foreach (IConsoleCommand command in CameraWithZoomConsole.GetConsoleCommands(this))
+				yield return command;
+
+			foreach (IConsoleCommand command in CameraWithPresetsConsole.GetConsoleCommands(this))
+				yield return command;
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
+		}
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
+
+			foreach (IConsoleNodeBase node in CameraWithPanTiltConsole.GetConsoleNodes(this))
+				yield return node;
+
+			foreach (IConsoleNodeBase node in CameraWithZoomConsole.GetConsoleNodes(this))
+				yield return node;
+
+			foreach (IConsoleNodeBase node in CameraWithPresetsConsole.GetConsoleNodes(this))
+				yield return node;
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		#endregion
