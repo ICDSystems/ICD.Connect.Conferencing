@@ -42,7 +42,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		#region Properties
 
+		[PublicAPI]
+		public CiscoCodecDevice Codec { get { return m_Codec; } }
+
 		public int CameraId { get; private set; }
+
+		/// <summary>
+		/// Gets the maximum number of presets this camera can support.
+		/// </summary>
+		public int MaxPresets { get { return 35; } }
 
 		#endregion
 
@@ -69,7 +77,28 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			base.DisposeFinal(disposing);
 		}
 
-		#region ICameraWithPanTilt
+		#region ICameraWithPresets
+
+		[PublicAPI]
+		public void SetCodec(CiscoCodecDevice codec)
+		{
+			if (codec == m_Codec)
+				return;
+
+			Unsubscribe(m_Codec);
+			Unsubscribe(m_CamerasComponent);
+
+			m_Codec = codec;
+			m_CamerasComponent = m_Codec == null ? null : m_Codec.Components.GetComponent<NearCamerasComponent>();
+			m_Camera = m_CamerasComponent == null ? null : m_CamerasComponent.GetCamera(CameraId);
+
+			Subscribe(m_Codec);
+			Subscribe(m_CamerasComponent);
+
+			UpdateCachedOnlineStatus();
+
+			OnCodecChanged.Raise(this);
+		}
 
 		/// <summary>
 		/// Starts rotating the camera with the given action.
@@ -114,10 +143,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			}
 		}
 
-		#endregion
-
-		#region ICameraWithZoom
-
 		/// <summary>
 		/// Starts zooming the camera with the given action.
 		/// </summary>
@@ -148,15 +173,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 					throw new ArgumentOutOfRangeException("action");
 			}
 		}
-
-		#endregion
-
-		#region ICameraWithPresets
-
-		/// <summary>
-		/// Gets the maximum number of presets this camera can support.
-		/// </summary>
-		public int MaxPresets { get { return 35; } }
 
 		/// <summary>
 		/// Gets the stored camera presets.
@@ -204,10 +220,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			m_Camera.StorePreset(presetId);
 		}
 
-		#endregion
-
-		#region DeviceBase
-
 		/// <summary>
 		/// Gets the current online status of the device.
 		/// </summary>
@@ -215,103 +227,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		protected override bool GetIsOnlineStatus()
 		{
 			return m_Codec != null && m_Codec.IsOnline;
-		}
-
-		#endregion
-
-		#region Settings
-
-		/// <summary>
-		/// Override to clear the instance settings.
-		/// </summary>
-		protected override void ClearSettingsFinal()
-		{
-			base.ClearSettingsFinal();
-
-			m_PanTiltSpeed = null;
-			m_ZoomSpeed = null;
-
-			CameraId = 0;
-			SetCodec(null);
-		}
-
-		/// <summary>
-		/// Override to apply settings to the instance.
-		/// </summary>
-		/// <param name="settings"></param>
-		/// <param name="factory"></param>
-		protected override void ApplySettingsFinal(CiscoCodecCameraDeviceSettings settings, IDeviceFactory factory)
-		{
-			base.ApplySettingsFinal(settings, factory);
-
-			if (settings.CameraId == null)
-				Log(eSeverity.Error, "No Camera Id");
-
-			CameraId = settings.CameraId ?? 0;
-
-			CiscoCodecDevice codec = null;
-
-			if (settings.CodecId.HasValue)
-			{
-				try
-				{
-					codec = factory.GetOriginatorById<CiscoCodecDevice>(settings.CodecId.Value);
-				}
-				catch (KeyNotFoundException)
-				{
-					Log(eSeverity.Error, "No Cisco Codec Device with id {0}", settings.CodecId.Value);
-				}
-			}
-
-			SetCodec(codec);
-
-			m_PanTiltSpeed = settings.PanTiltSpeed;
-			m_ZoomSpeed = settings.ZoomSpeed;
-		}
-
-		/// <summary>
-		/// Override to apply properties to the settings instance.
-		/// </summary>
-		/// <param name="settings"></param>
-		protected override void CopySettingsFinal(CiscoCodecCameraDeviceSettings settings)
-		{
-			base.CopySettingsFinal(settings);
-
-			settings.CodecId = m_Codec == null ? null : (int?)m_Codec.Id;
-			settings.CameraId = CameraId == 0 ? (int?)null : CameraId;
-			settings.PanTiltSpeed = m_PanTiltSpeed;
-			settings.ZoomSpeed = m_ZoomSpeed;
-		}
-
-		#endregion
-
-		#region Public API
-
-		[PublicAPI]
-		public CiscoCodecDevice GetCodec()
-		{
-			return m_Codec;
-		}
-
-		[PublicAPI]
-		public void SetCodec(CiscoCodecDevice codec)
-		{
-			if (codec == m_Codec)
-				return;
-
-			Unsubscribe(m_Codec);
-			Unsubscribe(m_CamerasComponent);
-
-			m_Codec = codec;
-			m_CamerasComponent = m_Codec == null ? null : m_Codec.Components.GetComponent<NearCamerasComponent>();
-			m_Camera = m_CamerasComponent == null ? null : m_CamerasComponent.GetCamera(CameraId);
-
-			Subscribe(m_Codec);
-			Subscribe(m_CamerasComponent);
-
-			UpdateCachedOnlineStatus();
-
-			OnCodecChanged.Raise(this);
 		}
 
 		#endregion
@@ -391,6 +306,72 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 				return;
 
 			OnPresetsChanged.Raise(this);
+		}
+
+		#endregion
+
+		#region Settings
+
+		/// <summary>
+		/// Override to clear the instance settings.
+		/// </summary>
+		protected override void ClearSettingsFinal()
+		{
+			base.ClearSettingsFinal();
+
+			m_PanTiltSpeed = null;
+			m_ZoomSpeed = null;
+
+			CameraId = 0;
+			SetCodec(null);
+		}
+
+		/// <summary>
+		/// Override to apply settings to the instance.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		protected override void ApplySettingsFinal(CiscoCodecCameraDeviceSettings settings, IDeviceFactory factory)
+		{
+			base.ApplySettingsFinal(settings, factory);
+
+			if (settings.CameraId == null)
+				Log(eSeverity.Error, "No Camera Id");
+
+			CameraId = settings.CameraId ?? 0;
+
+			CiscoCodecDevice codec = null;
+
+			if (settings.CodecId.HasValue)
+			{
+				try
+				{
+					codec = factory.GetOriginatorById<CiscoCodecDevice>(settings.CodecId.Value);
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No Cisco Codec Device with id {0}", settings.CodecId.Value);
+				}
+			}
+
+			SetCodec(codec);
+
+			m_PanTiltSpeed = settings.PanTiltSpeed;
+			m_ZoomSpeed = settings.ZoomSpeed;
+		}
+
+		/// <summary>
+		/// Override to apply properties to the settings instance.
+		/// </summary>
+		/// <param name="settings"></param>
+		protected override void CopySettingsFinal(CiscoCodecCameraDeviceSettings settings)
+		{
+			base.CopySettingsFinal(settings);
+
+			settings.CodecId = m_Codec == null ? null : (int?)m_Codec.Id;
+			settings.CameraId = CameraId == 0 ? (int?)null : CameraId;
+			settings.PanTiltSpeed = m_PanTiltSpeed;
+			settings.ZoomSpeed = m_ZoomSpeed;
 		}
 
 		#endregion

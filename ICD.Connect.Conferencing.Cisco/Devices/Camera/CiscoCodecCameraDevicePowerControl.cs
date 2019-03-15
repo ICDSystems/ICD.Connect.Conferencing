@@ -41,7 +41,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		protected override void DisposeFinal(bool disposing)
 		{
 			base.DisposeFinal(disposing);
+
 			Unsubscribe();
+
 			m_SystemComponent = null;
 			m_Timer.Stop();
 			m_Timer.Dispose();
@@ -57,8 +59,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		{
 			if (m_SystemComponent == null)
 				return;
+
 			if (!m_SystemComponent.Awake)
 				m_SystemComponent.Wake();
+
 			m_SystemComponent.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
 		}
 
@@ -91,7 +95,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			m_SystemComponent = null;
 
-			CiscoCodecDevice codec = Parent.GetCodec();
+			CiscoCodecDevice codec = Parent.Codec;
 			if (codec == null)
 				return;
 
