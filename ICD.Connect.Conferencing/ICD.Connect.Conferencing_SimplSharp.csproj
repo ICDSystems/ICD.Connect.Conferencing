@@ -92,6 +92,7 @@
     <Compile Include="Controls\Layout\ConferenceLayoutControlConsole.cs" />
     <Compile Include="Controls\Layout\IConferenceLayoutControl.cs" />
     <Compile Include="Comparers\ContactNameComparer.cs" />
+    <Compile Include="Devices\VideoConferenceDeviceConsole.cs" />
     <Compile Include="Directory\Tree\DirectoryFolder.cs" />
     <Compile Include="EventArguments\ConferenceLayoutAvailableApiEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceProviderEventArgs.cs" />
