@@ -146,6 +146,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		}
 
 		/// <summary>
+		/// Gets the camera id that is configured for presenter track.
+		/// </summary>
+		public int? PresenterTrackCameraId { get { return Codec.PresenterTrackCameraId; } }
+
+		/// <summary>
 		/// Gets the speaker track availability.
 		/// </summary>
 		[PublicAPI]

@@ -17,6 +17,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private const string PORT_ELEMENT = "Port";
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
 		private const string PHONEBOOK_TYPE_ELEMENT = "PhonebookType";
+		private const string PRESENTER_TRACK_CAMERA_ELEMENT = "PresenterTrackCameraID";
 
 		private string m_PeripheralsId;
 
@@ -46,6 +47,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		public ePhonebookType PhonebookType { get; set; }
 
 		/// <summary>
+		/// Determines which camera to use with PresenterTrack features.
+		/// </summary>
+		public int? PresenterTrackCameraId { get; set; }
+
+		/// <summary>
 		/// Constructor.
 		/// </summary>
 		public CiscoCodecSettings()
@@ -64,6 +70,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
 			writer.WriteElementString(PHONEBOOK_TYPE_ELEMENT, IcdXmlConvert.ToString(PhonebookType));
+			writer.WriteElementString(PRESENTER_TRACK_CAMERA_ELEMENT, IcdXmlConvert.ToString(PresenterTrackCameraId));
 		}
 
 		/// <summary>
@@ -78,6 +85,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			PeripheralsId = XmlUtils.TryReadChildElementContentAsString(xml, PERIPHERALS_ID_ELEMENT);
 			PhonebookType = XmlUtils.TryReadChildElementContentAsEnum<ePhonebookType>(xml, PHONEBOOK_TYPE_ELEMENT, true) ??
 			                ePhonebookType.Corporate;
+			PresenterTrackCameraId = XmlUtils.TryReadChildElementContentAsInt(xml, PRESENTER_TRACK_CAMERA_ELEMENT);
 		}
 	}
 }

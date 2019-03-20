@@ -125,6 +125,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		public ePhonebookType PhonebookType { get; private set; }
 
 		/// <summary>
+		/// Determines which camera to use with PresenterTrack features.
+		/// </summary>
+		public int? PresenterTrackCameraId { get; set; }
+
+		/// <summary>
 		/// Provides the components attached to this codec.
 		/// </summary>
 		public CiscoComponentFactory Components { get { return m_Components; } }
@@ -667,6 +672,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			settings.Port = m_ConnectionStateManager.PortNumber;
 			settings.PeripheralsId = PeripheralsId;
 			settings.PhonebookType = PhonebookType;
+			settings.PresenterTrackCameraId = PresenterTrackCameraId;
 		}
 
 		/// <summary>
@@ -678,6 +684,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			PeripheralsId = null;
 			PhonebookType = ePhonebookType.Corporate;
+			PresenterTrackCameraId = null;
 
 			SetPort(null);
 		}
@@ -693,6 +700,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			PeripheralsId = settings.PeripheralsId;
 			PhonebookType = settings.PhonebookType;
+			PresenterTrackCameraId = settings.PresenterTrackCameraId;
 
 			ISerialPort port = null;
 
