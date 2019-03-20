@@ -24,14 +24,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		public CiscoCodecCameraDevicePowerControl(CiscoCodecCameraDevice parent, int id)
 			: base(parent, id)
 		{
-			Subscribe();
-			UpdateSystemComponent();
-			m_Timer = SafeTimer.Stopped(TimerExpired);
-		}
+			m_Timer = SafeTimer.Stopped(KeepAwakeTimerExpired);
 
-		private void ParentOnCodecChanged(object sender, EventArgs eventArgs)
-		{
-			UpdateSystemComponent();
+			Subscribe(parent);
+
+			SetCodec(parent.Codec);
 		}
 
 		/// <summary>
@@ -40,22 +37,48 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			base.DisposeFinal(disposing);
+			Unsubscribe(Parent);
 
-			Unsubscribe();
+			base.DisposeFinal(disposing);
 
 			m_SystemComponent = null;
 			m_Timer.Stop();
 			m_Timer.Dispose();
 		}
 
-		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs boolEventArgs)
+		#region Methods
+
+		/// <summary>
+		/// Powers on the device.
+		/// </summary>
+		public override void PowerOn()
 		{
 			if (IsPowered)
-				TimerExpired();
+				return;
+
+			IsPowered = true;
+
+			m_Timer.Reset(0, KEEP_AWAKE_TICK_MS);
 		}
 
-		private void TimerExpired()
+		/// <summary>
+		/// Powers off the device.
+		/// </summary>
+		public override void PowerOff()
+		{
+			IsPowered = false;
+
+			m_Timer.Stop();
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		/// <summary>
+		/// Called periodically to keep the codec awake.
+		/// </summary>
+		private void KeepAwakeTimerExpired()
 		{
 			if (m_SystemComponent == null)
 				return;
@@ -66,41 +89,73 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			m_SystemComponent.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
 		}
 
-		public override void PowerOn()
+		#endregion
+
+		#region Parent Callbacks
+
+		/// <summary>
+		/// Subscribe to the camera events.
+		/// </summary>
+		/// <param name="parent"></param>
+		private void Subscribe(CiscoCodecCameraDevice parent)
 		{
-			IsPowered = true;
-			m_Timer.Reset(0, KEEP_AWAKE_TICK_MS);
+			parent.OnCodecChanged += ParentOnCodecChanged;
 		}
 
-		public override void PowerOff()
+		/// <summary>
+		/// Unsubscribe from the camera events.
+		/// </summary>
+		/// <param name="parent"></param>
+		private void Unsubscribe(CiscoCodecCameraDevice parent)
 		{
-			IsPowered = false;
-			m_Timer.Stop();
+			parent.OnCodecChanged -= ParentOnCodecChanged;
 		}
 
-		private void Subscribe()
+		/// <summary>
+		/// Called when the wrapped codec changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void ParentOnCodecChanged(object sender, EventArgs eventArgs)
 		{
-			Parent.OnCodecChanged += ParentOnCodecChanged;
+			SetCodec(Parent.Codec);
 		}
 
-		private void Unsubscribe()
+		#endregion
+
+		#region Codec Callbacks
+
+		private void SetCodec(CiscoCodecDevice codec)
 		{
-			Parent.OnCodecChanged -= ParentOnCodecChanged;
+			Unsubscribe(m_SystemComponent);
+
+			m_SystemComponent = codec == null ? null : codec.Components.GetComponent<SystemComponent>();
+
+			Subscribe(m_SystemComponent);
 		}
 
-		private void UpdateSystemComponent()
+		private void Subscribe(SystemComponent systemComponent)
 		{
-			if (m_SystemComponent != null)
-				m_SystemComponent.OnAwakeStateChanged -= SystemComponentOnAwakeStateChanged;
-
-			m_SystemComponent = null;
-
-			CiscoCodecDevice codec = Parent.Codec;
-			if (codec == null)
+			if (systemComponent == null)
 				return;
 
-			m_SystemComponent = codec.Components.GetComponent<SystemComponent>();
-			m_SystemComponent.OnAwakeStateChanged += SystemComponentOnAwakeStateChanged;
+			systemComponent.OnAwakeStateChanged += SystemComponentOnAwakeStateChanged;
 		}
+
+		private void Unsubscribe(SystemComponent systemComponent)
+		{
+			if (systemComponent == null)
+				return;
+
+			systemComponent.OnAwakeStateChanged -= SystemComponentOnAwakeStateChanged;
+		}
+
+		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs eventArgs)
+		{
+			if (IsPowered)
+				KeepAwakeTimerExpired();
+		}
+
+		#endregion
 	}
 }
