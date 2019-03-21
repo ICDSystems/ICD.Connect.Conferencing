@@ -152,7 +152,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs eventArgs)
 		{
-			if (IsPowered)
+			// Force the codec to wake up if it goes to sleep and we are using this camera
+			if (IsPowered && !eventArgs.Data)
 				KeepAwakeTimerExpired();
 		}
 
