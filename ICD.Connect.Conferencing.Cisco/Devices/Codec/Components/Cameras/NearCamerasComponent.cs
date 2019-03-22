@@ -57,7 +57,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <summary>
 		/// Raised when the speaker track whiteboard mode changes.
 		/// </summary>
-		public event EventHandler<SpeakerTrackWhiteboardModeEventArgs> OnSpeakerTrackWhiteboardModeChanged; 
+		public event EventHandler<SpeakerTrackWhiteboardModeEventArgs> OnSpeakerTrackWhiteboardModeChanged;
+
+		/// <summary>
+		/// Raised when the speaker track whiteboard distance changes.
+		/// </summary>
+		public event EventHandler<IntEventArgs> OnSpeakerTrackWhiteboardDistanceChanged; 
 
 		private readonly IcdOrderedDictionary<int, NearCamera> m_Cameras;
 
@@ -75,6 +80,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		private eSpeakerTrackAvailability m_SpeakerTrackAvailability;
 		private eSpeakerTrackStatus m_SpeakerTrackStatus;
 		private eSpeakerTrackWhiteboardMode m_SpeakerTrackWhiteboardMode;
+		private int m_SpeakerTrackWhiteboardDistance;
 
 		#region Properties
 
@@ -210,6 +216,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			}
 		}
 
+		/// <summary>
+		/// Gets the speaker track whiteboard distance in centimeters.
+		/// </summary>
+		[PublicAPI]
+		public int SpeakerTrackWhiteboardDistance
+		{
+			get { return m_SpeakerTrackWhiteboardDistance; }
+			private set
+			{
+				if (value == m_SpeakerTrackWhiteboardDistance)
+					return;
+
+				m_SpeakerTrackWhiteboardDistance = value;
+
+				Codec.Log(eSeverity.Informational, "SpeakerTrack Whiteboard Distance is {0}", m_SpeakerTrackWhiteboardDistance);
+
+				OnSpeakerTrackWhiteboardDistanceChanged.Raise(this, new IntEventArgs(m_SpeakerTrackWhiteboardDistance));
+			}
+		}
+
 		#endregion
 
 		#region Constructors
@@ -248,6 +274,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			OnSpeakerTrackAvailabilityChanged = null;
 			OnSpeakerTrackStatusChanged = null;
 			OnSpeakerTrackWhiteboardModeChanged = null;
+			OnSpeakerTrackWhiteboardDistanceChanged = null;
 
 			base.Dispose(disposing);
 		}
@@ -652,6 +679,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			codec.RegisterParserCallback(ParseSpeakerTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Status");
 
 			codec.RegisterParserCallback(ParseSpeakerTrackWhiteboardMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Mode");
+			codec.RegisterParserCallback(ParseSpeakerTrackWhiteboardDistance, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Distance");
 		}
 
 		/// <summary>
@@ -676,6 +704,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			codec.UnregisterParserCallback(ParseSpeakerTrackStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Status");
 
 			codec.UnregisterParserCallback(ParseSpeakerTrackWhiteboardMode, CiscoCodecDevice.XCONFIGURATION_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Mode");
+			codec.UnregisterParserCallback(ParseSpeakerTrackWhiteboardDistance, CiscoCodecDevice.XSTATUS_ELEMENT, "Cameras", "SpeakerTrack", "Whiteboard", "Distance");
 		}
 
 		/// <summary>
@@ -779,6 +808,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			SpeakerTrackWhiteboardMode = XmlUtils.ReadElementContentAsEnum<eSpeakerTrackWhiteboardMode>(xml, true);
 		}
 
+		private void ParseSpeakerTrackWhiteboardDistance(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			SpeakerTrackWhiteboardDistance = XmlUtils.ReadElementContentAsInt(xml);
+		}
+
 		#endregion
 
 		#region Console
@@ -797,6 +831,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			addRow("SpeakerTrack Availability", SpeakerTrackAvailability);
 			addRow("SpeakerTrack Status", SpeakerTrackStatus);
 			addRow("SpeakerTrack Whiteboard Mode", SpeakerTrackWhiteboardMode);
+			addRow("SpeakerTrack Whiteboard Distance", SpeakerTrackWhiteboardDistance);
 		}
 
 		/// <summary>
