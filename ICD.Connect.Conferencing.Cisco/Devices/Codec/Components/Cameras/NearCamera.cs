@@ -46,6 +46,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		private const int MIN_SPEED = 1;
 		private const int MAX_SPEED = 15;
 
+		private readonly NearCamerasComponent m_NearCamerasComponent;
+
 		private int m_PanSpeed = 7;
 		private int m_TiltSpeed = 7;
 		private int m_ZoomSpeed = 7;
@@ -89,8 +91,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// </summary>
 		/// <param name="cameraId"></param>
 		/// <param name="codec"></param>
-		public NearCamera(int cameraId, CiscoCodecDevice codec) : base(codec)
+		public NearCamera(int cameraId, CiscoCodecDevice codec)
+			: base(codec)
 		{
+			m_NearCamerasComponent = codec.Components.GetComponent<NearCamerasComponent>();
+
 			CameraId = cameraId;
 
 			Subscribe(Codec);
@@ -210,28 +215,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		}
 
 		/// <summary>
-		/// Activates the preset with the given id.
+		/// Activates the preset at the given index for this camera.
 		/// </summary>
-		/// <param name="presetId"></param>
+		/// <param name="presetIndex"></param>
 		[PublicAPI]
-		public void ActivatePreset(int presetId)
+		public void ActivatePreset(int presetIndex)
 		{
-			Codec.SendCommand("xCommand Camera Preset Activate PresetId: {0}", presetId);
-			Codec.Log(eSeverity.Informational, "Activating Camera {0} Preset {1}", CameraId, presetId);
+			m_NearCamerasComponent.ActivatePreset(CameraId, presetIndex);
 		}
 
 		/// <summary>
-		/// Stores the current camera position as a preset with the given name.
+		/// Stores the current camera position as a preset with the given index.
 		/// </summary>
-		/// <param name="presetId"></param>
+		/// <param name="presetIndex"></param>
 		[PublicAPI]
-		public void StorePreset(int presetId)
+		public void StorePreset(int presetIndex)
 		{
-			Codec.SendCommand("xCommand Camera Preset Store CameraId: {0} PresetId: \"{1}\"", CameraId, presetId);
-			Codec.Log(eSeverity.Informational, "Storing preset {0} for Camera {1}", presetId, CameraId);
-
-			// Updates the presets
-			Codec.SendCommand("xCommand Camera Preset List");
+			m_NearCamerasComponent.StorePreset(CameraId, presetIndex);
 		}
 
 		/// <summary>

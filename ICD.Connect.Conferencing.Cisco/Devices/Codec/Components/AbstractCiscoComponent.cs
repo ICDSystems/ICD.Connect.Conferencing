@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
@@ -10,7 +9,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 	/// <summary>
 	/// AbstractCiscoComponent is a base class for Cisco modules.
 	/// </summary>
-	public abstract class AbstractCiscoComponent : IDisposable, IConsoleNode
+	public abstract class AbstractCiscoComponent : ICiscoComponent
 	{
 		#region Properties
 

@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - Added PresenterTrack and SpeakerTrack items to Cisco Cameras component.
+ - Added Cisco RoomAnalytics component
+ - Added CiscoCodecOccupancySensorControl
+ - Added console features to Cisco and Polycom camera devices
 
+### Changed
+ - Better Cisco support for multiple SIP registrations
+ - Fixed issues with multiple Cisco cameras fighting for preset assignment
+ 
 ## [11.3.1] - 2019-02-11
 ### Changed
  - Fixed bug where Polycom Group Series 500 dial string was being truncated, causing OBTP to fail

@@ -1,5 +1,4 @@
-﻿using ICD.Common.Properties;
-using ICD.Common.Utils.EventArguments;
+﻿using ICD.Common.Utils.EventArguments;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 {
@@ -8,15 +7,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 	/// </summary>
 	public enum eRegState
 	{
-		// Ignore missing comment warnings
-#pragma warning disable 1591
-		[PublicAPI] Unknown,
-		[PublicAPI] Deregister,
-		[PublicAPI] Failed,
-		[PublicAPI] Inactive,
-		[PublicAPI] Registered,
-		[PublicAPI] Registering
-#pragma warning restore 1591
+		Unknown,
+		Deregister,
+		Failed,
+		Inactive,
+		Registered,
+		Registering
 	};
 
 	/// <summary>

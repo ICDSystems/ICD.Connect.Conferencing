@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 
 namespace ICD.Connect.Conferencing.Devices
 {
 	public sealed class CodecInputTypes
 	{
-		private readonly Dictionary<int, eCodecInputType> m_InputTypes;
+		private readonly IcdOrderedDictionary<int, eCodecInputType> m_InputTypes;
 		private readonly SafeCriticalSection m_InputTypesSection;
 
 		/// <summary>
@@ -16,7 +17,7 @@ namespace ICD.Connect.Conferencing.Devices
 		/// </summary>
 		public CodecInputTypes()
 		{
-			m_InputTypes = new Dictionary<int, eCodecInputType>();
+			m_InputTypes = new IcdOrderedDictionary<int, eCodecInputType>();
 			m_InputTypesSection = new SafeCriticalSection();
 		}
 
@@ -40,6 +41,15 @@ namespace ICD.Connect.Conferencing.Devices
 		public eCodecInputType GetInputType(int input)
 		{
 			return m_InputTypesSection.Execute(() => m_InputTypes.GetDefault(input, eCodecInputType.None));
+		}
+
+		/// <summary>
+		/// Gets the inputs.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<KeyValuePair<int, eCodecInputType>> GetInputs()
+		{
+			return m_InputTypesSection.Execute(() => m_InputTypes.ToArray());
 		}
 
 		/// <summary>
