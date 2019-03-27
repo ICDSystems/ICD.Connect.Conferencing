@@ -206,7 +206,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (mode == eConferenceSourceType.Unknown)
 				mode = DialingPlan.DefaultSourceType;
 
-			IDialingDeviceControl dialingControl = GetDialingProvider(mode);
+			IDialingDeviceControl dialingControl = GetBestDialingProvider(mode);
 			if (dialingControl == null)
 			{
 				Logger.AddEntry(eSeverity.Error,
@@ -293,8 +293,17 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <returns></returns>
 		public IDialingDeviceControl GetDialingProvider(eConferenceSourceType sourceType)
 		{
-			return
-				m_SourceTypeToProviderSection.Execute(() => m_SourceTypeToProvider.GetDefault(sourceType, m_DefaultDialingControl));
+			return m_SourceTypeToProviderSection.Execute(() => m_SourceTypeToProvider.GetDefault(sourceType));
+		}
+
+		/// <summary>
+		///  Gets the dialing provider for the given source type, falling back when unable to find a dialer for the type.
+		/// </summary>
+		/// <param name="sourceType"></param>
+		/// <returns></returns>
+		public IDialingDeviceControl GetBestDialingProvider(eConferenceSourceType sourceType)
+		{
+			return m_SourceTypeToProviderSection.Execute(() => m_SourceTypeToProvider.GetDefault(sourceType, m_DefaultDialingControl));
 		}
 
 		/// <summary>

@@ -51,7 +51,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 		{
 			m_Booking = booking;
 			m_BookingNumbers = ParseBookingNumbers().ToList();
-
 		}
 
 		private IEnumerable<IBookingNumber> ParseBookingNumbers()
@@ -61,7 +60,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 				switch (number.Protocol.ToUpper())
 				{
 					case "SIP":
-						yield return new SipBookingNumber(number.Number.Split(';').FirstOrDefault());
+						yield return new SipBookingNumber(number.Number);
 						continue;
 				}
 			}
