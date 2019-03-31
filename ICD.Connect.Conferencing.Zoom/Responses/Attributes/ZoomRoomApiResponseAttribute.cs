@@ -1,7 +1,7 @@
 ﻿using System;
 using ICD.Common.Properties;
 
-namespace ICD.Connect.Conferencing.Zoom.Responses
+namespace ICD.Connect.Conferencing.Zoom.Responses.Attributes
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	[MeansImplicitUse]

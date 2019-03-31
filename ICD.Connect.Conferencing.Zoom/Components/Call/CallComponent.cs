@@ -243,7 +243,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			zoomRoom.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			zoomRoom.RegisterResponseCallback<ListParticipantsResponse>(ListParticipantsCallback);
-			zoomRoom.RegisterResponseCallback<SingleParticipantResponse>(ParticipantUpdateCallback);
 			zoomRoom.RegisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 			zoomRoom.RegisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.RegisterResponseCallback<CallStatusResponse>(CallStatusCallback);
@@ -253,7 +252,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			zoomRoom.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			zoomRoom.UnregisterResponseCallback<ListParticipantsResponse>(ListParticipantsCallback);
-			zoomRoom.UnregisterResponseCallback<SingleParticipantResponse>(ParticipantUpdateCallback);
 			zoomRoom.UnregisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 			zoomRoom.UnregisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.UnregisterResponseCallback<CallStatusResponse>(CallStatusCallback);
@@ -266,11 +264,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				MicrophoneMute = config.Microphone.Mute;
 			if (config.Camera != null)
 				CameraMute = config.Camera.Mute;
-		}
-
-		private void ParticipantUpdateCallback(ZoomRoom zoomRoom, SingleParticipantResponse response)
-		{
-			AddUpdateOrRemoveParticipant(response.Participant);
 		}
 
 		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)

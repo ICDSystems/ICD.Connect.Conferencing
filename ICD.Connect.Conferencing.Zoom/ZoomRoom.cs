@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 using Activator = Crestron.SimplSharp.Reflection.Activator;
@@ -31,7 +33,8 @@ using ICD.Connect.API.Nodes;
 namespace ICD.Connect.Conferencing.Zoom
 {
 	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>
-	{/// <summary>
+	{	
+		/// <summary>
 		/// Key to the property in the json which stores where the actual response data is stored
 		/// </summary>
 		private const string RESPONSE_KEY = "topKey";
@@ -528,6 +531,7 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		private const string ATTR_KEY_REGEX =
 			"\"Sync\": (?'sync'true|false),\r\n  \"topKey\": \"(?'topKey'.*)\",\r\n  \"type\": \"(?'type'zConfiguration|zEvent|zStatus|zCommand)\"";
+
 		/// <summary>
 		/// Called when the buffer completes a string.
 		/// </summary>
@@ -537,54 +541,48 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			string json = args.Data;
 
+			AttributeKey key = GetAttributeKey(json);
+			if (key == null)
+				return;
+
 			AbstractZoomRoomResponse response = null;
+
 			try
 			{
-				Match match;
-				if (!RegexUtils.Matches(args.Data, ATTR_KEY_REGEX, out match))
-					return;
-
-				string responseKey = match.Groups["topKey"].Value;
-				eZoomRoomApiType apiResponseType;
-				if (!EnumUtils.TryParse(match.Groups["type"].Value, true, out apiResponseType))
-					return;
-				bool synchronous = bool.Parse(match.Groups["sync"].Value);
-
-				AttributeKey key = new AttributeKey(responseKey, apiResponseType, synchronous);
-
-				// find concrete type that matches the json values
-				Type responseType;
-				if (!s_TypeDict.TryGetValue(key, out responseType))
-				{
-					return;
-				}
-				
+				// Find concrete type that matches the json values
+				Type responseType = s_TypeDict.GetDefault(key);
 				if (responseType != null)
-				{
-					var jObject = JObject.Parse(json);
-					// shitty zoom api sometimes sends a single object instead of array
-					if (responseType == typeof (ListParticipantsResponse) && jObject[responseKey].Type != JTokenType.Array)
-					{
-						responseType = typeof (SingleParticipantResponse);
-					}
-					response = (AbstractZoomRoomResponse)Activator.CreateInstance(responseType);
-					response.LoadFromJObject(jObject);
-					//serializer.Deserialize(new JTokenReader(jObject), responseType)
-				}
-
-				//response = null;
+					response = JsonConvert.DeserializeObject(json, responseType) as AbstractZoomRoomResponse;
 			}
 			catch (Exception ex)
 			{
-				// zoom gives us bad json (unescaped characters) in some error messages
+				// Zoom gives us bad json (unescaped characters) in some error messages
 				Log(eSeverity.Debug, ex, "Failed to deserialize JSON");
+				return;
 			}
 
-			if (response != null)
-			{
-				CallResponseCallbacks(response);
-				Initialized = true;
-			}
+			if (response == null)
+				return;
+
+			CallResponseCallbacks(response);
+			Initialized = true;
+		}
+
+		[CanBeNull]
+		private AttributeKey GetAttributeKey(string data)
+		{
+			Match match;
+			if (!RegexUtils.Matches(data, ATTR_KEY_REGEX, out match))
+				return null;
+
+			eZoomRoomApiType apiResponseType;
+			if (!EnumUtils.TryParse(match.Groups[API_RESPONSE_TYPE].Value, true, out apiResponseType))
+				return null;
+
+			string responseKey = match.Groups[RESPONSE_KEY].Value;
+			bool synchronous = bool.Parse(match.Groups[SYNCHRONOUS].Value);
+
+			return new AttributeKey(responseKey, apiResponseType, synchronous);
 		}
 
 		#endregion

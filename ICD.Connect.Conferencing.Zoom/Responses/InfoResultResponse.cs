@@ -1,6 +1,7 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Components.Call;
+using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
@@ -9,17 +10,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	/// </summary>
 	[ZoomRoomApiResponse("InfoResult", eZoomRoomApiType.zCommand, true),
 	 ZoomRoomApiResponse("InfoResult", eZoomRoomApiType.zCommand, false)]
+	[JsonConverter(typeof(InfoResultResponseConverter))]
 	public sealed class InfoResultResponse : AbstractZoomRoomResponse
 	{
-		[JsonProperty("InfoResult")]
-		public CallInfo InfoResult { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			base.LoadFromJObject(jObject);
-
-			InfoResult = new CallInfo();
-			InfoResult.LoadFromJObject((JObject) jObject["InfoResult"]);
-		}
+		public CallInfo InfoResult { get; set; }
 	}
 }

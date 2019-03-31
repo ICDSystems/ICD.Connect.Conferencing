@@ -1,31 +1,28 @@
 ﻿using System;
-using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 {
-	public sealed class Booking : AbstractZoomRoomData, IEquatable<Booking>
+	[JsonConverter(typeof(BookingConverter))]
+	public sealed class Booking : IEquatable<Booking>
 	{
 		#region Properties
 
 		/// <summary>
 		/// Name of the meeting
 		/// </summary>
-		[JsonProperty("meetingName")]
-		public string MeetingName { get; private set; }
+		public string MeetingName { get; set; }
 
 		/// <summary>
 		/// Scheduled start time of the meeting
 		/// </summary>
-		[JsonProperty("startTime")]
-		public DateTime StartTime { get; private set; }
+		public DateTime StartTime { get; set; }
 
 		/// <summary>
 		/// Scheduled end time for the meeting
 		/// </summary>
-		[JsonProperty("endTime")]
-		public DateTime EndTime { get; private set; }
+		public DateTime EndTime { get; set; }
 
 		/// <summary>
 		/// Name of the person who created the meeting.
@@ -33,26 +30,22 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// <remarks>
 		/// From Zoom API docs: Typically empty.
 		/// </remarks>
-		[JsonProperty("creatorName")]
-		public string OrganizerName { get; private set; }
+		public string OrganizerName { get; set; }
 
 		/// <summary>
 		/// Email of the person who created the meeting
 		/// </summary>
-		[JsonProperty("creatorEmail")]
-		public string OrganizerEmail { get; private set; }
+		public string OrganizerEmail { get; set; }
 
 		/// <summary>
 		/// Zoom meeting id to join for the meeting
 		/// </summary>
-		[JsonProperty("meetingNumber")]
-		public string MeetingNumber { get; private set; }
+		public string MeetingNumber { get; set; }
 
 		/// <summary>
 		/// Whether the meeting private or not.
 		/// </summary>
-		[JsonProperty("isPrivate")]
-		public bool IsPrivate { get; private set; }
+		public bool IsPrivate { get; set; }
 
 		/// <summary>
 		/// Name of the host for the meeting.
@@ -60,8 +53,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// <remarks>
 		/// From Zoom API docs: Typically empty, reserved for future use.
 		/// </remarks>
-		[JsonProperty("hostName")]
-		public string HostName { get; private set; }
+		public string HostName { get; set; }
 
 		#endregion
 
@@ -100,18 +92,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 				hash = hash * 23 + (HostName == null ? 0 : HostName.GetHashCode());
 				return hash;
 			}
-		}
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			MeetingName = jObject["meetingName"].ToString();
-			StartTime = jObject["startTime"].ToObject<DateTime>();
-			EndTime = jObject["endTime"].ToObject<DateTime>();
-			OrganizerName = jObject["creatorName"].ToString();
-			OrganizerEmail = jObject["creatorEmail"].ToString();
-			MeetingNumber = jObject["meetingNumber"].ToString();
-			IsPrivate = jObject["isPrivate"].ToObject<bool>();
-			HostName = jObject["hostName"].ToString();
 		}
 
 		#endregion

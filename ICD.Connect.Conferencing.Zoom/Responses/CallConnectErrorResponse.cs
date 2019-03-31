@@ -1,35 +1,21 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+using ICD.Connect.Conferencing.Zoom.Responses.Converters;
+using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	[ZoomRoomApiResponse("CallConnectError", eZoomRoomApiType.zEvent, false)]
+	[JsonConverter(typeof(CallConnectErrorResponseConverter))]
 	public sealed class CallConnectErrorResponse : AbstractZoomRoomResponse
 	{
-		[JsonProperty("CallConnectError")]
-		public CallConnectError Error { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			base.LoadFromJObject(jObject);
-
-			Error = new CallConnectError();
-			Error.LoadFromJObject((JObject) jObject["CallConnectError"]);
-		}
+		public CallConnectError Error { get; set; }
 	}
 
-	public sealed class CallConnectError : AbstractZoomRoomData
+	[JsonConverter(typeof(CallConnectErrorConverter))]
+	public sealed class CallConnectError
 	{
-		[JsonProperty("error_code")]
-		public int ErrorCode { get; private set; }
+		public int ErrorCode { get; set; }
 
-		[JsonProperty("error_message")]
-		public string ErrorMessage { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			ErrorCode = jObject["error_code"].ToObject<int>();
-			ErrorMessage = jObject["error_message"].ToString();
-		}
+		public string ErrorMessage { get; set; }
 	}
 }
