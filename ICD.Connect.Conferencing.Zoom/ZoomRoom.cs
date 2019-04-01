@@ -1,9 +1,7 @@
-using System.Text.RegularExpressions;
 using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
-using Activator = Crestron.SimplSharp.Reflection.Activator;
 #endif
 using ICD.Common.Properties;
 using ICD.Common.Utils;
@@ -26,103 +24,14 @@ using ICD.Connect.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
 	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>
-	{	
-		/// <summary>
-		/// Key to the property in the json which stores where the actual response data is stored
-		/// </summary>
-		private const string RESPONSE_KEY = "topKey";
-
-		/// <summary>
-		/// Key to the property in the json that stores the type of response (zCommand, zConfiguration, zEvent, zStatus)
-		/// </summary>
-		private const string API_RESPONSE_TYPE = "type";
-
-		/// <summary>
-		/// Key to the property in the json that stores whether the response was synchronous to a command, or an async event
-		/// </summary>
-		private const string SYNCHRONOUS = "Sync";
-
+	{
 		private static readonly Dictionary<AttributeKey, Type> s_TypeDict;
-
-		public sealed class AttributeKey : IEquatable<AttributeKey>
-		{
-			private readonly string m_Key;
-			private readonly eZoomRoomApiType m_ResponseType;
-			private readonly bool m_Synchronous;
-
-			public string Key
-			{
-				get { return m_Key; }
-			}
-			public eZoomRoomApiType ResponseType
-			{
-				get { return m_ResponseType; }
-			}
-			public bool Synchronous
-			{
-				get { return m_Synchronous; }
-			}
-
-			public AttributeKey(string key, eZoomRoomApiType type, bool synchronous)
-			{
-				m_Key = key;
-				m_ResponseType = type;
-				m_Synchronous = synchronous;
-			}
-
-			public AttributeKey(ZoomRoomApiResponseAttribute attribute)
-				: this(attribute.ResponseKey, attribute.CommandType, attribute.Synchronous)
-			{
-			}
-
-			public bool Equals(AttributeKey other)
-			{
-				if (ReferenceEquals(null, other))
-				{
-					return false;
-				}
-
-				if (ReferenceEquals(this, other))
-				{
-					return true;
-				}
-
-				return string.Equals(m_Key, other.m_Key) && m_ResponseType == other.m_ResponseType && m_Synchronous == other.m_Synchronous;
-			}
-
-			public override bool Equals(object obj)
-			{
-				if (ReferenceEquals(null, obj))
-				{
-					return false;
-				}
-
-				if (ReferenceEquals(this, obj))
-				{
-					return true;
-				}
-
-				return obj is AttributeKey && Equals((AttributeKey)obj);
-			}
-
-			public override int GetHashCode()
-			{
-				unchecked
-				{
-					var hashCode = (m_Key != null ? m_Key.GetHashCode() : 0);
-					hashCode = (hashCode * 397) ^ (int)m_ResponseType;
-					hashCode = (hashCode * 397) ^ m_Synchronous.GetHashCode();
-					return hashCode;
-				}
-			}
-		}
 
 		/// <summary>
 		/// Static constructor.
@@ -528,10 +437,6 @@ namespace ICD.Connect.Conferencing.Zoom
 			buffer.OnCompletedSerial -= SerialBufferCompletedSerial;
 		}
 
-
-		private const string ATTR_KEY_REGEX =
-			"\"Sync\": (?'sync'true|false),\r\n  \"topKey\": \"(?'topKey'.*)\",\r\n  \"type\": \"(?'type'zConfiguration|zEvent|zStatus|zCommand)\"";
-
 		/// <summary>
 		/// Called when the buffer completes a string.
 		/// </summary>
@@ -541,8 +446,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			string json = args.Data;
 
-			AttributeKey key = GetAttributeKey(json);
-			if (key == null)
+			AttributeKey key;
+			if (!AttributeKey.TryParse(json, out key))
 				return;
 
 			AbstractZoomRoomResponse response = null;
@@ -557,7 +462,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			catch (Exception ex)
 			{
 				// Zoom gives us bad json (unescaped characters) in some error messages
-				Log(eSeverity.Debug, ex, "Failed to deserialize JSON");
+				Log(eSeverity.Error, ex, "Failed to deserialize JSON");
 				return;
 			}
 
@@ -566,23 +471,6 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			CallResponseCallbacks(response);
 			Initialized = true;
-		}
-
-		[CanBeNull]
-		private AttributeKey GetAttributeKey(string data)
-		{
-			Match match;
-			if (!RegexUtils.Matches(data, ATTR_KEY_REGEX, out match))
-				return null;
-
-			eZoomRoomApiType apiResponseType;
-			if (!EnumUtils.TryParse(match.Groups[API_RESPONSE_TYPE].Value, true, out apiResponseType))
-				return null;
-
-			string responseKey = match.Groups[RESPONSE_KEY].Value;
-			bool synchronous = bool.Parse(match.Groups[SYNCHRONOUS].Value);
-
-			return new AttributeKey(responseKey, apiResponseType, synchronous);
 		}
 
 		#endregion
