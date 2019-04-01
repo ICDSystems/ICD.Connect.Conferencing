@@ -325,14 +325,14 @@ namespace ICD.Connect.Conferencing.Zoom
 			ResponseCallback[] callbacks;
 
 			m_ResponseCallbacksSection.Enter();
+
 			try
 			{
-				if (!m_ResponseCallbacks.ContainsKey(responseType))
-				{
+				List<ResponseCallbackPair> callbackPairs;
+				if (!m_ResponseCallbacks.TryGetValue(responseType, out callbackPairs))
 					return;
-				}
 
-				callbacks = m_ResponseCallbacks[responseType].Select(c => c.WrappedCallback).ToArray();
+				callbacks = callbackPairs.Select(c => c.WrappedCallback).ToArray();
 			}
 			finally
 			{
@@ -340,9 +340,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 
 			foreach (ResponseCallback callback in callbacks)
-			{
 				callback(this, response);
-			}
 		}
 
 		#endregion
