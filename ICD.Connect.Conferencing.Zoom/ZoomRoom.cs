@@ -247,21 +247,29 @@ namespace ICD.Connect.Conferencing.Zoom
 		public void RegisterResponseCallback<T>(ResponseCallback<T> callback)
 			where T : AbstractZoomRoomResponse
 		{
-			var wrappedCallback = WrapCallback(callback);
+			ResponseCallback wrappedCallback = WrapCallback(callback);
 
-			m_ResponseCallbacksSection.Execute(() =>
-			{
-				if (!m_ResponseCallbacks.ContainsKey(typeof(T)))
+			m_ResponseCallbacksSection.Enter();
+
+			try
+			{		                                   
+				List<ResponseCallbackPair> callbacks;
+				if (!m_ResponseCallbacks.TryGetValue(typeof(T), out callbacks))
 				{
-					m_ResponseCallbacks.Add(typeof(T), new List<ResponseCallbackPair>());
+					callbacks = new List<ResponseCallbackPair>();
+					m_ResponseCallbacks.Add(typeof(T), callbacks);
 				}
 
-				m_ResponseCallbacks[typeof(T)].Add(new ResponseCallbackPair
+				callbacks.Add(new ResponseCallbackPair
 				{
 					WrappedCallback = wrappedCallback,
 					ActualCallback = callback
 				});
-			});
+			}
+			finally
+			{
+				m_ResponseCallbacksSection.Leave();
+			}
 		}
 
 		private static ResponseCallback WrapCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
@@ -281,21 +289,15 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			try
 			{
-				Type key = typeof(T);
-				if (!m_ResponseCallbacks.ContainsKey(key))
-				{
+				List<ResponseCallbackPair> callbacks;
+				if (!m_ResponseCallbacks.TryGetValue(typeof(T), out callbacks))
 					return;
-				}
 
-				List<ResponseCallbackPair> callbackList = m_ResponseCallbacks[key];
-				ResponseCallbackPair callbackToRemove = callbackList.SingleOrDefault(c => c.ActualCallback.Equals(callback));
-
-				if (callbackToRemove == null)
-				{
+				int indexToRemove = callbacks.FindIndex(c => c.ActualCallback.Equals(callback));
+				if (indexToRemove < 0)
 					return;
-				}
 
-				callbackList.Remove(callbackToRemove);
+				callbacks.RemoveAt(indexToRemove);
 			}
 			finally
 			{
