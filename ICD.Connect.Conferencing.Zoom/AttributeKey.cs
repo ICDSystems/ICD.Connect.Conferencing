@@ -61,9 +61,6 @@ namespace ICD.Connect.Conferencing.Zoom
 				return false;
 
 			string responseKey = match.Groups[RESPONSE_KEY].Value;
-
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "Sync: {0}", match.Groups[SYNCHRONOUS].Value);
-
 			bool synchronous = bool.Parse(match.Groups[SYNCHRONOUS].Value);
 
 			output = new AttributeKey(responseKey, apiResponseType, synchronous);
