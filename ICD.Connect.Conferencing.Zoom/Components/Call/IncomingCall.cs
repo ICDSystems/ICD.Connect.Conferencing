@@ -1,67 +1,51 @@
-﻿using ICD.Connect.Conferencing.Zoom.Responses;
+﻿using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class IncomingCall : AbstractZoomRoomData
+	[JsonConverter(typeof(IncomingCallConverter))]
+	public sealed class IncomingCall
 	{
 		/// <summary>
 		/// Join ID of the caller. Used to accept the caller using <code>zCommand Call Accept</code>.
 		/// </summary>
-		[JsonProperty("callerJID")]
-		public string CallerJoinId { get; private set; }
+		public string CallerJoinId { get; set; }
 
 		/// <summary>
 		/// Join ID of the host of the meeting being called
 		/// </summary>
-		[JsonProperty("calleeJID")]
-		public string CalleeJoinId { get; private set; }
+		public string CalleeJoinId { get; set; }
 
 		/// <summary>
 		/// Internal meeting ID used to private set up recording.
 		/// </summary>
-		[JsonProperty("meetingID")]
-		public string MeetingId { get; private set; }
+		public string MeetingId { get; set; }
 
 		/// <summary>
 		/// The password entered by the participant who intends to join.
 		/// </summary>
-		[JsonProperty("password")]
-		public string Password { get; private set; }
+		public string Password { get; set; }
 
 		/// <summary>
 		/// ???
 		/// </summary>
-		[JsonProperty("meetingOption")]
-		public int MeetingOption { get; private set; }
+		public int MeetingOption { get; set; }
 
 		/// <summary>
 		/// Meeting number for this meeting
 		/// </summary>
-		[JsonProperty("meetingNumber")]
-		public string MeetingNumber { get; private set; }
+		public string MeetingNumber { get; set; }
 
-		[JsonProperty("callerName")]
-		public string CallerName { get; private set; }
+		public string CallerName { get; set; }
 
 		/// <summary>
 		/// Avatar image of the person joining
 		/// </summary>
-		[JsonProperty("avatarURL")]
-		public string AvatarUrl { get; private set; }
+		public string AvatarUrl { get; set; }
 
 		/// <summary>
 		/// Scheduled duration of the meeting
 		/// </summary>
-		[JsonProperty("lifeTime")]
-		public string Lifetime { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			CallerJoinId = jObject["callerJID"].ToString();
-			MeetingNumber = jObject["meetingNumber"].ToString();
-			CallerName = jObject["callerName"].ToString();
-		}
+		public string Lifetime { get; set; }
 	}
 }

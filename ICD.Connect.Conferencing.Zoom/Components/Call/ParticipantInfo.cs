@@ -1,92 +1,56 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class ParticipantInfo : AbstractZoomRoomData
+	[JsonConverter(typeof(ParticipantInfoConverter))]
+	public sealed class ParticipantInfo
 	{
-		[JsonProperty("user_name")]
-		public string UserName { get; private set; }
+		public string UserName { get; set; }
 
-		[JsonProperty("user_id")]
-		public string UserId { get; private set; }
+		public string UserId { get; set; }
 
-		[JsonProperty("is_host")]
-		public bool IsHost { get; private set; }
+		public bool IsHost { get; set; }
 
-		[JsonProperty("is_myself")]
-		public bool IsMyself { get; private set; }
+		public bool IsMyself { get; set; }
 
-		[JsonProperty("can_record")]
-		public bool CanRecord { get; private set; }
+		public bool CanRecord { get; set; }
 
-		[JsonProperty("is_recording")]
-		public bool IsRecording { get; private set; }
+		public bool IsRecording { get; set; }
 
-		[JsonProperty("avatar_url")]
-		public string AvatarUrl { get; private set; }
+		public string AvatarUrl { get; set; }
 
-		[JsonProperty("local_recording_disabled")]
-		public bool LocalRecordingDisabled { get; private set; }
+		public bool LocalRecordingDisabled { get; set; }
 
-		[JsonProperty("is_video_can_mute_byHost")]
-		public bool CanHostMuteVideo { get; private set; }
+		public bool CanHostMuteVideo { get; set; }
 
-		[JsonProperty("is_video_can_unmute_byHost")]
-		public bool CanHostUnmuteVideo { get; private set; }
+		public bool CanHostUnmuteVideo { get; set; }
 
-		[JsonProperty("isCohost")]
-		public bool IsCohost { get; private set; }
+		public bool IsCohost { get; set; }
 
-		[JsonProperty("user_type")]
-		public eUserCallType UserCallType { get; private set; }
+		public eUserCallType UserCallType { get; set; }
 
-		[JsonProperty("audio_status type")]
-		public eAudioType AudioType { get; private set; }
+		public eAudioType AudioType { get; set; }
 
-		[JsonProperty("audio_status state")]
-		public eAudioState AudioState { get; private set; }
+		public eAudioState AudioState { get; set; }
 
-		[JsonProperty("video_status has_source")]
-		public bool HasVideoSource { get; private set; }
+		public bool HasVideoSource { get; set; }
 
-		[JsonProperty("video_status is_receiving")]
-		public bool IsReceivingVideo { get; private set; }
+		public bool IsReceivingVideo { get; set; }
 
-		[JsonProperty("video_status is_sending")]
-		public bool IsSendingVideo { get; private set; }
+		public bool IsSendingVideo { get; set; }
 
-		[JsonProperty("camera_status can_i_request_control")]
-		public bool CanRequestCameraControl { get; private set; }
+		public bool CanRequestCameraControl { get; set; }
 
-		[JsonProperty("camera_status am_i_controlling")]
-		public bool AmIControllingCamera { get; private set; }
+		public bool AmIControllingCamera { get; set; }
 
-		[JsonProperty("camera_status can_switch_camera")]
-		public bool CanSwitchCamera { get; private set; }
+		public bool CanSwitchCamera { get; set; }
 
-		[JsonProperty("camera_status can_move_camera")]
-		public bool CanMoveCamera { get; private set; }
+		public bool CanMoveCamera { get; set; }
 
-		[JsonProperty("camera_status can_zoom_camera")]
-		public bool CanZoomCamera { get; private set; }
+		public bool CanZoomCamera { get; set; }
 
-		[JsonProperty("event")]
-		public eUserChangedEventType Event { get; private set; }
-
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			UserName = jObject["user_name"].ToString();
-			UserId = jObject["user_id"].ToString();
-			IsHost = jObject["is_host"].ToObject<bool>();
-			IsMyself = jObject["is_myself"].ToObject<bool>();
-			AvatarUrl = jObject["avatar_url"].ToString();
-			IsCohost = jObject["isCohost"].ToObject<bool>();
-			AudioState = jObject["audio_status state"].ToObject<eAudioState>();
-			IsSendingVideo = jObject["video_status is_sending"].ToObject<bool>();
-			Event = jObject["event"].ToObject<eUserChangedEventType>();
-		}
+		public eUserChangedEventType Event { get; set; }
 	}
 }

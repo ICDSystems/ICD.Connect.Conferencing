@@ -1,74 +1,43 @@
-﻿using ICD.Connect.Conferencing.Zoom.Responses;
+﻿using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class CallInfo : AbstractZoomRoomData
+	[JsonConverter(typeof(CallInfoConverter))]
+	public sealed class CallInfo
 	{
-		//[JsonProperty("Info")]
-		//public CallInOutLists CallInOutInfo { get; private set; }
+		//public CallInOutLists CallInOutInfo { get; set; }
 
-		[JsonProperty("real_meeting_id")]
-		public string RealMeetingId { get; private set; }
+		public string RealMeetingId { get; set; }
 
-		[JsonProperty("meeting_id")]
-		public string MeetingId { get; private set; }
+		public string MeetingId { get; set; }
 
-		[JsonProperty("participant_id")]
-		public string ParticipantId { get; private set; }
+		public string ParticipantId { get; set; }
 
-		[JsonProperty("my_userid")]
-		public string MyUserId { get; private set; }
+		public string MyUserId { get; set; }
 
-		[JsonProperty("am_i_original_host")]
-		public bool AmIOriginalHost { get; private set; }
+		public bool AmIOriginalHost { get; set; }
 
-		[JsonProperty("is_webinar")]
-		public bool IsWebinar { get; private set; }
+		public bool IsWebinar { get; set; }
 
-		[JsonProperty("is_view_only")]
-		public bool IsViewOnly { get; private set; }
+		public bool IsViewOnly { get; set; }
 
-		[JsonProperty("meeting_type")]
-		public eMeetingType MeetingType { get; private set; }
+		public eMeetingType MeetingType { get; set; }
 
-		[JsonProperty("meeting_password")]
-		public string MeetingPassword { get; private set; }
+		public string MeetingPassword { get; set; }
 
-		[JsonProperty("dialIn")]
-		public string DialIn { get; private set; }
+		public string DialIn { get; set; }
 
-		//[JsonProperty("toll_free_number")]
-		//public string TollFreeNumber { get; private set; }
+		//public string TollFreeNumber { get; set; }
 
-		//[JsonProperty("international_url")]
-		//public string InternationalUrl { get; private set; }
+		//public string InternationalUrl { get; set; }
 
-		//[JsonProperty("support_callout_type")]
-		//public eCalloutType SupportCalloutType { get; private set; }
+		//public eCalloutType SupportCalloutType { get; set; }
 
-		//[JsonProperty("user_type")]
-		//public eUserType UserType { get; private set; }
+		//public eUserType UserType { get; set; }
 
-		//[JsonProperty("invite_email_subject")]
-		//public string InviteEmailSubject { get; private set; }
+		//public string InviteEmailSubject { get; set; }
 
-		//[JsonProperty("invite_email_content")]
-		//public string InviteEmailContent { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			RealMeetingId = jObject["real_meeting_id"].ToString();
-			MeetingId = jObject["meeting_id"].ToString();
-			ParticipantId = jObject["participant_id"].ToString();
-			MyUserId = jObject["my_userid"].ToString();
-			AmIOriginalHost = jObject["am_i_original_host"].ToObject<bool>();
-			IsWebinar = jObject["is_webinar"].ToObject<bool>();
-			IsViewOnly = jObject["is_view_only"].ToObject<bool>();
-			MeetingType = jObject["meeting_type"].ToObject<eMeetingType>();
-			MeetingPassword = jObject["meeting_password"].ToString();
-			DialIn = jObject["dialIn"].ToString();
-		}
+		//public string InviteEmailContent { get; set; }
 	}
 }
