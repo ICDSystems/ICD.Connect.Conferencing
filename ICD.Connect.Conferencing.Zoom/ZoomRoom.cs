@@ -446,9 +446,20 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			string json = args.Data;
 
-			AttributeKey key;
-			if (!AttributeKey.TryParse(json, out key))
+			AbstractZoomRoomResponse response = DeserializeResponse(json);
+			if (response == null)
 				return;
+
+			CallResponseCallbacks(response);
+			Initialized = true;
+		}
+
+		[CanBeNull]
+		private AbstractZoomRoomResponse DeserializeResponse(string data)
+		{
+			AttributeKey key;
+			if (!AttributeKey.TryParse(data, out key))
+				return null;
 
 			AbstractZoomRoomResponse response = null;
 
@@ -457,20 +468,15 @@ namespace ICD.Connect.Conferencing.Zoom
 				// Find concrete type that matches the json values
 				Type responseType = s_TypeDict.GetDefault(key);
 				if (responseType != null)
-					response = JsonConvert.DeserializeObject(json, responseType) as AbstractZoomRoomResponse;
+					response = JsonConvert.DeserializeObject(data, responseType) as AbstractZoomRoomResponse;
 			}
 			catch (Exception ex)
 			{
 				// Zoom gives us bad json (unescaped characters) in some error messages
 				Log(eSeverity.Error, ex, "Failed to deserialize JSON");
-				return;
 			}
 
-			if (response == null)
-				return;
-
-			CallResponseCallbacks(response);
-			Initialized = true;
+			return response;
 		}
 
 		#endregion
