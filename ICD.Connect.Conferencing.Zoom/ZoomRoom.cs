@@ -533,11 +533,35 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public override string ConsoleHelp { get { return "The Zoom Room conferencing device"; } }
 
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("Initialized", Initialized);
+			addRow("IsConnected", IsConnected);
+			addRow("AutoAnswer", AutoAnswer);
+			addRow("DoNotDisturb", DoNotDisturb);
+		}
+
 		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
-			yield return Components;
-			foreach (var node in base.GetConsoleNodes())
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
+
+			yield return Components;
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		#endregion
