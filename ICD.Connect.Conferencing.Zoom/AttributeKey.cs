@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Zoom
 	public sealed class AttributeKey : IEquatable<AttributeKey>
 	{
 		private const string ATTR_KEY_REGEX =
-			"\"Sync\": (?'sync'true|false),\r\n  \"topKey\": \"(?'topKey'.*)\",\r\n  \"type\": \"(?'type'zConfiguration|zEvent|zStatus|zCommand)\"";
+			"\"Sync\": (?'Sync'true|false),\r\n  \"topKey\": \"(?'topKey'.*)\",\r\n  \"type\": \"(?'type'zConfiguration|zEvent|zStatus|zCommand)\"";
 
 		/// <summary>
 		/// Key to the property in the json which stores where the actual response data is stored
@@ -24,7 +24,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Key to the property in the json that stores whether the response was synchronous to a command, or an async event
 		/// </summary>
-		private const string SYNCHRONOUS = "sync";
+		private const string SYNCHRONOUS = "Sync";
 
 		private readonly string m_Key;
 		private readonly eZoomRoomApiType m_ResponseType;
@@ -51,6 +51,13 @@ namespace ICD.Connect.Conferencing.Zoom
 		public static bool TryParse(string data, out AttributeKey output)
 		{
 			output = null;
+
+			// Avoid regexing through thousands of lines of JSON
+			int start = data.LastIndexOf("\"Sync\"", StringComparison.Ordinal);
+			if (start < 0)
+				return false;
+
+			data = data.Substring(start);
 
 			Match match;
 			if (!RegexUtils.Matches(data, ATTR_KEY_REGEX, out match))
