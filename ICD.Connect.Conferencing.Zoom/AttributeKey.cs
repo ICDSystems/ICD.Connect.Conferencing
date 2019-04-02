@@ -1,6 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using ICD.Common.Properties;
+#if SIMPLSHARP
+using Crestron.SimplSharp.Reflection;
+#else
+using System.Reflection;
+#endif
 using ICD.Common.Utils;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 
@@ -26,9 +34,13 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		private const string SYNCHRONOUS = "Sync";
 
+		private static readonly Dictionary<AttributeKey, Type> s_TypeDict;
+
 		private readonly string m_Key;
 		private readonly eZoomRoomApiType m_ResponseType;
 		private readonly bool m_Synchronous;
+
+		#region Properties
 
 		public string Key { get { return m_Key; } }
 
@@ -36,6 +48,39 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		public bool Synchronous { get { return m_Synchronous; } }
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Static constructor.
+		/// </summary>
+		static AttributeKey()
+		{
+			s_TypeDict = new Dictionary<AttributeKey, Type>();
+
+			foreach (
+#if SIMPLSHARP
+				CType
+#else
+				Type
+#endif
+					type in typeof(ZoomRoom).GetAssembly().GetTypes())
+			{
+				foreach (ZoomRoomApiResponseAttribute attribute in type.GetCustomAttributes<ZoomRoomApiResponseAttribute>())
+				{
+					AttributeKey key = new AttributeKey(attribute);
+					s_TypeDict.Add(key, type);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="type"></param>
+		/// <param name="synchronous"></param>
 		public AttributeKey(string key, eZoomRoomApiType type, bool synchronous)
 		{
 			m_Key = key;
@@ -43,10 +88,18 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_Synchronous = synchronous;
 		}
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
 		public AttributeKey(ZoomRoomApiResponseAttribute attribute)
 			: this(attribute.ResponseKey, attribute.CommandType, attribute.Synchronous)
 		{
 		}
+
+		#endregion
+
+		#region Methods
 
 		public static bool TryParse(string data, out AttributeKey output)
 		{
@@ -73,6 +126,16 @@ namespace ICD.Connect.Conferencing.Zoom
 			output = new AttributeKey(responseKey, apiResponseType, synchronous);
 			return true;
 		}
+
+		[CanBeNull]
+		public Type GetResponseType()
+		{
+			return s_TypeDict.GetDefault(this);
+		}
+
+		#endregion
+
+		#region Equality
 
 		public bool Equals(AttributeKey other)
 		{
@@ -108,5 +171,7 @@ namespace ICD.Connect.Conferencing.Zoom
 				return hashCode;
 			}
 		}
+
+		#endregion
 	}
 }

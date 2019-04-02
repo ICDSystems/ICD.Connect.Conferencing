@@ -1,8 +1,4 @@
-using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 using Newtonsoft.Json;
-#if SIMPLSHARP
-using Crestron.SimplSharp.Reflection;
-#endif
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -31,30 +27,6 @@ namespace ICD.Connect.Conferencing.Zoom
 {
 	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>
 	{
-		private static readonly Dictionary<AttributeKey, Type> s_TypeDict;
-
-		/// <summary>
-		/// Static constructor.
-		/// </summary>
-		static ZoomRoom()
-		{
-			s_TypeDict = new Dictionary<AttributeKey, Type>();
-
-			foreach (
-#if SIMPLSHARP
-				CType
-#else
-				Type
-#endif
-					type in typeof(ZoomRoom).GetAssembly().GetTypes())
-			{
-				foreach (ZoomRoomApiResponseAttribute attribute in type.GetCustomAttributes<ZoomRoomApiResponseAttribute>())
-				{
-					AttributeKey key = new AttributeKey(attribute);
-					s_TypeDict.Add(key, type);
-				}
-			}
-		}
 		/// <summary>
 		/// Wrapper callback for responses that casts to the appropriate type.
 		/// </summary>
@@ -87,7 +59,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		private bool m_Initialized;
-		private bool m_IsConnected;
 
 		#region Properties
 
@@ -100,9 +71,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			private set
 			{
 				if (value == m_Initialized)
-				{
 					return;
-				}
 
 				m_Initialized = value;
 
@@ -113,10 +82,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Returns true when the codec is connected.
 		/// </summary>
-		public bool IsConnected
-		{
-			get { return m_ConnectionStateManager.IsConnected; }
-		}
+		public bool IsConnected { get { return m_ConnectionStateManager.IsConnected; } }
 
 		public CallComponent CurrentCall { get; private set; }
 
@@ -134,6 +100,9 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		#endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		public ZoomRoom()
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
@@ -158,8 +127,15 @@ namespace ICD.Connect.Conferencing.Zoom
 			Controls.Add(new ZoomRoomCalendarControl(this, Controls.Count));
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
+			OnConnectedStateChanged = null;
+			OnInitializedChanged = null;
+
 			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_SerialBuffer);
@@ -215,9 +191,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		public void SendCommand(string command, params object[] args)
 		{
 			if (args != null)
-			{
 				command = string.Format(command, args);
-			}
 
 			SendCommand(command);
 		}
@@ -230,14 +204,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		public void SendCommands(params string[] commands)
 		{
 			if (commands == null)
-			{
 				throw new ArgumentNullException("commands");
-			}
 
 			foreach (string command in commands)
-			{
 				SendCommand(command);
-			}
 		}
 
 		/// <summary>
@@ -466,7 +436,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			try
 			{
 				// Find concrete type that matches the json values
-				Type responseType = s_TypeDict.GetDefault(key);
+				Type responseType = key.GetResponseType();
 				if (responseType != null)
 					response = JsonConvert.DeserializeObject(data, responseType) as AbstractZoomRoomResponse;
 			}
