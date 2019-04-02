@@ -90,7 +90,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<PhonebookListCommandResponse>(PhonebookListCallback);
-			zoomRoom.RegisterResponseCallback<PhonebookContactUpdatedResponse>(ContactUpdatedCallback);
+			zoomRoom.UnregisterResponseCallback<PhonebookContactUpdatedResponse>(ContactUpdatedCallback);
 		}
 
 		protected override void Initialize()
