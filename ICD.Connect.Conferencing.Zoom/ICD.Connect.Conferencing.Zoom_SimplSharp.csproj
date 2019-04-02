@@ -144,6 +144,8 @@
     <Compile Include="Responses\Attributes\ZoomRoomApiResponseAttribute.cs" />
     <Compile Include="Responses\ZoomRoomResponseHeader.cs" />
     <Compile Include="Responses\ZoomRoomResponseStatus.cs" />
+    <Compile Include="ZoomLoopbackServerDevice.cs" />
+    <Compile Include="ZoomLoopbackServerSettings.cs" />
     <Compile Include="ZoomRoom.cs" />
     <Compile Include="Responses\AbstractZoomRoomResponse.cs" />
     <Compile Include="ZoomRoomSettings.cs" />

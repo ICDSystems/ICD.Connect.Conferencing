@@ -17,6 +17,26 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_AVATAR_URL ="avatarURL";
 		private const string ATTR_LIFE_TIME = "lifeTime";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, IncomingCall value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.CallerJoinId != null)
+				writer.WriteProperty(ATTR_CALLER_JOIN_ID, value.CallerJoinId);
+
+			if (value.MeetingNumber != null)
+				writer.WriteProperty(ATTR_MEETING_NUMBER, value.MeetingNumber);
+
+			if (value.CallerName != null)
+				writer.WriteProperty(ATTR_CALLER_NAME, value.CallerName);
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, IncomingCall instance, JsonSerializer serializer)
 		{
 			switch (property)

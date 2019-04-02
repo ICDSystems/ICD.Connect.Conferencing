@@ -31,6 +31,44 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_CAMERA_STATUS_CAN_ZOOM_CAMERA = "camera_status can_zoom_camera";
 		private const string ATTR_EVENT = "event";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, ParticipantInfo value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.UserName != null)
+				writer.WriteProperty(ATTR_USER_NAME, value.UserName);
+
+			if (value.UserId != null)
+				writer.WriteProperty(ATTR_USER_ID, value.UserId);
+
+			if (value.IsHost)
+				writer.WriteProperty(ATTR_IS_HOST, value.IsHost);
+
+			if (value.IsMyself)
+				writer.WriteProperty(ATTR_IS_MYSELF, value.IsMyself);
+
+			if (value.AvatarUrl != null)
+				writer.WriteProperty(ATTR_AVATAR_URL, value.AvatarUrl);
+
+			if (value.IsCohost)
+				writer.WriteProperty(ATTR_IS_COHOST, value.IsCohost);
+
+			if (value.AudioState != default(eAudioState))
+				writer.WriteProperty(ATTR_AUDIO_STATUS_STATE, value.AudioState);
+
+			if (value.IsSendingVideo)
+				writer.WriteProperty(ATTR_VIDEO_STATUS_IS_SENDING, value.IsSendingVideo);
+
+			if (value.Event != default(eUserChangedEventType))
+				writer.WriteProperty(ATTR_EVENT, value.Event);
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, ParticipantInfo instance, JsonSerializer serializer)
 		{
 			switch (property)

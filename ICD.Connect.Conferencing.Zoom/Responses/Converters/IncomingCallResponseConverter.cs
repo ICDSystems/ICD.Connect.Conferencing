@@ -8,6 +8,23 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	{
 		private const string ATTR_INCOMING_CALL_INDICATION = "IncomingCallIndication";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, IncomingCallResponse value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.IncomingCall != null)
+			{
+				writer.WritePropertyName(ATTR_INCOMING_CALL_INDICATION);
+				serializer.Serialize(writer, value.IncomingCall);
+			}
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, IncomingCallResponse instance, JsonSerializer serializer)
 		{
 			switch (property)

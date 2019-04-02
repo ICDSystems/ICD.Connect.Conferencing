@@ -8,6 +8,23 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	{
 		private const string ATTR_CALL = "Call";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, CallConfigurationResponse value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.CallConfiguration != null)
+			{
+				writer.WritePropertyName(ATTR_CALL);
+				serializer.Serialize(writer, value.CallConfiguration);
+			}
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, CallConfigurationResponse instance, JsonSerializer serializer)
 		{
 			switch (property)
@@ -27,6 +44,29 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	{
 		private const string ATTR_MICROPHONE = "Microphone";
 		private const string ATTR_CAMERA = "Camera";
+
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, CallConfiguration value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.Microphone != null)
+			{
+				writer.WritePropertyName(ATTR_MICROPHONE);
+				serializer.Serialize(writer, value.Microphone);
+			}
+
+			if (value.Camera != null)
+			{
+				writer.WritePropertyName(ATTR_CAMERA);
+				serializer.Serialize(writer, value.Camera);
+			}
+		}
 
 		protected override void ReadProperty(string property, JsonReader reader, CallConfiguration instance, JsonSerializer serializer)
 		{
@@ -50,6 +90,20 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	public sealed class MuteConfigurationConverter : AbstractGenericJsonConverter<MuteConfiguration>
 	{
 		private const string ATTR_MUTE = "Mute";
+
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, MuteConfiguration value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.Mute)
+				writer.WriteProperty(ATTR_MUTE, value.Mute);
+		}
 
 		protected override void ReadProperty(string property, JsonReader reader, MuteConfiguration instance, JsonSerializer serializer)
 		{

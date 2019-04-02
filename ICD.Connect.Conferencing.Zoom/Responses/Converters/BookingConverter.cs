@@ -1,4 +1,5 @@
-﻿using ICD.Common.Utils.Extensions;
+﻿using System;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Json;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 using Newtonsoft.Json;
@@ -15,6 +16,35 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_MEETING_NUMBER = "meetingNumber";
 		private const string ATTR_IS_PRIVATE = "isPrivate";
 		private const string ATTR_HOST_NAME = "hostName";
+
+		protected override void WriteProperties(JsonWriter writer, Booking value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.MeetingName != null)
+				writer.WriteProperty(ATTR_MEETING_NAME, value.MeetingName);
+
+			if (value.StartTime != default(DateTime))
+				writer.WriteProperty(ATTR_START_TIME, value.StartTime);
+
+			if (value.EndTime != default(DateTime))
+				writer.WriteProperty(ATTR_END_TIME, value.EndTime);
+
+			if (value.OrganizerName != null)
+				writer.WriteProperty(ATTR_CREATOR_NAME, value.OrganizerName);
+
+			if (value.OrganizerEmail != null)
+				writer.WriteProperty(ATTR_CREATOR_EMAIL, value.OrganizerEmail);
+
+			if (value.MeetingNumber != null)
+				writer.WriteProperty(ATTR_MEETING_NUMBER, value.MeetingNumber);
+
+			if (value.IsPrivate)
+				writer.WriteProperty(ATTR_IS_PRIVATE, value.IsPrivate);
+
+			if (value.HostName != null)
+				writer.WriteProperty(ATTR_HOST_NAME, value.HostName);
+		}
 
 		protected override void ReadProperty(string property, JsonReader reader, Booking instance, JsonSerializer serializer)
 		{

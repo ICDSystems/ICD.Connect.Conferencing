@@ -9,6 +9,23 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_MESSAGE = "message";
 		private const string ATTR_STATE = "state";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, ZoomRoomResponseStatus value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.Message != null)
+				writer.WriteProperty(ATTR_MESSAGE, value.Message);
+
+			if (value.State != default(eZoomRoomResponseState))
+				writer.WriteProperty(ATTR_MESSAGE, value.State);
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, ZoomRoomResponseStatus instance, JsonSerializer serializer)
 		{
 			switch (property)

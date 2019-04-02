@@ -10,6 +10,23 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	{
 		private const string ATTR_VIDEO_CAMERA_LINE = "Video Camera Line";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, VideoCameraLineResponse value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.Cameras != null && value.Cameras.Length > 0)
+			{
+				writer.WritePropertyName(ATTR_VIDEO_CAMERA_LINE);
+				serializer.SerializeArray(writer, value.Cameras);
+			}
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, VideoCameraLineResponse instance, JsonSerializer serializer)
 		{
 			switch (property)

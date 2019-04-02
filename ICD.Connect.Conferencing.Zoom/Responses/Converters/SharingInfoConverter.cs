@@ -19,6 +19,26 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_IS_DIRECT_PRESENTATION_CONNECTED = "isDirectPresentationConnected";
 		private const string ATTR_DISPLAY_STATE = "dispState";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, SharingInfo value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.IsBlackMagicConnected)
+				writer.WriteProperty(ATTR_IS_BLACK_MAGIC_CONNECTED, value.IsBlackMagicConnected);
+
+			if (value.IsBlackMagicDataAvailable)
+				writer.WriteProperty(ATTR_IS_BLACK_MAGIC_DATA_AVAILABLE, value.IsBlackMagicDataAvailable);
+
+			if (value.IsSharingBlackMagic)
+				writer.WriteProperty(ATTR_IS_SHARING_BLACK_MAGIC, value.IsSharingBlackMagic);
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, SharingInfo instance, JsonSerializer serializer)
 		{
 			switch (property)

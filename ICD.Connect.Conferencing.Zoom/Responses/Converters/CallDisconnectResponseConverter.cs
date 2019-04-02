@@ -8,6 +8,23 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	{
 		private const string ATTR_CALL_DISCONNECT = "CallDisconnect";
 
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, CallDisconnectResponse value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.Disconnect != null)
+			{
+				writer.WritePropertyName(ATTR_CALL_DISCONNECT);
+				serializer.Serialize(writer, value.Disconnect);
+			}
+		}
+
 		protected override void ReadProperty(string property, JsonReader reader, CallDisconnectResponse instance, JsonSerializer serializer)
 		{
 			switch (property)
@@ -26,6 +43,20 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	public sealed class CallDisconnectConverter : AbstractGenericJsonConverter<CallDisconnect>
 	{
 		private const string ATTR_SUCCESS = "success";
+
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, CallDisconnect value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.Success != default(eZoomBoolean))
+				writer.WriteProperty(ATTR_SUCCESS, value.Success);
+		}
 
 		protected override void ReadProperty(string property, JsonReader reader, CallDisconnect instance, JsonSerializer serializer)
 		{
