@@ -1,4 +1,7 @@
-﻿namespace ICD.Connect.Conferencing.Zoom.Responses
+﻿using ICD.Connect.Conferencing.Zoom.Responses.Converters;
+using Newtonsoft.Json;
+
+namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	public enum eZoomRoomApiType
 	{
@@ -9,6 +12,7 @@
 		zError
 	}
 
+	[JsonConverter(typeof(ZoomRoomResponseHeaderConverter))]
 	public sealed class ZoomRoomResponseHeader
 	{
 		/// <summary>
