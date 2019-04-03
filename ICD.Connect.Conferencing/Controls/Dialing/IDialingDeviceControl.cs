@@ -9,6 +9,7 @@ using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Proxies.Controls.Dialing;
 using ICD.Connect.Devices.Controls;
+using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
@@ -16,6 +17,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 	/// IDialingProvider provides an interface for managing conferences.
 	/// </summary>
 	[ApiClass(typeof(ProxyDialingDeviceControl), typeof(IDeviceControl))]
+	[ExternalTelemetry("Dialing Device", typeof(DialingDeviceExternalTelemetryProvider))]
 	public interface IDialingDeviceControl : IDeviceControl
 	{
 		/// <summary>

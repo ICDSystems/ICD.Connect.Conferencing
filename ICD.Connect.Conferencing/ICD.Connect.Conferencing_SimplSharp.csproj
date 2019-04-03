@@ -84,7 +84,13 @@
     <Compile Include="Contacts\eOnlineState.cs" />
     <Compile Include="Contacts\IContactWithOnlineState.cs" />
     <Compile Include="Contacts\IContactWithSurname.cs" />
+    <Compile Include="Controls\Dialing\DialingDeviceExternalTelemetryProvider.cs" />
+    <Compile Include="Controls\Dialing\DialingTelemetryNames.cs" />
     <Compile Include="Controls\Dialing\eBookingSupport.cs" />
+    <Compile Include="Controls\Dialing\IDialingDeviceExternalTelemetryProvider.cs" />
+    <Compile Include="Controls\Dialing\ISipDialingDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\ISipDialingDeviceExternalTelemetryProvider.cs" />
+    <Compile Include="Controls\Dialing\SipDialingDeviceExternalTelemetryProvider.cs" />
     <Compile Include="Controls\Directory\AbstractDirectoryControl.cs" />
     <Compile Include="Controls\Directory\DirectoryControlConsole.cs" />
     <Compile Include="Controls\Directory\IDirectoryControl.cs" />

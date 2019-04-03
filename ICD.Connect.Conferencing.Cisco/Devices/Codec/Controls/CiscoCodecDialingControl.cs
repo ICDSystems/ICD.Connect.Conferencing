@@ -1,30 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Calendaring.Booking;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Conferencing.ConferenceSources;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
-	public sealed class CiscoCodecDialingControl : AbstractDialingDeviceControl<CiscoCodecDevice>
+	public sealed class CiscoCodecDialingControl : AbstractDialingDeviceControl<CiscoCodecDevice>, ISipDialingDeviceControl
 	{
 		/// <summary>
 		/// Called when a source is added to the dialing component.
 		/// </summary>
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceAdded;
 		public override event EventHandler<ConferenceSourceEventArgs> OnSourceRemoved;
+		public event EventHandler<BoolEventArgs> OnSipEnabledChanged;
+		public event EventHandler<StringEventArgs> OnSipLocalNameChanged;
+		public event EventHandler<StringEventArgs> OnSipRegistrationStatusChanged;
 
-		private readonly DialingComponent m_Component;
+		private readonly DialingComponent m_DialingComponent;
+		private readonly SystemComponent m_SystemComponent;
+		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations = new IcdHashSet<SipRegistration>(); 
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public override eConferenceSourceType Supports { get { return eConferenceSourceType.Video | eConferenceSourceType.Audio; } }
+
+		public bool SipIsRegistered
+		{
+			get
+			{
+				var registrations = m_SystemComponent.GetSipRegistrations().ToIcdHashSet();
+				return registrations.Any(r => r.Registration == eRegState.Registered)
+					&& registrations.All(r=> r.Registration != eRegState.Failed);
+			}
+		}
+
+		public string SipLocalName
+		{
+			get
+			{
+				return string.Join(", ", m_SystemComponent.GetSipRegistrations()
+														  .Select(r => r.Uri)
+														  .ToArray());
+			}
+		}
+
+		public string SipRegistrationStatus
+		{
+			get
+			{
+				return string.Join(", ", m_SystemComponent.GetSipRegistrations()
+														  .Select(r => r.Registration
+																		.ToString())
+														  .ToArray());
+			}
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -34,8 +73,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public CiscoCodecDialingControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
-			m_Component = Parent.Components.GetComponent<DialingComponent>();
-			Subscribe(m_Component);
+			m_DialingComponent = Parent.Components.GetComponent<DialingComponent>();
+			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
+			Subscribe(m_DialingComponent);
+			Subscribe(m_SystemComponent);
 
 			UpdatePrivacyMute();
 			UpdateDoNotDisturb();
@@ -53,7 +94,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			base.DisposeFinal(disposing);
 
-			Unsubscribe(m_Component);
+			Unsubscribe(m_DialingComponent);
+			Unsubscribe(m_SystemComponent);
 		}
 
 		#region Methods
@@ -64,7 +106,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <returns></returns>
 		public override IEnumerable<IConferenceSource> GetSources()
 		{
-			return m_Component.GetSources();
+			return m_DialingComponent.GetSources();
 		}
 
 		/// <summary>
@@ -73,7 +115,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="number"></param>
 		public override void Dial(string number)
 		{
-			m_Component.Dial(number);
+			m_DialingComponent.Dial(number);
 		}
 
 		/// <summary>
@@ -83,7 +125,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="callType"></param>
 		public override void Dial(string number, eConferenceSourceType callType)
 		{
-			m_Component.Dial(number, callType);
+			m_DialingComponent.Dial(number, callType);
 		}
 
 		/// <summary>
@@ -133,7 +175,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="enabled"></param>
 		public override void SetDoNotDisturb(bool enabled)
 		{
-			m_Component.SetDoNotDisturb(enabled);
+			m_DialingComponent.SetDoNotDisturb(enabled);
 		}
 
 		/// <summary>
@@ -142,7 +184,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="enabled"></param>
 		public override void SetAutoAnswer(bool enabled)
 		{
-			m_Component.SetAutoAnswer(enabled);
+			m_DialingComponent.SetAutoAnswer(enabled);
 		}
 
 		/// <summary>
@@ -151,7 +193,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="enabled"></param>
 		public override void SetPrivacyMute(bool enabled)
 		{
-			m_Component.SetPrivacyMute(enabled);
+			m_DialingComponent.SetPrivacyMute(enabled);
 		}
 
 		#endregion
@@ -160,17 +202,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void UpdatePrivacyMute()
 		{
-			PrivacyMuted = m_Component.PrivacyMuted;
+			PrivacyMuted = m_DialingComponent.PrivacyMuted;
 		}
 
 		private void UpdateDoNotDisturb()
 		{
-			DoNotDisturb = m_Component.DoNotDisturb;
+			DoNotDisturb = m_DialingComponent.DoNotDisturb;
 		}
 
 		private void UpdateAutoAnswer()
 		{
-			AutoAnswer = m_Component.AutoAnswer;
+			AutoAnswer = m_DialingComponent.AutoAnswer;
 		}
 
 		#endregion
@@ -186,6 +228,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			component.OnDoNotDisturbChanged += ComponentOnDoNotDisturbChanged;
 		}
 
+		private void Subscribe(SystemComponent component)
+		{
+			component.OnSipRegistrationAdded += ComponentOnSipRegistrationAdded;
+		}
+
+		private void Subscribe(SipRegistration registration)
+		{
+			registration.OnRegistrationChange += RegistrationOnRegistrationChange;
+			registration.OnUriChange += RegistrationOnUriChange;
+			m_SubscribedRegistrations.Add(registration);
+		}
+
 		private void Unsubscribe(DialingComponent component)
 		{
 			component.OnSourceAdded -= ComponentOnSourceAdded;
@@ -193,6 +247,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			component.OnPrivacyMuteChanged -= ComponentOnPrivacyMuteChanged;
 			component.OnAutoAnswerChanged -= ComponentOnAutoAnswerChanged;
 			component.OnDoNotDisturbChanged -= ComponentOnDoNotDisturbChanged;
+		}
+
+		private void Unsubscribe(SystemComponent component)
+		{
+			component.OnSipRegistrationAdded -= ComponentOnSipRegistrationAdded;
+			foreach(var registration in m_SubscribedRegistrations)
+				Unsubscribe(registration);
+
+			m_SubscribedRegistrations.Clear();
+		}
+
+		private void Unsubscribe(SipRegistration registration)
+		{
+			registration.OnRegistrationChange -= RegistrationOnRegistrationChange;
+			registration.OnUriChange -= RegistrationOnUriChange;
 		}
 
 		private void ComponentOnSourceAdded(object sender, ConferenceSourceEventArgs args)
@@ -222,6 +291,27 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			UpdateAutoAnswer();
 		}
 
+		private void ComponentOnSipRegistrationAdded(object sender, IntEventArgs args)
+		{
+			SipRegistration registration = m_SystemComponent.GetSipRegistrations().ElementAt(args.Data);
+			Subscribe(registration);
+			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
+			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
+			OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(SipRegistrationStatus));
+		}
+
+		private void RegistrationOnRegistrationChange(object sender, RegistrationEventArgs registrationEventArgs)
+		{
+			OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(SipRegistrationStatus));
+			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
+		}
+
+		private void RegistrationOnUriChange(object sender, StringEventArgs stringEventArgs)
+		{
+			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
+		}
+
 		#endregion
+
 	}
 }
