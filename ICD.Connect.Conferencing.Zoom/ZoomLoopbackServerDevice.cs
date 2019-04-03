@@ -40,10 +40,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Returns true when the codec is connected.
 		/// </summary>
-		public bool IsConnected
-		{
-			get { return m_ConnectionStateManager.IsConnected; }
-		}
+		public bool IsConnected { get { return m_ConnectionStateManager.IsConnected; } }
 
 		#endregion
 
