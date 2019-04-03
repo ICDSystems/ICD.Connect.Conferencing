@@ -240,41 +240,35 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
-			string json = args.Data;
-
-			AbstractZoomRoomResponse response = DeserializeResponse(json);
-			if (response == null)
-				return;
-
-			// TODO
-			//CallResponseCallbacks(response);
-
-			Initialized = true;
-		}
-
-		[CanBeNull]
-		private AbstractZoomRoomResponse DeserializeResponse(string data)
-		{
 			AttributeKey key;
-			if (!AttributeKey.TryParse(data, out key))
-				return null;
-
-			AbstractZoomRoomResponse response = null;
+			AbstractZoomRoomResponse response;
 
 			try
 			{
-				// Find concrete type that matches the json values
-				Type responseType = key.GetResponseType();
-				if (responseType != null)
-					response = JsonConvert.DeserializeObject(data, responseType) as AbstractZoomRoomResponse;
+				response = AbstractZoomRoomResponse.DeserializeResponse(args.Data, out key);
+				if (response == null)
+					return;
 			}
 			catch (Exception ex)
 			{
 				// Zoom gives us bad json (unescaped characters) in some error messages
 				Log(eSeverity.Error, ex, "Failed to deserialize JSON");
+				return;
 			}
 
-			return response;
+			string minified = JsonConvert.SerializeObject(response);
+
+			// Hack to re-append the key info
+			minified = minified.Insert(minified.Length - 1, key.ToString());
+
+			SendToClients(minified);
+
+			Initialized = true;
+		}
+
+		private void SendToClients(string json)
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion

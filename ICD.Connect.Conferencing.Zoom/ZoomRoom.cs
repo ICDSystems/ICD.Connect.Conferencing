@@ -414,31 +414,12 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
-			string json = args.Data;
-
-			AbstractZoomRoomResponse response = DeserializeResponse(json);
-			if (response == null)
-				return;
-
-			CallResponseCallbacks(response);
-			Initialized = true;
-		}
-
-		[CanBeNull]
-		private AbstractZoomRoomResponse DeserializeResponse(string data)
-		{
-			AttributeKey key;
-			if (!AttributeKey.TryParse(data, out key))
-				return null;
-
 			AbstractZoomRoomResponse response = null;
 
 			try
 			{
-				// Find concrete type that matches the json values
-				Type responseType = key.GetResponseType();
-				if (responseType != null)
-					response = JsonConvert.DeserializeObject(data, responseType) as AbstractZoomRoomResponse;
+				AttributeKey unused;
+				response = AbstractZoomRoomResponse.DeserializeResponse(args.Data, out unused);
 			}
 			catch (Exception ex)
 			{
@@ -446,7 +427,11 @@ namespace ICD.Connect.Conferencing.Zoom
 				Log(eSeverity.Error, ex, "Failed to deserialize JSON");
 			}
 
-			return response;
+			if (response == null)
+				return;
+
+			CallResponseCallbacks(response);
+			Initialized = true;
 		}
 
 		#endregion
