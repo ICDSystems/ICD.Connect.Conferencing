@@ -11,6 +11,7 @@ namespace ICD.Connect.Conferencing.Zoom
 	public sealed class ZoomLoopbackServerSettings : AbstractDeviceSettings, ISecureNetworkSettings
 	{
 		private const string PORT_ELEMENT = "Port";
+		private const string LOOPBACK_PORT_ELEMENT = "LoopbackPort";
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
@@ -21,6 +22,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
+
+		/// <summary>
+		/// The port for the TCP server.
+		/// </summary>
+		public ushort LoopbackPort { get; set; }
 
 		#endregion
 
@@ -78,6 +84,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		public ZoomLoopbackServerSettings()
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
+
+			LoopbackPort = 23;
+
+			UpdateNetworkDefaults();
 		}
 
 		/// <summary>
@@ -89,6 +99,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.WriteElements(writer);
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int) Port));
+			writer.WriteElementString(LOOPBACK_PORT_ELEMENT, IcdXmlConvert.ToString(LoopbackPort));
 
 			m_NetworkProperties.WriteElements(writer);
 		}
@@ -102,6 +113,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.ParseXml(xml);
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
+			LoopbackPort = XmlUtils.TryReadChildElementContentAsUShort(xml, LOOPBACK_PORT_ELEMENT) ?? 23;
 
 			m_NetworkProperties.ParseXml(xml);
 

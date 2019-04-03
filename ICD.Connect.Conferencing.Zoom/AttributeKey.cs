@@ -17,7 +17,7 @@ namespace ICD.Connect.Conferencing.Zoom
 	public sealed class AttributeKey : IEquatable<AttributeKey>
 	{
 		private const string ATTR_KEY_REGEX =
-			"\"Sync\": (?'Sync'true|false),\r\n  \"topKey\": \"(?'topKey'.*)\",\r\n  \"type\": \"(?'type'zConfiguration|zEvent|zStatus|zCommand)\"";
+			@"""Sync"": (?'Sync'true|false),\s*""topKey"": ""(?'topKey'.*)"",\s*""type"": ""(?'type'zConfiguration|zEvent|zStatus|zCommand)""";
 
 		/// <summary>
 		/// Key to the property in the json which stores where the actual response data is stored
@@ -103,7 +103,7 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		public override string ToString()
 		{
-			return string.Format("\"Sync\": {0},  \"topKey\": \"{1}\",  \"type\": \"{2}\"",
+			return string.Format("\"Sync\": {0}, \"topKey\": \"{1}\", \"type\": \"{2}\"",
 			                     m_Synchronous.ToString().ToLower(), m_Key, m_ResponseType);
 		}
 

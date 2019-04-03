@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -31,6 +30,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Wrapper callback for responses that casts to the appropriate type.
 		/// </summary>
 		private delegate void ResponseCallback(ZoomRoom zoomRoom, AbstractZoomRoomResponse response);
+
 		/// <summary>
 		/// Callback for responses.
 		/// </summary>
@@ -117,7 +117,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			Subscribe(m_SerialBuffer);
 
 			Components = new ZoomRoomComponentFactory(this);
-			// create new system component
+			// Create new system component
 			Components.GetComponent<SystemComponent>();
 
 			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
@@ -172,6 +172,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			// SSH
 			if (port is ISecureNetworkPort)
 				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
+			// TCP
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -350,7 +353,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			if (args.Data.StartsWith("{"))
 			{
-				SerialBufferCompletedSerial(sender, args);
+				m_SerialBuffer.Enqueue(args.Data);
 				Initialized = true;
 			}
 			else if (args.Data.Contains("Login") || args.Data.StartsWith("*"))

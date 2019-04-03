@@ -7,8 +7,10 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
+using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Ports;
+using ICD.Connect.Protocol.Network.Ports.Tcp;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
@@ -27,6 +29,9 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly JsonSerialBuffer m_SerialBuffer;
+
+		private readonly AsyncTcpServer m_TcpServer;
+		private readonly TcpServerBufferManager m_ClientBuffers;
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
@@ -51,6 +56,13 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 
+			m_TcpServer = new AsyncTcpServer(23, AsyncTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED);
+			Subscribe(m_TcpServer);
+
+			m_ClientBuffers = new TcpServerBufferManager(() => new DelimiterSerialBuffer('\r'));
+			m_ClientBuffers.SetServer(m_TcpServer);
+			Subscribe(m_ClientBuffers);
+
 			m_ConnectionStateManager = new ConnectionStateManager(this) {ConfigurePort = ConfigurePort};
 			Subscribe(m_ConnectionStateManager);
 
@@ -66,8 +78,12 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			base.DisposeFinal(disposing);
 
+			Unsubscribe(m_TcpServer);
+			Unsubscribe(m_ClientBuffers);
 			Unsubscribe(m_SerialBuffer);
 			Unsubscribe(m_ConnectionStateManager);
+
+			m_TcpServer.Dispose();
 		}
 
 		#region Methods
@@ -100,6 +116,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			// SSH
 			if (port is ISecureNetworkPort)
 				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
+			// TCP
+			else if (port is INetworkPort)
+				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
 
 		/// <summary>
@@ -237,7 +256,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
-			AttributeKey key;
+			AttributeKey key = null;
 			AbstractZoomRoomResponse response;
 
 			try
@@ -254,9 +273,11 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 
 			string minified = JsonConvert.SerializeObject(response);
+			if (minified.Length <= 2)
+				return;
 
 			// Hack to re-append the key info
-			minified = minified.Insert(minified.Length - 1, key.ToString());
+			minified = minified.Insert(minified.Length - 1, ", " + key);
 
 			SendToClients(minified);
 
@@ -265,7 +286,75 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		private void SendToClients(string json)
 		{
-			throw new NotImplementedException();
+			m_TcpServer.Send(json);
+		}
+
+		#endregion
+
+		#region TCP Server Callbacks
+
+		/// <summary>
+		/// Subscribe to the TCP server events.
+		/// </summary>
+		/// <param name="tcpServer"></param>
+		private void Subscribe(AsyncTcpServer tcpServer)
+		{
+			tcpServer.OnSocketStateChange += TcpServerOnSocketStateChange;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the TCP server events.
+		/// </summary>
+		/// <param name="tcpServer"></param>
+		private void Unsubscribe(AsyncTcpServer tcpServer)
+		{
+			tcpServer.OnSocketStateChange -= TcpServerOnSocketStateChange;
+		}
+
+		/// <summary>
+		/// Called when a client connects/disconnects
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void TcpServerOnSocketStateChange(object sender, SocketStateEventArgs eventArgs)
+		{
+			// Hack - tell the client to initialize
+			if (eventArgs.SocketState == SocketStateEventArgs.eSocketStatus.SocketStatusConnected)
+				m_TcpServer.Send(eventArgs.ClientId, "\n");
+		}
+
+		#endregion
+
+		#region Client Buffer Callbacks
+
+		/// <summary>
+		/// Subscribe to the client buffers events.
+		/// </summary>
+		/// <param name="clientBuffers"></param>
+		private void Subscribe(TcpServerBufferManager clientBuffers)
+		{
+			clientBuffers.OnClientCompletedSerial += ClientBuffersOnClientCompletedSerial;
+		}
+
+		/// <summary>
+		/// Subscribe to the client buffers events.
+		/// </summary>
+		/// <param name="clientBuffers"></param>
+		private void Unsubscribe(TcpServerBufferManager clientBuffers)
+		{
+			clientBuffers.OnClientCompletedSerial -= ClientBuffersOnClientCompletedSerial;
+		}
+
+		/// <summary>
+		/// Called when we receive a message from a client.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="clientId"></param>
+		/// <param name="data"></param>
+		private void ClientBuffersOnClientCompletedSerial(TcpServerBufferManager sender, uint clientId, string data)
+		{
+			// Pass the command on to the Zoom device.
+			SendCommand(data);
 		}
 
 		#endregion
@@ -275,6 +364,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		protected override void ApplySettingsFinal(ZoomLoopbackServerSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
+
+			m_TcpServer.Port = settings.LoopbackPort;
 
 			m_NetworkProperties.Copy(settings);
 
@@ -293,6 +384,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 
 			SetPort(port);
+
+			m_TcpServer.Start();
 		}
 
 		protected override void ClearSettingsFinal()
@@ -300,6 +393,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.ClearSettingsFinal();
 
 			m_NetworkProperties.ClearNetworkProperties();
+
+			m_TcpServer.Stop();
+			m_TcpServer.Port = 23;
 
 			SetPort(null);
 		}
@@ -309,6 +405,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
+			settings.LoopbackPort = m_TcpServer.Port;
 
 			settings.Copy(m_NetworkProperties);
 		}
@@ -332,6 +429,7 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			addRow("Initialized", Initialized);
 			addRow("IsConnected", IsConnected);
+			addRow("Loopback Port", m_TcpServer.Port);
 		}
 
 		#endregion
