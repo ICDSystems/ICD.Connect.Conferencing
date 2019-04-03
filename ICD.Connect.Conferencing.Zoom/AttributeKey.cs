@@ -101,6 +101,12 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		#region Methods
 
+		public override string ToString()
+		{
+			return string.Format("\"Sync\": {0},  \"topKey\": \"{1}\",  \"type\": \"{2}\"",
+			                     m_Synchronous.ToString().ToLower(), m_Key, m_ResponseType);
+		}
+
 		public static bool TryParse(string data, out AttributeKey output)
 		{
 			output = null;
