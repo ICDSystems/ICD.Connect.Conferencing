@@ -7,6 +7,8 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.API.Commands;
+using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 {
@@ -501,6 +503,64 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		private void ParseH323GatekeeperAddress(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			H323GatekeeperAddress = XmlUtils.GetInnerXml(xml);
+		}
+
+		#endregion
+
+		#region Console
+
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("Platform", Platform);
+			addRow("Name", Name);
+			addRow("Address", Address);
+			addRow("Gateway", Gateway);
+			addRow("Subnet Mask", SubnetMask);
+			addRow("Awake", Awake);
+			addRow("Software Version", SoftwareVersion);
+			addRow("H323 Enabled", H323Enabled);
+			addRow("H323 Gatekeeper Status", H323GatekeeperStatus);
+			addRow("H323 Gatekeeper Address", H323GatekeeperAddress);
+		}
+
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			yield return new ConsoleCommand("Standby", "", () => Standby());
+			yield return new ConsoleCommand("Wake", "", () => Wake());
+			yield return new GenericConsoleCommand<int>("ResetSleepTimer", "ResetSleepTimer <MINUTES>", i => ResetSleepTimer(i));
+
+			yield return new ConsoleCommand("PrintSipRegistrations", "", () => PrintSipRegistrations());
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
+		}
+
+		private string PrintSipRegistrations()
+		{
+			TableBuilder builder = new TableBuilder("Item", "URI", "Registration", "Reason", "Proxy Address", "Proxy Status");
+
+			foreach (SipRegistration registration in GetSipRegistrations())
+			{
+				builder.AddRow(registration.Item,
+					registration.Uri,
+					registration.Registration,
+					registration.Reason,
+					registration.ProxyAddress,
+					registration.ProxyStatus);
+			}
+
+			return builder.ToString();
 		}
 
 		#endregion
