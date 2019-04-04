@@ -348,6 +348,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			return m_SipRegistrationsSection.Execute(() => m_SipRegistrations.Values.ToArray(m_SipRegistrations.Count));
 		}
 
+		/// <summary>
+		/// Gets the sip registration for the given item.
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public SipRegistration GetSipRegistration(int item)
+		{
+			return m_SipRegistrationsSection.Execute(() => m_SipRegistrations[item]);
+		}
+
 		#endregion
 
 		#region Private Methods

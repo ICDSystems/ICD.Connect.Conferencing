@@ -293,7 +293,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void ComponentOnSipRegistrationAdded(object sender, IntEventArgs args)
 		{
-			SipRegistration registration = m_SystemComponent.GetSipRegistrations().ElementAt(args.Data);
+			SipRegistration registration = m_SystemComponent.GetSipRegistration(args.Data);
 			Subscribe(registration);
 			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
 			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
