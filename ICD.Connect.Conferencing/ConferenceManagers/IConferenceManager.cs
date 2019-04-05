@@ -23,6 +23,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Raised when a new conference is instantiated and becomes active.
 		/// </summary>
+		event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
+
+		/// <summary>
+		/// Raised when a new conference is instantiated and becomes active.
+		/// </summary>
 		event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
 
 		/// <summary>
@@ -72,6 +77,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#endregion
 
 		#region Properties
+
+		/// <summary>
+		/// When true the conference manager will force registered dialers to match
+		/// the state of the Privacy Mute, Do Not Disturb and Auto Answer properties.
+		/// </summary>
+		bool IsAuthoritative { get; set; }
 
 		/// <summary>
 		/// Gets the dialing plan.
