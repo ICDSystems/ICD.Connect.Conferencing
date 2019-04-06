@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - Better Cisco support for multiple SIP registrations
  - Fixed issues with multiple Cisco cameras fighting for preset assignment
+
+## [11.4.0] - 2019-04-05
+### Added
+ - IConferenceManager authoritative mode can be turned on and off
  
 ## [11.3.1] - 2019-02-11
 ### Changed
