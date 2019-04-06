@@ -49,6 +49,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		public int CameraId { get; private set; }
 
+		[CanBeNull]
+		public NearCamera Camera { get { return m_Camera; } }
+
 		/// <summary>
 		/// Gets the maximum number of presets this camera can support.
 		/// </summary>
