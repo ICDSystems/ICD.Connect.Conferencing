@@ -15,13 +15,13 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 		#region Properties
 
 		/// <summary>
-		/// Device id for this volume point
+		/// Device id for this conference point
 		/// </summary>
 		[OriginatorIdSettingsProperty(typeof(IDeviceBase))]
 		public int DeviceId { get; set; }
 
 		/// <summary>
-		/// Control id for an IVolumeControl on this volume point's device
+		/// Control id for an IConferenceDeviceControl on this conference point's device
 		/// </summary>
 		public int ControlId { get; set; }
 
@@ -45,7 +45,7 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 		}
 
 		/// <summary>
-		/// Instantiate volume point settings from an xml element
+		/// Instantiate conference point settings from an xml element
 		/// </summary>
 		/// <param name="xml"></param>
 		public override void ParseXml(string xml)
