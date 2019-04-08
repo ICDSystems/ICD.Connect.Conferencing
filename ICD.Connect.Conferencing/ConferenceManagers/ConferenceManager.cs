@@ -25,8 +25,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	{
 		private const int RECENT_LENGTH = 100;
 
+		public event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
+
 		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
+
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
 		public event EventHandler OnConferenceSourceAddedOrRemoved;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
@@ -50,6 +53,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly DialingPlan m_DialingPlan;
 
 		private eInCall m_IsInCall;
+		private bool m_IsAuthoritative;
 
 		#region Properties
 
@@ -57,6 +61,24 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Gets the logger.
 		/// </summary>
 		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
+
+		/// <summary>
+		/// When true the conference manager will force registered dialers to match
+		/// the state of the Privacy Mute, Do Not Disturb and Auto Answer properties.
+		/// </summary>
+		public bool IsAuthoritative
+		{
+			get { return m_IsAuthoritative; }
+			set
+			{
+				if (value == m_IsAuthoritative)
+					return;
+
+				m_IsAuthoritative = value;
+
+				OnIsAuthoritativeChanged.Raise(this, new BoolEventArgs(m_IsAuthoritative));
+			}
+		}
 
 		/// <summary>
 		/// Gets the dialing plan.
@@ -124,6 +146,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public ConferenceManager()
 		{
+			m_IsAuthoritative = true;
+
 			m_Conferences = new IcdHashSet<IConference>();
 			m_RecentSources = new ScrollQueue<IParticipant>(RECENT_LENGTH);
 
@@ -145,6 +169,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Dispose()
 		{
+			OnIsAuthoritativeChanged = null;
 			OnConferenceAdded = null;
 			OnActiveConferenceStatusChanged = null;
 			OnRecentSourceAdded = null;
@@ -526,8 +551,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="conferenceControl"></param>
 		private void UpdateFeedbackProvider(IConferenceDeviceControl conferenceControl)
 		{
-			bool privacyMute = PrivacyMuted;
+			if (!m_IsAuthoritative)
+				return;
 
+			bool privacyMute = PrivacyMuted;
 			if (conferenceControl.PrivacyMuted != privacyMute)
 				conferenceControl.SetPrivacyMute(privacyMute);
 		}
@@ -538,16 +565,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="conferenceControl"></param>
 		private void UpdateProvider(IConferenceDeviceControl conferenceControl)
 		{
-			bool autoAnswer = AutoAnswer;
-			bool doNotDisturb = DoNotDisturb;
-			bool privacyMute = PrivacyMuted;
+			if (!m_IsAuthoritative)
+				return;
 
+			bool autoAnswer = AutoAnswer;
 			if (conferenceControl.AutoAnswer != autoAnswer)
 				conferenceControl.SetAutoAnswer(autoAnswer);
 
+			bool doNotDisturb = DoNotDisturb;
 			if (conferenceControl.DoNotDisturb != doNotDisturb)
 				conferenceControl.SetDoNotDisturb(doNotDisturb);
 
+			bool privacyMute = PrivacyMuted;
 			if (conferenceControl.PrivacyMuted != privacyMute)
 				conferenceControl.SetPrivacyMute(privacyMute);
 		}
