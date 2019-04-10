@@ -11,7 +11,8 @@ namespace ICD.Connect.Conferencing.Zoom
 	public sealed class ZoomLoopbackServerSettings : AbstractDeviceSettings, ISecureNetworkSettings
 	{
 		private const string PORT_ELEMENT = "Port";
-		private const string LOOPBACK_PORT_ELEMENT = "LoopbackPort";
+		private const string LISTEN_ADDRESS_ELEMENT = "ListenAddress";
+		private const string LISTEN_PORT_ELEMENT = "ListenPort";
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
@@ -24,9 +25,14 @@ namespace ICD.Connect.Conferencing.Zoom
 		public int? Port { get; set; }
 
 		/// <summary>
+		/// The address for the TCP server to accept connections from.
+		/// </summary>
+		public string ListenAddress { get; set; }
+
+		/// <summary>
 		/// The port for the TCP server.
 		/// </summary>
-		public ushort LoopbackPort { get; set; }
+		public ushort ListenPort { get; set; }
 
 		#endregion
 
@@ -85,7 +91,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 
-			LoopbackPort = 23;
+			ListenAddress = "0.0.0.0";
+			ListenPort = 2245;
 
 			UpdateNetworkDefaults();
 		}
@@ -98,8 +105,9 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			base.WriteElements(writer);
 
-			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int) Port));
-			writer.WriteElementString(LOOPBACK_PORT_ELEMENT, IcdXmlConvert.ToString(LoopbackPort));
+			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
+			writer.WriteElementString(LISTEN_ADDRESS_ELEMENT, ListenAddress);
+			writer.WriteElementString(LISTEN_PORT_ELEMENT, IcdXmlConvert.ToString(ListenPort));
 
 			m_NetworkProperties.WriteElements(writer);
 		}
@@ -113,7 +121,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.ParseXml(xml);
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
-			LoopbackPort = XmlUtils.TryReadChildElementContentAsUShort(xml, LOOPBACK_PORT_ELEMENT) ?? 23;
+			ListenAddress = XmlUtils.TryReadChildElementContentAsString(xml, LISTEN_ADDRESS_ELEMENT) ?? "0.0.0.0";
+			ListenPort = XmlUtils.TryReadChildElementContentAsUShort(xml, LISTEN_PORT_ELEMENT) ?? 2245;
 
 			m_NetworkProperties.ParseXml(xml);
 
@@ -125,7 +134,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		private void UpdateNetworkDefaults()
 		{
-			m_NetworkProperties.ApplyDefaultValues(null, 2244, "zoom", "zoomus123");
+			m_NetworkProperties.ApplyDefaultValues("localhost", 2244, "zoom", "zoomus123");
 		}
 	}
 }

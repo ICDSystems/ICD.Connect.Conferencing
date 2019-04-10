@@ -47,6 +47,14 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public bool IsConnected { get { return m_ConnectionStateManager.IsConnected; } }
 
+		public string ListenAddress
+		{
+			get { return m_TcpServer.AddressToAcceptConnectionFrom; }
+			set { m_TcpServer.AddressToAcceptConnectionFrom = value; }
+		}
+
+		public ushort ListenPort { get { return m_TcpServer.Port; } set { m_TcpServer.Port = value; } }
+
 		#endregion
 
 		/// <summary>
@@ -56,7 +64,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 
-			m_TcpServer = new AsyncTcpServer(23, AsyncTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED);
+			m_TcpServer = new AsyncTcpServer(2245, AsyncTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED);
 			Subscribe(m_TcpServer);
 
 			m_ClientBuffers = new TcpServerBufferManager(() => new DelimiterSerialBuffer('\r'));
@@ -89,6 +97,24 @@ namespace ICD.Connect.Conferencing.Zoom
 		#region Methods
 
 		/// <summary>
+		/// Start connecting to the zoom device.
+		/// </summary>
+		public void Start()
+		{
+			m_ConnectionStateManager.Start();
+			m_TcpServer.Start();
+		}
+
+		/// <summary>
+		/// Disconnect and stop connecting to the zoom device.
+		/// </summary>
+		public void Stop()
+		{
+			m_TcpServer.Stop();
+			m_ConnectionStateManager.Stop();
+		}
+
+		/// <summary>
 		/// Gets the current online status of the device.
 		/// </summary>
 		/// <returns></returns>
@@ -101,10 +127,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Sets the port for communicating with the device.
 		/// </summary>
 		/// <param name="port"></param>
+		/// <param name="monitor"></param>
 		[PublicAPI]
-		public void SetPort(ISerialPort port)
+		public void SetPort(ISerialPort port, bool monitor)
 		{
-			m_ConnectionStateManager.SetPort(port);
+			m_ConnectionStateManager.SetPort(port, monitor);
 		}
 
 		/// <summary>
@@ -256,7 +283,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
-			AttributeKey key = null;
+			AttributeKey key;
 			AbstractZoomRoomResponse response;
 
 			try
@@ -365,7 +392,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			base.ApplySettingsFinal(settings, factory);
 
-			m_TcpServer.Port = settings.LoopbackPort;
+			ListenAddress = settings.ListenAddress;
+			ListenPort = settings.ListenPort;
 
 			m_NetworkProperties.Copy(settings);
 
@@ -383,7 +411,7 @@ namespace ICD.Connect.Conferencing.Zoom
 				}
 			}
 
-			SetPort(port);
+			SetPort(port, true);
 
 			m_TcpServer.Start();
 		}
@@ -395,9 +423,10 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_NetworkProperties.ClearNetworkProperties();
 
 			m_TcpServer.Stop();
-			m_TcpServer.Port = 23;
+			ListenAddress = "0.0.0.0";
+			ListenPort = 2245;
 
-			SetPort(null);
+			SetPort(null, false);
 		}
 
 		protected override void CopySettingsFinal(ZoomLoopbackServerSettings settings)
@@ -405,7 +434,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
-			settings.LoopbackPort = m_TcpServer.Port;
+
+			settings.ListenAddress = ListenAddress;
+			settings.ListenPort = ListenPort;
 
 			settings.Copy(m_NetworkProperties);
 		}
