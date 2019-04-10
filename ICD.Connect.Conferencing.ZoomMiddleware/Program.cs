@@ -1,5 +1,7 @@
 ﻿#if !SIMPLSHARP
 using System;
+using System.Linq;
+using ICD.Common.Utils.IO;
 using Topshelf;
 using Topshelf.StartParameters;
 
@@ -40,6 +42,8 @@ namespace ICD.Connect.Conferencing.ZoomMiddleware
 				x.SetStartTimeout(TimeSpan.FromMinutes(10));
 				x.SetStopTimeout(TimeSpan.FromMinutes(10));
 
+				x.AfterUninstall(AfterUninstall);
+
 			    x.StartAutomatically();
 			});
 
@@ -60,6 +64,17 @@ namespace ICD.Connect.Conferencing.ZoomMiddleware
 		private static void Stop(ZoomMiddleware middleware)
 		{
 			middleware.Stop();
+		}
+
+		private static void AfterUninstall()
+		{
+			// Remove the Zoom Middleware program data
+			IcdDirectory.Delete(ZoomMiddleware.ZoomMiddlewarePath, true);
+
+			// If the ICD Systems directory is empty, remove it
+			if (!IcdDirectory.GetFiles(ZoomMiddleware.IcdSystemsPath).Any() &&
+				!IcdDirectory.GetDirectories(ZoomMiddleware.IcdSystemsPath).Any())
+				IcdDirectory.Delete(ZoomMiddleware.IcdSystemsPath, true);
 		}
 	}
 }

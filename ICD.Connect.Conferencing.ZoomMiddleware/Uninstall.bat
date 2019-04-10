@@ -1,7 +1,9 @@
 @echo off
 
-%~dp0\ICD.Connect.Conferencing.ZoomMiddleware.exe uninstall --sudo
+set InstallPath = "C:\Program Files\ICD Systems\ZoomMiddleware"
+set Application = "ICD.Connect.Conferencing.ZoomMiddleware.exe"
 
-rmdir /s /q C:\ProgramData\ICD\ZoomMiddleware
+%~dp0\%Application% uninstall --sudo
+rmdir /s /q %InstallPath%
 
 PAUSE

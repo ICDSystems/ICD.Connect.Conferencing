@@ -1,14 +1,15 @@
 @echo off
 
-%~dp0\ICD.Connect.Conferencing.ZoomMiddleware.exe uninstall --sudo
+set InstallPath = "C:\Program Files\ICD Systems\ZoomMiddleware"
+set Application = "ICD.Connect.Conferencing.ZoomMiddleware.exe"
+set ZoomUsername = "zoom"
+set ZoomPassword = "zoomus123"
+set ZoomPort = 2244
+set ListenAddress = "0.0.0.0"
+set ListenPort = 2245
 
-rmdir /s /q C:\ProgramData\ICD\ZoomMiddleware
-
-set ZoomUsername=zoom
-set ZoomPassword=zoomus123
-set ZoomPort=2244
-set ListenAddress=0.0.0.0
-set ListenPort=2245
+%~dp0\%Application% uninstall --sudo
+rmdir /s /q %InstallPath%
 
 set /p ZoomUsername=Zoom Username:
 set /p ZoomPassword=Zoom Password:
@@ -16,9 +17,9 @@ set /p ZoomPort=Zoom Port:
 set /p ListenAddress=Listen Address:
 set /p ListenPort=Listen Port:
 
-md C:\ProgramData\ICD\ZoomMiddleware 2>nul
-copy %~dp0\* C:\ProgramData\ICD\ZoomMiddleware
+md %InstallPath% 2>nul
+copy %~dp0\* %InstallPath%
 
-C:\ProgramData\ICD\ZoomMiddleware\ICD.Connect.Conferencing.ZoomMiddleware.exe install --sudo -zoomUsername=%ZoomUsername% -zoomPassword=%ZoomPassword% -zoomPort=%ZoomPort% -listenAddress=%ListenAddress% -listenPort=%ListenPort%
+%InstallPath%\%Application% install --sudo -zoomUsername=%ZoomUsername% -zoomPassword=%ZoomPassword% -zoomPort=%ZoomPort% -listenAddress=%ListenAddress% -listenPort=%ListenPort%
 
 PAUSE
