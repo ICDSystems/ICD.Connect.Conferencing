@@ -49,6 +49,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 			m_ComponentsSection = new SafeCriticalSection();
 
 			m_Codec = codec;
+
+			// Add some default components
+			GetComponent<SystemComponent>();
 		}
 
 		/// <summary>
