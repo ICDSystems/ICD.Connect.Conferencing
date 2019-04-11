@@ -94,6 +94,7 @@
     <Compile Include="Devices\Codec\Components\Mute\MuteComponent.cs" />
     <Compile Include="Devices\Codec\Components\PolycomComponentFactory.cs" />
     <Compile Include="Devices\Codec\Components\Sleep\SleepComponent.cs" />
+    <Compile Include="Devices\Codec\Components\System\SystemComponent.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\PolycomBooking.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\PolycomCalendarControl.cs" />
     <Compile Include="Devices\Codec\Controls\PolycomCodecDirectoryControl.cs" />
