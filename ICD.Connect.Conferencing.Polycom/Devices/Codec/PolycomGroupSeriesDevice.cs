@@ -63,7 +63,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private readonly RateLimitedEventQueue<string> m_CommandQueue;
 		private readonly SafeTimer m_FeedbackTimer;
 
-		private readonly NetworkProperties m_NetworkProperties;
+		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private readonly PolycomComponentFactory m_Components;
@@ -130,7 +130,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesDevice()
 		{
-			m_NetworkProperties = new NetworkProperties();
+			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
 			m_CurrentMutliLines = new List<string>();
@@ -209,6 +209,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			if (port is IComPort)
 				(port as IComPort).ApplyDeviceConfiguration(m_ComSpecProperties);
 
+			// SSH
+			else if (port is ISecureNetworkPort)
+				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 			// TCP
 			else if (port is INetworkPort)
 				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
