@@ -267,10 +267,10 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				connection.Open();
 
 				string favoriteId = string.Format("{0} INTEGER, FOREIGN KEY ({0}) REFERENCES {1}({2})", COLUMN_FAVORITE_ID,
-			                                  SqLiteFavorites.TABLE, COLUMN_ID);
+				                                  SqLiteFavorites.TABLE, COLUMN_ID);
 				string createQuery =
 					string.Format("CREATE TABLE IF NOT EXISTS {0} ({1} INTEGER PRIMARY KEY, {2} VARCHAR(40) NOT NULL, {3} INTEGER DEFAULT 1, {4} INTEGER DEFAULT 0, {5})",
-								TABLE, COLUMN_ID, COLUMN_DIAL_STRING, COLUMN_DIAL_PROTOCOL, COLUMN_CALL_TYPE, favoriteId);
+					              TABLE, COLUMN_ID, COLUMN_DIAL_STRING, COLUMN_DIAL_PROTOCOL, COLUMN_CALL_TYPE, favoriteId);
 				using (IcdSqliteCommand command = new IcdSqliteCommand(createQuery, connection))
 					command.ExecuteNonQuery();
 
@@ -278,14 +278,15 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				string pragmaQuery = string.Format("PRAGMA table_info({0});", TABLE);
 				using (IcdSqliteCommand command = new IcdSqliteCommand(pragmaQuery, connection))
 				{
-					var result = command.ExecuteReader();
-
-					while (result.Read())
+					using (IcdSqliteDataReader result = command.ExecuteReader())
 					{
-						if (result["name"].Equals(COLUMN_DIAL_PROTOCOL) || result["name"].Equals(COLUMN_CALL_TYPE))
+						while (result.Read())
 						{
-							migrate = false;
-							break;
+							if (result["name"].Equals(COLUMN_DIAL_PROTOCOL) || result["name"].Equals(COLUMN_CALL_TYPE))
+							{
+								migrate = false;
+								break;
+							}
 						}
 					}
 				}
