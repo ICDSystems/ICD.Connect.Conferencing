@@ -11,7 +11,7 @@ using ICD.Connect.Settings.Attributes.SettingsProperties;
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 {
 	[KrangSettings("PolycomGroupSeries", typeof(PolycomGroupSeriesDevice))]
-	public sealed class PolycomGroupSeriesSettings : AbstractVideoConferenceDeviceSettings, IComSpecSettings, INetworkSettings
+	public sealed class PolycomGroupSeriesSettings : AbstractVideoConferenceDeviceSettings, IComSpecSettings, ISecureNetworkSettings
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string USERNAME_ELEMENT = "Username";
@@ -21,7 +21,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private const string DEFAULT_USERNAME = "admin";
 		private const string DEFAULT_PASSWORD = "admin";
 
-		private readonly NetworkProperties m_NetworkProperties;
+		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private string m_Username;
@@ -74,6 +74,24 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		#endregion
 
 		#region Network
+
+		/// <summary>
+		/// Gets/sets the configurable network username.
+		/// </summary>
+		public string NetworkUsername
+		{
+			get { return m_NetworkProperties.NetworkUsername; }
+			set { m_NetworkProperties.NetworkUsername = value; }
+		}
+
+		/// <summary>
+		/// Gets/sets the configurable network password.
+		/// </summary>
+		public string NetworkPassword
+		{
+			get { return m_NetworkProperties.NetworkPassword; }
+			set { m_NetworkProperties.NetworkPassword = value; }
+		}
 
 		/// <summary>
 		/// Gets/sets the configurable network address.
@@ -192,7 +210,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		public PolycomGroupSeriesSettings()
 		{
-			m_NetworkProperties = new NetworkProperties();
+			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
 			UpdateNetworkDefaults();
@@ -222,8 +240,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.ParseXml(xml);
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
-			Username = XmlUtils.TryReadChildElementContentAsString(xml, USERNAME_ELEMENT);
-			Password = XmlUtils.TryReadChildElementContentAsString(xml, PASSWORD_ELEMENT);
+			Username = XmlUtils.TryReadChildElementContentAsString(xml, USERNAME_ELEMENT) ?? DEFAULT_USERNAME;
+			Password = XmlUtils.TryReadChildElementContentAsString(xml, PASSWORD_ELEMENT) ?? DEFAULT_PASSWORD;
 			AddressbookType = XmlUtils.TryReadChildElementContentAsEnum<eAddressbookType>(xml, ADDRESSBOOK_TYPE_ELEMENT, true) ??
 			                  eAddressbookType.Global;
 
@@ -236,7 +254,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// </summary>
 		private void UpdateNetworkDefaults()
 		{
-			m_NetworkProperties.ApplyDefaultValues(null, 24);
+			m_NetworkProperties.ApplyDefaultValues(null, null, DEFAULT_USERNAME, DEFAULT_PASSWORD);
 		}
 
 		/// <summary>
