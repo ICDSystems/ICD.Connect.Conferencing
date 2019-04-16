@@ -33,7 +33,7 @@ namespace ICD.Connect.Conferencing.ZoomMiddleware
 					s.WhenStopped(Stop);
 				});
 
-				x.RunAsLocalSystem();
+				x.RunAsNetworkService();
 
 				x.SetDisplayName("ICD Zoom Middleware Service");
 				x.SetServiceName("ICD Zoom Middleware Service");
