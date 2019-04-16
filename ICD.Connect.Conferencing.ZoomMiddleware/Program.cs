@@ -69,10 +69,12 @@ namespace ICD.Connect.Conferencing.ZoomMiddleware
 		private static void AfterUninstall()
 		{
 			// Remove the Zoom Middleware program data
-			IcdDirectory.Delete(ZoomMiddleware.ZoomMiddlewarePath, true);
+			if (IcdDirectory.Exists(ZoomMiddleware.ZoomMiddlewarePath))
+				IcdDirectory.Delete(ZoomMiddleware.ZoomMiddlewarePath, true);
 
 			// If the ICD Systems directory is empty, remove it
-			if (!IcdDirectory.GetFiles(ZoomMiddleware.IcdSystemsPath).Any() &&
+			if (IcdDirectory.Exists(ZoomMiddleware.IcdSystemsPath) &&
+				!IcdDirectory.GetFiles(ZoomMiddleware.IcdSystemsPath).Any() &&
 				!IcdDirectory.GetDirectories(ZoomMiddleware.IcdSystemsPath).Any())
 				IcdDirectory.Delete(ZoomMiddleware.IcdSystemsPath, true);
 		}
