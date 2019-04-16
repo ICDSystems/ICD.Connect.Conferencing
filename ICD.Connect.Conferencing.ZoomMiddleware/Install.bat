@@ -25,4 +25,6 @@ copy %~dp0\* %InstallPath%
 
 %TargetApplicationPath% install --sudo -zoomUsername=%ZoomUsername% -zoomPassword=%ZoomPassword% -zoomPort=%ZoomPort% -listenAddress=%ListenAddress% -listenPort=%ListenPort%
 
+sc start "ICD Zoom Middleware Service"
+
 PAUSE
