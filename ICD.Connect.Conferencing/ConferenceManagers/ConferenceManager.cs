@@ -304,17 +304,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (conferenceControl == null)
 				throw new ArgumentNullException("conferenceControl");
 
-			if (!conferenceControl.Supports.HasFlags(callType))
-				throw new ArgumentException("Conference control does not support given call type.");
-
 			m_DialingProviderSection.Enter();
 
 			try
 			{
-				if (m_DialingProviders.ContainsKey(conferenceControl))
+				eCallType oldCallType;
+				if (m_DialingProviders.TryGetValue(conferenceControl, out oldCallType) && callType == oldCallType)
 					return false;
 
-				m_DialingProviders.Add(conferenceControl, callType);
+				Unsubscribe(conferenceControl);
+				m_DialingProviders[conferenceControl] = callType;
 				Subscribe(conferenceControl);
 
 				UpdateProvider(conferenceControl);
