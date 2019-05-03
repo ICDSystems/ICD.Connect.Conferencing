@@ -1,31 +1,19 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+using ICD.Connect.Conferencing.Zoom.Responses.Converters;
+using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	[ZoomRoomApiResponse("CallDisconnect", eZoomRoomApiType.zEvent, false)]
+	[JsonConverter(typeof(CallDisconnectResponseConverter))]
 	public sealed class CallDisconnectResponse : AbstractZoomRoomResponse
 	{
-		[JsonProperty("CallDisconnect")]
-		public CallDisconnect Disconnect { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			base.LoadFromJObject(jObject);
-
-			Disconnect = new CallDisconnect();
-			Disconnect.LoadFromJObject((JObject) jObject["CallDisconnect"]);
-		}
+		public CallDisconnect Disconnect { get; set; }
 	}
 
-	public sealed class CallDisconnect : AbstractZoomRoomData
+	[JsonConverter(typeof(CallDisconnectConverter))]
+	public sealed class CallDisconnect
 	{
-		[JsonProperty("success")]
-		public eZoomBoolean Success { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			Success = jObject["success"].ToObject<eZoomBoolean>();
-		}
+		public eZoomBoolean Success { get; set; }
 	}
 }

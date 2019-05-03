@@ -1,56 +1,28 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+using ICD.Connect.Conferencing.Zoom.Responses.Converters;
+using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
 	[ZoomRoomApiResponse("Call", eZoomRoomApiType.zConfiguration, false),
 	 ZoomRoomApiResponse("Call", eZoomRoomApiType.zConfiguration, true)]
+	[JsonConverter(typeof(CallConfigurationResponseConverter))]
 	public sealed class CallConfigurationResponse : AbstractZoomRoomResponse
 	{
-		[JsonProperty("Call")]
-		public CallConfiguration CallConfiguration { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			base.LoadFromJObject(jObject);
-
-			CallConfiguration = new CallConfiguration();
-			CallConfiguration.LoadFromJObject((JObject)jObject["Call"]);
-		}
+		public CallConfiguration CallConfiguration { get; set; }
 	}
 
-	public sealed class CallConfiguration : AbstractZoomRoomData
+	[JsonConverter(typeof(CallConfigurationConverter))]
+	public sealed class CallConfiguration
 	{
-		[JsonProperty("Microphone")]
-		public MuteConfiguration Microphone { get; private set; }
+		public MuteConfiguration Microphone { get; set; }
 
-		[JsonProperty("Camera")]
-		public MuteConfiguration Camera { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			if (jObject["Microphone"] != null)
-			{
-				Microphone = new MuteConfiguration();
-				Microphone.LoadFromJObject((JObject) jObject["Microphone"]);
-			}
-
-			if (jObject["Camera"] != null)
-			{
-				Camera = new MuteConfiguration();
-				Camera.LoadFromJObject((JObject)jObject["Camera"]);
-			}
-		}
+		public MuteConfiguration Camera { get; set; }
 	}
 
-	public sealed class MuteConfiguration : AbstractZoomRoomData
+	[JsonConverter(typeof(MuteConfigurationConverter))]
+	public sealed class MuteConfiguration
 	{
-		[JsonProperty("Mute")]
-		public bool Mute { get; private set; }
-
-		public override void LoadFromJObject(JObject jObject)
-		{
-			Mute = jObject["Mute"].ToObject<bool>();
-		}
+		public bool Mute { get; set; }
 	}
 }

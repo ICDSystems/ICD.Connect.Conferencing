@@ -1,130 +1,81 @@
+﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Properties;
-using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.Conferencing.Devices;
-using ICD.Connect.Conferencing.Zoom.Components;
-using ICD.Connect.Conferencing.Zoom.Components.Call;
-using ICD.Connect.Conferencing.Zoom.Controls;
-using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
+using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Ports;
+using ICD.Connect.Protocol.Network.Ports.Tcp;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using ICD.Connect.Conferencing.Zoom.Components.System;
-using ICD.Connect.API.Nodes;
+using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
-	public sealed class ZoomRoom : AbstractVideoConferenceDevice<ZoomRoomSettings>
+	public sealed class ZoomLoopbackServerDevice : AbstractDevice<ZoomLoopbackServerSettings>
 	{
-		/// <summary>
-		/// Wrapper callback for responses that casts to the appropriate type.
-		/// </summary>
-		private delegate void ResponseCallback(ZoomRoom zoomRoom, AbstractZoomRoomResponse response);
-
-		/// <summary>
-		/// Callback for responses.
-		/// </summary>
-		public delegate void ResponseCallback<T>(ZoomRoom zoomRoom, T response) where T : AbstractZoomRoomResponse;
-
-		private sealed class ResponseCallbackPair
-		{
-			public ResponseCallback WrappedCallback { get; set; }
-			public object ActualCallback { get; set; }
-		}
-
 		/// <summary>
 		/// End of line character(s) for ZR-CSAPI commands.
 		/// Must be \r, since the API doesn't accept the "format json" command otherwise.
 		/// </summary>
 		private const string END_OF_LINE = "\r";
 
-		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
-		public event EventHandler<BoolEventArgs> OnInitializedChanged;
-
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly JsonSerialBuffer m_SerialBuffer;
-		private readonly Dictionary<Type, List<ResponseCallbackPair>> m_ResponseCallbacks;
-		private readonly SafeCriticalSection m_ResponseCallbacksSection;
+
+		private readonly AsyncTcpServer m_TcpServer;
+		private readonly TcpServerBufferManager m_ClientBuffers;
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
-
-		private bool m_Initialized;
 
 		#region Properties
 
 		/// <summary>
 		/// Device Initialized Status.
 		/// </summary>
-		public bool Initialized
-		{
-			get { return m_Initialized; }
-			private set
-			{
-				if (value == m_Initialized)
-					return;
-
-				m_Initialized = value;
-
-				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
-			}
-		}
+		public bool Initialized { get; private set; }
 
 		/// <summary>
 		/// Returns true when the codec is connected.
 		/// </summary>
 		public bool IsConnected { get { return m_ConnectionStateManager.IsConnected; } }
 
-		public CallComponent CurrentCall { get; private set; }
+		public string ListenAddress
+		{
+			get { return m_TcpServer.AddressToAcceptConnectionFrom; }
+			set { m_TcpServer.AddressToAcceptConnectionFrom = value; }
+		}
 
-		/// <summary>
-		/// Causes this ZoomRoom to auto-accept any incoming calls.
-		/// </summary>
-		public bool AutoAnswer { get; set; }
-
-		/// <summary>
-		/// Causes this ZoomRoom to auto-reject any incoming calls. Overrides AutoAnswer
-		/// </summary>
-		public bool DoNotDisturb { get; set; }
-
-		public ZoomRoomComponentFactory Components { get; private set; }
+		public ushort ListenPort { get { return m_TcpServer.Port; } set { m_TcpServer.Port = value; } }
 
 		#endregion
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public ZoomRoom()
+		public ZoomLoopbackServerDevice()
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 
-			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallbackPair>>();
-			m_ResponseCallbacksSection = new SafeCriticalSection();
+			m_TcpServer = new AsyncTcpServer(2245, AsyncTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED);
+			Subscribe(m_TcpServer);
+
+			m_ClientBuffers = new TcpServerBufferManager(() => new DelimiterSerialBuffer('\r'));
+			m_ClientBuffers.SetServer(m_TcpServer);
+			Subscribe(m_ClientBuffers);
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) {ConfigurePort = ConfigurePort};
 			Subscribe(m_ConnectionStateManager);
 
 			m_SerialBuffer = new JsonSerialBuffer();
 			Subscribe(m_SerialBuffer);
-
-			Components = new ZoomRoomComponentFactory(this);
-			// Create new system component
-			Components.GetComponent<SystemComponent>();
-
-			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomPresentationControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomConferenceControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomCalendarControl(this, Controls.Count));
 		}
 
 		/// <summary>
@@ -133,16 +84,35 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnConnectedStateChanged = null;
-			OnInitializedChanged = null;
-
 			base.DisposeFinal(disposing);
 
+			Unsubscribe(m_TcpServer);
+			Unsubscribe(m_ClientBuffers);
 			Unsubscribe(m_SerialBuffer);
 			Unsubscribe(m_ConnectionStateManager);
+
+			m_TcpServer.Dispose();
 		}
 
 		#region Methods
+
+		/// <summary>
+		/// Start connecting to the zoom device.
+		/// </summary>
+		public void Start()
+		{
+			m_ConnectionStateManager.Start();
+			m_TcpServer.Start();
+		}
+
+		/// <summary>
+		/// Disconnect and stop connecting to the zoom device.
+		/// </summary>
+		public void Stop()
+		{
+			m_TcpServer.Stop();
+			m_ConnectionStateManager.Stop();
+		}
 
 		/// <summary>
 		/// Gets the current online status of the device.
@@ -157,10 +127,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Sets the port for communicating with the device.
 		/// </summary>
 		/// <param name="port"></param>
+		/// <param name="monitor"></param>
 		[PublicAPI]
-		public void SetPort(ISerialPort port)
+		public void SetPort(ISerialPort port, bool monitor)
 		{
-			m_ConnectionStateManager.SetPort(port);
+			m_ConnectionStateManager.SetPort(port, monitor);
 		}
 
 		/// <summary>
@@ -187,19 +158,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		}
 
 		/// <summary>
-		/// Send command.
-		/// </summary>
-		/// <param name="command"></param>
-		/// <param name="args"></param>
-		public void SendCommand(string command, params object[] args)
-		{
-			if (args != null)
-				command = string.Format(command, args);
-
-			SendCommand(command);
-		}
-
-		/// <summary>
 		/// Sends commands.
 		/// </summary>
 		/// <param name="commands"></param>
@@ -211,71 +169,6 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			foreach (string command in commands)
 				SendCommand(command);
-		}
-
-		/// <summary>
-		/// Registers the given callback.
-		/// </summary>
-		/// <param name="callback"></param>
-		public void RegisterResponseCallback<T>(ResponseCallback<T> callback)
-			where T : AbstractZoomRoomResponse
-		{
-			ResponseCallback wrappedCallback = WrapCallback(callback);
-
-			m_ResponseCallbacksSection.Enter();
-
-			try
-			{		                                   
-				List<ResponseCallbackPair> callbacks;
-				if (!m_ResponseCallbacks.TryGetValue(typeof(T), out callbacks))
-				{
-					callbacks = new List<ResponseCallbackPair>();
-					m_ResponseCallbacks.Add(typeof(T), callbacks);
-				}
-
-				callbacks.Add(new ResponseCallbackPair
-				{
-					WrappedCallback = wrappedCallback,
-					ActualCallback = callback
-				});
-			}
-			finally
-			{
-				m_ResponseCallbacksSection.Leave();
-			}
-		}
-
-		private static ResponseCallback WrapCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
-		{
-			// separate static method to prevent lambda capture context wackiness
-			return (zr, resp) => callback(zr, (T)resp);
-		}
-
-		/// <summary>
-		/// Unregisters callbacks registered via RegisterResponseCallback.
-		/// </summary>
-		/// <param name="callback"></param>
-		[PublicAPI]
-		public void UnregisterResponseCallback<T>(ResponseCallback<T> callback) where T : AbstractZoomRoomResponse
-		{
-			m_ResponseCallbacksSection.Enter();
-
-			try
-			{
-				List<ResponseCallbackPair> callbacks;
-				if (!m_ResponseCallbacks.TryGetValue(typeof(T), out callbacks))
-					return;
-
-				int indexToRemove = callbacks.FindIndex(c => c.ActualCallback.Equals(callback));
-				if (indexToRemove < 0)
-					return;
-
-				callbacks.RemoveAt(indexToRemove);
-			}
-			finally
-			{
-				m_ResponseCallbacksSection.Leave();
-			}
 		}
 
 		#endregion
@@ -291,31 +184,6 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_ConnectionStateManager.Send("\r");
 			m_ConnectionStateManager.Send("format json");
 			m_ConnectionStateManager.Send("\r");
-			//m_ConnectionStateManager.Send("zStatus CallStatus\r");
-		}
-
-		private void CallResponseCallbacks(AbstractZoomRoomResponse response)
-		{
-			Type responseType = response.GetType();
-			ResponseCallback[] callbacks;
-
-			m_ResponseCallbacksSection.Enter();
-
-			try
-			{
-				List<ResponseCallbackPair> callbackPairs;
-				if (!m_ResponseCallbacks.TryGetValue(responseType, out callbackPairs))
-					return;
-
-				callbacks = callbackPairs.Select(c => c.WrappedCallback).ToArray();
-			}
-			finally
-			{
-				m_ResponseCallbacksSection.Leave();
-			}
-
-			foreach (ResponseCallback callback in callbacks)
-				callback(this, response);
 		}
 
 		#endregion
@@ -353,13 +221,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			if (args.Data.StartsWith("{"))
 			{
-				m_SerialBuffer.Enqueue(args.Data);
+				SerialBufferCompletedSerial(sender, args);
 				Initialized = true;
 			}
 			else if (args.Data.Contains("Login") || args.Data.StartsWith("*"))
 				Initialize();
-			else if (!Initialized && args.Data == "\n")
-				SendCommand("zStatus Call Status");
 		}
 
 		/// <summary>
@@ -417,33 +283,117 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
-			AbstractZoomRoomResponse response = null;
+			AttributeKey key;
+			AbstractZoomRoomResponse response;
 
 			try
 			{
-				AttributeKey unused;
-				response = AbstractZoomRoomResponse.DeserializeResponse(args.Data, out unused);
+				response = AbstractZoomRoomResponse.DeserializeResponse(args.Data, out key);
+				if (response == null)
+					return;
 			}
 			catch (Exception ex)
 			{
 				// Zoom gives us bad json (unescaped characters) in some error messages
 				Log(eSeverity.Error, ex, "Failed to deserialize JSON");
+				return;
 			}
 
-			if (response == null)
+			string minified = JsonConvert.SerializeObject(response);
+			if (minified.Length <= 2)
 				return;
 
-			CallResponseCallbacks(response);
+			// Hack to re-append the key info
+			minified = minified.Insert(minified.Length - 1, ", " + key);
+
+			SendToClients(minified);
+
 			Initialized = true;
+		}
+
+		private void SendToClients(string json)
+		{
+			m_TcpServer.Send(json);
+		}
+
+		#endregion
+
+		#region TCP Server Callbacks
+
+		/// <summary>
+		/// Subscribe to the TCP server events.
+		/// </summary>
+		/// <param name="tcpServer"></param>
+		private void Subscribe(AsyncTcpServer tcpServer)
+		{
+			tcpServer.OnSocketStateChange += TcpServerOnSocketStateChange;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the TCP server events.
+		/// </summary>
+		/// <param name="tcpServer"></param>
+		private void Unsubscribe(AsyncTcpServer tcpServer)
+		{
+			tcpServer.OnSocketStateChange -= TcpServerOnSocketStateChange;
+		}
+
+		/// <summary>
+		/// Called when a client connects/disconnects
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void TcpServerOnSocketStateChange(object sender, SocketStateEventArgs eventArgs)
+		{
+			// Hack - tell the client to initialize
+			if (eventArgs.SocketState == SocketStateEventArgs.eSocketStatus.SocketStatusConnected)
+				m_TcpServer.Send(eventArgs.ClientId, "\n");
+		}
+
+		#endregion
+
+		#region Client Buffer Callbacks
+
+		/// <summary>
+		/// Subscribe to the client buffers events.
+		/// </summary>
+		/// <param name="clientBuffers"></param>
+		private void Subscribe(TcpServerBufferManager clientBuffers)
+		{
+			clientBuffers.OnClientCompletedSerial += ClientBuffersOnClientCompletedSerial;
+		}
+
+		/// <summary>
+		/// Subscribe to the client buffers events.
+		/// </summary>
+		/// <param name="clientBuffers"></param>
+		private void Unsubscribe(TcpServerBufferManager clientBuffers)
+		{
+			clientBuffers.OnClientCompletedSerial -= ClientBuffersOnClientCompletedSerial;
+		}
+
+		/// <summary>
+		/// Called when we receive a message from a client.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="clientId"></param>
+		/// <param name="data"></param>
+		private void ClientBuffersOnClientCompletedSerial(TcpServerBufferManager sender, uint clientId, string data)
+		{
+			// Pass the command on to the Zoom device.
+			SendCommand(data);
 		}
 
 		#endregion
 
 		#region Settings
 
-		protected override void ApplySettingsFinal(ZoomRoomSettings settings, IDeviceFactory factory)
+		protected override void ApplySettingsFinal(ZoomLoopbackServerSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
+
+			ListenAddress = settings.ListenAddress;
+			ListenPort = settings.ListenPort;
 
 			m_NetworkProperties.Copy(settings);
 
@@ -461,7 +411,9 @@ namespace ICD.Connect.Conferencing.Zoom
 				}
 			}
 
-			SetPort(port);
+			SetPort(port, true);
+
+			m_TcpServer.Start();
 		}
 
 		protected override void ClearSettingsFinal()
@@ -470,14 +422,21 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			m_NetworkProperties.ClearNetworkProperties();
 
-			SetPort(null);
+			m_TcpServer.Stop();
+			ListenAddress = "0.0.0.0";
+			ListenPort = 2245;
+
+			SetPort(null, false);
 		}
 
-		protected override void CopySettingsFinal(ZoomRoomSettings settings)
+		protected override void CopySettingsFinal(ZoomLoopbackServerSettings settings)
 		{
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
+
+			settings.ListenAddress = ListenAddress;
+			settings.ListenPort = ListenPort;
 
 			settings.Copy(m_NetworkProperties);
 		}
@@ -489,7 +448,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Gets the help information for the node.
 		/// </summary>
-		public override string ConsoleHelp { get { return "The Zoom Room conferencing device"; } }
+		public override string ConsoleHelp { get { return "The Zoom Loopback Server device"; } }
 
 		/// <summary>
 		/// Calls the delegate for each console status item.
@@ -501,25 +460,7 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			addRow("Initialized", Initialized);
 			addRow("IsConnected", IsConnected);
-			addRow("AutoAnswer", AutoAnswer);
-			addRow("DoNotDisturb", DoNotDisturb);
-		}
-
-		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
-			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-				yield return node;
-
-			yield return Components;
-		}
-
-		/// <summary>
-		/// Workaround for "unverifiable code" warning.
-		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
-		{
-			return base.GetConsoleNodes();
+			addRow("Loopback Port", m_TcpServer.Port);
 		}
 
 		#endregion
