@@ -5,12 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [13.1.0] - 2019-05-03
 ### Added
  - Added ConferencePoint originators and settings
+ - Added project for Zoom Middleware service
+ - Added ZoomLoopbackServerDevice and settings
 
 ### Changed
  - Fixed up Polycom driver for conferencing refactor
  - Dialing controls are registered against the ConferenceManager by type
+ - Zoom uses JSON converters instead of reflection
 
 ## [13.0.1] - 2019-01-29
 ### Changed
