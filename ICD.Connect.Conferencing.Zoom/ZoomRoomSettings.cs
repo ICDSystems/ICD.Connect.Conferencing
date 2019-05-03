@@ -12,11 +12,6 @@ namespace ICD.Connect.Conferencing.Zoom
 	{
 		private const string PORT_ELEMENT = "Port";
 
-		private const string INPUT_1_ELEMENT = "Input1Id";
-		private const string INPUT_2_ELEMENT = "Input2Id";
-		private const string INPUT_3_ELEMENT = "Input3Id";
-		private const string INPUT_4_ELEMENT = "Input4Id";
-
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		#region Properties
@@ -26,11 +21,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
-
-		public string Input1CodecInputId { get; set; }
-		public string Input2CodecInputId { get; set; }
-		public string Input3CodecInputId { get; set; }
-		public string Input4CodecInputId { get; set; }
 
 		#endregion
 
