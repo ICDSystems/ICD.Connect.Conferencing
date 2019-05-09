@@ -19,37 +19,27 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		/// <summary>
 		/// Use this ID when inviting the user, or when accepting / rejecting a user who is joining the conversation
 		/// </summary>
-		[JsonProperty("jid")]
 		public string JoinId { get; set; }
 
-		[JsonProperty("screenName")]
 		public string ScreenName { get; set; }
-
-		[JsonProperty("firstName")]
 		public string FirstName { get; set; }
-
-		[JsonProperty("lastName")]
 		public string LastName { get; set; }
 
 		/// <summary>
 		/// Phone number of the user (typically empty)
 		/// </summary>
-		[JsonProperty("phoneNumber")]
 		public string PhoneNumber { get; set; }
 
-		[JsonProperty("email")]
 		public string Email { get; set; }
 
 		/// <summary>
 		/// URL pointing to the image of the user
 		/// </summary>
-		[JsonProperty("avatarURL")]
 		public string AvatarUrl { get; set; }
 
 		/// <summary>
 		/// State of the Phonebook contact. PRESENCE_BUSY means "in a meeting", and PRESENCE_DND means "do not disturb"
 		/// </summary>
-		[JsonProperty("presence")]
 		public eContactPresence Presence
 		{
 			get { return m_Presence; }
@@ -64,14 +54,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 			}
 		}
 
-		[JsonProperty("isZoomRoom")]
 		public bool IsZoomRoom { get; set; }
 
 		/// <summary>
 		/// Index of user in the phonebook, I think?
 		/// Returned for an Updated Contact response, but not a Phonebook List response.
 		/// </summary>
-		[JsonProperty("index")]
 		public int? Index { get; set; }
 
 		public string Name
