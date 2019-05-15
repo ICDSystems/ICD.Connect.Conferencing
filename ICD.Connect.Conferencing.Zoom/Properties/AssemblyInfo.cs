@@ -4,4 +4,4 @@ using System.Reflection;
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ICD.Connect.Conferencing.Zoom")]
 [assembly: AssemblyCopyright("Copyright © ICD Systems 2019")]
-[assembly: AssemblyVersion("11.4.0.0")]
+[assembly: AssemblyVersion("11.5.0.0")]
