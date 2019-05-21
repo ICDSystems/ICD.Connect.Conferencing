@@ -11,13 +11,13 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Proxies.Controls.Dialing;
 using ICD.Connect.Devices.Controls;
+using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	/// <summary>
 	/// IDialingProvider provides an interface for managing conferences.
 	/// </summary>
-	[ApiClass(typeof(ProxyTraditionalConferenceDeviceControl), typeof(IDeviceControl))]
 	public interface IConferenceDeviceControl<T> : IConferenceDeviceControl where T : IConference
 	{
 		#region Methods
@@ -32,6 +32,8 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		#endregion
 	}
 
+	[ApiClass(typeof(ProxyTraditionalConferenceDeviceControl), typeof(IDeviceControl))]
+	[ExternalTelemetry("Conference Device", typeof(DialingDeviceExternalTelemetryProvider))]
 	public interface IConferenceDeviceControl : IDeviceControl
 	{
 		/// <summary>

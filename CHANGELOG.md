@@ -30,10 +30,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.5.0] - 2019-05-15
+### Added
+ - Added PresenterTrack and SpeakerTrack items to Cisco Cameras component.
+ - Added Cisco RoomAnalytics component
+ - Added CiscoCodecOccupancySensorControl
+ - Added console features to Cisco and Polycom camera devices
+ - Added telemetry for dialers
+ - Added SIP telemetry to Cisco
+
+### Changed
+ - Better Cisco support for multiple SIP registrations
+ - Fixed issues with multiple Cisco cameras fighting for preset assignment
+
 ## [11.4.0] - 2019-04-05
 ### Added
  - IConferenceManager authoritative mode can be turned on and off
-
+ 
 ## [11.3.1] - 2019-02-11
 ### Changed
  - Fixed bug where Polycom Group Series 500 dial string was being truncated, causing OBTP to fail

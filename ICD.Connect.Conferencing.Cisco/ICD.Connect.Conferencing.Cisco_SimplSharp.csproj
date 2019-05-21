@@ -86,6 +86,11 @@
     <Compile Include="Devices\Codec\Components\Bookings\BookingCall.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\AbstractCiscoCamera.cs" />
     <Compile Include="Devices\Camera\CiscoCodecCameraDevice.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\PresenterTrackAvailabilityEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\PresenterTrackModeEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackAvailabilityEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackStatusEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackWhiteboardModeEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoRootFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoFolder.cs" />
@@ -101,20 +106,24 @@
     <Compile Include="Devices\Codec\Components\Directory\Tree\AbstractCiscoFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContact.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContactDialContext.cs" />
+    <Compile Include="Devices\Codec\Components\ICiscoComponent.cs" />
     <Compile Include="Devices\Codec\Components\Peripherals\PeripheralsComponent.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\LayoutEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\PresentationModeEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\PresentationItem.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\PresentationComponent.cs" />
+    <Compile Include="Devices\Codec\Components\RoomAnalytics\PeoplePresenceEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\RoomAnalytics\RoomAnalyticsComponent.cs" />
+    <Compile Include="Devices\Codec\Components\System\GatekeeperStatusArgs.cs" />
+    <Compile Include="Devices\Codec\Components\System\RegistrationEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\System\SipRegistration.cs" />
+    <Compile Include="Devices\Codec\Components\System\SystemComponent.cs" />
     <Compile Include="Devices\Codec\Components\Video\Connectors\VideoInputConnector.cs" />
     <Compile Include="Devices\Codec\Components\Video\Connectors\VideoOutputConnector.cs" />
     <Compile Include="Devices\Codec\Components\Video\MonitorsEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Video\VideoConnectionStateEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Video\Connectors\AbstractVideoConnector.cs" />
     <Compile Include="Devices\Codec\Components\Video\VideoSource.cs" />
-    <Compile Include="Devices\Codec\Components\System\GatekeeperStatusArgs.cs" />
-    <Compile Include="Devices\Codec\Components\System\RegistrationEventArgs.cs" />
-    <Compile Include="Devices\Codec\Components\System\SystemComponent.cs" />
     <Compile Include="Devices\Codec\Components\Video\SelfViewMonitorRoleEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Video\PipPositionEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Video\VideoComponent.cs" />
@@ -122,9 +131,10 @@
     <Compile Include="Devices\Codec\Components\Dialing\DialingComponent.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoBooking.cs" />
-    <Compile Include="Devices\Codec\Controls\Calender\CiscoCalendarControl.cs" />
+    <Compile Include="Devices\Codec\Controls\Calender\CiscoCodecCalendarControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDirectoryControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecLayoutControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecOccupancySensorControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecPowerControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
@@ -154,6 +164,10 @@
       <Project>{FD46A717-5836-4B73-ADD0-2706639DA8ED}</Project>
       <Name>ICD.Connect.Devices_SimplSharp</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Misc\ICD.Connect.Misc\ICD.Connect.Misc_SimplSharp.csproj">
+      <Project>{3BAE6352-77B5-499A-9DA5-2AB198F53183}</Project>
+      <Name>ICD.Connect.Misc_SimplSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Protocol\ICD.Connect.Protocol.Network\ICD.Connect.Protocol.Network_SimplSharp.csproj">
       <Project>{5ED52F05-EA6C-4FC5-8AA0-9B9727F6AECD}</Project>
       <Name>ICD.Connect.Protocol.Network_SimplSharp</Name>
@@ -169,6 +183,10 @@
     <ProjectReference Include="..\..\ICD.Connect.Settings\ICD.Connect.Settings\ICD.Connect.Settings_SimplSharp.csproj">
       <Project>{5B84EB3C-1C3A-4C4D-98C2-69F67CF51D5A}</Project>
       <Name>ICD.Connect.Settings_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Telemetry\ICD.Connect.Telemetry\ICD.Connect.Telemetry_SimplSharp.csproj">
+      <Project>{9512C0A5-F966-4AC6-9668-62C6F343B0CD}</Project>
+      <Name>ICD.Connect.Telemetry_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\ICD.Connect.Conferencing\ICD.Connect.Conferencing_SimplSharp.csproj">
       <Project>{1CCA89DA-1F1C-4997-A94F-ABCE878BD6DE}</Project>

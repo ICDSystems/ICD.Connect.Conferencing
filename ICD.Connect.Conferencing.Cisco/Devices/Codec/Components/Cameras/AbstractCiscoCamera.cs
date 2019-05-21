@@ -15,7 +15,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		protected AbstractCiscoCamera(CiscoCodecDevice codec) : base(codec)
+		protected AbstractCiscoCamera(CiscoCodecDevice codec)
+			: base(codec)
 		{
 		}
 
@@ -34,6 +35,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// </summary>
 		public abstract void StopPanTilt();
 
+		#endregion
+
+		#region Console
+
 		/// <summary>
 		/// Gets the child console commands.
 		/// </summary>
@@ -47,8 +52,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			yield return new ConsoleCommand("StopPanTilt", "Stops moving the camera", () => StopPanTilt());
 		}
 
-		#endregion
-
 		/// <summary>
 		/// Shim to get around "unverifiable code" warning.
 		/// </summary>
@@ -57,5 +60,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			return base.GetConsoleCommands();
 		}
+
+		#endregion
 	}
 }

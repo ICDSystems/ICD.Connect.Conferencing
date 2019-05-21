@@ -112,6 +112,12 @@
     <Compile Include="Contacts\IContactWithOnlineState.cs" />
     <Compile Include="Contacts\IContactWithSurname.cs" />
     <Compile Include="Controls\Dialing\eDialContextSupport.cs" />
+    <Compile Include="Controls\Dialing\DialingDeviceExternalTelemetryProvider.cs" />
+    <Compile Include="Controls\Dialing\DialingTelemetryNames.cs" />
+    <Compile Include="Controls\Dialing\IDialingDeviceExternalTelemetryProvider.cs" />
+    <Compile Include="Controls\Dialing\ISipDialingDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\ISipDialingDeviceExternalTelemetryProvider.cs" />
+    <Compile Include="Controls\Dialing\SipDialingDeviceExternalTelemetryProvider.cs" />
     <Compile Include="Controls\Directory\AbstractDirectoryControl.cs" />
     <Compile Include="Controls\Directory\DirectoryControlConsole.cs" />
     <Compile Include="Controls\Directory\IDirectoryControl.cs" />
@@ -119,6 +125,7 @@
     <Compile Include="Controls\Layout\ConferenceLayoutControlConsole.cs" />
     <Compile Include="Controls\Layout\IConferenceLayoutControl.cs" />
     <Compile Include="Comparers\ContactNameComparer.cs" />
+    <Compile Include="Devices\VideoConferenceDeviceConsole.cs" />
     <Compile Include="Directory\Tree\DirectoryFolder.cs" />
     <Compile Include="EventArguments\ConferenceLayoutAvailableApiEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceProviderEventArgs.cs" />
@@ -223,6 +230,10 @@
     <ProjectReference Include="..\..\ICD.Connect.Settings\ICD.Connect.Settings\ICD.Connect.Settings_SimplSharp.csproj">
       <Project>{5B84EB3C-1C3A-4C4D-98C2-69F67CF51D5A}</Project>
       <Name>ICD.Connect.Settings_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Telemetry\ICD.Connect.Telemetry\ICD.Connect.Telemetry_SimplSharp.csproj">
+      <Project>{9512C0A5-F966-4AC6-9668-62C6F343B0CD}</Project>
+      <Name>ICD.Connect.Telemetry_SimplSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

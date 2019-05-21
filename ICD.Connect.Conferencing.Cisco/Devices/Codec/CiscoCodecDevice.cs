@@ -75,12 +75,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
 		/// <summary>
-		/// Raised when the codec sends an error.
-		/// </summary>
-		[PublicAPI]
-		public event EventHandler<StringEventArgs> OnParsedError;
-
-		/// <summary>
 		/// System Configuration Commands
 		/// </summary>
 		private readonly string[] m_ConfigurationCommands =
@@ -137,6 +131,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		public ePhonebookType PhonebookType { get; private set; }
 
 		/// <summary>
+		/// Determines which camera to use with PresenterTrack features.
+		/// </summary>
+		public int? PresenterTrackCameraId { get; set; }
+
+		/// <summary>
 		/// Provides the components attached to this codec.
 		/// </summary>
 		public CiscoComponentFactory Components { get { return m_Components; } }
@@ -178,7 +177,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			Controls.Add(new CiscoCodecLayoutControl(this, 3));
 			Controls.Add(new CiscoCodecPresentationControl(this, 4));
 			Controls.Add(new CiscoCodecPowerControl(this, 5));
-			Controls.Add(new CiscoCalendarControl(this, 6));
+			Controls.Add(new CiscoCodecCalendarControl(this, 6));
+			Controls.Add(new CiscoCodecOccupancySensorControl(this, 7));
 		}
 
 		#endregion
@@ -210,7 +210,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
         [PublicAPI]
         public void SetPort(ISerialPort port)
         {
-            m_ConnectionStateManager.SetPort(port);
+	        m_ConnectionStateManager.SetPort(port);
         }
         
         /// <summary>
@@ -220,7 +220,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		{
 			OnInitializedChanged = null;
 			OnConnectedStateChanged = null;
-			OnParsedError = null;
 
 			m_FeedbackTimer.Dispose();
 
@@ -273,6 +272,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				command = string.Format(command, args);
 
 			m_ConnectionStateManager.Send(command + END_OF_LINE);
+
+#if !SIMPLSHARP
+			// Too fast!
+			ThreadingUtils.Sleep(10);
+#endif
 		}
 
 		/// <summary>
@@ -466,8 +470,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 
 			Log(eSeverity.Error, message);
-
-			OnParsedError.Raise(this, new StringEventArgs(message));
 		}
 
 		/// <summary>
@@ -676,6 +678,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			settings.Copy(m_ComSpecProperties);
 			settings.Copy(m_NetworkProperties);
+
+			settings.PresenterTrackCameraId = PresenterTrackCameraId;
 		}
 
 		/// <summary>
@@ -687,6 +691,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			PeripheralsId = null;
 			PhonebookType = ePhonebookType.Corporate;
+			PresenterTrackCameraId = null;
 
 			m_ComSpecProperties.ClearComSpecProperties();
 			m_NetworkProperties.ClearNetworkProperties();
@@ -708,6 +713,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			PeripheralsId = settings.PeripheralsId;
 			PhonebookType = settings.PhonebookType;
+			PresenterTrackCameraId = settings.PresenterTrackCameraId;
 
 			ISerialPort port = null;
 

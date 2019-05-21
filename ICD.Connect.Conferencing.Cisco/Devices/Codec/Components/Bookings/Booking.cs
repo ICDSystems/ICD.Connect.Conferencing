@@ -79,8 +79,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			string startTimeString = XmlUtils.TryReadChildElementContentAsString(timeXml, "StartTime");
 			string endTimeString = XmlUtils.TryReadChildElementContentAsString(timeXml, "EndTime");
 
-			DateTime startTime = DateTime.ParseExact(startTimeString, DATE_FORMAT, CultureInfo.InvariantCulture);
-			DateTime endTime = DateTime.ParseExact(endTimeString, DATE_FORMAT, CultureInfo.InvariantCulture);
+			DateTime startTime = DateTime.ParseExact(startTimeString, DATE_FORMAT, CultureInfo.InvariantCulture).ToLocalTime();
+			DateTime endTime = DateTime.ParseExact(endTimeString, DATE_FORMAT, CultureInfo.InvariantCulture).ToLocalTime();
 
 			string bookingStatusMessage = XmlUtils.TryReadChildElementContentAsString(xml, "BookingStatusMessage");
 

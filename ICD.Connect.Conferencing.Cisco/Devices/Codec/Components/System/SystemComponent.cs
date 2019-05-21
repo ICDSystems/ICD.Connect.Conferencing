@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.API.Commands;
+using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 {
@@ -13,30 +17,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 	/// </summary>
 	public sealed class SystemComponent : AbstractCiscoComponent
 	{
-		/// <summary>
-		/// Raised when the SIP registration status changes.
-		/// </summary>
-		[PublicAPI]
-		public event EventHandler<RegistrationEventArgs> OnSipRegistrationChange;
-
-		/// <summary>
-		/// Raised when the SIP URI changes.
-		/// </summary>
-		[PublicAPI]
-		public event EventHandler<StringEventArgs> OnSipUriChange;
-
-		/// <summary>
-		/// Raised when the SIP proxy address changes.
-		/// </summary>
-		[PublicAPI]
-		public event EventHandler<StringEventArgs> OnSipProxyAddressChanged;
-
-		/// <summary>
-		/// Raised when the SIP proxy status changes.
-		/// </summary>
-		[PublicAPI]
-		public event EventHandler<StringEventArgs> OnSipProxyStatusChanged;
-
 		/// <summary>
 		/// Raised when the awake status changes.
 		/// </summary>
@@ -97,6 +77,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		[PublicAPI]
 		public event EventHandler<StringEventArgs> OnGatekeeperAddressChanged;
 
+		/// <summary>
+		/// Raised when a new SIP registration is discovered.
+		/// </summary>
+		[PublicAPI]
+		public event EventHandler<IntEventArgs> OnSipRegistrationAdded; 
+
+		private readonly IcdOrderedDictionary<int, SipRegistration> m_SipRegistrations;
+		private readonly SafeCriticalSection m_SipRegistrationsSection;
+
 		private bool m_H323Enabled;
 		private eH323GatekeeperStatus m_H323GatekeeperStatus = eH323GatekeeperStatus.Inactive;
 		private string m_H323GatekeeperAddress;
@@ -105,10 +94,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		private string m_Address;
 		private string m_SoftwareVersion;
 		private string m_Platform;
-		private eRegState m_SipRegistration = eRegState.Unknown;
-		private string m_SipUri;
-		private string m_SipProxyAddress;
-		private string m_SipProxyStatus;
 		private string m_Gateway;
 		private string m_SubnetMask;
 
@@ -304,82 +289,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			}
 		}
 
-		/// <summary>
-		/// Registration Status
-		/// </summary>
-		[PublicAPI]
-		public eRegState SipRegistration
-		{
-			get { return m_SipRegistration; }
-			private set
-			{
-				if (value == m_SipRegistration)
-					return;
-
-				m_SipRegistration = value;
-
-				Codec.Log(eSeverity.Informational, "SIP Registration status is {0}", m_SipRegistration);
-				OnSipRegistrationChange.Raise(this, new RegistrationEventArgs(m_SipRegistration));
-			}
-		}
-
-		/// <summary>
-		/// Gets the SIP URI.
-		/// </summary>
-		[PublicAPI]
-		public string SipUri
-		{
-			get { return m_SipUri; }
-			private set
-			{
-				if (value == m_SipUri)
-					return;
-
-				m_SipUri = value;
-
-				Codec.Log(eSeverity.Informational, "Registered SIP URI is {0}", m_SipUri);
-				OnSipUriChange.Raise(this, new StringEventArgs(m_SipUri));
-			}
-		}
-
-		/// <summary>
-		/// Gets the SIP proxy address.
-		/// </summary>
-		[PublicAPI]
-		public string SipProxyAddress
-		{
-			get { return m_SipProxyAddress; }
-			private set
-			{
-				if (value == m_SipProxyAddress)
-					return;
-
-				m_SipProxyAddress = value;
-
-				Codec.Log(eSeverity.Informational, "Registered SIP proxy address is {0}", m_SipProxyAddress);
-				OnSipProxyAddressChanged.Raise(this, new StringEventArgs(m_SipProxyAddress));
-			}
-		}
-
-		/// <summary>
-		/// Gets the Sip proxy status.
-		/// </summary>
-		[PublicAPI]
-		public string SipProxyStatus
-		{
-			get { return m_SipProxyStatus; }
-			private set
-			{
-				if (value == m_SipProxyStatus)
-					return;
-
-				m_SipProxyStatus = value;
-
-				Codec.Log(eSeverity.Informational, "Registered SIP proxy status is {0}", m_SipProxyStatus);
-				OnSipProxyStatusChanged.Raise(this, new StringEventArgs(m_SipProxyStatus));
-			}
-		}
-
 		#endregion
 
 		#region Constructors
@@ -390,6 +299,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		/// <param name="codec"></param>
 		public SystemComponent(CiscoCodecDevice codec) : base(codec)
 		{
+			m_SipRegistrations = new IcdOrderedDictionary<int, SipRegistration>();
+			m_SipRegistrationsSection = new SafeCriticalSection();
+
 			Subscribe(Codec);
 
 			if (Codec.Initialized)
@@ -427,9 +339,61 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			Codec.Log(eSeverity.Informational, "Resetting standby timer to {0} minutes", minutes);
 		}
 
+		/// <summary>
+		/// Gets the sip registration infos.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<SipRegistration> GetSipRegistrations()
+		{
+			return m_SipRegistrationsSection.Execute(() => m_SipRegistrations.Values.ToArray(m_SipRegistrations.Count));
+		}
+
+		/// <summary>
+		/// Gets the sip registration for the given item.
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		public SipRegistration GetSipRegistration(int item)
+		{
+			return m_SipRegistrationsSection.Execute(() => m_SipRegistrations[item]);
+		}
+
 		#endregion
 
 		#region Private Methods
+
+		/// <summary>
+		/// Gets/instantiates the SipRegistration info at the given index.
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		private SipRegistration LazyLoadSipRegistration(int item)
+		{
+			SipRegistration registration;
+
+			m_SipRegistrationsSection.Enter();
+
+			try
+			{
+				if (m_SipRegistrations.TryGetValue(item, out registration))
+					return registration;
+
+				registration = new SipRegistration(Codec, item);
+				m_SipRegistrations.Add(item, registration);
+			}
+			finally
+			{
+				m_SipRegistrationsSection.Leave();
+			}
+
+			OnSipRegistrationAdded.Raise(this, new IntEventArgs(item));
+
+			return registration;
+		}
+
+		#endregion
+
+		#region Codec Feedback
 
 		/// <summary>
 		/// Subscribes to the codec events.
@@ -443,10 +407,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 				return;
 
 			codec.RegisterParserCallback(ParseStandbyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Standby", "State");
-			codec.RegisterParserCallback(ParseSipRegistrationStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration", "Status");
-			codec.RegisterParserCallback(ParseSipRegistrationUri, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration", "URI");
-			codec.RegisterParserCallback(ParseSipProxyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Status");
-			codec.RegisterParserCallback(ParseSipProxyAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Address");
+			codec.RegisterParserCallback(ParseSipRegistration, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration");
+			codec.RegisterParserCallback(ParseSipProxy, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy");
 			codec.RegisterParserCallback(ParseNameStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
 			codec.RegisterParserCallback(ParseVersionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
 			codec.RegisterParserCallback(ParseAddressStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
@@ -470,11 +432,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 				return;
 
 			codec.UnregisterParserCallback(ParseStandbyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Standby", "State");
-			codec.UnregisterParserCallback(ParseSipRegistrationStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration",
-			                               "Status");
-			codec.UnregisterParserCallback(ParseSipRegistrationUri, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration", "URI");
-			codec.UnregisterParserCallback(ParseSipProxyStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Status");
-			codec.UnregisterParserCallback(ParseSipProxyAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy", "Address");
+			codec.UnregisterParserCallback(ParseSipRegistration, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Registration");
+			codec.UnregisterParserCallback(ParseSipProxy, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy");
 			codec.UnregisterParserCallback(ParseNameStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
 			codec.UnregisterParserCallback(ParseVersionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
 			codec.UnregisterParserCallback(ParseAddressStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
@@ -482,8 +441,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.UnregisterParserCallback(ParseSubnetMaskStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
 			codec.UnregisterParserCallback(ParseH323EnabledStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Mode", "Status");
 			codec.UnregisterParserCallback(ParseH323GatekeeperStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Status");
-			codec.UnregisterParserCallback(ParseH323GatekeeperAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper",
-			                               "Address");
+			codec.UnregisterParserCallback(ParseH323GatekeeperAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Address");
 			codec.UnregisterParserCallback(ParsePlatformStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
 		}
 
@@ -498,25 +456,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			Awake = standby == "Off";
 		}
 
-		private void ParseSipRegistrationStatus(CiscoCodecDevice sender, string resultId, string xml)
+		private void ParseSipRegistration(CiscoCodecDevice sender, string resultId, string xml)
 		{
-			string content = XmlUtils.GetInnerXml(xml);
-			SipRegistration = EnumUtils.Parse<eRegState>(content, true);
+			// CE8 doesn't support multiple SIP registrations, item id may be absent?
+			string itemString;
+			int item = XmlUtils.TryGetAttribute(xml, "item", out itemString) ? int.Parse(itemString) : 1;
+
+			LazyLoadSipRegistration(item).ParseXml(xml);
 		}
 
-		private void ParseSipRegistrationUri(CiscoCodecDevice codec, string resultid, string xml)
+		private void ParseSipProxy(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			SipUri = XmlUtils.GetInnerXml(xml);
-		}
+			// CE8 doesn't support multiple SIP registrations, item id may be absent?
+			string itemString;
+			int item = XmlUtils.TryGetAttribute(xml, "item", out itemString) ? int.Parse(itemString) : 1;
 
-		private void ParseSipProxyAddress(CiscoCodecDevice codec, string resultid, string xml)
-		{
-			SipProxyAddress = XmlUtils.GetInnerXml(xml);
-		}
-
-		private void ParseSipProxyStatus(CiscoCodecDevice codec, string resultid, string xml)
-		{
-			SipProxyStatus = XmlUtils.GetInnerXml(xml);
+			LazyLoadSipRegistration(item).ParseXml(xml);
 		}
 
 		private void ParseNameStatus(CiscoCodecDevice sender, string resultId, string xml)
@@ -558,6 +513,64 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		private void ParseH323GatekeeperAddress(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			H323GatekeeperAddress = XmlUtils.GetInnerXml(xml);
+		}
+
+		#endregion
+
+		#region Console
+
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("Platform", Platform);
+			addRow("Name", Name);
+			addRow("Address", Address);
+			addRow("Gateway", Gateway);
+			addRow("Subnet Mask", SubnetMask);
+			addRow("Awake", Awake);
+			addRow("Software Version", SoftwareVersion);
+			addRow("H323 Enabled", H323Enabled);
+			addRow("H323 Gatekeeper Status", H323GatekeeperStatus);
+			addRow("H323 Gatekeeper Address", H323GatekeeperAddress);
+		}
+
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			yield return new ConsoleCommand("Standby", "", () => Standby());
+			yield return new ConsoleCommand("Wake", "", () => Wake());
+			yield return new GenericConsoleCommand<int>("ResetSleepTimer", "ResetSleepTimer <MINUTES>", i => ResetSleepTimer(i));
+
+			yield return new ConsoleCommand("PrintSipRegistrations", "", () => PrintSipRegistrations());
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
+		}
+
+		private string PrintSipRegistrations()
+		{
+			TableBuilder builder = new TableBuilder("Item", "URI", "Registration", "Reason", "Proxy Address", "Proxy Status");
+
+			foreach (SipRegistration registration in GetSipRegistrations())
+			{
+				builder.AddRow(registration.Item,
+					registration.Uri,
+					registration.Registration,
+					registration.Reason,
+					registration.ProxyAddress,
+					registration.ProxyStatus);
+			}
+
+			return builder.ToString();
 		}
 
 		#endregion
