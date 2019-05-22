@@ -21,7 +21,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Gets whether the dialing device has a call in progress
 		/// </summary>
-		public bool CallInProgress 
+		public bool CallInProgress
 		{
 			get
 			{
@@ -29,13 +29,13 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 					return false;
 
 				return m_Parent.GetConferences().SelectMany(c => c.GetOnlineParticipants()).Any();
-			} 
+			}
 		}
 
 		/// <summary>
 		/// Gets a comma separated list of the type of each active call on the dialer.
 		/// </summary>
-		public string CallTypes 
+		public string CallTypes
 		{
 			get
 			{
@@ -46,13 +46,13 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 				                                 .SelectMany(c => c.GetOnlineParticipants())
 				                                 .Select(s => s.SourceType.ToString())
 				                                 .ToArray());
-			} 
+			}
 		}
 
 		/// <summary>
 		/// Gets a comma separated list of the type of each active call on the dialer.
 		/// </summary>
-		public string CallNumbers 
+		public string CallNumbers
 		{
 			get
 			{
@@ -61,8 +61,26 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 				return string.Join(", ", m_Parent.GetConferences()
 				                                 .SelectMany(c => c.GetOnlineParticipants())
-				                                 .Select(s => s.Number).ToArray());
-			} 
+				                                 .Select(p => GetInformationalNumber(p))
+				                                 .Except((string)null)
+				                                 .ToArray());
+			}
+		}
+
+		private static string GetInformationalNumber(IParticipant participant)
+		{
+			if (participant == null)
+				throw new ArgumentNullException("participant");
+
+			ITraditionalParticipant traditional = participant as ITraditionalParticipant;
+			if (traditional != null)
+				return traditional.Number;
+
+			IWebParticipant web = participant as IWebParticipant;
+			if (web != null)
+				return web.Name;
+
+			throw new ArgumentException("Unexpected participant type", "participant");
 		}
 
 		public void SetParent(ITelemetryProvider provider)
@@ -95,8 +113,30 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			if (m_Parent == null)
 				return;
 
-			foreach (IParticipant source in m_Parent.GetConferences().SelectMany(c => c.GetOnlineParticipants()))
-				source.Hangup();
+			foreach (IConference conference in m_Parent.GetConferences())
+				EndConference(conference);
+		}
+
+		private static void EndConference(IConference conference)
+		{
+			if (conference == null)
+				throw new ArgumentNullException("conference");
+
+			ITraditionalConference traditional = conference as ITraditionalConference;
+			if (traditional != null)
+			{
+				traditional.Hangup();
+				return;
+			}
+
+			IWebConference web = conference as IWebConference;
+			if (web != null)
+			{
+				web.LeaveConference();
+				return;
+			}
+
+			throw new ArgumentException("Unexpected conference type", "conference");
 		}
 
 		private void ParentOnConferenceAddedOrRemoved(object sender, ConferenceEventArgs conferenceEventArgs)
