@@ -7,10 +7,10 @@ using NUnit.Framework;
 namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 {
 	[TestFixture]
-    public sealed class BookingTest
-    {
+	public sealed class BookingTest
+	{
 		[Test]
-	    public void FromXmlTest()
+		public void FromXmlTest()
 		{
 			const string xml = @"<Booking item=""1"" maxOccurrence=""n"">
     <Id>349073</Id>
@@ -69,8 +69,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 			Assert.AreEqual("rgonzalez@firstrepublic.com", booking.OrganizerEmail);
 			Assert.AreEqual("testid", booking.OrganizerId);
 
-			Assert.AreEqual(new DateTime(2018, 9, 5, 1, 30, 0), booking.StartTime);
-			Assert.AreEqual(new DateTime(2018, 9, 5, 2, 30, 0), booking.EndTime);
+			Assert.AreEqual(new DateTime(2018, 9, 4, 21, 30, 0), booking.StartTime);
+			Assert.AreEqual(new DateTime(2018, 9, 4, 22, 30, 0), booking.EndTime);
 
 			Assert.AreEqual("testmessage", booking.BookingStatusMessage);
 
@@ -88,5 +88,69 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 			Assert.AreEqual(4096, bookingCalls[0].CallRate);
 			Assert.AreEqual(eCallType.Video, bookingCalls[0].CallType);
 		}
-    }
+
+		[Test]
+		public void FromXmlWithoutCallsTest()
+		{
+			const string xml = @"		<Booking item=""1"" maxOccurrence=""n"">
+			<Id>131726</Id>
+			<Title>Scheduled Meeting</Title>
+			<Agenda/>
+			<Privacy>Public</Privacy>
+			<Organizer>
+				<FirstName>Madison</FirstName>
+				<LastName>Wydysh</LastName>
+				<Email>madison.wydysh@metlife.com</Email>
+			</Organizer>
+			<Time>
+				<StartTime>2019-05-15T19:10:00Z</StartTime>
+				<StartTimeBuffer>300</StartTimeBuffer>
+				<EndTime>2019-05-15T19:20:00Z</EndTime>
+				<EndTimeBuffer>0</EndTimeBuffer>
+			</Time>
+			<MaximumMeetingExtension>0</MaximumMeetingExtension>
+			<BookingStatus>OK</BookingStatus>
+			<BookingStatusMessage/>
+			<Webex>
+				<Enabled>True</Enabled>
+				<Url>https://onemetlife.webex.com/onemetlife/j.php?MTID=m46a26d02b193a0e8bfe8da52b079727a</Url>
+				<MeetingNumber>925090903</MeetingNumber>
+				<Password>123456</Password>
+			</Webex>
+			<Encryption>BestEffort</Encryption>
+			<Role>Master</Role>
+			<Recording>Disabled</Recording>
+			<DialInfo>
+				<ConnectMode>Manual</ConnectMode>
+			</DialInfo>
+		</Booking>";
+
+			Booking booking = Booking.FromXml(xml);
+
+			Assert.AreEqual(131726, booking.Id);
+			Assert.AreEqual("Scheduled Meeting", booking.Title);
+			Assert.AreEqual(string.Empty, booking.Agenda);
+			Assert.AreEqual(Booking.ePrivacy.Public, booking.Privacy);
+
+			Assert.AreEqual("Madison", booking.OrganizerFirstName);
+			Assert.AreEqual("Wydysh", booking.OrganizerLastName);
+			Assert.AreEqual("madison.wydysh@metlife.com", booking.OrganizerEmail);
+			Assert.AreEqual(null, booking.OrganizerId);
+
+			Assert.AreEqual(new DateTime(2019, 5, 15, 15, 10, 0), booking.StartTime);
+			Assert.AreEqual(new DateTime(2019, 5, 15, 15, 20, 0), booking.EndTime);
+
+			Assert.AreEqual(string.Empty, booking.BookingStatusMessage);
+
+			Assert.AreEqual(true, booking.WebexEnabled);
+			Assert.AreEqual("https://onemetlife.webex.com/onemetlife/j.php?MTID=m46a26d02b193a0e8bfe8da52b079727a",
+			                booking.WebexUrl);
+			Assert.AreEqual("925090903", booking.WebexMeetingNumber);
+			Assert.AreEqual("123456", booking.WebexPassword);
+			Assert.AreEqual(null, booking.WebexHostKey);
+
+			BookingCall[] bookingCalls = booking.GetCalls().ToArray();
+			Assert.AreEqual(0, bookingCalls.Length);
+		}
+	}
 }
