@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.5.1] - 2019-05-30
+### Changed
+ - Fixed a bug in Cisco booking parsing when a booking has no associated call information
+
 ## [11.5.0] - 2019-05-15
 ### Added
  - Added PresenterTrack and SpeakerTrack items to Cisco Cameras component.

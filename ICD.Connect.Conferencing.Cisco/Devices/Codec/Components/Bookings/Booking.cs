@@ -62,66 +62,58 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// <returns></returns>
 		public static Booking FromXml(string xml)
 		{
-			int id = XmlUtils.TryReadChildElementContentAsInt(xml, "Id") ?? 0;
-			string title = XmlUtils.TryReadChildElementContentAsString(xml, "Title");
-			string agenda = XmlUtils.TryReadChildElementContentAsString(xml, "Agenda");
-			ePrivacy privacy = XmlUtils.TryReadChildElementContentAsEnum<ePrivacy>(xml, "Privacy", true) ?? ePrivacy.Public;
-
-			string organizerXml = XmlUtils.GetChildElementAsString(xml, "Organizer");
-
-			string organizerFirstName = XmlUtils.TryReadChildElementContentAsString(organizerXml, "FirstName");
-			string organizerLastName = XmlUtils.TryReadChildElementContentAsString(organizerXml, "LastName");
-			string organizerEmail = XmlUtils.TryReadChildElementContentAsString(organizerXml, "Email");
-			string organizerId = XmlUtils.TryReadChildElementContentAsString(organizerXml, "Id");
-
-			string timeXml = XmlUtils.GetChildElementAsString(xml, "Time");
-
-			string startTimeString = XmlUtils.TryReadChildElementContentAsString(timeXml, "StartTime");
-			string endTimeString = XmlUtils.TryReadChildElementContentAsString(timeXml, "EndTime");
-
-			DateTime startTime = DateTime.ParseExact(startTimeString, DATE_FORMAT, CultureInfo.InvariantCulture).ToLocalTime();
-			DateTime endTime = DateTime.ParseExact(endTimeString, DATE_FORMAT, CultureInfo.InvariantCulture).ToLocalTime();
-
-			string bookingStatusMessage = XmlUtils.TryReadChildElementContentAsString(xml, "BookingStatusMessage");
-
-			string webexXml = XmlUtils.GetChildElementAsString(xml, "Webex");
-
-			bool webexEnabled = XmlUtils.TryReadChildElementContentAsBoolean(webexXml, "Enabled") ?? false;
-			string webexUrl = XmlUtils.TryReadChildElementContentAsString(webexXml, "Url");
-			string webexMeetingNumber = XmlUtils.TryReadChildElementContentAsString(webexXml, "MeetingNumber");
-			string webexPassword = XmlUtils.TryReadChildElementContentAsString(webexXml, "Password");
-			string webexHostKey = XmlUtils.TryReadChildElementContentAsString(webexXml, "HostKey");
-
 			Booking booking = new Booking
 			{
-				Id = id,
-				Title = title,
-				Agenda = agenda,
-				Privacy = privacy,
-
-				OrganizerEmail = organizerEmail,
-				OrganizerFirstName = organizerFirstName,
-				OrganizerLastName = organizerLastName,
-				OrganizerId = organizerId,
-
-				StartTime = startTime,
-				EndTime = endTime,
-
-				BookingStatusMessage = bookingStatusMessage,
-
-				WebexEnabled = webexEnabled,
-				WebexUrl = webexUrl,
-				WebexMeetingNumber = webexMeetingNumber,
-				WebexPassword = webexPassword,
-				WebexHostKey = webexHostKey
+				Id = XmlUtils.TryReadChildElementContentAsInt(xml, "Id") ?? 0,
+				Title = XmlUtils.TryReadChildElementContentAsString(xml, "Title"),
+				Agenda = XmlUtils.TryReadChildElementContentAsString(xml, "Agenda"),
+				Privacy = XmlUtils.TryReadChildElementContentAsEnum<ePrivacy>(xml, "Privacy", true) ?? ePrivacy.Public
 			};
 
-			string dialInfoXml = XmlUtils.GetChildElementAsString(xml, "DialInfo");
-			string callsXml = XmlUtils.GetChildElementAsString(dialInfoXml, "Calls");
-			IEnumerable<BookingCall> bookingCalls = XmlUtils.GetChildElementsAsString(callsXml).Select(x => BookingCall.FromXml(x));
+			string organizerXml;
+			if (XmlUtils.TryGetChildElementAsString(xml, "Organizer", out organizerXml))
+			{
+				booking.OrganizerFirstName = XmlUtils.TryReadChildElementContentAsString(organizerXml, "FirstName");
+				booking.OrganizerLastName = XmlUtils.TryReadChildElementContentAsString(organizerXml, "LastName");
+				booking.OrganizerEmail = XmlUtils.TryReadChildElementContentAsString(organizerXml, "Email");
+				booking.OrganizerId = XmlUtils.TryReadChildElementContentAsString(organizerXml, "Id");
+			}
 
-			foreach (BookingCall info in bookingCalls)
-				booking.m_Calls.Add(info.Number, info);
+			string timeXml;
+			if (XmlUtils.TryGetChildElementAsString(xml, "Time", out timeXml))
+			{
+				string startTimeString = XmlUtils.TryReadChildElementContentAsString(timeXml, "StartTime");
+				string endTimeString = XmlUtils.TryReadChildElementContentAsString(timeXml, "EndTime");
+
+				booking.StartTime = DateTime.ParseExact(startTimeString, DATE_FORMAT, CultureInfo.InvariantCulture).ToLocalTime();
+				booking.EndTime = DateTime.ParseExact(endTimeString, DATE_FORMAT, CultureInfo.InvariantCulture).ToLocalTime();
+			}
+
+			booking.BookingStatusMessage = XmlUtils.TryReadChildElementContentAsString(xml, "BookingStatusMessage");
+
+			string webexXml;
+			if (XmlUtils.TryGetChildElementAsString(xml, "Webex", out webexXml))
+			{
+				booking.WebexEnabled = XmlUtils.TryReadChildElementContentAsBoolean(webexXml, "Enabled") ?? false;
+				booking.WebexUrl = XmlUtils.TryReadChildElementContentAsString(webexXml, "Url");
+				booking.WebexMeetingNumber = XmlUtils.TryReadChildElementContentAsString(webexXml, "MeetingNumber");
+				booking.WebexPassword = XmlUtils.TryReadChildElementContentAsString(webexXml, "Password");
+				booking.WebexHostKey = XmlUtils.TryReadChildElementContentAsString(webexXml, "HostKey");
+			}
+
+			string dialInfoXml;
+			if (XmlUtils.TryGetChildElementAsString(xml, "DialInfo", out dialInfoXml))
+			{
+				string callsXml;
+				if (XmlUtils.TryGetChildElementAsString(dialInfoXml, "Calls", out callsXml))
+				{
+					IEnumerable<BookingCall> bookingCalls =
+						XmlUtils.GetChildElementsAsString(callsXml).Select(x => BookingCall.FromXml(x));
+
+					foreach (BookingCall info in bookingCalls)
+						booking.m_Calls.Add(info.Number, info);
+				}
+			}
 
 			return booking;
 		}
