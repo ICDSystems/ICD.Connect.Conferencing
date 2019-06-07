@@ -36,14 +36,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private void ParentOnSourceAdded(object sender, ConferenceSourceEventArgs eventArgs)
 		{
 			SourceSubscribe(eventArgs.Data);
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnSourceAdded-OnSourceAdded");
 			OnSourceAdded.Raise(this, new ConferenceSourceEventArgs(eventArgs));
 		}
 
 		private void ParentOnSourceRemoved(object sender, ConferenceSourceEventArgs eventArgs)
 		{
 			SourceUnsubscribe(eventArgs.Data);
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "DialerDeviceDialerControl-ParentOnSourceRemoved-OnSourceRemoved");
 			OnSourceRemoved.Raise(this, new ConferenceSourceEventArgs(eventArgs));
 		}
 
