@@ -83,8 +83,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
-			if (m_PresentationComponent != null && m_PresentationComponent.InputConnected)
-				yield return new ConnectorInfo(1, eConnectionType.Video);
+			// Presentation input
+			yield return new ConnectorInfo(1, eConnectionType.Video);
 
 			int cameraCount = m_CameraComponent == null 
 				? 0

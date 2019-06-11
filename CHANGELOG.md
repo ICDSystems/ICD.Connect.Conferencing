@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+ - Fixing bug where ZoomRoomRoutingControl would return different inputs based on presentation feedback
+
 ## [13.1.0] - 2019-05-03
 ### Added
  - Added ConferencePoint originators and settings
