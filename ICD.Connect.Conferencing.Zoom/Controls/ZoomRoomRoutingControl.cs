@@ -86,14 +86,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			// Presentation input
 			yield return new ConnectorInfo(1, eConnectionType.Video);
 
-			int cameraCount = m_CameraComponent == null 
-				? 0
-				: m_CameraComponent.GetCameras().Count();
-			foreach (var i in Enumerable.Range(2, cameraCount))
-			{
-				//should somehow map ids or names to addresses? IDK?!?!?!
-				yield return new ConnectorInfo(i, eConnectionType.Video);
-			}
+			// Camera input
+			yield return new ConnectorInfo(2, eConnectionType.Video);
 
 			//return
 			//    RoutingGraph.Connections
