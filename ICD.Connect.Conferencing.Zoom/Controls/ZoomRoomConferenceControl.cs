@@ -25,6 +25,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		public event EventHandler<GenericEventArgs<CallConnectError>> OnCallError;
+		public event EventHandler<BoolEventArgs> OnPasswordRequired; 
 
 		private readonly CallComponent m_ZoomConference;
 
@@ -227,6 +228,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			parent.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.RegisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
+			parent.RegisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
 		}
 
 		private void CallConnectErrorCallback(ZoomRoom zoomRoom, CallConnectErrorResponse response)
@@ -240,6 +242,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			parent.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.UnregisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
+			parent.UnregisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
 		}
 
 		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
@@ -256,6 +259,18 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			var incomingCall = CreateThinIncomingCall(response.IncomingCall);
 			Parent.Log(eSeverity.Informational, "Incoming call: {0}", response.IncomingCall.CallerName);
 			AddIncomingCall(incomingCall);
+		}
+
+		private void MeetingNeedsPasswordCallback(ZoomRoom zoomRoom, MeetingNeedsPasswordResponse response)
+		{
+			var meetingNeedsPasswordData = response.MeetingNeedsPassword;
+			if (!meetingNeedsPasswordData.NeedsPassword && !meetingNeedsPasswordData.WrongAndRetry)
+				return;
+
+			Parent.Log(eSeverity.Informational, "Meeting needs password NeedsPassword: {0} Wrong/Retry: {1}",
+			           meetingNeedsPasswordData.NeedsPassword, meetingNeedsPasswordData.WrongAndRetry);
+
+			OnPasswordRequired.Raise(this, new BoolEventArgs(meetingNeedsPasswordData.WrongAndRetry));
 		}
 
 		#endregion
