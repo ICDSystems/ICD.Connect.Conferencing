@@ -193,6 +193,13 @@
       <Name>ICD.Connect.Conferencing_SimplSharp</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Documentation\zrcsapi_overview.html" />
+    <Content Include="Documentation\zrcsapi_overview_files\image001.png" />
+    <Content Include="Documentation\zrcsapi_overview_files\image002.png" />
+    <Content Include="Documentation\zrcsapi_overview_files\image003.png" />
+    <Content Include="Documentation\zrcsapi_reference.html" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rem  S# preparation will execute after these operations</PostBuildEvent>
