@@ -56,6 +56,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		private void AddOrUpdateContact(ZoomContact contact)
 		{
 			var folder = USE_FOLDERS ? GetFolder(contact) : m_RootFolder;
+
+			// fix for SIP/H.323 devices showing up with no first and last name
+			if (string.IsNullOrEmpty(contact.FirstName) && string.IsNullOrEmpty(contact.LastName))
+			{
+				if (!string.IsNullOrEmpty(contact.ScreenName))
+					contact.LastName = contact.ScreenName;
+				else
+					return;
+			}
+
 			var existingContact = folder.GetContacts().OfType<ZoomContact>().SingleOrDefault(c => c.JoinId == contact.JoinId);
 			if (existingContact == null)
 				folder.AddContact(contact);
