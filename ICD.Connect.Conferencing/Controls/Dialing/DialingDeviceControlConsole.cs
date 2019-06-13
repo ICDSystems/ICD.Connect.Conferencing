@@ -51,6 +51,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 				throw new ArgumentNullException("instance");
 
 			yield return new GenericConsoleCommand<eDialProtocol, string>("Dial", "Dial <SIP/PSTN/Zoom> <NUMBER>", (p,s) => Dial(instance, p, s));
+			yield return new GenericConsoleCommand<eDialProtocol, string, string>("PasswordDial", "PasswordDial <SIP/PSTN/Zoom> <NUMBER> <PASSWORD>", (p,s,t) => Dial(instance, p, s, t));
 			yield return new GenericConsoleCommand<bool>("SetDoNotDisturb", "SetDoNotDisturb <true/false>", b => instance.SetDoNotDisturb(b));
 			yield return new GenericConsoleCommand<bool>("SetAutoAnswer", "SetAutoAnswer <true/false>", b => instance.SetAutoAnswer(b));
 			yield return new GenericConsoleCommand<bool>("SetPrivacyMute", "SetPrivacyMute <true/false>", b => instance.SetPrivacyMute(b));
@@ -68,6 +69,28 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 					break;
 				case eDialProtocol.Zoom:
 					instance.Dial(new ZoomDialContext{ DialString = number });
+					break;
+				case eDialProtocol.ZoomContact:
+					instance.Dial(new ZoomContactDialContext { DialString = number });
+					break;
+			}
+		}
+		private static void Dial<T>(IConferenceDeviceControl<T> instance, eDialProtocol protocol, string number, string password) where T : IConference
+		{
+			switch (protocol)
+			{
+				case eDialProtocol.Pstn:
+					instance.Dial(new PstnDialContext { DialString = number });
+					break;
+				case eDialProtocol.Sip:
+					instance.Dial(new SipDialContext { DialString = number });
+					break;
+				case eDialProtocol.Zoom:
+					instance.Dial(new ZoomDialContext
+					{
+						DialString = number,
+						Password = password
+					});
 					break;
 				case eDialProtocol.ZoomContact:
 					instance.Dial(new ZoomContactDialContext { DialString = number });

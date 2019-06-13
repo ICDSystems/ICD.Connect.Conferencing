@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - Added MeetingNeedsPasswordResponse for Zoom
+ - Added MeetingNeedsPasswordResponseConverter
+ - Added Event Handler that raises an event when the response is recieved in ZoomRoomConferenceControl
+ - Added password support for dialcontexts
+ - Added console command for joining a zoom meeting with a password
 
 ### Changed
  - Fixing bug where ZoomRoomRoutingControl would return different inputs based on presentation feedback
