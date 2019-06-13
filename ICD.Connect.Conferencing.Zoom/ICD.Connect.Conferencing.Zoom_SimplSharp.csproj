@@ -112,6 +112,7 @@
     <Compile Include="Responses\Converters\IncomingCallResponseConverter.cs" />
     <Compile Include="Responses\Converters\InfoResultResponseConverter.cs" />
     <Compile Include="Responses\Converters\ListParticipantsResponseConverter.cs" />
+    <Compile Include="Responses\Converters\MeetingNeedsPasswordResponseConverter.cs" />
     <Compile Include="Responses\Converters\ParticipantInfoConverter.cs" />
     <Compile Include="Responses\Converters\PhonebookResponseConverter.cs" />
     <Compile Include="Responses\Converters\SharingInfoConverter.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="Responses\InfoResultResponse.cs" />
     <Compile Include="Components\Call\ParticipantInfo.cs" />
     <Compile Include="Responses\ListParticipantsResponse.cs" />
+    <Compile Include="Responses\MeetingNeedsPasswordResponse.cs" />
     <Compile Include="Responses\PhonebookResponse.cs" />
     <Compile Include="Components\Directory\ZoomContact.cs" />
     <Compile Include="Components\Presentation\SharingInfo.cs" />
@@ -192,6 +194,13 @@
       <Project>{1CCA89DA-1F1C-4997-A94F-ABCE878BD6DE}</Project>
       <Name>ICD.Connect.Conferencing_SimplSharp</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Documentation\zrcsapi_overview.html" />
+    <Content Include="Documentation\zrcsapi_overview_files\image001.png" />
+    <Content Include="Documentation\zrcsapi_overview_files\image002.png" />
+    <Content Include="Documentation\zrcsapi_overview_files\image003.png" />
+    <Content Include="Documentation\zrcsapi_reference.html" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <PropertyGroup>
