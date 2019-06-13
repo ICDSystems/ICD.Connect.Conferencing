@@ -379,7 +379,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		}
 
 		/// <summary>
-		/// Called when the port online status changes.1
+		/// Called when the port online status changes.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
