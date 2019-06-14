@@ -4,8 +4,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 {
 	public enum eSpeakerTrackAvailability
 	{
-		Off,
 		Unavailable,
+		Off,
 		Available
 	}
 
