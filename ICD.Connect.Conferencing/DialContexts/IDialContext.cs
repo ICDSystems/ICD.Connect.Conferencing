@@ -10,6 +10,8 @@ namespace ICD.Connect.Conferencing.DialContexts
 		eCallType CallType { get; }
 
 		string DialString { get; }
+
+		string Password { get; }
 	}
 
 	public static class DialContextExtensions

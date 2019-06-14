@@ -28,6 +28,8 @@ namespace ICD.Connect.Conferencing.Favorites
 
 		public string DialString { get; set; }
 
+		public string Password { get; set; }
+
 		#endregion
 	}
 }

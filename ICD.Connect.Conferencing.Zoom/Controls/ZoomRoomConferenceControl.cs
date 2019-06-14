@@ -76,8 +76,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override void Dial(IDialContext dialContext)
 		{
-			if(dialContext.Protocol == eDialProtocol.Zoom)
-				StartMeeting(dialContext.DialString);
+			if (dialContext.Protocol == eDialProtocol.Zoom)
+			{
+				if (dialContext.Password != null)
+					JoinMeeting(dialContext.DialString, dialContext.Password);
+				else
+					StartMeeting(dialContext.DialString);
+			}
+				
 			else if (dialContext.Protocol == eDialProtocol.ZoomContact)
 			{
 				if (m_ZoomConference.Status == eConferenceStatus.Connected)
@@ -120,6 +126,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void StartMeeting(string meetingNumber)
 		{
 			Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", meetingNumber);
+		}
+
+		private void JoinMeeting(string meetingNumber, string meetingPassword)
+		{
+			Parent.SendCommand("zCommand Dial Join meetingNumber: {0} password: {1}", meetingNumber, meetingPassword);
 		}
 
 		private void StartPersonalMeetingAndInviteUser(string userJoinId)

@@ -6,6 +6,7 @@ namespace ICD.Connect.Conferencing.DialContexts
     {
 	    private eCallType m_CallType;
 	    private string m_DialString;
+	    private string m_Password;
 
 	    public abstract eDialProtocol Protocol { get; }
 
@@ -19,6 +20,12 @@ namespace ICD.Connect.Conferencing.DialContexts
 	    {
 		    get { return m_DialString; }
 		    set { m_DialString = value; }
+	    }
+
+	    public virtual string Password
+	    {
+		    get { return m_Password; }
+		    set { m_Password = value; }
 	    }
     }
 }
