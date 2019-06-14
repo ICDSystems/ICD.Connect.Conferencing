@@ -123,12 +123,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public void LeaveConference()
 		{
 			Parent.Log(eSeverity.Debug, "Leaving Zoom Meeting {0}", Number);
+			Status = eConferenceStatus.Disconnecting;
 			Parent.SendCommand("zCommand Call Leave");
 		}
 
 		public void EndConference()
 		{
 			Parent.Log(eSeverity.Debug, "Ending Zoom Meeting {0}", Number);
+			Status = eConferenceStatus.Disconnecting;
 			Parent.SendCommand("zCommand Call Disconnect");
 		}
 

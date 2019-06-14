@@ -10,6 +10,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		Undefined,
 		Connecting,
 		Connected,
+		Disconnecting,
 		Disconnected,
 // ReSharper disable InconsistentNaming
 		OnHold
