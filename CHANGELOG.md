@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Fixing bug where ZoomRoomRoutingControl would return different inputs based on presentation feedback
  - Fixed H.323/SIP devices showing up in Zoom contacts with blank names
 
+### Removed
+ - Removed OnHold as a possible conference status for Zoom conferences
+
 ## [13.1.0] - 2019-05-03
 ### Added
  - Added ConferencePoint originators and settings
