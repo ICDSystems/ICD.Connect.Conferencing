@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Fixing bug where ZoomRoomRoutingControl would return different inputs based on presentation feedback
  - Fixed H.323/SIP devices showing up in Zoom contacts with blank names
  - Zoom switches to disconnecting status before attempting to leave a meeting
+ - Zoom Middleware sends all data to clients
+ - Fixed Zoom issues with buffering and initialization
 
 ### Removed
  - Removed OnHold as a possible conference status for Zoom conferences
