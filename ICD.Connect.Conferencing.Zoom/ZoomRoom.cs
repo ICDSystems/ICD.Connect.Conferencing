@@ -351,20 +351,20 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void PortOnSerialDataReceived(object sender, StringEventArgs args)
 		{
-			if (args.Data.StartsWith("{"))
+			if (args.Data.Contains("Login") || args.Data.StartsWith("*"))
+				Initialize();
+			else if (!Initialized && args.Data.StartsWith("\n"))
+				SendCommand("zStatus Call Status");
+			else
 			{
 				// Hack - JSON buffering is bad and SSH messages are always(?) complete anyway
 				if (m_ConnectionStateManager.Port is ISecureNetworkPort)
-					SerialBufferCompletedSerial(this, args);
+					SerialBufferCompletedSerial(this, new StringEventArgs(args.Data));
 				else
 					m_SerialBuffer.Enqueue(args.Data);
 
 				Initialized = true;
 			}
-			else if (args.Data.Contains("Login") || args.Data.StartsWith("*"))
-				Initialize();
-			else if (!Initialized && args.Data == "\n")
-				SendCommand("zStatus Call Status");
 		}
 
 		/// <summary>
@@ -376,11 +376,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_SerialBuffer.Clear();
 
-			if (!args.Data)
-			{
-				Log(eSeverity.Critical, "Lost connection");
-				Initialized = false;
-			}
+			if (args.Data)
+				return;
+
+			Log(eSeverity.Critical, "Lost connection");
+			Initialized = false;
 		}
 
 		/// <summary>
@@ -427,7 +427,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			try
 			{
 				AttributeKey unused;
-				response = AbstractZoomRoomResponse.DeserializeResponse(args.Data, out unused);
+				response = AbstractZoomRoomResponse.DeserializeResponse(args.Data.Trim(), out unused);
 			}
 			catch (Exception ex)
 			{
