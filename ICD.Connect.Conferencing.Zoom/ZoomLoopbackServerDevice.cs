@@ -226,6 +226,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 			else if (args.Data.Contains("Login") || args.Data.StartsWith("*"))
 				Initialize();
+			else if (!Initialized && args.Data == "\n")
+				SendCommand("zStatus Call Status");
 		}
 
 		/// <summary>
