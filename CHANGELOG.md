@@ -5,16 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
  - Added MeetingNeedsPasswordResponse for Zoom
  - Added MeetingNeedsPasswordResponseConverter
  - Added Event Handler that raises an event when the response is recieved in ZoomRoomConferenceControl
  - Added password support for dialcontexts
  - Added console command for joining a zoom meeting with a password
+ - Added Disconnecting to eConferenceStatus enum
 
 ### Changed
  - Fixing bug where ZoomRoomRoutingControl would return different inputs based on presentation feedback
  - Fixed H.323/SIP devices showing up in Zoom contacts with blank names
+ - Zoom switches to disconnecting status before attempting to leave a meeting
 
 ### Removed
  - Removed OnHold as a possible conference status for Zoom conferences
@@ -42,6 +45,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [12.0.0] - 2019-01-10
 ### Added
  - Added port configuration features to conferencing devices
+
+## [11.5.2] - 2019-06-13
+### Changed
+ - Fixed a bug where Cisco SpeakerTrack availability would default to an incorrect value
+
+### Removed
+ - Removed errant test logging in the interpretation client and server
 
 ## [11.5.1] - 2019-05-30
 ### Changed

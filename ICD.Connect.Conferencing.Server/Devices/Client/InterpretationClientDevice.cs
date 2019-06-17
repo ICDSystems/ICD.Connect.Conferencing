@@ -304,7 +304,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				{
 					src.Status = eParticipantStatus.Disconnected;
 					Unsubscribe(src);
-					IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-ClearSources-OnParticipantRemoved");
+
 					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(src));
 				}
 
@@ -361,7 +361,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				Unsubscribe(sourceToRemove);
 				m_Sources.RemoveKey(id);
 
-				IcdConsole.PrintLine(eConsoleColor.Magenta, "InterpretatonClientDevice-RemoveCachedSource-OnParticipantRemoved");
 				OnParticipantRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
 			}
 			finally
