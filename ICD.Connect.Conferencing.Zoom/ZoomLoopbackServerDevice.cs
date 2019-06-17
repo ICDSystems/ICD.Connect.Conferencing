@@ -300,7 +300,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 
 			string minified = JsonConvert.SerializeObject(response);
-			if (minified.Length <= 2)
+			if (minified.Length < 2)
 				return;
 
 			// Hack to re-append the key info
