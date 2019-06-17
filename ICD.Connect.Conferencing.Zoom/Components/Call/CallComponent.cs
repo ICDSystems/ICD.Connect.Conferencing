@@ -61,21 +61,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public bool CameraMute
 		{
 			get { return m_CameraMute; }
-			set
-			{
-				m_CameraMute = value;
-				UpdateSourceHoldStatus();
-			}
+			set { m_CameraMute = value; }
 		}
 
 		public bool MicrophoneMute
 		{
 			get { return m_MicrophoneMute; }
-			set
-			{
-				m_CameraMute = value;
-				UpdateSourceHoldStatus();
-			}
+			set { m_CameraMute = value; }
 		}
 
 		public CallInfo CallInfo { get; private set; }
@@ -145,15 +137,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Parent.SendCommand("zConfiguration Call Microphone mute");
 			Parent.SendCommand("zCommand Call ListParticipants");
 			Parent.SendCommand("zCommand Call Info");
-		}
-
-		private void UpdateSourceHoldStatus()
-		{
-			if (Status == eConferenceStatus.Connected && CameraMute && MicrophoneMute)
-				Status = eConferenceStatus.OnHold;
-
-			else if (Status == eConferenceStatus.OnHold && !(CameraMute && MicrophoneMute))
-				Status = eConferenceStatus.Connected;
 		}
 
 		private void AddUpdateOrRemoveParticipant(ParticipantInfo info)
