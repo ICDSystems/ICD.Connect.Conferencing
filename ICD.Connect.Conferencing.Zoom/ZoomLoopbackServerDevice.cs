@@ -4,7 +4,6 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.EventArguments;
@@ -15,7 +14,6 @@ using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings;
-using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
@@ -26,6 +24,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Must be \r, since the API doesn't accept the "format json" command otherwise.
 		/// </summary>
 		private const string END_OF_LINE = "\r";
+
+		/// <summary>
+		/// Messages sent from the loopback device to the clients are delimited with this character.
+		/// </summary>
+		public const char CLIENT_DELIMITER = '\xFF';
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly JsonSerialBuffer m_SerialBuffer;
@@ -221,7 +224,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			if (args.Data.StartsWith("{"))
 			{
-				SerialBufferCompletedSerial(sender, args);
+				// Hack - JSON buffering is bad and SSH messages are always(?) complete anyway
+				SerialBufferCompletedSerial(this, args);
 				Initialized = true;
 			}
 			else if (args.Data.Contains("Login") || args.Data.StartsWith("*"))
@@ -285,6 +289,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="args"></param>
 		private void SerialBufferCompletedSerial(object sender, StringEventArgs args)
 		{
+			/*
 			AttributeKey key;
 			AbstractZoomRoomResponse response;
 
@@ -307,15 +312,16 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			// Hack to re-append the key info
 			minified = minified.Insert(minified.Length - 1, ", " + key);
+			*/
 
-			SendToClients(minified);
+			SendToClients(args.Data);
 
 			Initialized = true;
 		}
 
 		private void SendToClients(string json)
 		{
-			m_TcpServer.Send(json);
+			m_TcpServer.Send(json + CLIENT_DELIMITER);
 		}
 
 		#endregion
@@ -349,7 +355,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			// Hack - tell the client to initialize
 			if (eventArgs.SocketState == SocketStateEventArgs.eSocketStatus.SocketStatusConnected)
-				m_TcpServer.Send(eventArgs.ClientId, "\n");
+				m_TcpServer.Send(eventArgs.ClientId, "\n" + CLIENT_DELIMITER);
 		}
 
 		#endregion

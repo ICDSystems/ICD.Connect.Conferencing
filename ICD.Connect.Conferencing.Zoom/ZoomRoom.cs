@@ -52,7 +52,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;
-		private readonly JsonSerialBuffer m_SerialBuffer;
+		private readonly DelimiterSerialBuffer m_SerialBuffer;
 		private readonly Dictionary<Type, List<ResponseCallbackPair>> m_ResponseCallbacks;
 		private readonly SafeCriticalSection m_ResponseCallbacksSection;
 
@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_ConnectionStateManager = new ConnectionStateManager(this) {ConfigurePort = ConfigurePort};
 			Subscribe(m_ConnectionStateManager);
 
-			m_SerialBuffer = new JsonSerialBuffer();
+			m_SerialBuffer = new DelimiterSerialBuffer(ZoomLoopbackServerDevice.CLIENT_DELIMITER);
 			Subscribe(m_SerialBuffer);
 
 			Components = new ZoomRoomComponentFactory(this);
@@ -353,7 +353,12 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			if (args.Data.StartsWith("{"))
 			{
-				m_SerialBuffer.Enqueue(args.Data);
+				// Hack - JSON buffering is bad and SSH messages are always(?) complete anyway
+				if (m_ConnectionStateManager.Port is ISecureNetworkPort)
+					SerialBufferCompletedSerial(this, args);
+				else
+					m_SerialBuffer.Enqueue(args.Data);
+
 				Initialized = true;
 			}
 			else if (args.Data.Contains("Login") || args.Data.StartsWith("*"))
