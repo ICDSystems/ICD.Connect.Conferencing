@@ -152,21 +152,23 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				if (info.Event == eUserChangedEventType.ZRCUserChangedEventLeftMeeting)
+				ZoomParticipant participant;
+				switch (info.Event)
 				{
-					var remove = m_Participants.Find(p => p.UserId == info.UserId);
-					if (remove != null)
-						RemoveParticipant(remove);
-				}
-				else
-				{
-					var index = m_Participants.FindIndex(p => p.UserId == info.UserId);
-					if (index < 0)
+					case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
+						participant = m_Participants.Find(p => p.UserId == info.UserId);
+						if (participant != null)
+							RemoveParticipant(participant);
+						break;
+					case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
 						AddParticipant(new ZoomParticipant(Parent, info));
-					else
-						m_Participants[index].Update(info);
+						break;
+					case eUserChangedEventType.ZRCUserChangedEventUserInfoUpdated:
+						participant = m_Participants.Find(p => p.UserId == info.UserId);
+						if (participant != null)
+							participant.Update(info);
+						break;
 				}
-
 			}
 			finally
 			{
@@ -255,14 +257,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				// remove participants that have left
-				var participantsToRemove = m_Participants.Where(p => !response.Participants.Any(i => i.UserId == p.UserId)).ToList();
-				foreach (var removal in participantsToRemove)
-					RemoveParticipant(removal);
-
-				// add or update current participants
-				foreach (var info in response.Participants)
-					AddUpdateOrRemoveParticipant(info);
+				foreach (var participant in response.Participants)
+					AddUpdateOrRemoveParticipant(participant);
 			}
 			finally
 			{
