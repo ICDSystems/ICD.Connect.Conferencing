@@ -147,7 +147,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			{
 				AmIHost = info.IsHost || info.IsCohost;
 				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
-				return;
 			}
 
 			m_ParticipantsSection.Enter();
