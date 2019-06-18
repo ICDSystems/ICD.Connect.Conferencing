@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom switches to disconnecting status before attempting to leave a meeting
  - Zoom Middleware sends all data to clients
  - Fixed Zoom issues with buffering and initialization
+ - Include the room as a participant in Zoom meeting participant list
 
 ### Removed
  - Removed OnHold as a possible conference status for Zoom conferences
