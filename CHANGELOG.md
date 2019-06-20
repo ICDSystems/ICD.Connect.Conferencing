@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Added password support for dialcontexts
  - Added console command for joining a zoom meeting with a password
  - Added Disconnecting to eConferenceStatus enum
+ - Added IsHost and IsSelf properties for IWebParticipant
+ - Added support for recognizing host changes in Zoom meetings
 
 ### Changed
  - Fixing bug where ZoomRoomRoutingControl would return different inputs based on presentation feedback

@@ -10,6 +10,9 @@ namespace ICD.Connect.Conferencing.Participants
 	public interface IWebParticipant : IParticipant
 	{
 		event EventHandler<BoolEventArgs> OnIsMutedChanged;
+
+		event EventHandler<BoolEventArgs> OnIsHostChanged;
+
 		/// <summary>
 		/// Kick the participant from the conference.
 		/// </summary>
@@ -22,6 +25,19 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <returns></returns>
 		void Mute(bool mute);
 
+		/// <summary>
+		/// Whether or not the participant is muted.
+		/// </summary>
 		bool IsMuted { get; }
+
+		/// <summary>
+		/// Whether or not the participant is the room itself.
+		/// </summary>
+		bool IsSelf { get; }
+
+		/// <summary>
+		/// Whether or not the participant is the meeting host.
+		/// </summary>
+		bool IsHost { get; }
 	}
 }

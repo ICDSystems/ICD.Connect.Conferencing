@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public bool MicrophoneMute
 		{
 			get { return m_MicrophoneMute; }
-			set { m_CameraMute = value; }
+			set { m_MicrophoneMute = value; }
 		}
 
 		public CallInfo CallInfo { get; private set; }
@@ -156,17 +156,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				switch (info.Event)
 				{
 					case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
-						participant = m_Participants.Find(p => p.UserId == info.UserId);
-						if (participant != null)
-							RemoveParticipant(participant);
+						RemoveParticipant(info);
 						break;
 					case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
-						AddParticipant(new ZoomParticipant(Parent, info));
+						AddParticipant(info);
 						break;
 					case eUserChangedEventType.ZRCUserChangedEventUserInfoUpdated:
-						participant = m_Participants.Find(p => p.UserId == info.UserId);
-						if (participant != null)
-							participant.Update(info);
+						UpdateParticipant(info);
+						break;
+					case eUserChangedEventType.ZRCUserChangedEventHostChanged:
+						SetNewHost(info);
+						OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
 						break;
 				}
 			}
@@ -176,16 +176,49 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			}
 		}
 
-		private void AddParticipant(ZoomParticipant participant)
+		private void AddParticipant(ParticipantInfo info)
+		{
+			var participant = new ZoomParticipant(Parent, info);
+
+			m_ParticipantsSection.Enter();
+			try
+			{
+				if (m_Participants.Contains(participant) || m_Participants.Any(p => p.UserId == participant.UserId))
+					return;
+
+				m_Participants.Add(participant);
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+
+			OnParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
+		}
+
+		private void UpdateParticipant(ParticipantInfo info)
 		{
 			m_ParticipantsSection.Enter();
 			try
 			{
-				if (m_Participants.Contains(participant))
-					return;
+				var participant = m_Participants.Find(p => p.UserId == info.UserId);
+				if (participant != null)
+					participant.Update(info);
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+		}
 
-				m_Participants.Add(participant);
-				OnParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
+		private void RemoveParticipant(ParticipantInfo info)
+		{
+			m_ParticipantsSection.Enter();
+			try
+			{
+				var participant = m_Participants.Find(p => p.UserId == info.UserId);
+				if (participant != null)
+					RemoveParticipant(participant);
 			}
 			finally
 			{
@@ -198,7 +231,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				if (m_Participants.Remove(participant))
+				if (participant != null && m_Participants.Remove(participant))
 					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(participant));
 			}
 			finally
@@ -214,6 +247,22 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			{
 				foreach (var participant in GetParticipants().Cast<ZoomParticipant>().ToArray())
 					RemoveParticipant(participant);
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+		}
+
+		private void SetNewHost(ParticipantInfo info)
+		{
+			m_ParticipantsSection.Enter();
+			try
+			{
+				foreach (var participant in m_Participants.ToArray())
+				{
+					participant.SetIsHost(participant.UserId == info.UserId);
+				}
 			}
 			finally
 			{
