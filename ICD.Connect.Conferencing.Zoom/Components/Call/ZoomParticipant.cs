@@ -1,4 +1,4 @@
-using ICD.Common.Utils;
+﻿using ICD.Common.Utils;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
@@ -44,6 +44,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ZoomRoom.SendCommand("zCommand Call MuteParticipant mute: {0} Id: {1}", 
 				mute ? "on" : "off", 
 				UserId);
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		// internal only cause zoom sucks and this is the easiest way
+		// to set the correct host state when host changes
+		internal void SetIsHost(bool isHost)
+		{
+			IsHost = isHost;
 		}
 
 		#endregion
