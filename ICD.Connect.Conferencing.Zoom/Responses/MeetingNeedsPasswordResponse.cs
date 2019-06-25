@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
 

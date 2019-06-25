@@ -1,7 +1,6 @@
 ﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses
 {
