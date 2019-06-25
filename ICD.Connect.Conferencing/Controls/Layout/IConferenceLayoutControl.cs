@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Controls.Layout
 		/// Raised when layout control becomes available/unavailable.
 		/// </summary>
 		[ApiEvent(ConferenceLayoutControlApi.EVENT_LAYOUT_AVAILABLE, ConferenceLayoutControlApi.HELP_EVENT_LAYOUT_AVAILABLE)]
-		event EventHandler<ConferenceLayoutAvailableApiEventArgs> OnLayoutAvailableChanged; 
+		event EventHandler<ConferenceLayoutAvailableApiEventArgs> OnLayoutAvailableChanged;
 
 		/// <summary>
 		/// Raised when the self view enabled state changes.

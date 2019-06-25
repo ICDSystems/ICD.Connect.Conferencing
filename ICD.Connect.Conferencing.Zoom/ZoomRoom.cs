@@ -84,8 +84,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public bool IsConnected { get { return m_ConnectionStateManager.IsConnected; } }
 
-		public CallComponent CurrentCall { get; private set; }
-
 		/// <summary>
 		/// Causes this ZoomRoom to auto-accept any incoming calls.
 		/// </summary>

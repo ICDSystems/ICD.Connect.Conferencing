@@ -8,6 +8,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.System
 	{
 		private SystemInfo m_SystemInfo;
 
+		public SystemInfo SystemInfo { get { return m_SystemInfo; } }
+
 		public SystemComponent(ZoomRoom zoomRoom) : base(zoomRoom)
 		{
 			Subscribe(zoomRoom);
