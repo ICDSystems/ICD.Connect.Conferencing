@@ -299,6 +299,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		}
 
 		/// <summary>
+		/// Sets the monitors mode (single, dual, etc).
+		/// </summary>
+		/// <param name="monitors"></param>
+		public void SetMonitors(eMonitors monitors)
+		{
+			Codec.SendCommand("xConfiguration Video Monitors: {0}", monitors);
+			Codec.Log(eSeverity.Informational, "Setting monitors to {0}", monitors);
+		}
+
+		/// <summary>
 		/// Sets self-view enabled state.
 		/// </summary>
 		public void SetSelfViewEnabled(bool state)
