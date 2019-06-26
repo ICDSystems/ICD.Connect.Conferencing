@@ -17,7 +17,7 @@ namespace ICD.Connect.Conferencing.Zoom
 	public sealed class AttributeKey : IEquatable<AttributeKey>
 	{
 		private const string ATTR_KEY_REGEX =
-			@"""Sync"": (?'Sync'true|false),\s*""topKey"": ""(?'topKey'.*)"",\s*""type"": ""(?'type'zConfiguration|zEvent|zStatus|zCommand)""";
+			@"""Sync"": (?'Sync'true|false),(.|\n)*""topKey"": ""(?'topKey'[^""]*)"",(.|\n)*""type"": ""(?'type'zConfiguration|zEvent|zStatus|zCommand)""";
 
 		/// <summary>
 		/// Key to the property in the json which stores where the actual response data is stored
