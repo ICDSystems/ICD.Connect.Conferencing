@@ -11,6 +11,7 @@ using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Presentation;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.System;
 
@@ -33,8 +34,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 				{typeof(DialComponent), codec => new DialComponent(codec)},
 				{typeof(LayoutComponent), codec => new LayoutComponent(codec)},
 				{typeof(MuteComponent), codec => new MuteComponent(codec)},
+				{typeof(PresentationComponent), codec => new PresentationComponent(codec)},
 				{typeof(SleepComponent), codec => new SleepComponent(codec)},
-				{typeof(SystemComponent), codec => new SystemComponent(codec)},
+				{typeof(SystemComponent), codec => new SystemComponent(codec)}
 			};
 
 		private readonly PolycomGroupSeriesDevice m_Codec;
