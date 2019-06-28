@@ -152,7 +152,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				ZoomParticipant participant;
 				switch (info.Event)
 				{
 					case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
