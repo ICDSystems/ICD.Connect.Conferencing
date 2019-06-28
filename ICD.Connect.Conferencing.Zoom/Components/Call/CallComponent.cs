@@ -152,12 +152,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				ZoomParticipant participant;
 				switch (info.Event)
 				{
 					case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
 						RemoveParticipant(info);
 						break;
+					case eUserChangedEventType.None:
 					case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
 						AddParticipant(info);
 						break;
@@ -306,7 +306,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				foreach (var participant in response.Participants)
+				foreach (ParticipantInfo participant in response.Participants)
 					AddUpdateOrRemoveParticipant(participant);
 			}
 			finally
