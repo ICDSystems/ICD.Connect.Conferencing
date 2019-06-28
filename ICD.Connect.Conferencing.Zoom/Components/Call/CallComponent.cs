@@ -306,7 +306,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ParticipantsSection.Enter();
 			try
 			{
-				foreach (var participant in response.Participants)
+				foreach (ParticipantInfo participant in response.Participants)
 					AddUpdateOrRemoveParticipant(participant);
 			}
 			finally
