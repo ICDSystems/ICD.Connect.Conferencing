@@ -157,6 +157,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
 						RemoveParticipant(info);
 						break;
+					case eUserChangedEventType.None:
 					case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
 						AddParticipant(info);
 						break;
