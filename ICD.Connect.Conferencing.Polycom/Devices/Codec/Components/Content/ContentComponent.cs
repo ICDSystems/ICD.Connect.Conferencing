@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -15,10 +16,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		/// </summary>
 		public event EventHandler<ContentVideoSourceEventArgs> OnContentVideoSourceChanged;
 
+		public event EventHandler<PresentationActiveEventArgs> OnPresentationActiveChanged;
+
 		private int? m_ContentVideoSource;
+		private bool m_PresentationActive;
 
 		/// <summary>
-		/// Gets the content video source that is currently playing.
+		/// Gets the content video source (input address) that is currently playing.
 		/// </summary>
 		public int? ContentVideoSource
 		{
@@ -33,6 +37,22 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 				Codec.Log(eSeverity.Informational, "ContentVideoSource set to {0}", m_ContentVideoSource);
 
 				OnContentVideoSourceChanged.Raise(this, new ContentVideoSourceEventArgs(m_ContentVideoSource));
+			}
+		}
+
+		public bool PresentationActive
+		{
+			get { return m_PresentationActive; }
+			private set
+			{
+				if (value == m_PresentationActive)
+					return;
+
+				m_PresentationActive = value;
+
+				Codec.Log(eSeverity.Informational, "PresentationActive set to {0}", m_PresentationActive);
+
+				OnPresentationActiveChanged.Raise(this, new PresentationActiveEventArgs(m_PresentationActive));
 			}
 		}
 
@@ -131,11 +151,20 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 				case "source":
 					int address;
 					if (StringUtils.TryParse(split[4], out address))
+					{
 						ContentVideoSource = address;
+						PresentationActive = true;
+					}
 					break;
 
 				case "stop":
 					ContentVideoSource = null;
+					PresentationActive = false;
+					break;
+
+				case "farplay":
+					ContentVideoSource = null;
+					PresentationActive = true;
 					break;
 			}
 		}
@@ -157,6 +186,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 			if (split.Length != 4)
 				return;
 
+			// handling source change
 			if (split[1] != "source" || split[2] != "get")
 				return;
 
@@ -164,12 +194,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 			if (result == "none")
 			{
 				ContentVideoSource = null;
+				PresentationActive = false;
 				return;
 			}
 
 			int address;
 			if (StringUtils.TryParse(result, out address))
+			{
 				ContentVideoSource = address;
+				PresentationActive = true;
+			}
 		}
 
 		#region Console
@@ -205,6 +239,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 			base.BuildConsoleStatus(addRow);
 
 			addRow("ContentVideoSource", ContentVideoSource);
+			addRow("PresentationActive", PresentationActive);
 		}
 
 		#endregion
