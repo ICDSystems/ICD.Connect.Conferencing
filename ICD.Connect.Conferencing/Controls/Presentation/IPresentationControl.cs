@@ -16,10 +16,22 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 		event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveInputChanged;
 
 		/// <summary>
-		/// Gets the active presentation input.
+		/// Raised when a presentation active state changes.
+		/// </summary>
+		[ApiEvent(PresentationControlApi.EVENT_PRESENTATION_ACTIVE, PresentationControlApi.HELP_EVENT_PRESENTATION_ACTIVE)]
+		event EventHandler<PresentationActiveApiEventArgs> OnPresentationActiveChanged;
+		
+		/// <summary>
+		/// Gets the active presentation input. If this is null, the near side is not presenting.
 		/// </summary>
 		[ApiProperty(PresentationControlApi.PROPERTY_PRESENTATION_ACTIVE_INPUT, PresentationControlApi.HELP_PROPERTY_PRESENTATION_ACTIVE_INPUT)]
 		int? PresentationActiveInput { get; }
+
+		/// <summary>
+		/// Gets the active presentation state.
+		/// </summary>
+		[ApiProperty(PresentationControlApi.PROPERTY_PRESENTATION_ACTIVE, PresentationControlApi.HELP_PROPERTY_PRESENTATION_ACTIVE)]
+		bool PresentationActive { get; }
 
 		/// <summary>
 		/// Starts presenting the source at the given input address.
@@ -33,5 +45,28 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 		/// </summary>
 		[ApiMethod(PresentationControlApi.METHOD_STOP_PRESENTATION, PresentationControlApi.HELP_METHOD_STOP_PRESENTATION)]
 		void StopPresentation();
+	}
+
+	public static class PresentationControlExtensions
+	{
+		/// <summary>
+		/// Gets whether there is an active presentation and the near side is presenting.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static bool IsNearSidePresenting(this IPresentationControl extends)
+		{
+			return extends.PresentationActive && extends.PresentationActiveInput != null;
+		}
+
+		/// <summary>
+		/// Gets whether there is an active presentation and the near side is not presenting.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static bool IsFarSidePresenting(this IPresentationControl extends)
+		{
+			return extends.PresentationActive && extends.PresentationActiveInput == null;
+		}
 	}
 }
