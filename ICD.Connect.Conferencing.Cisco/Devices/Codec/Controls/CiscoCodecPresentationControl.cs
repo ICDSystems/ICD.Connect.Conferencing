@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			Subscribe(m_Presentation);
 
-			UpdatePresentationActive();
+			UpdatePresentationActiveInput();
 		}
 
 		/// <summary>
@@ -66,9 +66,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		#region Private Methods
 
 		/// <summary>
-		/// Updates the presentation active state.
+		/// Updates the presentation active input.
 		/// </summary>
-		private void UpdatePresentationActive()
+		private void UpdatePresentationActiveInput()
 		{
 			int? input = null;
 
@@ -91,6 +91,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			presentation.OnPresentationsChanged += PresentationOnPresentationsChanged;
 			presentation.OnPresentationStopped += PresentationOnPresentationStopped;
+			presentation.OnPresentationModeChanged += PresentationOnPresentationModeChanged;
 		}
 
 		/// <summary>
@@ -101,16 +102,33 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			presentation.OnPresentationsChanged -= PresentationOnPresentationsChanged;
 			presentation.OnPresentationStopped -= PresentationOnPresentationStopped;
+			presentation.OnPresentationModeChanged -= PresentationOnPresentationModeChanged;
 		}
 
 		private void PresentationOnPresentationStopped(object sender, StringEventArgs stringEventArgs)
 		{
-			UpdatePresentationActive();
+			UpdatePresentationActiveInput();
 		}
 
 		private void PresentationOnPresentationsChanged(object sender, EventArgs eventArgs)
 		{
-			UpdatePresentationActive();
+			UpdatePresentationActiveInput();
+		}
+
+		private void PresentationOnPresentationModeChanged(object sender, PresentationModeEventArgs e)
+		{
+			switch (e.Data)
+			{
+				case ePresentationMode.Receiving:
+				case ePresentationMode.Sending:
+					PresentationActive = true;
+					break;
+				case ePresentationMode.Off:
+					PresentationActive = false;
+					break;
+			}
+
+			UpdatePresentationActiveInput();
 		}
 
 		#endregion
