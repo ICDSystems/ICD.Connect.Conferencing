@@ -39,7 +39,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <summary>
 		/// Powers on the device.
 		/// </summary>
-		public override void PowerOn()
+		protected override void PowerOnFinal()
 		{
 			m_System.Wake();
 		}
@@ -47,7 +47,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <summary>
 		/// Powers off the device.
 		/// </summary>
-		public override void PowerOff()
+		protected override void PowerOffFinal()
 		{
 			m_System.Standby();
 		}

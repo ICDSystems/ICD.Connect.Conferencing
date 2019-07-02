@@ -51,7 +51,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <summary>
 		/// Powers on the device.
 		/// </summary>
-		public override void PowerOn()
+		protected override void PowerOnFinal()
 		{
 			if (IsPowered)
 				return;
@@ -64,7 +64,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <summary>
 		/// Powers off the device.
 		/// </summary>
-		public override void PowerOff()
+		protected override void PowerOffFinal()
 		{
 			IsPowered = false;
 
