@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [11.5.3] - 2019-07-02
+### Changed
+ - Fixed a bug where Polycom would enter a locked state when receiving a multi-line response with no content
+
 ## [11.5.2] - 2019-06-13
 ### Changed
  - Fixed a bug where Cisco SpeakerTrack availability would default to an incorrect value
