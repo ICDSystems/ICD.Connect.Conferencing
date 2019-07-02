@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+ - Fix parsing for Zoom SystemInfo
+ - Fixed an issue where Zoom meeting participants were being dropped from the meeting on program restart
+
 ## [13.2.0] - 2019-06-25
 ### Added
  - Added MeetingNeedsPasswordResponse for Zoom
@@ -24,7 +28,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom Middleware sends all data to clients
  - Fixed Zoom issues with buffering and initialization
  - Include the room as a participant in Zoom meeting participant list
- - Fix parsing for Zoom SystemInfo
 
 ### Removed
  - Removed OnHold as a possible conference status for Zoom conferences
