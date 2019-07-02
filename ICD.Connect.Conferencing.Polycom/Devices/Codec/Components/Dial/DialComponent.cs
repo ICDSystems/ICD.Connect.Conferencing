@@ -156,7 +156,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			contactName = StringUtils.Enquote(contactName);
 
 			Codec.EnqueueCommand("dial addressbook {0}", contactName);
-			Codec.Log(eSeverity.Informational, "Dialing addressbook contact {0}", StringUtils.ToRepresentation(contactName));
+			Codec.Log(eSeverity.Informational, "Dialing addressbook contact {0}", contactName);
 		}
 
 		/// <summary>
@@ -171,7 +171,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			number = StringUtils.Enquote(number);
 
 			Codec.EnqueueCommand("dial auto {0}", number);
-			Codec.Log(eSeverity.Informational, "Dialing auto number {0}", StringUtils.ToRepresentation(number));
+			Codec.Log(eSeverity.Informational, "Dialing auto number {0}", number);
 		}
 
 		/// <summary>
@@ -188,7 +188,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			number = StringUtils.Enquote(number);
 
 			Codec.EnqueueCommand("dial manual {0}", number);
-			Codec.Log(eSeverity.Informational, "Dialing manual number {0}", StringUtils.ToRepresentation(number));
+			Codec.Log(eSeverity.Informational, "Dialing manual number {0}", number);
 		}
 
 		/// <summary>
@@ -208,7 +208,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			string typeName = s_TypeNames.GetValue(type);
 
 			Codec.EnqueueCommand("dial manual {0} {1}", number, typeName);
-			Codec.Log(eSeverity.Informational, "Dialing manual number {0} type {1}", StringUtils.ToRepresentation(number), typeName);
+			Codec.Log(eSeverity.Informational, "Dialing manual number {0} type {1}", number, typeName);
 		}
 
 		/// <summary>
@@ -226,7 +226,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			string protocolName = s_ProtocolNames.GetValue(protocol);
 
 			Codec.EnqueueCommand("dial phone {0} {1}", protocolName, number);
-			Codec.Log(eSeverity.Informational, "Dialing phone number {0} {1}", protocolName, StringUtils.ToRepresentation(number));
+			Codec.Log(eSeverity.Informational, "Dialing phone number {0} {1}", protocolName, number);
 		}
 
 		/// <summary>
