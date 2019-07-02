@@ -99,6 +99,7 @@
     <Compile Include="DialContexts\ZoomContactDialContext.cs" />
     <Compile Include="DialContexts\ZoomDialContext.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
+    <Compile Include="EventArguments\PresentationActiveApiEventArgs.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Participants\AbstractWebParticipant.cs" />
     <Compile Include="Participants\EventHelpers\WebParticipantEventHelper.cs" />
