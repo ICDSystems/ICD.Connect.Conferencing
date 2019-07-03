@@ -166,6 +166,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 					ContentVideoSource = null;
 					PresentationActive = true;
 					break;
+
+				case "farstop":
+					PresentationActive = false;
+					break;
 			}
 		}
 
