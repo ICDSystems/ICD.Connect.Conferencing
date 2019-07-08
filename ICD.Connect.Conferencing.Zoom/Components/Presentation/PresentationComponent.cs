@@ -128,6 +128,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			Parent.UnregisterResponseCallback<SharingResponse>(SharingResponseCallback);
+			Parent.UnregisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
 		}
 
 		private void SharingResponseCallback(ZoomRoom zoomRoom, SharingResponse response)

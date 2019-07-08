@@ -61,6 +61,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void Unsubscribe(PresentationComponent component)
 		{
 			component.OnLocalSharingChanged -= ComponentOnOnLocalSharingChanged;
+			component.OnPresentationOutputChanged -= ComponentOnPresentationOutputChanged;
 		}
 
 		private void ComponentOnOnLocalSharingChanged(object sender, BoolEventArgs args)
