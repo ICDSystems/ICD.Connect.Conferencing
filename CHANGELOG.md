@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+ - Added ThinDialContext for calendar parsing
+
 ### Changed
  - Fix parsing for Zoom SystemInfo
  - Fixed an issue where Zoom meeting participants were being dropped from the meeting on program restart

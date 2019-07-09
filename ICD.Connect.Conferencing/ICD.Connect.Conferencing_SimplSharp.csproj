@@ -96,6 +96,7 @@
     <Compile Include="DialContexts\IDialContext.cs" />
     <Compile Include="DialContexts\PstnDialContext.cs" />
     <Compile Include="DialContexts\SipDialContext.cs" />
+    <Compile Include="DialContexts\ThinDialContext.cs" />
     <Compile Include="DialContexts\ZoomContactDialContext.cs" />
     <Compile Include="DialContexts\ZoomDialContext.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
