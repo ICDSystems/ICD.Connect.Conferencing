@@ -136,7 +136,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="address"></param>
 		public override void SetCameraInput(int address)
 		{
-			m_CameraComponent.SetNearCameraAsVideoSource(address);
+			// TODO - We need to better handle camera addressing
+			//m_CameraComponent.SetNearCameraAsVideoSource(address);
 		}
 
 		/// <summary>
