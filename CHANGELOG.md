@@ -8,10 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
  - Added ThinDialContext for calendar parsing
+ - Added more information to the participant conference control console command.
 
 ### Changed
  - Fix parsing for Zoom SystemInfo
  - Fixed an issue where Zoom meeting participants were being dropped from the meeting on program restart
+ - Renamed Dialing Device Control to Conference Device Control
 
 ## [13.2.0] - 2019-06-25
 ### Added
