@@ -7,7 +7,7 @@ using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
-	public static class DialingDeviceControlConsole
+	public static class ConferenceDeviceControlConsole
 	{
 		/// <summary>
 		/// Gets the child console nodes.

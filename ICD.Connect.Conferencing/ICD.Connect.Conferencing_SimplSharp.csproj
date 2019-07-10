@@ -144,7 +144,7 @@
     <Compile Include="Directory\AbstractDirectoryBrowser.cs" />
     <Compile Include="Controls\Presentation\AbstractPresentationControl.cs" />
     <Compile Include="Controls\Dialing\DialerDeviceDialerControl.cs" />
-    <Compile Include="Controls\Dialing\DialingDeviceControlConsole.cs" />
+    <Compile Include="Controls\Dialing\ConferenceDeviceControlConsole.cs" />
     <Compile Include="Controls\Presentation\IPresentationControl.cs" />
     <Compile Include="Devices\AbstractVideoConferenceDevice.cs" />
     <Compile Include="Devices\AbstractVideoConferenceDeviceSettings.cs" />

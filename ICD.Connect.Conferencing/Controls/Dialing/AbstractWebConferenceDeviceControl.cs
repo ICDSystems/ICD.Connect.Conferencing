@@ -263,7 +263,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			foreach (IConsoleCommand command in DialingDeviceControlConsole.GetConsoleCommands(this))
+			foreach (IConsoleCommand command in ConferenceDeviceControlConsole.GetConsoleCommands(this))
 				yield return command;
 		}
 
@@ -284,7 +284,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		{
 			base.BuildConsoleStatus(addRow);
 
-			DialingDeviceControlConsole.BuildConsoleStatus(this, addRow);
+			ConferenceDeviceControlConsole.BuildConsoleStatus(this, addRow);
 		}
 
 		/// <summary>
@@ -296,7 +296,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			foreach (IConsoleNodeBase node in DialingDeviceControlConsole.GetConsoleNodes(this))
+			foreach (IConsoleNodeBase node in ConferenceDeviceControlConsole.GetConsoleNodes(this))
 				yield return node;
 		}
 
