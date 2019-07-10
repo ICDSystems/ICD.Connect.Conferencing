@@ -34,8 +34,7 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		public virtual IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
-			foreach (var participant in GetParticipants())
-				yield return participant;
+			yield return ConsoleNodeGroup.IndexNodeMap("Participants", "The collection of participants in this conference", GetParticipants());
 		}
 
 		public virtual void BuildConsoleStatus(AddStatusRowDelegate addRow)
