@@ -77,12 +77,39 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		public static bool IsOnline(this IConference extends)
 		{
-			return extends.Status == eConferenceStatus.Connected || extends.Status == eConferenceStatus.OnHold;
+			switch (extends.Status)
+			{
+				case eConferenceStatus.Undefined:
+				case eConferenceStatus.Connecting:
+				case eConferenceStatus.Disconnecting: // TODO - Disconnecting hasn't disconnected yet, online?
+				case eConferenceStatus.Disconnected:
+					return false;
+
+				case eConferenceStatus.Connected:
+				case eConferenceStatus.OnHold:
+					return true;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		public static bool IsActive(this IConference extends)
 		{
-			return extends.Status == eConferenceStatus.Connected;
+			switch (extends.Status)
+			{
+				case eConferenceStatus.Undefined:
+				case eConferenceStatus.Disconnected:
+					return false;
+				
+				case eConferenceStatus.Connecting:
+				case eConferenceStatus.Connected:
+				case eConferenceStatus.Disconnecting:
+				case eConferenceStatus.OnHold:
+					return true;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 	}
 }

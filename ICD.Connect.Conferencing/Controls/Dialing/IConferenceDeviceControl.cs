@@ -170,9 +170,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 		public static IConference GetActiveConference(this IConferenceDeviceControl extends)
 		{
-			return
-				extends.GetConferences()
-					.FirstOrDefault(c => c.Status == eConferenceStatus.Connected);
+			return extends.GetConferences().FirstOrDefault(c => c.IsActive());
 		}
 
 		public static T GetBestDialer<T>(this IEnumerable<T> dialers, IDialContext dialContext) where T : IConferenceDeviceControl
