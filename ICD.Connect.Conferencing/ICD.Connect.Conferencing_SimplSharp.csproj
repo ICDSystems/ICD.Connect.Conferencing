@@ -182,7 +182,6 @@
     <Compile Include="Controls\Dialing\IConferenceDeviceControl.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Participants\ThinTraditionalParticipant.cs" />
-    <Compile Include="Participants\ThinWebParticipant.cs" />
     <Compile Include="Participants\EventHelpers\TraditionalParticipantEventHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxies\Controls\Dialing\AbstractProxyTraditionalConferenceDeviceControl.cs" />
