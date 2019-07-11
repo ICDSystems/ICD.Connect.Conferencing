@@ -252,8 +252,8 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 			{
 				Id = (long)reader[COLUMN_ID],
 				DialString = reader[COLUMN_DIAL_STRING] as string,
-				Protocol = reader[COLUMN_DIAL_PROTOCOL] is System.DBNull ? eDialProtocol.Unknown : (eDialProtocol)reader[COLUMN_DIAL_PROTOCOL],
-				CallType = reader[COLUMN_CALL_TYPE] is System.DBNull ? eCallType.Unknown : (eCallType)reader[COLUMN_CALL_TYPE]
+				Protocol = reader[COLUMN_DIAL_PROTOCOL] is System.DBNull ? eDialProtocol.Unknown : (eDialProtocol)(long)reader[COLUMN_DIAL_PROTOCOL],
+				CallType = reader[COLUMN_CALL_TYPE] is System.DBNull ? eCallType.Unknown : (eCallType)(long)reader[COLUMN_CALL_TYPE]
 			};
 		}
 
