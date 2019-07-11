@@ -41,7 +41,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<InCallEventArgs> OnInCallChanged;
 
 		private readonly IcdHashSet<IConference> m_Conferences;
-		private readonly ScrollQueue<IParticipant> m_RecentSources;
+		private readonly ScrollQueue<IParticipant> m_RecentParticipants;
 		private readonly Dictionary<IConferenceDeviceControl, eCallType> m_DialingProviders; 
 		private readonly IcdHashSet<IConferenceDeviceControl> m_FeedbackProviders;
 
@@ -149,7 +149,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_IsAuthoritative = true;
 
 			m_Conferences = new IcdHashSet<IConference>();
-			m_RecentSources = new ScrollQueue<IParticipant>(RECENT_LENGTH);
+			m_RecentParticipants = new ScrollQueue<IParticipant>(RECENT_LENGTH);
 
 			m_DialingProviders = new Dictionary<IConferenceDeviceControl, eCallType>();
 			m_FeedbackProviders = new IcdHashSet<IConferenceDeviceControl>();
@@ -251,7 +251,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <returns></returns>
 		public IEnumerable<IParticipant> GetRecentSources()
 		{
-			return m_RecentSourcesSection.Execute(() => m_RecentSources.ToArray());
+			return m_RecentSourcesSection.Execute(() => m_RecentParticipants.ToArray());
 		}
 
 		/// <summary>
@@ -482,7 +482,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				OnConferenceAdded.Raise(this, new ConferenceEventArgs(conference));
 
 				foreach (IParticipant participant in conference.GetParticipants())
-					AddParticipant(participant);
+					AddRecentParticipant(participant);
 			}
 			finally
 			{
@@ -524,9 +524,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(conference));
 		}
 
-		private void AddParticipant(IParticipant participant)
+		private void AddRecentParticipant(IParticipant participant)
 		{
-			m_RecentSourcesSection.Execute(() => m_RecentSources.Enqueue(participant));
+			m_RecentSourcesSection.Execute(() => m_RecentParticipants.Enqueue(participant));
 			OnRecentSourceAdded.Raise(this, new ParticipantEventArgs(participant));
 
 			Subscribe(participant);
@@ -728,6 +728,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="args"></param>
 		private void ConferenceOnParticipantAdded(object sender, ParticipantEventArgs args)
 		{
+			AddRecentParticipant(args.Data);
+
 			Subscribe(args.Data);
 			UpdateIsInCall();
 			OnConferenceSourceAddedOrRemoved.Raise(this);
