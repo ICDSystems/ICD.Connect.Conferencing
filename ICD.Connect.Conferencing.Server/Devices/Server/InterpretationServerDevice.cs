@@ -972,12 +972,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ServerOnSocketStateChange(object sender, SocketStateEventArgs args)
 		{
-			UpdateCachedIsOnlineStatus();
+			UpdateCachedOnlineStatus();
 		}
 
-		private void UpdateCachedIsOnlineStatus()
+		private void UpdateCachedOnlineStatus()
 		{
-			IsOnline = GetAreAdaptersOnlineStatus();
+			bool online = GetAreAdaptersOnlineStatus();
+			SetIsOnline(online);
 		}
 
 		private bool GetAreAdaptersOnlineStatus()
