@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -7,6 +8,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
+using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Utils;
 using eCallType = ICD.Connect.Conferencing.EventArguments.eCallType;
@@ -24,7 +26,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private readonly DialingComponent m_DialingComponent;
 		private readonly SystemComponent m_SystemComponent;
-		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations = new IcdHashSet<SipRegistration>(); 
+
+		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations;
+		private readonly BiDictionary<CallComponent, ThinIncomingCall> m_IncomingCalls;
+
+		private readonly SafeCriticalSection m_CriticalSection;
+
+		#region Properties
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
@@ -62,6 +70,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			}
 		}
 
+		#endregion
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -72,6 +82,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			m_DialingComponent = Parent.Components.GetComponent<DialingComponent>();
 			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
+
+			m_SubscribedRegistrations = new IcdHashSet<SipRegistration>();
+			m_IncomingCalls = new BiDictionary<CallComponent, ThinIncomingCall>();
+			m_CriticalSection = new SafeCriticalSection();
+
 			Subscribe(m_DialingComponent);
 			Subscribe(m_SystemComponent);
 
@@ -88,6 +103,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
+			OnSipEnabledChanged = null;
+			OnSipLocalNameChanged = null;
+			OnSipRegistrationStatusChanged = null;
 
 			base.DisposeFinal(disposing);
 
@@ -176,61 +194,54 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		#endregion
 
-		#region Component Callbacks
+		#region Dialing Component Callbacks
 
 		private void Subscribe(DialingComponent component)
 		{
-			component.OnSourceAdded += ComponentOnParticipantAdded;
-			component.OnSourceRemoved += ComponentOnParticipantRemoved;
+			component.OnSourceAdded += ComponentOnSourceAdded;
+			component.OnSourceRemoved += ComponentOnSourceRemoved;
 			component.OnPrivacyMuteChanged += ComponentOnPrivacyMuteChanged;
 			component.OnAutoAnswerChanged += ComponentOnAutoAnswerChanged;
 			component.OnDoNotDisturbChanged += ComponentOnDoNotDisturbChanged;
 		}
 
-		private void Subscribe(SystemComponent component)
-		{
-			component.OnSipRegistrationAdded += ComponentOnSipRegistrationAdded;
-		}
-
-		private void Subscribe(SipRegistration registration)
-		{
-			registration.OnRegistrationChange += RegistrationOnRegistrationChange;
-			registration.OnUriChange += RegistrationOnUriChange;
-			m_SubscribedRegistrations.Add(registration);
-		}
-
 		private void Unsubscribe(DialingComponent component)
 		{
-			component.OnSourceAdded -= ComponentOnParticipantAdded;
-			component.OnSourceRemoved -= ComponentOnParticipantRemoved;
+			component.OnSourceAdded -= ComponentOnSourceAdded;
+			component.OnSourceRemoved -= ComponentOnSourceRemoved;
 			component.OnPrivacyMuteChanged -= ComponentOnPrivacyMuteChanged;
 			component.OnAutoAnswerChanged -= ComponentOnAutoAnswerChanged;
 			component.OnDoNotDisturbChanged -= ComponentOnDoNotDisturbChanged;
 		}
 
-		private void Unsubscribe(SystemComponent component)
+		private void ComponentOnSourceAdded(object sender, GenericEventArgs<CallComponent> args)
 		{
-			component.OnSipRegistrationAdded -= ComponentOnSipRegistrationAdded;
-			foreach (var registration in m_SubscribedRegistrations)
-				Unsubscribe(registration);
+			CallComponent source = args.Data;
 
-			m_SubscribedRegistrations.Clear();
+			switch (source.Direction)
+			{
+				case eCallDirection.Undefined:
+					break;
+
+				case eCallDirection.Incoming:
+					AddParticipant(source);
+					AddIncomingCall(source);
+					break;
+				case eCallDirection.Outgoing:
+					AddParticipant(source);
+					
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
-		private void Unsubscribe(SipRegistration registration)
+		private void ComponentOnSourceRemoved(object sender, GenericEventArgs<CallComponent> args)
 		{
-			registration.OnRegistrationChange -= RegistrationOnRegistrationChange;
-			registration.OnUriChange -= RegistrationOnUriChange;
-		}
+			CallComponent source = args.Data;
 
-		private void ComponentOnParticipantAdded(object sender, GenericEventArgs<ITraditionalParticipant> args)
-		{
-			AddParticipant(args.Data);
-		}
-
-		private void ComponentOnParticipantRemoved(object sender, GenericEventArgs<ITraditionalParticipant> args)
-		{
-			RemoveParticipant(args.Data);
+			RemoveIncomingCall(source);
+			RemoveParticipant(source);
 		}
 
 		private void ComponentOnPrivacyMuteChanged(object sender, BoolEventArgs args)
@@ -248,13 +259,174 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			UpdateAutoAnswer();
 		}
 
+		#endregion
+
+		#region Incoming Calls
+
+		private void AddIncomingCall(CallComponent source)
+		{
+			ThinIncomingCall incoming;
+
+			m_CriticalSection.Enter();
+
+			try
+			{
+				if (m_IncomingCalls.ContainsKey(source))
+					return;
+
+				incoming = new ThinIncomingCall();
+				m_IncomingCalls.Add(source, incoming);
+
+				Subscribe(source);
+				Subscribe(incoming);
+			}
+			finally
+			{
+				m_CriticalSection.Leave();
+			}
+
+			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(incoming));
+		}
+
+		private void RemoveIncomingCall(CallComponent source)
+		{
+			ThinIncomingCall incoming;
+
+			m_CriticalSection.Enter();
+
+			try
+			{
+				if (!m_IncomingCalls.TryGetValue(source, out incoming))
+					return;
+
+				Unsubscribe(source);
+				Unsubscribe(incoming);
+
+				m_IncomingCalls.RemoveKey(source);
+			}
+			finally
+			{
+				m_CriticalSection.Leave();
+			}
+
+			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(incoming));
+		}
+
+		#region Incoming Call Callbacks
+
+		private void Subscribe(ThinIncomingCall incomingCall)
+		{
+			incomingCall.AnswerCallback += AnswerCallback;
+			incomingCall.RejectCallback += RejectCallback;
+		}
+
+		private void Unsubscribe(ThinIncomingCall incomingCall)
+		{
+			incomingCall.AnswerCallback = null;
+			incomingCall.RejectCallback = null;
+		}
+
+		private void RejectCallback(ThinIncomingCall sender)
+		{
+			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(sender));
+			source.Reject();
+		}
+
+		private void AnswerCallback(ThinIncomingCall sender)
+		{
+			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(sender));
+			source.Answer();
+		}
+
+		#endregion
+
+		#region Source Callbacks
+
+		private void Subscribe(CallComponent source)
+		{
+			source.OnNameChanged += SourceOnNameChanged;
+			source.OnNumberChanged += SourceOnNumberChanged;
+			source.OnAnswerStateChanged += SourceOnAnswerStateChanged;
+		}
+
+		private void Unsubscribe(CallComponent source)
+		{
+			source.OnNameChanged -= SourceOnNameChanged;
+			source.OnNumberChanged -= SourceOnNumberChanged;
+			source.OnAnswerStateChanged -= SourceOnAnswerStateChanged;
+		}
+
+		private void SourceOnAnswerStateChanged(object sender, IncomingCallAnswerStateEventArgs args)
+		{
+			UpdateIncomingCall(sender as CallComponent);
+		}
+
+		private void SourceOnNumberChanged(object sender, StringEventArgs args)
+		{
+			UpdateIncomingCall(sender as CallComponent);
+		}
+
+		private void SourceOnNameChanged(object sender, StringEventArgs args)
+		{
+			UpdateIncomingCall(sender as CallComponent);
+		}
+
+		private void UpdateIncomingCall(CallComponent source)
+		{
+			ThinIncomingCall incomingCall = m_CriticalSection.Execute(() => m_IncomingCalls.GetValue(source));
+
+			incomingCall.Name = source.Name;
+			incomingCall.Number = source.Number;
+			incomingCall.AnswerState = source.AnswerState;
+			incomingCall.Direction = eCallDirection.Incoming;
+		}
+
+		#endregion
+
+		#endregion
+
+		#region System Component Callbacks
+
+		private void Subscribe(SystemComponent component)
+		{
+			component.OnSipRegistrationAdded += ComponentOnSipRegistrationAdded;
+		}
+
+		private void Unsubscribe(SystemComponent component)
+		{
+			component.OnSipRegistrationAdded -= ComponentOnSipRegistrationAdded;
+
+			foreach (SipRegistration registration in m_SubscribedRegistrations)
+				Unsubscribe(registration);
+			m_SubscribedRegistrations.Clear();
+		}
+
 		private void ComponentOnSipRegistrationAdded(object sender, IntEventArgs args)
 		{
 			SipRegistration registration = m_SystemComponent.GetSipRegistration(args.Data);
 			Subscribe(registration);
+
 			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
 			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
 			OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(SipRegistrationStatus));
+		}
+
+		#endregion
+
+		#region SIP Registration Callbacks
+
+		private void Subscribe(SipRegistration registration)
+		{
+			registration.OnRegistrationChange += RegistrationOnRegistrationChange;
+			registration.OnUriChange += RegistrationOnUriChange;
+
+			m_SubscribedRegistrations.Add(registration);
+		}
+
+		private void Unsubscribe(SipRegistration registration)
+		{
+			registration.OnRegistrationChange -= RegistrationOnRegistrationChange;
+			registration.OnUriChange -= RegistrationOnUriChange;
 		}
 
 		private void RegistrationOnRegistrationChange(object sender, RegistrationEventArgs registrationEventArgs)
