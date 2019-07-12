@@ -22,11 +22,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
-		private readonly BiDictionary<int, ThinTraditionalParticipant> m_Sources;
-		private readonly SafeCriticalSection m_SourcesSection;
-
+		private readonly BiDictionary<int, ThinTraditionalParticipant> m_Participants;
 		private readonly BiDictionary<int, ThinIncomingCall> m_IncomingCalls;
-		private readonly SafeCriticalSection m_IncomingCallsSection;
+		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private readonly DialComponent m_DialComponent;
 		private readonly AutoAnswerComponent m_AutoAnswerComponent;
@@ -52,10 +50,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public PolycomCodecTraditionalConferenceControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
-			m_Sources = new BiDictionary<int, ThinTraditionalParticipant>();
-			m_SourcesSection = new SafeCriticalSection();
+			m_Participants = new BiDictionary<int, ThinTraditionalParticipant>();
 			m_IncomingCalls = new BiDictionary<int, ThinIncomingCall>();
-			m_IncomingCallsSection = new SafeCriticalSection();
+			m_ParticipantsSection = new SafeCriticalSection();
 
 			m_DialComponent = parent.Components.GetComponent<DialComponent>();
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
@@ -201,7 +198,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			Dictionary<int, CallStatus> statuses = m_DialComponent.GetCallStatuses().ToDictionary(s => s.CallId);
 
-			m_IncomingCallsSection.Enter();
+			m_ParticipantsSection.Enter();
 
 			try
 			{
@@ -210,7 +207,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 					m_IncomingCalls.Where(kvp => !statuses.ContainsKey(kvp.Key))
 							 .Select(kvp => kvp.Key)
 							 .ToIcdHashSet();
+
 				RemoveIncomingCalls(remove);
+				RemoveSources(remove);
 
 				// Update new/existing sources
 				foreach (KeyValuePair<int, CallStatus> kvp in statuses)
@@ -218,52 +217,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 					if (m_IncomingCalls.ContainsKey(kvp.Key))
 						UpdateIncomingCall(kvp.Value);
 
-					switch (kvp.Value.ConnectionState)
-					{
-						case eConnectionState.Unknown:
-							break;
-
-						// Ignore inactive state, it's muddled around disconnected/disconnecting
-						case eConnectionState.Inactive:
-							break;
-
-						case eConnectionState.Ringing:
-							CreateIncomingCall(kvp.Value);
-							break;
-
-						// current calls
-						case eConnectionState.Opened:
-						case eConnectionState.Connecting:
-						case eConnectionState.Connected:
-						case eConnectionState.Disconnecting:
-							break;
-
-						case eConnectionState.Disconnected:
-							RemoveIncomingCall(kvp.Key);
-							break;
-					}
-				}
-			}
-			finally
-			{
-				m_IncomingCallsSection.Leave();
-			}
-
-			m_SourcesSection.Enter();
-
-			try
-			{
-				// Clear out sources that are no longer online
-				IcdHashSet<int> remove =
-					m_Sources.Where(kvp => !statuses.ContainsKey(kvp.Key))
-					         .Select(kvp => kvp.Key)
-					         .ToIcdHashSet();
-				RemoveSources(remove);
-
-				// Update new/existing sources
-				foreach (KeyValuePair<int, CallStatus> kvp in statuses)
-				{
-					if (m_Sources.ContainsKey(kvp.Key))
+					if (m_Participants.ContainsKey(kvp.Key))
 						UpdateSource(kvp.Value);
 
 					switch (kvp.Value.ConnectionState)
@@ -277,8 +231,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 						// incoming calls
 						case eConnectionState.Ringing:
+							CreateIncomingCall(kvp.Value);
 							break;
 
+						// current calls
 						case eConnectionState.Opened:
 						case eConnectionState.Connecting:
 						case eConnectionState.Connected:
@@ -287,6 +243,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 							break;
 
 						case eConnectionState.Disconnected:
+							RemoveIncomingCall(kvp.Key);
 							RemoveSource(kvp.Key);
 							break;
 					}
@@ -294,7 +251,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			}
 			finally
 			{
-				m_SourcesSection.Leave();
+				m_ParticipantsSection.Leave();
 			}
 		}
 
@@ -303,15 +260,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		private void RemoveSources()
 		{
-			m_SourcesSection.Enter();
+			m_ParticipantsSection.Enter();
 
 			try
 			{
-				RemoveSources(m_Sources.Keys.ToArray(m_Sources.Count));
+				RemoveSources(m_Participants.Keys.ToArray(m_Participants.Count));
 			}
 			finally
 			{
-				m_SourcesSection.Leave();
+				m_ParticipantsSection.Leave();
 			}
 		}
 
@@ -335,22 +292,22 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			ThinTraditionalParticipant source;
 
-			m_SourcesSection.Enter();
+			m_ParticipantsSection.Enter();
 
 			try
 			{
-				if (!m_Sources.ContainsKey(id))
+				if (!m_Participants.ContainsKey(id))
 					return;
 
-				source = m_Sources.GetValue(id);
+				source = m_Participants.GetValue(id);
 				source.Status = eParticipantStatus.Disconnected;
 
 				Unsubscribe(source);
 
-				m_Sources.RemoveKey(id);
+				m_Participants.RemoveKey(id);
 
 				// Leave hold state when out of calls
-				if (m_Sources.Count == 0)
+				if (m_Participants.Count == 0)
 				{
 					m_RequestedPrivacyMute = false;
 					UpdateMute();
@@ -358,7 +315,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			}
 			finally
 			{
-				m_SourcesSection.Leave();
+				m_ParticipantsSection.Leave();
 			}
 
 			RemoveParticipant(source);
@@ -375,22 +332,22 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			ThinTraditionalParticipant source;
 
-			m_SourcesSection.Enter();
+			m_ParticipantsSection.Enter();
 
 			try
 			{
-				if (m_Sources.ContainsKey(callStatus.CallId))
+				if (m_Participants.ContainsKey(callStatus.CallId))
 					return;
 
 				source = new ThinTraditionalParticipant();
-				m_Sources.Add(callStatus.CallId, source);
+				m_Participants.Add(callStatus.CallId, source);
 
 				UpdateSource(callStatus);
 				Subscribe(source);
 			}
 			finally
 			{
-				m_SourcesSection.Leave();
+				m_ParticipantsSection.Leave();
 			}
 
 			AddParticipant(source);
@@ -405,7 +362,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinTraditionalParticipant source = m_SourcesSection.Execute(() => m_Sources.GetDefault(callStatus.CallId, null));
+			ThinTraditionalParticipant source = m_ParticipantsSection.Execute(() => m_Participants.GetDefault(callStatus.CallId, null));
 			if (source == null)
 				return;
 
@@ -478,11 +435,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			ThinIncomingCall call;
 
-			m_IncomingCallsSection.Enter();
+			m_ParticipantsSection.Enter();
 
 			try
 			{
-				if (!m_Sources.ContainsKey(id))
+				if (!m_Participants.ContainsKey(id))
 					return;
 
 				call = m_IncomingCalls.GetValue(id);
@@ -493,7 +450,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			}
 			finally
 			{
-				m_IncomingCallsSection.Leave();
+				m_ParticipantsSection.Leave();
 			}
 
 			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(call));
@@ -510,7 +467,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			ThinIncomingCall call;
 
-			m_IncomingCallsSection.Enter();
+			m_ParticipantsSection.Enter();
 
 			try
 			{
@@ -525,7 +482,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			}
 			finally
 			{
-				m_IncomingCallsSection.Leave();
+				m_ParticipantsSection.Leave();
 			}
 
 			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(call));
@@ -540,7 +497,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinIncomingCall call = m_IncomingCallsSection.Execute(() => m_IncomingCalls.GetDefault(callStatus.CallId, null));
+			ThinIncomingCall call = m_ParticipantsSection.Execute(() => m_IncomingCalls.GetDefault(callStatus.CallId, null));
 			if (call == null)
 				return;
 
@@ -619,7 +576,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		private int GetIdForSource(ThinTraditionalParticipant source)
 		{
-			return m_SourcesSection.Execute(() => m_Sources.GetKey(source));
+			return m_ParticipantsSection.Execute(() => m_Participants.GetKey(source));
 		}
 
 		#endregion
@@ -652,7 +609,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		private int GetIdForIncomingCall(ThinIncomingCall call)
 		{
-			return m_IncomingCallsSection.Execute(() => m_IncomingCalls.GetKey(call));
+			return m_ParticipantsSection.Execute(() => m_IncomingCalls.GetKey(call));
 		}
 
 		#endregion
