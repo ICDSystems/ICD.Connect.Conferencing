@@ -35,12 +35,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Called when a source is added to the dialing component.
 		/// </summary>
-		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnSourceAdded;
+		public event EventHandler<GenericEventArgs<CallComponent>> OnSourceAdded;
 
 		/// <summary>
 		/// Called when a source is removed from the dialing component.
 		/// </summary>
-		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnSourceRemoved;
+		public event EventHandler<GenericEventArgs<CallComponent>> OnSourceRemoved;
 
 		/// <summary>
 		/// Raised when the Do Not Disturb state changes.
@@ -309,7 +309,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (other != null)
 				output.Join(other.CallId);
 
-			OnSourceAdded.Raise(this, new GenericEventArgs<ITraditionalParticipant>(output));
+			OnSourceAdded.Raise(this, new GenericEventArgs<CallComponent>(output));
 
 			return output;
 		}
@@ -397,7 +397,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 			bool removed = RemoveCall(call.CallId);
 			if (removed)
-				OnSourceRemoved.Raise(this, new GenericEventArgs<ITraditionalParticipant>(call));
+				OnSourceRemoved.Raise(this, new GenericEventArgs<CallComponent>(call));
 		}
 
 		/// <summary>
