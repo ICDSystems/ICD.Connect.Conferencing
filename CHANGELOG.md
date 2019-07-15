@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Added ThinDialContext for calendar parsing
  - Added more information to the participant conference control console command.
  - Added incoming call support to Cisco
+ - Once the incoming call is answered or ignored remove the incoming call for Cisco and Polycom
 
 ### Changed
  - Fix parsing for Zoom SystemInfo
