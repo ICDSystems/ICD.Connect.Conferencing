@@ -159,10 +159,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 						break;
 					case eUserChangedEventType.None:
 					case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
-						AddParticipant(info);
-						break;
 					case eUserChangedEventType.ZRCUserChangedEventUserInfoUpdated:
-						UpdateParticipant(info);
+						AddOrUpdateParticipant(info);
 						break;
 					case eUserChangedEventType.ZRCUserChangedEventHostChanged:
 						SetNewHost(info);
@@ -176,17 +174,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			}
 		}
 
-		private void AddParticipant(ParticipantInfo info)
+		private void AddOrUpdateParticipant(ParticipantInfo info)
 		{
-			var participant = new ZoomParticipant(Parent, info);
-
+			ZoomParticipant participant;
 			m_ParticipantsSection.Enter();
 			try
 			{
-				if (m_Participants.Contains(participant) || m_Participants.Any(p => p.UserId == participant.UserId))
-					return;
-
-				m_Participants.Add(participant);
+				participant = m_Participants.Find(p => p.UserId == info.UserId);
+				if (participant != null)
+					participant.Update(info);
+				else
+				{
+					participant = new ZoomParticipant(Parent, info);
+					m_Participants.Add(participant);
+				}
 			}
 			finally
 			{
@@ -194,21 +195,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			}
 
 			OnParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
-		}
-
-		private void UpdateParticipant(ParticipantInfo info)
-		{
-			m_ParticipantsSection.Enter();
-			try
-			{
-				var participant = m_Participants.Find(p => p.UserId == info.UserId);
-				if (participant != null)
-					participant.Update(info);
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
-			}
 		}
 
 		private void RemoveParticipant(ParticipantInfo info)
@@ -343,8 +329,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					break;
 				case eCallStatus.NOT_IN_MEETING:
 				case eCallStatus.LOGGED_OUT:
-					Status = eConferenceStatus.Disconnected;
 					ClearParticipants();
+					Status = eConferenceStatus.Disconnected;
 					break;
 				case eCallStatus.UNKNOWN:
 					Status = eConferenceStatus.Undefined;
