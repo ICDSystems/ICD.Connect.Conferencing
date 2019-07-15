@@ -579,19 +579,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 		private void EndCurrentMultiLine(string data)
 		{
-			if (m_CurrentMultiLineHeader == null)
-				return;
-
-			if (m_CurrentMutliLines.Count == 0)
-				return;
-
-			IcdHashSet<Action<IEnumerable<string>>> handlers;
-			if (!m_RangeFeedbackHandlers.TryGetValue(m_CurrentMultiLineHeader, out handlers))
-				return;
-
+			string currentHeader = m_CurrentMultiLineHeader;
 			List<string> lines = new List<string>(m_CurrentMutliLines);
 
 			ClearCurrentMultiLine();
+
+			if (currentHeader == null || lines.Count == 0)
+				return;
+
+			IcdHashSet<Action<IEnumerable<string>>> handlers;
+			if (!m_RangeFeedbackHandlers.TryGetValue(currentHeader, out handlers))
+				return;
 
 			foreach (Action<IEnumerable<string>> handler in handlers.ToArray(handlers.Count))
 			{
