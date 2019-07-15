@@ -21,24 +21,50 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		/// </summary>
 		public event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveInputChanged;
 
-		private int? m_PresentationActive;
+		/// <summary>
+		/// Raised when the presentation active state changes.
+		/// </summary>
+		public event EventHandler<PresentationActiveApiEventArgs> OnPresentationActiveChanged;
+
+		private int? m_PresentationActiveInput;
+		private bool m_PresentationActive;
 
 		/// <summary>
 		/// Gets the active presentation input.
 		/// </summary>
 		public int? PresentationActiveInput
 		{
-			get { return m_PresentationActive; }
+			get { return m_PresentationActiveInput; }
 			[UsedImplicitly] private set
+			{
+				if (value == m_PresentationActiveInput)
+					return;
+				
+				m_PresentationActiveInput = value;
+
+				Log(eSeverity.Informational, "PresentationActiveInput set to {0}", m_PresentationActiveInput);
+
+				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActiveInput));
+			}
+		}
+
+		/// <summary>
+		/// Gets the active presentation state.
+		/// </summary>
+		public bool PresentationActive
+		{
+			get { return m_PresentationActive; }
+			[UsedImplicitly]
+			private set
 			{
 				if (value == m_PresentationActive)
 					return;
-				
+
 				m_PresentationActive = value;
 
-				Log(eSeverity.Informational, "PresentationActiveInput set to {0}", m_PresentationActive);
+				Log(eSeverity.Informational, "PresentationActive set to {0}", m_PresentationActive);
 
-				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
+				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
 			}
 		}
 
@@ -59,6 +85,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnPresentationActiveInputChanged = null;
+			OnPresentationActiveChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -94,7 +121,9 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 
 			ApiCommandBuilder.UpdateCommand(command)
 							 .SubscribeEvent(PresentationControlApi.EVENT_PRESENTATION_ACTIVE_INPUT)
+							 .SubscribeEvent(PresentationControlApi.EVENT_PRESENTATION_ACTIVE)
 							 .GetProperty(PresentationControlApi.PROPERTY_PRESENTATION_ACTIVE_INPUT)
+							 .GetProperty(PresentationControlApi.PROPERTY_PRESENTATION_ACTIVE)
 							 .Complete();
 		}
 

@@ -14,16 +14,42 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 		where TDevice : IDeviceBase
 	{
 		/// <summary>
-		/// Raised when the presentation active state changes.
+		/// Raised when the presentation active input changes.
 		/// </summary>
 		public event EventHandler<PresentationActiveInputApiEventArgs> OnPresentationActiveInputChanged;
 
-		private int? m_PresentationActive;
+		/// <summary>
+		/// Raised when the presentation active state changes.
+		/// </summary>
+		public event EventHandler<PresentationActiveApiEventArgs> OnPresentationActiveChanged;
+		
+		private int? m_PresentationActiveInput;
+		private bool m_PresentationActive;
 
 		/// <summary>
 		/// Gets the active presentation input.
 		/// </summary>
 		public int? PresentationActiveInput
+		{
+			get { return m_PresentationActiveInput; }
+			protected set
+			{
+				if (value == m_PresentationActiveInput)
+					return;
+
+				m_PresentationActiveInput = value;
+
+				Log(eSeverity.Informational, "PresentationActiveInput set to {0}",
+				    m_PresentationActiveInput == null ? "NULL" : m_PresentationActiveInput.ToString());
+
+				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActiveInput));
+			}
+		}
+
+		/// <summary>
+		/// Gets the active presentation state.
+		/// </summary>
+		public bool PresentationActive
 		{
 			get { return m_PresentationActive; }
 			protected set
@@ -33,10 +59,9 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 
 				m_PresentationActive = value;
 
-				Log(eSeverity.Informational, "PresentationActiveInput set to {0}",
-				    m_PresentationActive == null ? "NULL" : m_PresentationActive.ToString());
+				Log(eSeverity.Informational, "PresentationActive set to {0}", m_PresentationActive.ToString());
 
-				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActive));
+				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
 			}
 		}
 

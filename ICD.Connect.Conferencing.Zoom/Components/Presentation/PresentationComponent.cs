@@ -12,12 +12,15 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 		public event EventHandler<BoolEventArgs> OnInputConnectedUpdated;
 		public event EventHandler<BoolEventArgs> OnSignalDetectedUpdated;
-		public event EventHandler<BoolEventArgs> OnSharingChanged;
+		public event EventHandler<BoolEventArgs> OnLocalSharingChanged;
+		public event EventHandler<PresentationOutputEventArgs> OnPresentationOutputChanged;
 
 		private bool m_InputConnected;
 		private bool m_SignalDetected;
 		private bool m_Sharing;
 		private bool m_RequestedSharing;
+
+		private int? m_ShareOutput;
 
 		private readonly SafeTimer m_StopSharingDebounceTimer;
 
@@ -57,7 +60,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 				if (m_Sharing == value)
 					return;
 				m_Sharing = value;
-				OnSharingChanged.Raise(this, new BoolEventArgs(value));
+				OnLocalSharingChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
+
+		public int? PresentationOutput
+		{
+			get { return m_ShareOutput; }
+			private set
+			{
+				if (m_ShareOutput == value)
+					return;
+
+				m_ShareOutput = value;
+				OnPresentationOutputChanged.Raise(this, new PresentationOutputEventArgs(m_ShareOutput));
 			}
 		}
 
@@ -106,11 +122,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		private void Subscribe(ZoomRoom parent)
 		{
 			Parent.RegisterResponseCallback<SharingResponse>(SharingResponseCallback);
+			Parent.RegisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			Parent.UnregisterResponseCallback<SharingResponse>(SharingResponseCallback);
+			Parent.UnregisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
 		}
 
 		private void SharingResponseCallback(ZoomRoom zoomRoom, SharingResponse response)
@@ -132,6 +150,15 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 			}
 			else
 				Sharing = response.Sharing.IsSharingBlackMagic;
+		}
+
+		private void PinStatusCallback(ZoomRoom zoomRoom, PinStatusOfScreenNotificationResponse response)
+		{
+			var data = response.PinStatusOfScreenNotification;
+			if (data.ScreenLayout == eZoomScreenLayout.ShareContent)
+				PresentationOutput = data.ScreenIndex;
+			else if (m_ShareOutput == data.ScreenIndex)
+				PresentationOutput = null;
 		}
 
 		#endregion
