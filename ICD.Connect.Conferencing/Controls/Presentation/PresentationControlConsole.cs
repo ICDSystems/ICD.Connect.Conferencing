@@ -31,6 +31,7 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 				throw new ArgumentNullException("instance");
 
 			addRow("Presentation Active Input", instance.PresentationActiveInput);
+			addRow("Presentation Active", instance.PresentationActive);
 		}
 
 		/// <summary>
@@ -42,7 +43,7 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
-
+			
 			yield return new GenericConsoleCommand<int>("StartPresentation", "StartPresentation <INPUT>", i => instance.StartPresentation(i));
 			yield return new ConsoleCommand("StopPresentation", "Stops the active presentation", () => instance.StopPresentation());
 		}

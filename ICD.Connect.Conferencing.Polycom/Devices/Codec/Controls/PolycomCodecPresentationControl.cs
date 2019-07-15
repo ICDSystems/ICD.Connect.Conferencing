@@ -61,6 +61,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void Subscribe(ContentComponent contentComponent)
 		{
 			contentComponent.OnContentVideoSourceChanged += ContentComponentOnContentVideoSourceChanged;
+			contentComponent.OnPresentationActiveChanged += ContentComponentOnPresentationActiveChanged;
 		}
 
 		/// <summary>
@@ -70,6 +71,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void Unsubscribe(ContentComponent contentComponent)
 		{
 			contentComponent.OnContentVideoSourceChanged -= ContentComponentOnContentVideoSourceChanged;
+			contentComponent.OnPresentationActiveChanged -= ContentComponentOnPresentationActiveChanged;
 		}
 
 		/// <summary>
@@ -80,6 +82,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private void ContentComponentOnContentVideoSourceChanged(object sender, ContentVideoSourceEventArgs eventArgs)
 		{
 			PresentationActiveInput = m_ContentComponent.ContentVideoSource;
+		}
+
+		private void ContentComponentOnPresentationActiveChanged(object sender, PresentationActiveEventArgs e)
+		{
+			PresentationActive = m_ContentComponent.PresentationActive;
 		}
 
 		#endregion

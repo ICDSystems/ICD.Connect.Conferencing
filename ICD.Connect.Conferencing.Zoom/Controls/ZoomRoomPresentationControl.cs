@@ -43,23 +43,36 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			m_Component.StopPresentation();
 		}
 
+		private void UpdatePresentationActive()
+		{
+			PresentationActive = m_Component != null && (m_Component.Sharing || m_Component.PresentationOutput != null);
+		}
+
 		#endregion
 
 		#region Component Callbacks
 
 		private void Subscribe(PresentationComponent component)
 		{
-			component.OnSharingChanged += ComponentOnOnSharingChanged;
+			component.OnLocalSharingChanged += ComponentOnOnLocalSharingChanged;
+			component.OnPresentationOutputChanged += ComponentOnPresentationOutputChanged;
 		}
 
 		private void Unsubscribe(PresentationComponent component)
 		{
-			component.OnSharingChanged -= ComponentOnOnSharingChanged;
+			component.OnLocalSharingChanged -= ComponentOnOnLocalSharingChanged;
+			component.OnPresentationOutputChanged -= ComponentOnPresentationOutputChanged;
 		}
 
-		private void ComponentOnOnSharingChanged(object sender, BoolEventArgs args)
+		private void ComponentOnOnLocalSharingChanged(object sender, BoolEventArgs args)
 		{
 			PresentationActiveInput = m_Component != null && m_Component.Sharing ? 1 : (int?) null;
+			UpdatePresentationActive();
+		}
+		
+		private void ComponentOnPresentationOutputChanged(object sender, PresentationOutputEventArgs e)
+		{
+			UpdatePresentationActive();
 		}
 
 		#endregion

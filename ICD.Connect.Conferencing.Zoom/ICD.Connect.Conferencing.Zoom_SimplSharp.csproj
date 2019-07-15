@@ -76,9 +76,11 @@
     <Compile Include="Components\Call\ZoomParticipant.cs" />
     <Compile Include="Components\Camera\CameraComponent.cs" />
     <Compile Include="Components\Directory\DirectoryComponent.cs" />
+    <Compile Include="Components\Presentation\PinStatusOfScreenNotification.cs" />
     <Compile Include="Components\Presentation\PresentationComponent.cs" />
     <Compile Include="Components\Directory\ZoomFolder.cs" />
     <Compile Include="Components\Call\CallComponent.cs" />
+    <Compile Include="Components\Presentation\PresentationOutputEventArgs.cs" />
     <Compile Include="Components\System\SystemComponent.cs" />
     <Compile Include="Components\Bookings\BookingsComponent.cs" />
     <Compile Include="Components\ZoomRoomComponentFactory.cs" />
@@ -115,6 +117,8 @@
     <Compile Include="Responses\Converters\MeetingNeedsPasswordResponseConverter.cs" />
     <Compile Include="Responses\Converters\ParticipantInfoConverter.cs" />
     <Compile Include="Responses\Converters\PhonebookResponseConverter.cs" />
+    <Compile Include="Responses\Converters\PinStatusOfScreenNotificationConverter.cs" />
+    <Compile Include="Responses\Converters\PinStatusOfScreenNotificationResponseConverter.cs" />
     <Compile Include="Responses\Converters\SharingInfoConverter.cs" />
     <Compile Include="Responses\Converters\SharingResponseConverter.cs" />
     <Compile Include="Responses\Converters\SystemUnitResponseConverter.cs" />
@@ -140,6 +144,7 @@
     <Compile Include="Responses\PhonebookResponse.cs" />
     <Compile Include="Components\Directory\ZoomContact.cs" />
     <Compile Include="Components\Presentation\SharingInfo.cs" />
+    <Compile Include="Responses\PinStatusOfScreenNotificationResponse.cs" />
     <Compile Include="Responses\SharingResponse.cs" />
     <Compile Include="Responses\SystemUnitResponse.cs" />
     <Compile Include="Responses\VideoCameraLineResponse.cs" />
