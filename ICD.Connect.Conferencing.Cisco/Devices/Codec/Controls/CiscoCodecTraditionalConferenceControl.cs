@@ -225,11 +225,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 				case eCallDirection.Incoming:
 					AddParticipant(source);
-					AddIncomingCall(source);
+					if (source.AnswerState == eCallAnswerState.Unanswered)
+						AddIncomingCall(source);
 					break;
 				case eCallDirection.Outgoing:
 					AddParticipant(source);
-					
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -379,6 +379,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			incomingCall.Number = source.Number;
 			incomingCall.AnswerState = source.AnswerState;
 			incomingCall.Direction = eCallDirection.Incoming;
+
+			switch (incomingCall.AnswerState)
+			{
+				case eCallAnswerState.Ignored:
+				case eCallAnswerState.Autoanswered:
+				case eCallAnswerState.Answered:
+					RemoveIncomingCall(source);
+					break;
+			}
 		}
 
 		#endregion

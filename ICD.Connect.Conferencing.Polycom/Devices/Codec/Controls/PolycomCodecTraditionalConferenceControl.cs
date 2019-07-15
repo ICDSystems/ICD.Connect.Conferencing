@@ -514,9 +514,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				call.Direction = (bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming;
 
 			if (callStatus.ConnectionState == eConnectionState.Connected)
+			{
 				call.AnswerState = eCallAnswerState.Answered;
+				RemoveIncomingCall(callStatus.CallId);
+			}
 			else if (callStatus.ConnectionState == eConnectionState.Disconnected)
+			{
 				call.AnswerState = eCallAnswerState.Ignored;
+				RemoveIncomingCall(callStatus.CallId);
+			}
 		}
 
 		#endregion
