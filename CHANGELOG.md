@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [13.3.0] - 2019-07-16
 ### Added
  - Added ThinDialContext for calendar parsing
  - Added more information to the participant conference control console command.
  - Added incoming call support to Cisco
+ - Once the incoming call is answered or ignored remove the incoming call for Cisco and Polycom
 
 ### Changed
  - Fix parsing for Zoom SystemInfo
@@ -61,6 +63,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [12.0.0] - 2019-01-10
 ### Added
  - Added port configuration features to conferencing devices
+
+## [11.6.0] - 2019-07-16
+### Changed
+ - Changed PowerOn/PowerOff methods to support new pre-on/off callbacks
 
 ## [11.5.3] - 2019-07-02
 ### Changed
