@@ -63,6 +63,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.6.0] - 2019-07-16
+### Changed
+ - Changed PowerOn/PowerOff methods to support new pre-on/off callbacks
+
 ## [11.5.3] - 2019-07-02
 ### Changed
  - Fixed a bug where Polycom would enter a locked state when receiving a multi-line response with no content
