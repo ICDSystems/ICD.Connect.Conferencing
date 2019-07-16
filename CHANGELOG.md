@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [13.3.0] - 2019-07-16
 ### Added
  - Added ThinDialContext for calendar parsing
  - Added more information to the participant conference control console command.
