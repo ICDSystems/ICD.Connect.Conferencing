@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [13.4.0] - 2019-07-16
+### Added
+ - Added PresentationActive property and event to IPresentationControl
+ - Added methods for setting Cisco presentation multi-screen mode
+ - Added methods for setting Polycom multi-monitor mode
+ 
+### Changed
+ - Fixed an issue with duplicated Zoom participants
+
 ## [13.3.0] - 2019-07-16
 ### Added
  - Added ThinDialContext for calendar parsing
