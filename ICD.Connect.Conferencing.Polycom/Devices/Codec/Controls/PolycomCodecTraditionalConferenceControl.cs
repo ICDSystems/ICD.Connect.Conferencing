@@ -204,9 +204,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			{
 				// Clear out sources that are no longer online
 				IcdHashSet<int> remove =
-					m_IncomingCalls.Where(kvp => !statuses.ContainsKey(kvp.Key))
-							 .Select(kvp => kvp.Key)
-							 .ToIcdHashSet();
+					m_IncomingCalls.Keys
+					               .Concat(m_Participants.Keys)
+					               .Where(id => !statuses.ContainsKey(id))
+					               .ToIcdHashSet();
 
 				RemoveIncomingCalls(remove);
 				RemoveSources(remove);
@@ -296,10 +297,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			try
 			{
-				if (!m_Participants.ContainsKey(id))
+				if (!m_Participants.TryGetValue(id, out source))
 					return;
 
-				source = m_Participants.GetValue(id);
 				source.Status = eParticipantStatus.Disconnected;
 
 				Unsubscribe(source);
@@ -439,10 +439,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			try
 			{
-				if (!m_Participants.ContainsKey(id))
+				if (!m_IncomingCalls.TryGetValue(id, out call))
 					return;
-
-				call = m_IncomingCalls.GetValue(id);
 
 				Unsubscribe(call);
 

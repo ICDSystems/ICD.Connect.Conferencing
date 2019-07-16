@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - Fixed an issue with duplicated Zoom participants
 
+## [13.3.1] - 2019-07-16
+### Changed
+ - Fixed an issue where only incoming calls were being removed and not participants
+
 ## [13.3.0] - 2019-07-16
 ### Added
  - Added ThinDialContext for calendar parsing
