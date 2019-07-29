@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
@@ -8,6 +9,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 {
 	public class CameraComponent : AbstractZoomRoomComponent
 	{
+		public event EventHandler OnCamerasUpdated;
+
 		private CameraInfo[] m_Cameras;
 
 		public CameraComponent(ZoomRoom parent) : base(parent)
@@ -37,7 +40,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		public void SetNearCameraAsVideoSource(int address)
 		{
 			address = MathUtils.Clamp(address, 0, m_Cameras.Length - 1);
-			Parent.SendCommand("zConfiguration Video Camera selectedId: {0}", m_Cameras[address].UsbId);
+			SetActiveCameraByUsbId(m_Cameras[address].UsbId);
+		}
+
+		public void SetActiveCameraByUsbId(string usbId)
+		{
+			Parent.SendCommand("zConfiguration Video Camera selectedId: {0}", usbId);
 		}
 
 		#endregion
@@ -57,6 +65,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		private void CameraListCallback(ZoomRoom zoomroom, VideoCameraLineResponse response)
 		{
 			m_Cameras = response.Cameras;
+			OnCamerasUpdated.Raise(this);
 		}
 
 		#endregion
