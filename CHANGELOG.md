@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [11.6.1] - 2019-07-31
+### Changed
+ - Fixed a bug where cisco dial strings were being malformed for Audio|Video calls
+ - Small performance improvement by avoiding precompiling configured regex
+
 ## [11.6.0] - 2019-07-16
 ### Changed
  - Changed PowerOn/PowerOff methods to support new pre-on/off callbacks
