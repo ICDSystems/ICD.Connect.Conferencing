@@ -211,7 +211,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (existing != null)
 				existing.Hold();
 
-			Codec.SendCommand("xCommand Dial Number: {0} Protocol: {1} CallType: {2}", number, protocol, callType);
+			Codec.SendCommand("xCommand Dial Number: {0} Protocol: {1} CallType: {2}", number, protocol, EnumUtils.GetFlags(callType).Max());
 			Codec.Log(eSeverity.Debug, "Dialing {0} Protocol: {1} CallType: {2}", number, protocol, callType);
 		}
 
