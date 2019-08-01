@@ -8,7 +8,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 	/// </summary>
 	public sealed class RegexPlanMatcher : AbstractPlanMatcher
 	{
-		private readonly Regex m_Regex;
+		private readonly string m_Pattern;
 
 		/// <summary>
 		/// Constructor.
@@ -16,13 +16,13 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <param name="name"></param>
 		/// <param name="sourceType"></param>
 		/// <param name="formatMode"></param>
-		/// <param name="regexString"></param>
+		/// <param name="pattern"></param>
 		/// <param name="format"></param>
 		public RegexPlanMatcher(string name, eCallType sourceType, string format, eFormatMode formatMode,
-		                        string regexString)
+		                        string pattern)
 			: base(name, sourceType, format, formatMode)
 		{
-			m_Regex = new Regex(regexString, RegexOptions.Singleline | RegexOptions.Compiled);
+			m_Pattern = pattern;
 		}
 
 		/// <summary>
@@ -32,7 +32,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 		/// <returns></returns>
 		public override bool Matches(string number)
 		{
-			return m_Regex.IsMatch(number);
+			return Regex.IsMatch(number, m_Pattern, RegexOptions.Singleline);
 		}
 	}
 }
