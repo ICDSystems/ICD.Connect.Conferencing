@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
@@ -131,7 +132,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public override void SetCameraInput(int address)
 		{
 			Parent.Components.GetComponent<VideoComponent>().SetMainVideoSourceByConnectorId(address);
-			CameraInput = address;
 		}
 
 		/// <summary>
@@ -347,7 +347,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private void SubscribeComponents()
 		{
 			VideoComponent.OnVideoInputConnectorConnectionStateChanged += VideoComponentOnVideoInputConnectorStateChanged;
+			VideoComponent.OnMainVideoSourceChanged += VideoComponentOnMainVideoSourceChanged;
 			PresentationComponent.OnPresentationsChanged += PresentationOnPresentationsChanged;
+		}
+
+		private void VideoComponentOnMainVideoSourceChanged(object sender, IntEventArgs intEventArgs)
+		{
+			CameraInput = intEventArgs.Data;
 		}
 
 		/// <summary>
