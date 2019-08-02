@@ -10,8 +10,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 	public class CameraComponent : AbstractZoomRoomComponent
 	{
 		public event EventHandler OnCamerasUpdated;
+		public event EventHandler OnActiveCameraUpdated;
 
 		private CameraInfo[] m_Cameras;
+		private string m_SelectedUsbId;
+
+		public CameraInfo ActiveCamera { get { return m_Cameras == null ? null : m_Cameras.SingleOrDefault(c => c.UsbId == m_SelectedUsbId); } }
 
 		public CameraComponent(ZoomRoom parent) : base(parent)
 		{
@@ -29,6 +33,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 
 		protected override void Initialize()
 		{
+			Parent.SendCommand("zConfiguration Video Camera selectedId");
 			Parent.SendCommand("zStatus Video Camera Line");
 		}
 
@@ -55,17 +60,25 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		private void Subscribe(ZoomRoom parent)
 		{
 			parent.RegisterResponseCallback<VideoCameraLineResponse>(CameraListCallback);
+			parent.RegisterResponseCallback<VideoConfigurationResponse>(SelectedCameraCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			parent.UnregisterResponseCallback<VideoCameraLineResponse>(CameraListCallback);
+			parent.UnregisterResponseCallback<VideoConfigurationResponse>(SelectedCameraCallback);
 		}
 
 		private void CameraListCallback(ZoomRoom zoomroom, VideoCameraLineResponse response)
 		{
 			m_Cameras = response.Cameras;
 			OnCamerasUpdated.Raise(this);
+		}
+
+		private void SelectedCameraCallback(ZoomRoom zoomRoom, VideoConfigurationResponse response)
+		{
+			m_SelectedUsbId = response.Video.Camera.SelectedId;
+			OnActiveCameraUpdated.Raise(this);
 		}
 
 		#endregion
