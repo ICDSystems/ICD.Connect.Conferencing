@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [11.6.2] - 2019-08-02
+### Changed
+ - Cisco active camera feedback is now updated correctly
+
 ## [11.6.1] - 2019-07-31
 ### Changed
  - Fixed a bug where cisco dial strings were being malformed for Audio|Video calls
