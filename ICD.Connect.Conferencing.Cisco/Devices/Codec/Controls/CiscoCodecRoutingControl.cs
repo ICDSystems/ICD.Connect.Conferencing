@@ -131,6 +131,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public override void SetCameraInput(int address)
 		{
 			Parent.Components.GetComponent<VideoComponent>().SetMainVideoSourceByConnectorId(address);
+			CameraInput = address;
 		}
 
 		/// <summary>
