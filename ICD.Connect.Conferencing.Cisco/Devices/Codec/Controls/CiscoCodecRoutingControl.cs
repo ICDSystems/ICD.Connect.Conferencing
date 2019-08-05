@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
@@ -72,9 +73,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			: base(parent, id)
 		{
 			m_Cache = new SwitcherCache();
-			m_Cache.OnActiveInputsChanged += CacheOnActiveInputsChanged;
-			m_Cache.OnSourceDetectionStateChange += CacheOnSourceDetectionStateChange;
-			m_Cache.OnActiveTransmissionStateChanged += CacheOnActiveTransmissionStateChanged;
+			Subscribe(m_Cache);
 
 			SubscribeComponents();
 		}
@@ -90,6 +89,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			OnActiveInputsChanged = null;
 
 			base.DisposeFinal(disposing);
+
+			Unsubscribe(m_Cache);
 		}
 
 		#region Methods
@@ -346,7 +347,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private void SubscribeComponents()
 		{
 			VideoComponent.OnVideoInputConnectorConnectionStateChanged += VideoComponentOnVideoInputConnectorStateChanged;
+			VideoComponent.OnMainVideoSourceChanged += VideoComponentOnMainVideoSourceChanged;
 			PresentationComponent.OnPresentationsChanged += PresentationOnPresentationsChanged;
+		}
+
+		private void VideoComponentOnMainVideoSourceChanged(object sender, IntEventArgs intEventArgs)
+		{
+			CameraInput = intEventArgs.Data;
 		}
 
 		/// <summary>
@@ -389,6 +396,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		#endregion
 
 		#region Cache Callbacks
+
+		private void Subscribe(SwitcherCache cache)
+		{
+			cache.OnActiveInputsChanged += CacheOnActiveInputsChanged;
+			cache.OnSourceDetectionStateChange += CacheOnSourceDetectionStateChange;
+			cache.OnActiveTransmissionStateChanged += CacheOnActiveTransmissionStateChanged;
+		}
+
+		private void Unsubscribe(SwitcherCache cache)
+		{
+			cache.OnActiveInputsChanged -= CacheOnActiveInputsChanged;
+			cache.OnSourceDetectionStateChange -= CacheOnSourceDetectionStateChange;
+			cache.OnActiveTransmissionStateChanged -= CacheOnActiveTransmissionStateChanged;
+		}
 
 		private void CacheOnActiveTransmissionStateChanged(object sender, TransmissionStateEventArgs args)
 		{
