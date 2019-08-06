@@ -1,29 +1,14 @@
 ﻿using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Devices;
-using ICD.Connect.Settings;
-using ICD.Connect.Settings.Attributes.SettingsProperties;
+using ICD.Connect.Devices.Points;
 
 namespace ICD.Connect.Conferencing.ConferencePoints
 {
-	public abstract class AbstractConferencePointSettings : AbstractSettings, IConferencePointSettings
+	public abstract class AbstractConferencePointSettings : AbstractPointSettings, IConferencePointSettings
 	{
-		private const string DEVICE_ELEMENT = "Device";
-		private const string CONTROL_ELEMENT = "Control";
 		private const string TYPE_ELEMENT = "Type";
 
 		#region Properties
-
-		/// <summary>
-		/// Device id for this conference point
-		/// </summary>
-		[OriginatorIdSettingsProperty(typeof(IDeviceBase))]
-		public int DeviceId { get; set; }
-
-		/// <summary>
-		/// Control id for an IConferenceDeviceControl on this conference point's device
-		/// </summary>
-		public int ControlId { get; set; }
 
 		public eCallType Type { get; set; }
 
@@ -39,8 +24,6 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 		{
 			base.WriteElements(writer);
 
-			writer.WriteElementString(DEVICE_ELEMENT, IcdXmlConvert.ToString(DeviceId));
-			writer.WriteElementString(CONTROL_ELEMENT, IcdXmlConvert.ToString(ControlId));
 			writer.WriteElementString(TYPE_ELEMENT, IcdXmlConvert.ToString(Type));
 		}
 
@@ -52,8 +35,6 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 		{
 			base.ParseXml(xml);
 
-			DeviceId = XmlUtils.TryReadChildElementContentAsInt(xml, DEVICE_ELEMENT) ?? 0;
-			ControlId = XmlUtils.TryReadChildElementContentAsInt(xml, CONTROL_ELEMENT) ?? 0;
 			Type = XmlUtils.TryReadChildElementContentAsEnum<eCallType>(xml, TYPE_ELEMENT, true) ?? eCallType.Unknown;
 		}
 

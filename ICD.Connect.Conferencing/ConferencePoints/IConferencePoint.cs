@@ -1,20 +1,10 @@
 ﻿using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Settings.Originators;
+using ICD.Connect.Devices.Points;
 
 namespace ICD.Connect.Conferencing.ConferencePoints
 {
-	public interface IConferencePoint : IOriginator
+	public interface IConferencePoint : IPoint
 	{
-		/// <summary>
-		/// Device id
-		/// </summary>
-		int DeviceId { get; set; }
-
-		/// <summary>
-		/// Control id.
-		/// </summary>
-		int ControlId { get; set; }
-
 		eCallType Type { get; set; }
 	}
 }

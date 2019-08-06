@@ -1,14 +1,10 @@
 ﻿using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Settings;
+using ICD.Connect.Devices.Points;
 
 namespace ICD.Connect.Conferencing.ConferencePoints
 {
-	public interface IConferencePointSettings : ISettings
+	public interface IConferencePointSettings : IPointSettings
 	{
-		int DeviceId { get; set; }
-
-		int ControlId { get; set; }
-
 		eCallType Type { get; set; }
 	}
 }
