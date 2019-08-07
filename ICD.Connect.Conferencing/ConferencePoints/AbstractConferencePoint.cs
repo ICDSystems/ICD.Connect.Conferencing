@@ -1,4 +1,5 @@
-﻿using ICD.Connect.Conferencing.EventArguments;
+﻿using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Points;
 using ICD.Connect.Settings;
 
@@ -37,5 +38,16 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("Type", Type);
+		}
 	}
 }
