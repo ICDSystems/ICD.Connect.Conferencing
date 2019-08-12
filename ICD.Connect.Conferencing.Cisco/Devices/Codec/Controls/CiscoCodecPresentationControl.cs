@@ -40,6 +40,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			Unsubscribe(m_Presentation);
 		}
 
+		public ePresentationMode PresentationMode
+		{
+			get { return m_Presentation == null ? ePresentationMode.Off : m_Presentation.PresentationMode; }
+		}
+
 		#region Methods
 
 		/// <summary>
