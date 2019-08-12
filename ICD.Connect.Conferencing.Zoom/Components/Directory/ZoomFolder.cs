@@ -1,12 +1,14 @@
-﻿using ICD.Connect.Conferencing.Directory.Tree;
+﻿using ICD.Connect.Conferencing.Comparers;
+using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
-	public class ZoomFolder : AbstractDirectoryFolder
+	public sealed class ZoomFolder : AbstractDirectoryFolder
 	{
 		private readonly string m_Name;
 
 		public ZoomFolder(string name)
+			: base(DirectoryFolderNameComparer.Instance, ContactNameComparer.Instance)
 		{
 			m_Name = name;
 		}
