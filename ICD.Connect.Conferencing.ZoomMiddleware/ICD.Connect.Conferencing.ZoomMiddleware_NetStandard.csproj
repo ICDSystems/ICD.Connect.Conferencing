@@ -37,6 +37,9 @@
     <ProjectReference Include="..\ICD.Connect.Conferencing.Zoom\ICD.Connect.Conferencing.Zoom_NetStandard.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="README.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Uninstall.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
