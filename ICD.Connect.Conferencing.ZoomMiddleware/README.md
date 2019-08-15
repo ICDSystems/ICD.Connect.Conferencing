@@ -12,7 +12,7 @@ To begin the installation process run the **Install.bat** Windows Batch file as 
 1. The installation process will attempt to uninstall an existing version of the software.
 2. The installer will ask the user to specify a number of configuration parameters. Pressing return without specifying a value will set the parameter to its default:
 	* **Zoom Username** - The username configured in the Zoom software (defaults to **zoom**)
-	* **Zoom Password** - The password configured in the Zoom software (defaults to **zoomus123**)
+	* **Zoom Password** - The password configured in the Zoom software (defaults to **noth74ing**)
 	* **Zoom Port** - The port that the Zoom software's SSH server is listening on (defaults to **2244**)
 	* **Listen Address** - The control processor client IP that will be accepted by the middleware (defaults to all IPs: **0.0.0.0**)
 	* **Listen Port** - The port that the middleware TCP server is hosted on (defaults to **2245**)
@@ -23,3 +23,5 @@ To begin the installation process run the **Install.bat** Windows Batch file as 
 
 ## Troubleshooting
 The Zoom Middleware Service will log any warnings or errors to **C:\ProgramData\ICD Systems\Logs**
+
+**Zoom will reject all connections unless an account has been signed in.**

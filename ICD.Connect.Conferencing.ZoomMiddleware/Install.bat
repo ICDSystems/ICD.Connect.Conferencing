@@ -9,7 +9,7 @@ set TargetApplicationPath=%InstallPath%%Application%
 set ServiceName=ICD Zoom Middleware Service
 
 set ZoomUsername=zoom
-set ZoomPassword=zoomus123
+set ZoomPassword=noth74ing
 set ZoomPort=2244
 set ListenAddress=0.0.0.0
 set ListenPort=2245
