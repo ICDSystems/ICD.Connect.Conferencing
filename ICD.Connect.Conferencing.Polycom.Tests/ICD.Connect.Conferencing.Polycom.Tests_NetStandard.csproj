@@ -26,7 +26,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\ICD.Common.Logging\ICD.Common.Logging.Console\ICD.Common.Logging.Console_NetStandard.csproj" />
     <ProjectReference Include="..\ICD.Connect.Conferencing.Polycom\ICD.Connect.Conferencing.Polycom_NetStandard.csproj" />
   </ItemGroup>
 
