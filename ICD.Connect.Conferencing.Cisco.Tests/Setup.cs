@@ -1,5 +1,5 @@
-﻿using ICD.Common.Logging.Console;
-using ICD.Common.Logging.Console.Loggers;
+﻿using ICD.Common.Logging;
+using ICD.Common.Logging.Loggers;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using NUnit.Framework;
