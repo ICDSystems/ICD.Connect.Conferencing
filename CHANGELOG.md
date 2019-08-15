@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [13.5.0] - 2019-08-15
+### Changed
+ - Changed ZoomMiddleware default password
+
 ## [13.4.0] - 2019-07-16
 ### Added
  - Added PresentationActive property and event to IPresentationControl
