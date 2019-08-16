@@ -18,6 +18,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 
 		#region Properties
 
+		public int ItemNumber { get; set; }
+
 		/// <summary>
 		/// Gets the contact id.
 		/// </summary>
@@ -106,6 +108,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		protected override CiscoContact Instantiate()
 		{
 			return new CiscoContact();
+		}
+
+		/// <summary>
+		/// Override to handle the current attribute.
+		/// </summary>
+		/// <param name="reader"></param>
+		/// <param name="instance"></param>
+		protected override void ReadAttribute(IcdXmlReader reader, CiscoContact instance)
+		{
+			switch (reader.Name)
+			{
+				case "item":
+					instance.ItemNumber = Int32.Parse(reader.Value);
+					break;
+				default:
+					base.ReadAttribute(reader, instance);
+					break;
+			}
 		}
 
 		/// <summary>

@@ -5,13 +5,13 @@ using ICD.Connect.Conferencing.Contacts;
 
 namespace ICD.Connect.Conferencing.Cisco.Comparers
 {
-	public sealed class ContactIdComparer : IComparer<IContact>
+	public sealed class ContactItemComparer : IComparer<IContact>
 	{
-		private static ContactIdComparer s_Instance;
+		private static ContactItemComparer s_Instance;
 
-		public static ContactIdComparer Instance
+		public static ContactItemComparer Instance
 		{
-			get { return s_Instance = s_Instance ?? new ContactIdComparer(); }
+			get { return s_Instance = s_Instance ?? new ContactItemComparer(); }
 		}
 
 		public int Compare(IContact x, IContact y)
@@ -24,8 +24,7 @@ namespace ICD.Connect.Conferencing.Cisco.Comparers
 			if (ciscoContactY == null)
 				throw new ArgumentException("Expected a Cisco Contact");
 
-
-			return string.Compare(ciscoContactX.ContactId, ciscoContactY.ContactId, StringComparison.Ordinal);
+			return ciscoContactX.ItemNumber.CompareTo(ciscoContactY.ItemNumber);
 		}
 	}
 }
