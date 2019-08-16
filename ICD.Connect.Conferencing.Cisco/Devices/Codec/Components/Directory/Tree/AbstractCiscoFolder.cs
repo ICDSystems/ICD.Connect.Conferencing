@@ -13,6 +13,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 
 		#region Properties
 
+		public int ItemNumber { get; set; }
+
 		/// <summary>
 		/// The id of the folder.
 		/// </summary>
@@ -37,7 +39,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// Constructor.
 		/// </summary>
 		protected AbstractCiscoFolder()
-			: base(DirectoryFolderIdComparer.Instance, ContactIdComparer.Instance)
+			: base(DirectoryFolderItemComparer.Instance, ContactItemComparer.Instance)
 		{
 		}
 

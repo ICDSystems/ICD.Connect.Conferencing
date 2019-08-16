@@ -1,4 +1,5 @@
-﻿using ICD.Common.Utils.Xml;
+﻿using System;
+using ICD.Common.Utils.Xml;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
@@ -50,6 +51,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 			{
 				case "localId":
 					instance.FolderId = reader.Value;
+					break;
+
+				case "item":
+					instance.ItemNumber = Int32.Parse(reader.Value);
 					break;
 
 				default:

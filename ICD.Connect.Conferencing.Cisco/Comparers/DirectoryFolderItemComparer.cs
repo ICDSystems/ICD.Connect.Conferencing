@@ -5,13 +5,13 @@ using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Comparers
 {
-	public sealed class DirectoryFolderIdComparer : IComparer<IDirectoryFolder>
+	public sealed class DirectoryFolderItemComparer : IComparer<IDirectoryFolder>
 	{
-		private static DirectoryFolderIdComparer s_Instance;
+		private static DirectoryFolderItemComparer s_Instance;
 
-		public static DirectoryFolderIdComparer Instance
+		public static DirectoryFolderItemComparer Instance
 		{
-			get { return s_Instance = s_Instance ?? new DirectoryFolderIdComparer(); }
+			get { return s_Instance = s_Instance ?? new DirectoryFolderItemComparer(); }
 		}
 
 		public int Compare(IDirectoryFolder x, IDirectoryFolder y)
@@ -25,7 +25,7 @@ namespace ICD.Connect.Conferencing.Cisco.Comparers
 				throw new ArgumentException("Expected a Cisco Folder");
 
 
-			return string.Compare(ciscoFolderX.FolderId, ciscoFolderY.FolderId, StringComparison.Ordinal);
+			return ciscoFolderX.ItemNumber.CompareTo(ciscoFolderY.ItemNumber);
 		}
 	}
 }
