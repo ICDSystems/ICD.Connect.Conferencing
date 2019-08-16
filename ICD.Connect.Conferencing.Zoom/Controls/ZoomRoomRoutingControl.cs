@@ -84,15 +84,15 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
 			// Presentation input
-			yield return new ConnectorInfo(1, eConnectionType.Video);
+			//yield return new ConnectorInfo(1, eConnectionType.Video);
 
 			// Camera input
-			yield return new ConnectorInfo(2, eConnectionType.Video);
+			//yield return new ConnectorInfo(2, eConnectionType.Video);
 
-			//return
-			//    RoutingGraph.Connections
-			//                .GetInputConnections(Parent.Id, Id)
-			//                .Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
+			return
+				RoutingGraph.Connections
+							.GetInputConnections(Parent.Id, Id)
+							.Select(c => new ConnectorInfo(c.Destination.Address, c.ConnectionType));
 		}
 
 		/// <summary>
