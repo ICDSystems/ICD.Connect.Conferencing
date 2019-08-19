@@ -57,6 +57,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		}
 
 		/// <summary>
+		/// Sends a command to the Cisco Codec to list the booking with the given id.
+		/// </summary>
+		/// <param name="id"></param>
+		public void ListBooking(int id)
+		{
+			Codec.SendCommand("xCommand Bookings Get Id:{0}", id);
+			Codec.Log(eSeverity.Informational, "xCommand Bookings Get Id:{0}", id);
+		}
+
+		/// <summary>
 		/// Sends a command to the Cisco Codec to list the available bookings for the day.
 		/// </summary>
 		public void ListBookings()
@@ -124,6 +134,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 				return;
 
 			codec.RegisterParserCallback(ParseBookingsList, "BookingsListResult");
+			codec.RegisterParserCallback(ParseUpdatedBookingEvent, CiscoCodecDevice.XEVENT_ELEMENT, "Bookings");
 		}
 
 		/// <summary>
@@ -138,6 +149,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 				return;
 
 			codec.UnregisterParserCallback(ParseBookingsList, "BookingsListResult");
+			codec.UnregisterParserCallback(ParseUpdatedBookingEvent, CiscoCodecDevice.XEVENT_ELEMENT, "Bookings");
 		}
 
 		/// <summary>
@@ -180,6 +192,52 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 
 			if (change)
 				OnBookingsChanged.Raise(this);
+		}
+
+		/// <summary>
+		/// Called when a booking is modified.
+		/// </summary>
+		/// <param name="codec"></param>
+		/// <param name="resultid"></param>
+		/// <param name="xml"></param>
+		private void ParseUpdatedBookingEvent(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			/*
+			<Bookings item="1">
+				<Updated item="1"/>
+			</Bookings>
+			 */
+
+			/*
+			<Bookings item="1">
+				<StartTimeBuffer item="1">
+					<Id item="1">131254</Id>
+				</StartTimeBuffer>
+			</Bookings>
+			 */
+
+			/*
+			<Bookings item="1">
+				<Start item="1">
+					<Id item="1">131254</Id>
+				</Start>
+			</Bookings>
+			 */
+
+			// Try to find a booking id in the event
+			XmlUtils.Recurse(xml, args =>
+			                      {
+				                      if (args.Path.Last() != "Id")
+					                      return true;
+
+				                      int id = XmlUtils.ReadElementContentAsInt(args.Outer);
+
+									  // Update the booking
+				                      ListBooking(id);
+
+									  // Stop recursing
+				                      return false;
+			                      });
 		}
 
 		/// <summary>
