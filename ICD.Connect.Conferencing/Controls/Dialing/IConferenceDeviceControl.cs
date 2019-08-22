@@ -76,25 +76,25 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Gets the AutoAnswer state.
 		/// </summary>
-		[ApiProperty(DialingDeviceControlApi.PROPERTY_AUTO_ANSWER, DialingDeviceControlApi.HELP_PROPERTY_AUTO_ANSWER)]
+		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_AUTO_ANSWER, ConferenceDeviceControlApi.HELP_PROPERTY_AUTO_ANSWER)]
 		bool AutoAnswer { get; }
 
 		/// <summary>
 		/// Gets the current microphone mute state.
 		/// </summary>
-		[ApiProperty(DialingDeviceControlApi.PROPERTY_PRIVACY_MUTED, DialingDeviceControlApi.HELP_PROPERTY_PRIVACY_MUTED)]
+		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_PRIVACY_MUTED, ConferenceDeviceControlApi.HELP_PROPERTY_PRIVACY_MUTED)]
 		bool PrivacyMuted { get; }
 
 		/// <summary>
 		/// Gets the DoNotDisturb state.
 		/// </summary>
-		[ApiProperty(DialingDeviceControlApi.PROPERTY_DO_NOT_DISTURB, DialingDeviceControlApi.HELP_PROPERTY_DO_NOT_DISTURB)]
+		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_DO_NOT_DISTURB, ConferenceDeviceControlApi.HELP_PROPERTY_DO_NOT_DISTURB)]
 		bool DoNotDisturb { get; }
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
-		[ApiProperty(DialingDeviceControlApi.PROPERTY_SUPPORTS, DialingDeviceControlApi.HELP_PROPERTY_SUPPORTS)]
+		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_SUPPORTS, ConferenceDeviceControlApi.HELP_PROPERTY_SUPPORTS)]
 		eCallType Supports { get; }
 
 		#endregion
@@ -109,39 +109,39 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		IEnumerable<IConference> GetConferences();
 
 		/// <summary>
-		/// Returns the level of support the device has for the given booking.
+		/// Returns the level of support the device has for the given context.
 		/// </summary>
 		/// <param name="dialContext"></param>
 		/// <returns></returns>
-		[ApiMethod(DialingDeviceControlApi.METHOD_CAN_DIAL, DialingDeviceControlApi.HELP_METHOD_CAN_DIAL)]
+		[ApiMethod(ConferenceDeviceControlApi.METHOD_CAN_DIAL, ConferenceDeviceControlApi.HELP_METHOD_CAN_DIAL)]
 		eDialContextSupport CanDial(IDialContext dialContext);
 
 		/// <summary>
-		/// Dials the given booking.
+		/// Dials the given context.
 		/// </summary>
 		/// <param name="dialContext"></param>
-		[ApiMethod(DialingDeviceControlApi.METHOD_DIAL_CONTEXT, DialingDeviceControlApi.HELP_METHOD_DIAL_CONTEXT)]
+		[ApiMethod(ConferenceDeviceControlApi.METHOD_DIAL_CONTEXT, ConferenceDeviceControlApi.HELP_METHOD_DIAL_CONTEXT)]
 		void Dial(IDialContext dialContext);
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.
 		/// </summary>
 		/// <param name="enabled"></param>
-		[ApiMethod(DialingDeviceControlApi.METHOD_SET_DO_NOT_DISTURB, DialingDeviceControlApi.HELP_METHOD_SET_DO_NOT_DISTURB)]
+		[ApiMethod(ConferenceDeviceControlApi.METHOD_SET_DO_NOT_DISTURB, ConferenceDeviceControlApi.HELP_METHOD_SET_DO_NOT_DISTURB)]
 		void SetDoNotDisturb(bool enabled);
 
 		/// <summary>
 		/// Sets the auto-answer enabled state.
 		/// </summary>
 		/// <param name="enabled"></param>
-		[ApiMethod(DialingDeviceControlApi.METHOD_SET_AUTO_ANSWER, DialingDeviceControlApi.HELP_METHOD_SET_AUTO_ANSWER)]
+		[ApiMethod(ConferenceDeviceControlApi.METHOD_SET_AUTO_ANSWER, ConferenceDeviceControlApi.HELP_METHOD_SET_AUTO_ANSWER)]
 		void SetAutoAnswer(bool enabled);
 
 		/// <summary>
 		/// Sets the privacy mute enabled state.
 		/// </summary>
 		/// <param name="enabled"></param>
-		[ApiMethod(DialingDeviceControlApi.METHOD_SET_PRIVACY_MUTE, DialingDeviceControlApi.HELP_METHOD_SET_PRIVACY_MUTE)]
+		[ApiMethod(ConferenceDeviceControlApi.METHOD_SET_PRIVACY_MUTE, ConferenceDeviceControlApi.HELP_METHOD_SET_PRIVACY_MUTE)]
 		void SetPrivacyMute(bool enabled);
 
 		#endregion
@@ -178,9 +178,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			if (dialers == null)
 				throw new ArgumentNullException("dialers");
 
-			var bestGroup = dialers.GroupBy(d => d.CanDial(dialContext))
-				.Where(g => g.Key != eDialContextSupport.Unsupported)
-				.OrderByDescending(g => g.Key).FirstOrDefault();
+			IGrouping<eDialContextSupport, T> bestGroup =
+				dialers.GroupBy(d => d.CanDial(dialContext))
+				       .Where(g => g.Key != eDialContextSupport.Unsupported)
+				       .OrderByDescending(g => g.Key).FirstOrDefault();
+
 			return bestGroup == null ? default(T) : bestGroup.FirstOrDefault();
 		}
 	}

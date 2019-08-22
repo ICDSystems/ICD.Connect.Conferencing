@@ -195,7 +195,7 @@
     <Compile Include="Proxies\Controls\Layout\IProxyConferenceLayoutControl.cs" />
     <Compile Include="Proxies\Controls\Layout\ProxyConferenceLayoutControl.cs" />
     <Compile Include="Proxies\Controls\Presentation\AbstractProxyPresentationControl.cs" />
-    <Compile Include="Proxies\Controls\Dialing\DialingDeviceControlApi.cs" />
+    <Compile Include="Proxies\Controls\Dialing\ConferenceDeviceControlApi.cs" />
     <Compile Include="Proxies\Controls\Dialing\IProxyTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Proxies\Controls\Presentation\IProxyPresentationControl.cs" />
     <Compile Include="Proxies\Controls\Presentation\PresentationControlApi.cs" />

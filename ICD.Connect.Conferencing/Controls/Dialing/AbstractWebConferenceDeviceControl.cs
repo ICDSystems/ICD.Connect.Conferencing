@@ -17,7 +17,8 @@ using ICD.Connect.Devices.Controls;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
-	public abstract class AbstractWebConferenceDeviceControl<T> : AbstractDeviceControl<T>, IWebConferenceDeviceControl where T : IDeviceBase
+	public abstract class AbstractWebConferenceDeviceControl<T> : AbstractDeviceControl<T>, IWebConferenceDeviceControl
+		where T : IDeviceBase
 	{
 		/// <summary>
 		/// Raised when a source is added to the conference component.
@@ -66,7 +67,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private bool m_DoNotDisturb;
 		private bool m_CameraEnabled;
 
-		private IWebConference m_ActiveConference;
 
 		#region Properties
 

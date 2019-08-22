@@ -5,7 +5,6 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Conferences;
-using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -137,34 +136,6 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		} 
 
 		/// <summary>
-		/// Dials the given number.
-		/// </summary>
-		/// <param name="number"></param>
-		public void Dial(string number)
-		{
-			CallMethod(DialingDeviceControlApi.METHOD_DIAL);
-		}
-
-		/// <summary>
-		/// Dials the given number.
-		/// </summary>
-		/// <param name="number"></param>
-		/// <param name="callType"></param>
-		public void Dial(string number, eCallType callType)
-		{
-			CallMethod(DialingDeviceControlApi.METHOD_DIAL_TYPE, callType);
-		}
-
-		/// <summary>
-		/// Dials the given contact.
-		/// </summary>
-		/// <param name="contact"></param>
-		public void Dial(IContact contact)
-		{
-			CallMethod(DialingDeviceControlApi.METHOD_DIAL_CONTACT, contact);
-		}
-
-		/// <summary>
 		/// Returns the level of support the device has for the given booking.
 		/// </summary>
 		/// <param name="dialContext"></param>
@@ -181,7 +152,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// <param name="dialContext"></param>
 		public void Dial(IDialContext dialContext)
 		{
-			CallMethod(DialingDeviceControlApi.METHOD_DIAL_CONTEXT, dialContext);
+			CallMethod(ConferenceDeviceControlApi.METHOD_DIAL_CONTEXT, dialContext);
 		}
 
 		/// <summary>
@@ -190,7 +161,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// <param name="enabled"></param>
 		public void SetDoNotDisturb(bool enabled)
 		{
-			CallMethod(DialingDeviceControlApi.METHOD_SET_DO_NOT_DISTURB, enabled);
+			CallMethod(ConferenceDeviceControlApi.METHOD_SET_DO_NOT_DISTURB, enabled);
 		}
 
 		/// <summary>
@@ -199,7 +170,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// <param name="enabled"></param>
 		public void SetAutoAnswer(bool enabled)
 		{
-			CallMethod(DialingDeviceControlApi.METHOD_SET_AUTO_ANSWER, enabled);
+			CallMethod(ConferenceDeviceControlApi.METHOD_SET_AUTO_ANSWER, enabled);
 		}
 
 		/// <summary>
@@ -208,7 +179,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// <param name="enabled"></param>
 		public void SetPrivacyMute(bool enabled)
 		{
-			CallMethod(DialingDeviceControlApi.METHOD_SET_PRIVACY_MUTE, enabled);
+			CallMethod(ConferenceDeviceControlApi.METHOD_SET_PRIVACY_MUTE, enabled);
 		}
 
 		#endregion
