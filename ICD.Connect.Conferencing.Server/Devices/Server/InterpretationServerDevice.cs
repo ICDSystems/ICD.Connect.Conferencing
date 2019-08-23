@@ -49,7 +49,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#region Private Members
 
-		private readonly AsyncTcpServer m_Server;
+		private readonly IcdTcpServer m_Server;
 		private readonly ServerSerialRpcController m_RpcController;
 
 		private readonly SafeCriticalSection m_SafeCriticalSection;
@@ -85,7 +85,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			m_SafeCriticalSection = new SafeCriticalSection();
 
-			m_Server = new AsyncTcpServer();
+			m_Server = new IcdTcpServer();
 			m_RpcController.SetServer(m_Server);
 			Subscribe(m_Server);
 		}
@@ -958,13 +958,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#region TCP Server
 
-		private void Subscribe(AsyncTcpServer server)
+		private void Subscribe(IcdTcpServer server)
 		{
 			if (server != null)
 				server.OnSocketStateChange += ServerOnSocketStateChange;
 		}
 
-		private void Unsubscribe(AsyncTcpServer server)
+		private void Unsubscribe(IcdTcpServer server)
 		{
 			if (server != null)
 				server.OnSocketStateChange -= ServerOnSocketStateChange;

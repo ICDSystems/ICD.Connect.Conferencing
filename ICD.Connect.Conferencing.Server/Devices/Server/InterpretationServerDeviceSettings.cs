@@ -56,7 +56,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			ServerPort = XmlUtils.TryReadChildElementContentAsUShort(xml, SERVER_PORT_ELEMENT) ?? 0;
 			ServerMaxClients = XmlUtils.TryReadChildElementContentAsInt(xml, SERVER_CLIENTS_ELEMENT) ??
-			                   AsyncTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED;
+			                   IcdTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED;
 		}
 
 		protected override void WriteElements(IcdXmlTextWriter writer)

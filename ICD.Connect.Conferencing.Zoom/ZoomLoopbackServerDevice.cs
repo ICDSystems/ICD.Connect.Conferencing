@@ -33,7 +33,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly JsonSerialBuffer m_SerialBuffer;
 
-		private readonly AsyncTcpServer m_TcpServer;
+		private readonly IcdTcpServer m_TcpServer;
 		private readonly TcpServerBufferManager m_ClientBuffers;
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 
-			m_TcpServer = new AsyncTcpServer(2245, AsyncTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED);
+			m_TcpServer = new IcdTcpServer(2245, IcdTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED);
 			Subscribe(m_TcpServer);
 
 			m_ClientBuffers = new TcpServerBufferManager(() => new DelimiterSerialBuffer('\r'));
@@ -332,7 +332,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Subscribe to the TCP server events.
 		/// </summary>
 		/// <param name="tcpServer"></param>
-		private void Subscribe(AsyncTcpServer tcpServer)
+		private void Subscribe(IcdTcpServer tcpServer)
 		{
 			tcpServer.OnSocketStateChange += TcpServerOnSocketStateChange;
 		}
@@ -341,7 +341,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Unsubscribe from the TCP server events.
 		/// </summary>
 		/// <param name="tcpServer"></param>
-		private void Unsubscribe(AsyncTcpServer tcpServer)
+		private void Unsubscribe(IcdTcpServer tcpServer)
 		{
 			tcpServer.OnSocketStateChange -= TcpServerOnSocketStateChange;
 		}
