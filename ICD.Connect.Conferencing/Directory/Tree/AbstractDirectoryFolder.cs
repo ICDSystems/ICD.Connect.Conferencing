@@ -4,7 +4,6 @@ using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Conferencing.Comparers;
 using ICD.Connect.Conferencing.Contacts;
 
 namespace ICD.Connect.Conferencing.Directory.Tree
@@ -19,8 +18,14 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		public event EventHandler OnContentsChanged;
 
-		private readonly IcdOrderedDictionary<string, IDirectoryFolder> m_CachedFolders;
-		private readonly IcdOrderedDictionary<string, IContact> m_CachedContacts;
+		private readonly IComparer<IDirectoryFolder> m_FolderComparer;
+		private readonly IComparer<IContact> m_ContactComparer;
+
+		private readonly BiDictionary<string, IDirectoryFolder> m_NameToFolder;
+		private readonly BiDictionary<string, IContact> m_NameToContact;
+
+		private readonly List<IDirectoryFolder> m_FoldersSorted;
+		private readonly List<IContact> m_ContactsSorted;
 
 		private readonly SafeCriticalSection m_FoldersSection;
 		private readonly SafeCriticalSection m_ContactsSection;
@@ -35,12 +40,12 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <summary>
 		/// Gets the number of cached child contacts.
 		/// </summary>
-		public int ContactCount { get { return m_ContactsSection.Execute(() => m_CachedContacts.Count); } }
+		public int ContactCount { get { return m_ContactsSection.Execute(() => m_NameToContact.Count); } }
 
 		/// <summary>
 		/// Gets the number of cached child folders.
 		/// </summary>
-		public int FolderCount { get { return m_FoldersSection.Execute(() => m_CachedFolders.Count); } }
+		public int FolderCount { get { return m_FoldersSection.Execute(() => m_NameToFolder.Count); } }
 
 		/// <summary>
 		/// Gets the number of child folders and contacts.
@@ -54,10 +59,22 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		protected AbstractDirectoryFolder()
+		protected AbstractDirectoryFolder(IComparer<IDirectoryFolder> folderComparer, IComparer<IContact> contactComparer)
 		{
-			m_CachedFolders = new IcdOrderedDictionary<string, IDirectoryFolder>(StringComparer.Ordinal);
-			m_CachedContacts = new IcdOrderedDictionary<string, IContact>(ContactNameComparer.Instance);
+			if (folderComparer == null)
+				throw new ArgumentNullException("folderComparer");
+
+			if (contactComparer == null)
+				throw new ArgumentNullException("contactComparer");
+
+			m_FolderComparer = folderComparer;
+			m_ContactComparer = contactComparer;
+
+			m_NameToFolder = new BiDictionary<string, IDirectoryFolder>();
+			m_NameToContact = new BiDictionary<string, IContact>();
+
+			m_FoldersSorted = new List<IDirectoryFolder>();
+			m_ContactsSorted = new List<IContact>();
 
 			m_FoldersSection = new SafeCriticalSection();
 			m_ContactsSection = new SafeCriticalSection();
@@ -72,10 +89,29 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// </summary>
 		public void Clear()
 		{
-			m_ContactsSection.Execute(() => m_CachedContacts.Clear());
-			m_FoldersSection.Execute(() => m_CachedFolders.Clear());
+			bool raise;
 
-			OnContentsChanged.Raise(this);
+			m_ContactsSection.Enter();
+			m_FoldersSection.Enter();
+
+			try
+			{
+				raise = m_FoldersSorted.Count > 0 || m_ContactsSorted.Count > 0;
+
+				m_NameToContact.Clear();
+				m_NameToFolder.Clear();
+
+				m_FoldersSorted.Clear();
+				m_ContactsSorted.Clear();
+			}
+			finally
+			{
+				m_ContactsSection.Leave();
+				m_FoldersSection.Leave();
+			}
+
+			if (raise)
+				OnContentsChanged.Raise(this);
 		}
 
 		/// <summary>
@@ -93,7 +129,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IDirectoryFolder[] GetFolders()
 		{
-			return m_FoldersSection.Execute(() => m_CachedFolders.Values.ToArray(m_CachedFolders.Count));
+			return m_FoldersSection.Execute(() => m_FoldersSorted.ToArray(m_FoldersSorted.Count));
 		}
 
 		/// <summary>
@@ -103,17 +139,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IDirectoryFolder GetFolder(string name)
 		{
-			m_FoldersSection.Enter();
-			try
-			{
-				if(m_CachedFolders.ContainsKey(name))
-					return m_CachedFolders[name];
-				return null;
-			}
-			finally
-			{
-				m_FoldersSection.Leave();
-			}
+			return m_FoldersSection.Execute(() => m_NameToFolder.GetDefault(name));
 		}
 
 		/// <summary>
@@ -122,7 +148,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IContact[] GetContacts()
 		{
-			return m_ContactsSection.Execute(() => m_CachedContacts.Values.ToArray(m_CachedContacts.Count));
+			return m_ContactsSection.Execute(() => m_ContactsSorted.ToArray(m_ContactsSorted.Count));
 		}
 
 		/// <summary>
@@ -132,17 +158,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IContact GetContact(string name)
 		{
-			m_ContactsSection.Enter();
-			try
-			{
-				if(m_CachedContacts.ContainsKey(name))
-					return m_CachedContacts[name];
-				return null;
-			}
-			finally
-			{
-				m_ContactsSection.Leave();
-			}
+			return m_ContactsSection.Execute(() => m_NameToContact.GetDefault(name));
 		}
 
 		/// <summary>
@@ -225,7 +241,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 			if (folder == null)
 				throw new ArgumentNullException("folder");
 
-			return m_FoldersSection.Execute(() => m_CachedFolders.ContainsKey(folder.Name));
+			return m_FoldersSection.Execute(() => m_NameToFolder.ContainsValue(folder));
 		}
 
 		/// <summary>
@@ -281,10 +297,11 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 
 			try
 			{
-				if (m_CachedFolders.ContainsKey(folder.Name))
+				if (m_NameToFolder.ContainsValue(folder) || m_NameToFolder.ContainsKey(folder.Name))
 					return false;
 
-				m_CachedFolders.Add(folder.Name, folder);
+				m_NameToFolder.Add(folder.Name, folder);
+				m_FoldersSorted.AddSorted(folder, m_FolderComparer);
 			}
 			finally
 			{
@@ -293,6 +310,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 
 			if (raise)
 				OnContentsChanged.Raise(this);
+
 			return true;
 		}
 
@@ -326,10 +344,11 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 
 			try
 			{
-				if (m_CachedContacts.ContainsKey(contact.Name))
+				if (m_NameToContact.ContainsKey(contact.Name) || m_NameToContact.ContainsValue(contact))
 					return false;
 
-				m_CachedContacts.Add(contact.Name, contact);
+				m_NameToContact.Add(contact.Name, contact);
+				m_ContactsSorted.AddSorted(contact, m_ContactComparer);
 			}
 			finally
 			{
@@ -338,6 +357,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 
 			if (raise)
 				OnContentsChanged.Raise(this);
+
 			return true;
 		}
 

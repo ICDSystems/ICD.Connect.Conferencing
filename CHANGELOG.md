@@ -68,6 +68,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.7.0] - 2019-08-02
+### Added
+ - Cisco "Bookings Updated" event is subscribed to and causes bookings to be listed again
+ 
+### Changed
+ - No longer matching Cisco bookings by ID
+
 ## [11.6.2] - 2019-08-02
 ### Changed
  - Cisco active camera feedback is now updated correctly

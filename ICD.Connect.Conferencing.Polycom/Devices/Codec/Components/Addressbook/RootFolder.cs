@@ -1,4 +1,5 @@
 ﻿using ICD.Common.Utils;
+using ICD.Connect.Conferencing.Comparers;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
@@ -22,6 +23,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 		/// </summary>
 		/// <param name="type"></param>
 		public RootFolder(eAddressbookType type)
+			: base(DirectoryFolderNameComparer.Instance, ContactNameComparer.Instance)
 		{
 			m_Type = type;
 		}

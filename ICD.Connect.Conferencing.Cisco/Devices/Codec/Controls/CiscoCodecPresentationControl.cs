@@ -10,6 +10,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
 	public sealed class CiscoCodecPresentationControl : AbstractPresentationControl<CiscoCodecDevice>
 	{
+		public event EventHandler<PresentationModeEventArgs> OnPresentationModeChanged;
+
 		private readonly VideoComponent m_Video;
 		private readonly PresentationComponent m_Presentation;
 
@@ -38,6 +40,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_Presentation);
+		}
+
+		public ePresentationMode PresentationMode
+		{
+			get { return m_Presentation == null ? ePresentationMode.Off : m_Presentation.PresentationMode; }
 		}
 
 		#region Methods
@@ -91,6 +98,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			presentation.OnPresentationsChanged += PresentationOnPresentationsChanged;
 			presentation.OnPresentationStopped += PresentationOnPresentationStopped;
+			presentation.OnPresentationModeChanged += PresentationOnPresentationModeChanged;
 		}
 
 		/// <summary>
@@ -111,6 +119,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private void PresentationOnPresentationsChanged(object sender, EventArgs eventArgs)
 		{
 			UpdatePresentationActive();
+		}
+
+		private void PresentationOnPresentationModeChanged(object sender, PresentationModeEventArgs args)
+		{
+			UpdatePresentationActive();
+			OnPresentationModeChanged.Raise(this, new PresentationModeEventArgs(args.Data));
 		}
 
 		#endregion
