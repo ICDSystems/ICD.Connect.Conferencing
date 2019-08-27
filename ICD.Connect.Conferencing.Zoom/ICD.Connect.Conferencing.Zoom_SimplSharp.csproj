@@ -123,6 +123,7 @@
     <Compile Include="Responses\Converters\SharingResponseConverter.cs" />
     <Compile Include="Responses\Converters\SystemUnitResponseConverter.cs" />
     <Compile Include="Responses\Converters\VideoCameraLineResponseConverter.cs" />
+    <Compile Include="Responses\Converters\VideoConfigurationResponseConverter.cs" />
     <Compile Include="Responses\Converters\ZoomContactConverter.cs" />
     <Compile Include="Responses\Converters\ZoomRoomResponseHeaderConverter.cs" />
     <Compile Include="Responses\Converters\ZoomRoomResponseStatusConverter.cs" />
@@ -149,6 +150,7 @@
     <Compile Include="Responses\SystemUnitResponse.cs" />
     <Compile Include="Responses\VideoCameraLineResponse.cs" />
     <Compile Include="Responses\Attributes\ZoomRoomApiResponseAttribute.cs" />
+    <Compile Include="Responses\VideoConfigurationResponse.cs" />
     <Compile Include="Responses\ZoomRoomResponseHeader.cs" />
     <Compile Include="Responses\ZoomRoomResponseStatus.cs" />
     <Compile Include="ZoomLoopbackServerDevice.cs" />
