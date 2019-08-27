@@ -1,4 +1,6 @@
-﻿namespace ICD.Connect.Conferencing.Directory.Tree
+﻿using ICD.Connect.Conferencing.Comparers;
+
+namespace ICD.Connect.Conferencing.Directory.Tree
 {
 	public sealed class DirectoryFolder : AbstractDirectoryFolder
 	{
@@ -14,6 +16,7 @@
 		/// </summary>
 		/// <param name="name"></param>
 		public DirectoryFolder(string name)
+			: base(DirectoryFolderNameComparer.Instance, ContactNameComparer.Instance)
 		{
 			m_Name = name;
 		}

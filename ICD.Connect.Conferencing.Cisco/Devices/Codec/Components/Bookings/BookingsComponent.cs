@@ -124,6 +124,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 				return;
 
 			codec.RegisterParserCallback(ParseBookingsList, "BookingsListResult");
+			codec.RegisterParserCallback(ParseUpdatedBookingEvent, CiscoCodecDevice.XEVENT_ELEMENT, "Bookings", "Updated");
 		}
 
 		/// <summary>
@@ -138,6 +139,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 				return;
 
 			codec.UnregisterParserCallback(ParseBookingsList, "BookingsListResult");
+			codec.UnregisterParserCallback(ParseUpdatedBookingEvent, CiscoCodecDevice.XEVENT_ELEMENT, "Bookings", "Updated");
 		}
 
 		/// <summary>
@@ -180,6 +182,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 
 			if (change)
 				OnBookingsChanged.Raise(this);
+		}
+
+		/// <summary>
+		/// Called when a booking is modified.
+		/// </summary>
+		/// <param name="codec"></param>
+		/// <param name="resultid"></param>
+		/// <param name="xml"></param>
+		private void ParseUpdatedBookingEvent(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			/*
+			<Bookings item="1">
+				<Updated item="1"/>
+			</Bookings>
+			 */
+
+			// Just update all the bookings again
+			ListBookings();
 		}
 
 		/// <summary>

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.Comparers;
+using ICD.Connect.Conferencing.Contacts;
 
 namespace ICD.Connect.Conferencing.Comparers
 {
-	public sealed class ContactNameComparer : IComparer<string>
+	public sealed class ContactNameComparer : IComparer<IContact>
 	{
 		private static readonly SequenceComparer<string> s_Comparer;
 
@@ -21,7 +22,7 @@ namespace ICD.Connect.Conferencing.Comparers
 			s_Comparer = new SequenceComparer<string>(StringComparer.Ordinal);
 		}
 
-		public int Compare(string x, string y)
+		public int Compare(IContact x, IContact y)
 		{
 			if (x == null)
 				throw new ArgumentNullException("x");
@@ -30,8 +31,8 @@ namespace ICD.Connect.Conferencing.Comparers
 				throw new ArgumentNullException("y");
 
 			// Compare names in reverse order
-			IEnumerable<string> xSplit = x.Split().Where(s => !string.IsNullOrEmpty(s)).Reverse();
-			IEnumerable<string> ySplit = y.Split().Where(s => !string.IsNullOrEmpty(s)).Reverse();
+			IEnumerable<string> xSplit = x.Name.Split().Where(s => !string.IsNullOrEmpty(s)).Reverse();
+			IEnumerable<string> ySplit = y.Name.Split().Where(s => !string.IsNullOrEmpty(s)).Reverse();
 
 			return s_Comparer.Compare(xSplit, ySplit);
 		}

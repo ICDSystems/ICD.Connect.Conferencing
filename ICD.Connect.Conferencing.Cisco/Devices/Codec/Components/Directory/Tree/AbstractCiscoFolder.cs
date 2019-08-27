@@ -1,4 +1,5 @@
 ﻿using System;
+using ICD.Connect.Conferencing.Cisco.Comparers;
 using ICD.Connect.Conferencing.Directory.Tree;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
@@ -11,6 +12,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		private string m_FolderSearchId;
 
 		#region Properties
+
+		public int ItemNumber { get; set; }
 
 		/// <summary>
 		/// The id of the folder.
@@ -32,7 +35,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 
 		#endregion
 
-		#region Constructors
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		protected AbstractCiscoFolder()
+			: base(DirectoryFolderItemComparer.Instance, ContactItemComparer.Instance)
+		{
+		}
+
+		#region Methods
 
 		/// <summary>
 		/// Gets the search command for the contents of the folder.

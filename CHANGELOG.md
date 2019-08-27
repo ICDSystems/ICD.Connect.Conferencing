@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [13.6.0] - 2019-08-27
+### Added
+ - Added event handling in Zoom for when the active camera is changed.
+
 ## [13.5.0] - 2019-08-15
 ### Changed
  - Changed ZoomMiddleware default password
@@ -80,6 +84,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [12.0.0] - 2019-01-10
 ### Added
  - Added port configuration features to conferencing devices
+
+## [11.7.0] - 2019-08-02
+### Added
+ - Cisco "Bookings Updated" event is subscribed to and causes bookings to be listed again
+ 
+### Changed
+ - No longer matching Cisco bookings by ID
 
 ## [11.6.2] - 2019-08-02
 ### Changed
