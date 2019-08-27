@@ -5,10 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changed
- - Cisco Bookings ID Comparer removed
+
+## [11.7.0] - 2019-08-02
 ### Added
- - Cisco Event Bookings Updated subscribed to and causes a bookings to be listed again
+ - Cisco "Bookings Updated" event is subscribed to and causes bookings to be listed again
+ 
+### Changed
+ - No longer matching Cisco bookings by ID
 
 ## [11.6.2] - 2019-08-02
 ### Changed
