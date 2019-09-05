@@ -365,7 +365,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				if (m_SourceTypeToProvider.ContainsKey(sourceType))
 					return false;
 
-				m_SourceTypeToProvider[sourceType] = dialingControl;
+				m_SourceTypeToProvider.Add(sourceType, dialingControl);
 				UpdateProvider(dialingControl);
 
 				Subscribe(dialingControl);
@@ -394,10 +394,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			try
 			{
-				if (!m_SourceTypeToProvider.ContainsKey(sourceType))
+				if (!m_SourceTypeToProvider.TryGetValue(sourceType, out dialingControl))
 					return false;
 
-				dialingControl = m_SourceTypeToProvider[sourceType];
 				m_SourceTypeToProvider.Remove(sourceType);
 
 				Unsubscribe(dialingControl);
