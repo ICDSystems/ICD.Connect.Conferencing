@@ -61,7 +61,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// </summary>
 		protected override void PowerOnFinal()
 		{
-			IsPowered = true;
+			PowerState = ePowerState.PowerOn;
 
 			m_Timer.Reset(0, KEEP_AWAKE_TICK_MS);
 		}
@@ -71,7 +71,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// </summary>
 		protected override void PowerOffFinal()
 		{
-			IsPowered = false;
+			PowerState = ePowerState.PowerOff;
 
 			m_Timer.Stop();
 		}
@@ -132,7 +132,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// <param name="boolEventArgs"></param>
 		private void SleepComponentOnAwakeStateChanged(object sender, BoolEventArgs boolEventArgs)
 		{
-			if (IsPowered)
+			if (PowerState == ePowerState.PowerOn)
 				TimerExpired();
 		}
 

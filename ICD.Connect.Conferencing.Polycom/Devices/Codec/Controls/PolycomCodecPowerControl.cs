@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="boolEventArgs"></param>
 		private void SleepComponentOnAwakeStateChanged(object sender, BoolEventArgs boolEventArgs)
 		{
-			IsPowered = m_SleepComponent.Awake;
+			PowerState = m_SleepComponent.Awake ? ePowerState.PowerOn : ePowerState.PowerOff;
 		}
 
 		#endregion

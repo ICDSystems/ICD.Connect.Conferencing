@@ -61,7 +61,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// </summary>
 		private void UpdatePower()
 		{
-			IsPowered = m_System.Awake;
+			PowerState = m_System.Awake ? ePowerState.PowerOn : ePowerState.PowerOff;
 		}
 
 		#endregion

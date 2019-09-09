@@ -53,10 +53,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		protected override void PowerOnFinal()
 		{
-			if (IsPowered)
+			if (PowerState == ePowerState.PowerOn)
 				return;
 
-			IsPowered = true;
+			PowerState = ePowerState.PowerOn;
 
 			m_Timer.Reset(0, KEEP_AWAKE_TICK_MS);
 		}
@@ -66,7 +66,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		protected override void PowerOffFinal()
 		{
-			IsPowered = false;
+			PowerState = ePowerState.PowerOff;
 
 			m_Timer.Stop();
 		}
@@ -153,7 +153,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs eventArgs)
 		{
 			// Force the codec to wake up if it goes to sleep and we are using this camera
-			if (IsPowered && !eventArgs.Data)
+			if (PowerState == ePowerState.PowerOn && !eventArgs.Data)
 				KeepAwakeTimerExpired();
 		}
 
