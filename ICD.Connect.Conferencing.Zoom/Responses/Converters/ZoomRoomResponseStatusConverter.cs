@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				writer.WriteProperty(ATTR_MESSAGE, value.Message);
 
 			if (value.State != default(eZoomRoomResponseState))
-				writer.WriteProperty(ATTR_MESSAGE, value.State);
+				writer.WriteProperty(ATTR_STATE, value.State);
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, ZoomRoomResponseStatus instance, JsonSerializer serializer)
