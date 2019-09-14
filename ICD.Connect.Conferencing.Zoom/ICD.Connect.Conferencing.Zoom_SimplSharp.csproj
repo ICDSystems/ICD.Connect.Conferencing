@@ -90,6 +90,7 @@
     <Compile Include="Controls\ZoomRoomDirectoryControl.cs" />
     <Compile Include="Controls\ZoomRoomPresentationControl.cs" />
     <Compile Include="Controls\ZoomRoomRoutingControl.cs" />
+    <Compile Include="EventArguments\MeetingNeedsPasswordEventArgs.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Responses\BookingsListResultResponse.cs" />

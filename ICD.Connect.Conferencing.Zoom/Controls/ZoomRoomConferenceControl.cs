@@ -11,13 +11,13 @@ using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
+using ICD.Connect.Conferencing.Zoom.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
 {
 	public sealed class ZoomRoomConferenceControl : AbstractWebConferenceDeviceControl<ZoomRoom>
 	{
-
 		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
@@ -25,35 +25,48 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		public event EventHandler<GenericEventArgs<CallConnectError>> OnCallError;
-		public event EventHandler<BoolEventArgs> OnPasswordRequired; 
+		public event EventHandler<MeetingNeedsPasswordEventArgs> OnPasswordRequired; 
 
 		private readonly CallComponent m_ZoomConference;
 
 		private readonly SafeCriticalSection m_IncomingCallsSection;
 		private readonly Dictionary<ThinIncomingCall, SafeTimer> m_IncomingCalls;
 
+		private string m_LastJoinNumber;
+
 		#region Properties
 
-		public override eCallType Supports
-		{
-			get { return eCallType.Video; }
-		}
+		public override eCallType Supports { get { return eCallType.Video; } }
 
 		#endregion
 
-		public ZoomRoomConferenceControl(ZoomRoom parent, int id) : base(parent, id)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		public ZoomRoomConferenceControl(ZoomRoom parent, int id)
+			: base(parent, id)
 		{
 			m_ZoomConference = Parent.Components.GetComponent<CallComponent>();
 			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
-			Subscribe(parent);
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			base.DisposeFinal(disposing);
+			OnConferenceAdded = null;
+			OnConferenceRemoved = null;
+			OnIncomingCallAdded = null;
+			OnIncomingCallRemoved = null;
+			OnCallError = null;
+			OnPasswordRequired = null; 
 
-			Unsubscribe(Parent);
+			base.DisposeFinal(disposing);
 		}
 
 		#region Methods
@@ -78,10 +91,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			if (dialContext.Protocol == eDialProtocol.Zoom)
 			{
-				if (dialContext.Password != null)
-					JoinMeeting(dialContext.DialString, dialContext.Password);
-				else
+				if (dialContext.Password == null)
 					StartMeeting(dialContext.DialString);
+				else
+					JoinMeeting(dialContext.DialString, dialContext.Password);
 			}
 				
 			else if (dialContext.Protocol == eDialProtocol.ZoomContact)
@@ -125,11 +138,15 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private void StartMeeting(string meetingNumber)
 		{
+			m_LastJoinNumber = meetingNumber;
+
 			Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", meetingNumber);
 		}
 
 		private void JoinMeeting(string meetingNumber, string meetingPassword)
 		{
+			m_LastJoinNumber = meetingNumber;
+
 			Parent.SendCommand("zCommand Dial Join meetingNumber: {0} password: {1}", meetingNumber, meetingPassword);
 		}
 
@@ -234,26 +251,30 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#region Parent Callbacks
 
-		private void Subscribe(ZoomRoom parent)
+		protected override void Subscribe(ZoomRoom parent)
 		{
+			base.Subscribe(parent);
+
 			parent.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.RegisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
 			parent.RegisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
 		}
 
-		private void CallConnectErrorCallback(ZoomRoom zoomRoom, CallConnectErrorResponse response)
+		protected override void Unsubscribe(ZoomRoom parent)
 		{
-			if (response.Error != null)
-				OnCallError.Raise(this, new GenericEventArgs<CallConnectError>(response.Error));
-		}
+			base.Unsubscribe(parent);
 
-		private void Unsubscribe(ZoomRoom parent)
-		{
 			parent.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			parent.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.UnregisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
 			parent.UnregisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
+		}
+
+		private void CallConnectErrorCallback(ZoomRoom zoomRoom, CallConnectErrorResponse response)
+		{
+			if (response.Error != null)
+				OnCallError.Raise(this, new GenericEventArgs<CallConnectError>(response.Error));
 		}
 
 		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
@@ -275,13 +296,15 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void MeetingNeedsPasswordCallback(ZoomRoom zoomRoom, MeetingNeedsPasswordResponse response)
 		{
 			var meetingNeedsPasswordData = response.MeetingNeedsPassword;
-			if (!meetingNeedsPasswordData.NeedsPassword && !meetingNeedsPasswordData.WrongAndRetry)
-				return;
 
-			Parent.Log(eSeverity.Informational, "Meeting needs password NeedsPassword: {0} Wrong/Retry: {1}",
-			           meetingNeedsPasswordData.NeedsPassword, meetingNeedsPasswordData.WrongAndRetry);
+			if (meetingNeedsPasswordData.NeedsPassword)
+				Parent.Log(eSeverity.Informational, "Meeting needs password NeedsPassword: {0} Wrong/Retry: {1}",
+				           meetingNeedsPasswordData.NeedsPassword, meetingNeedsPasswordData.WrongAndRetry);
 
-			OnPasswordRequired.Raise(this, new BoolEventArgs(meetingNeedsPasswordData.WrongAndRetry));
+			OnPasswordRequired.Raise(this,
+			                         new MeetingNeedsPasswordEventArgs(m_LastJoinNumber,
+			                                                           meetingNeedsPasswordData.NeedsPassword,
+			                                                           meetingNeedsPasswordData.WrongAndRetry));
 		}
 
 		#endregion
