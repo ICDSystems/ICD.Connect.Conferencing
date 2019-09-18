@@ -18,14 +18,35 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 {
 	public sealed class ZoomRoomConferenceControl : AbstractWebConferenceDeviceControl<ZoomRoom>
 	{
+		/// <summary>
+		/// Raised when a source is added to the conference component.
+		/// </summary>
 		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+
+		/// <summary>
+		/// Raised when a source is removed from the conference component.
+		/// </summary>
 		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
+		/// <summary>
+		/// Raised when a source property changes.
+		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
+
+		/// <summary>
+		/// Raised when a source property changes.
+		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
+		/// <summary>
+		/// Raised when the Zoom Room reports a call error.
+		/// </summary>
 		public event EventHandler<GenericEventArgs<CallConnectError>> OnCallError;
-		public event EventHandler<MeetingNeedsPasswordEventArgs> OnPasswordRequired; 
+
+		/// <summary>
+		/// Raised when the Zoom Room informs us that a password is required.
+		/// </summary>
+		public event EventHandler<MeetingNeedsPasswordEventArgs> OnPasswordRequired;
 
 		private readonly CallComponent m_ZoomConference;
 
@@ -36,6 +57,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the type of conference this dialer supports.
+		/// </summary>
 		public override eCallType Supports { get { return eCallType.Video; } }
 
 		#endregion
@@ -71,11 +95,20 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#region Methods
 
+		/// <summary>
+		/// Gets the active conference sources.
+		/// </summary>
+		/// <returns></returns>
 		public override IEnumerable<IWebConference> GetConferences()
 		{
 			yield return m_ZoomConference;
 		}
 
+		/// <summary>
+		/// Returns the level of support the device has for the given dial context.
+		/// </summary>
+		/// <param name="dialContext"></param>
+		/// <returns></returns>
 		public override eDialContextSupport CanDial(IDialContext dialContext)
 		{
 			if (string.IsNullOrEmpty(dialContext.DialString))
@@ -87,6 +120,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			return eDialContextSupport.Unsupported;
 		}
 
+		/// <summary>
+		/// Dials the given context.
+		/// </summary>
+		/// <param name="dialContext"></param>
 		public override void Dial(IDialContext dialContext)
 		{
 			if (dialContext.Protocol == eDialProtocol.Zoom)
@@ -106,21 +143,37 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			}
 		}
 
+		/// <summary>
+		/// Sets the do-not-disturb enabled state.
+		/// </summary>
+		/// <param name="enabled"></param>
 		public override void SetDoNotDisturb(bool enabled)
 		{
 			Parent.DoNotDisturb = enabled;
 		}
 
+		/// <summary>
+		/// Sets the auto-answer enabled state.
+		/// </summary>
+		/// <param name="enabled"></param>
 		public override void SetAutoAnswer(bool enabled)
 		{
 			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting auto-answer through the SSH API");
 		}
 
+		/// <summary>
+		/// Sets the privacy mute enabled state.
+		/// </summary>
+		/// <param name="enabled"></param>
 		public override void SetPrivacyMute(bool enabled)
 		{
 			Parent.SendCommand("zConfiguration Call Microphone mute: {0}", enabled ? "on" : "off");
 		}
 
+		/// <summary>
+		/// Sets whether the camera should transmit video or not.
+		/// </summary>
+		/// <param name="enabled"></param>
 		public override void SetCameraEnabled(bool enabled)
 		{
 			Parent.SendCommand("zConfiguration Call Camera mute: {0}", enabled ? "off" : "on");
@@ -215,6 +268,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void AddIncomingCall(ThinIncomingCall incomingCall)
 		{
 			m_IncomingCallsSection.Enter();
+
 			try
 			{
 				var timer = new SafeTimer(incomingCall.Reject, 1000 * 60, -1L);
@@ -230,6 +284,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void RemoveIncomingCall(ThinIncomingCall incomingCall)
 		{
 			m_IncomingCallsSection.Enter();
+
 			try
 			{
 				SafeTimer timer;
@@ -251,6 +306,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#region Parent Callbacks
 
+		/// <summary>
+		/// Subscribe to the parent events.
+		/// </summary>
+		/// <param name="parent"></param>
 		protected override void Subscribe(ZoomRoom parent)
 		{
 			base.Subscribe(parent);
@@ -261,6 +320,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			parent.RegisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
 		}
 
+		/// <summary>
+		/// Unsubscribe from the parent events.
+		/// </summary>
+		/// <param name="parent"></param>
 		protected override void Unsubscribe(ZoomRoom parent)
 		{
 			base.Unsubscribe(parent);
@@ -271,12 +334,22 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			parent.UnregisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
 		}
 
+		/// <summary>
+		/// Called when the Zoom Room reports a call connect error.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		/// <param name="response"></param>
 		private void CallConnectErrorCallback(ZoomRoom zoomRoom, CallConnectErrorResponse response)
 		{
 			if (response.Error != null)
 				OnCallError.Raise(this, new GenericEventArgs<CallConnectError>(response.Error));
 		}
 
+		/// <summary>
+		/// Called when the Zoom Room reports a call configuration change.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		/// <param name="response"></param>
 		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
 		{
 			var configuration = response.CallConfiguration;
@@ -286,6 +359,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 				CameraEnabled = !configuration.Camera.Mute;
 		}
 
+		/// <summary>
+		/// Called when the Zoom Room reports an incoming call.
+		/// </summary>
+		/// <param name="zoomroom"></param>
+		/// <param name="response"></param>
 		private void IncomingCallCallback(ZoomRoom zoomroom, IncomingCallResponse response)
 		{
 			var incomingCall = CreateThinIncomingCall(response.IncomingCall);
@@ -293,6 +371,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			AddIncomingCall(incomingCall);
 		}
 
+		/// <summary>
+		/// Called when
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		/// <param name="response"></param>
 		private void MeetingNeedsPasswordCallback(ZoomRoom zoomRoom, MeetingNeedsPasswordResponse response)
 		{
 			var meetingNeedsPasswordData = response.MeetingNeedsPassword;

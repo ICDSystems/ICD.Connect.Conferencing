@@ -15,9 +15,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
 	public sealed class CallComponent : AbstractZoomRoomComponent, IWebConference
 	{
-		private bool m_CameraMute;
-		private bool m_MicrophoneMute;
-		private string m_Name;
 		private eConferenceStatus m_Status;
 
 		private readonly List<ZoomParticipant> m_Participants;
@@ -25,10 +22,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#region Events
 
+		/// <summary>
+		/// Raised when a participant is removed from the conference.
+		/// </summary>
 		public event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
+		/// <summary>
+		/// Raised when a participant is added to the conference.
+		/// </summary>
 		public event EventHandler<ParticipantEventArgs> OnParticipantAdded;
 
+		/// <summary>
+		/// Raised when the conference status changes.
+		/// </summary>
 		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
 		#endregion
@@ -55,35 +61,29 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		}
 
 		public DateTime? Start { get; private set; }
-		
+
 		public DateTime? End { get; private set; }
 
-		public bool CameraMute
-		{
-			get { return m_CameraMute; }
-			set { m_CameraMute = value; }
-		}
+		public bool CameraMute { get; private set; }
 
-		public bool MicrophoneMute
-		{
-			get { return m_MicrophoneMute; }
-			set { m_MicrophoneMute = value; }
-		}
+		public bool MicrophoneMute { get; private set; }
 
 		public CallInfo CallInfo { get; private set; }
 
-		public eCallType CallType
-		{
-			get { return eCallType.Video; }
-		}
+		public eCallType CallType { get { return eCallType.Video; } }
 
-		public bool AmIHost { get; set; }
+		public bool AmIHost { get; private set; }
 
 		#endregion
 
 		#region Constructors
 
-		public CallComponent(ZoomRoom parent) : base(parent)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		public CallComponent(ZoomRoom parent)
+			: base(parent)
 		{
 			Name = "Zoom Meeting";
 			m_Participants = new List<ZoomParticipant>();
@@ -91,6 +91,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Subscribe(Parent);
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		protected override void DisposeFinal()
 		{
 			base.DisposeFinal();
@@ -150,6 +153,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			}
 
 			m_ParticipantsSection.Enter();
+
 			try
 			{
 				switch (info.Event)
@@ -157,11 +161,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
 						RemoveParticipant(info);
 						break;
+
 					case eUserChangedEventType.None:
 					case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
 					case eUserChangedEventType.ZRCUserChangedEventUserInfoUpdated:
 						AddOrUpdateParticipant(info);
 						break;
+
 					case eUserChangedEventType.ZRCUserChangedEventHostChanged:
 						SetNewHost(info);
 						OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
@@ -177,7 +183,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void AddOrUpdateParticipant(ParticipantInfo info)
 		{
 			ZoomParticipant participant;
+
 			m_ParticipantsSection.Enter();
+
 			try
 			{
 				participant = m_Participants.Find(p => p.UserId == info.UserId);
@@ -200,6 +208,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void RemoveParticipant(ParticipantInfo info)
 		{
 			m_ParticipantsSection.Enter();
+
 			try
 			{
 				var participant = m_Participants.Find(p => p.UserId == info.UserId);
@@ -215,6 +224,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void RemoveParticipant(ZoomParticipant participant)
 		{
 			m_ParticipantsSection.Enter();
+
 			try
 			{
 				if (participant != null && m_Participants.Remove(participant))
@@ -229,6 +239,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void ClearParticipants()
 		{
 			m_ParticipantsSection.Enter();
+
 			try
 			{
 				foreach (var participant in GetParticipants().Cast<ZoomParticipant>().ToArray())
@@ -243,12 +254,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void SetNewHost(ParticipantInfo info)
 		{
 			m_ParticipantsSection.Enter();
+
 			try
 			{
 				foreach (var participant in m_Participants.ToArray())
-				{
 					participant.SetIsHost(participant.UserId == info.UserId);
-				}
 			}
 			finally
 			{
@@ -281,8 +291,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void CallConfigurationCallback(ZoomRoom room, CallConfigurationResponse response)
 		{
 			CallConfiguration config = response.CallConfiguration;
+
 			if (config.Microphone != null)
 				MicrophoneMute = config.Microphone.Mute;
+
 			if (config.Camera != null)
 				CameraMute = config.Camera.Mute;
 		}
@@ -290,6 +302,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)
 		{
 			m_ParticipantsSection.Enter();
+
 			try
 			{
 				foreach (ParticipantInfo participant in response.Participants)
@@ -312,6 +325,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			CallInfo result = response.InfoResult;
 			CallInfo = response.InfoResult;
 			Number = result.MeetingId;
+
 			OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
 		}
 
@@ -323,15 +337,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				case eCallStatus.CONNECTING_MEETING:
 					Status = eConferenceStatus.Connecting;
 					break;
+
 				case eCallStatus.IN_MEETING:
 					Status = eConferenceStatus.Connected;
 					Start = IcdEnvironment.GetLocalTime();
 					break;
+
 				case eCallStatus.NOT_IN_MEETING:
 				case eCallStatus.LOGGED_OUT:
 					ClearParticipants();
 					Status = eConferenceStatus.Disconnected;
 					break;
+
 				case eCallStatus.UNKNOWN:
 					Status = eConferenceStatus.Undefined;
 					break;
@@ -340,22 +357,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#endregion
 
-		#region Console Node
+		#region Console
 
-		public override string ConsoleName
+		public override string ConsoleName { get { return Name; } }
+
+		public override string ConsoleHelp { get { return "Zoom Room Conference"; } }
+
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
-			get { return Name; }
-		}
-
-		public override string ConsoleHelp
-		{
-			get { return "Zoom Room Conference"; }
-		}
-
-        public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-        {
-	        foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-		        yield return node;
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
 
 			foreach (var participant in GetParticipants())
 				yield return participant;
@@ -375,7 +386,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
-				
+
 			yield return new ConsoleCommand("Leave", "Leaves the conference", () => LeaveConference());
 			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
 			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());

@@ -70,11 +70,21 @@ namespace ICD.Connect.Conferencing.Conferences
 
 	public static class ConferenceExtensions
 	{
+		/// <summary>
+		/// Gets the participants in this conference who are currently online.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
 		public static IEnumerable<IParticipant> GetOnlineParticipants(this IConference extends)
 		{
 			return extends.GetParticipants().Where(p => p.GetIsOnline());
 		}
 
+		/// <summary>
+		/// Returns true if this conference is currently online.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
 		public static bool IsOnline(this IConference extends)
 		{
 			switch (extends.Status)
@@ -88,11 +98,17 @@ namespace ICD.Connect.Conferencing.Conferences
 				case eConferenceStatus.Connected:
 				case eConferenceStatus.OnHold:
 					return true;
+				
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
+		/// <summary>
+		/// Returns true if this conference is not disconnected.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
 		public static bool IsActive(this IConference extends)
 		{
 			switch (extends.Status)
