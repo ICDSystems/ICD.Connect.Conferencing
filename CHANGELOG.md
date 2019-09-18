@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - ZoomRoom Call Lock console command
+ - Zoom Call Lock Converter/Response to Call Configuration Converter/Response
 
 ## [13.8.1] - 2019-10-08
 ### Changed

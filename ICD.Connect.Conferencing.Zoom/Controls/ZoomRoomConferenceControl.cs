@@ -6,6 +6,8 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
+using ICD.Connect.API.Commands;
+using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
@@ -54,6 +56,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnMicrophoneMuteRequested; 
 
+		/// <summary>
+		/// Raised when the call lock status changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCallLockChanged;
+
 		private readonly CallComponent m_ZoomConference;
 
 		private readonly SafeCriticalSection m_IncomingCallsSection;
@@ -62,6 +69,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private string m_LastJoinNumber;
 		private bool m_RequestedMicrophoneMute;
 		private bool m_MicrophoneMuted;
+		private bool m_CallLockEnabled;
 
 		#region Properties
 
@@ -95,6 +103,25 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			}
 		}
 
+		/// <summary>
+		/// Gets the CallLock State.
+		/// </summary>
+		public bool CallLock
+		{
+			get { return m_CallLockEnabled; }
+			private set
+			{
+				if (value == m_CallLockEnabled)
+						return;
+
+				m_CallLockEnabled = value;
+
+				Log(eSeverity.Informational, "CallLock set to {0}", m_CallLockEnabled);
+
+				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLockEnabled));
+			}
+		}
+
 		#endregion
 
 		/// <summary>
@@ -121,7 +148,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
 			OnCallError = null;
-			OnPasswordRequired = null; 
+			OnPasswordRequired = null;
+			OnCallLockChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -213,6 +241,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override void SetCameraEnabled(bool enabled)
 		{
 			Parent.SendCommand("zConfiguration Call Camera mute: {0}", enabled ? "off" : "on");
+		}
+
+		private void SetCallLock(bool enabled)
+		{
+			Parent.SendCommand("zConfiguration Call Lock Enable: {0}", enabled ? "on" : "off");
 		}
 
 		public void StartPersonalMeeting()
@@ -400,6 +433,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 			if (configuration.Camera != null)
 				CameraEnabled = !configuration.Camera.Mute;
+			if (configuration.CallLockStatus != null)
+				CallLock = configuration.CallLockStatus.Lock;
 		}
 
 		/// <summary>
@@ -431,6 +466,70 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			                         new MeetingNeedsPasswordEventArgs(m_LastJoinNumber,
 			                                                           meetingNeedsPasswordData.NeedsPassword,
 			                                                           meetingNeedsPasswordData.WrongAndRetry));
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			foreach (IConsoleCommand command in ConferenceDeviceControlConsole.GetConsoleCommands(this))
+				yield return command;
+
+			yield return new GenericConsoleCommand<bool>("SetCallLock", "SetCallLock <true/false>",
+			                                             b => SetCallLock(b));
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
+		}
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			ConferenceDeviceControlConsole.BuildConsoleStatus(this, addRow);
+
+			addRow("CallLock", CallLock);
+		}
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
+				yield return node;
+
+			foreach (IConsoleNodeBase node in ConferenceDeviceControlConsole.GetConsoleNodes(this))
+				yield return node;
+		}
+
+		/// <summary>
+		/// Workaround for "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		{
+			return base.GetConsoleNodes();
 		}
 
 		#endregion

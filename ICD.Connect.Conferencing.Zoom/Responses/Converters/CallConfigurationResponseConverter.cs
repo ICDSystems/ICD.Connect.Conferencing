@@ -44,6 +44,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	{
 		private const string ATTR_MICROPHONE = "Microphone";
 		private const string ATTR_CAMERA = "Camera";
+		private const string ATTR_LOCK = "Lock";
 
 		/// <summary>
 		/// Override to write properties to the writer.
@@ -66,6 +67,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				writer.WritePropertyName(ATTR_CAMERA);
 				serializer.Serialize(writer, value.Camera);
 			}
+
+			if (value.CallLockStatus != null)
+			{
+				writer.WritePropertyName(ATTR_LOCK);
+				serializer.Serialize(writer, value.CallLockStatus);
+			}
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, CallConfiguration instance, JsonSerializer serializer)
@@ -78,6 +85,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 				case ATTR_CAMERA:
 					instance.Camera = serializer.Deserialize<MuteConfiguration>(reader);
+					break;
+
+				case ATTR_LOCK:
+					instance.CallLockStatus = serializer.Deserialize<LockConfiguration>(reader);
 					break;
 
 				default:
@@ -111,6 +122,40 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 			{
 				case ATTR_MUTE:
 					instance.Mute = reader.GetValueAsBool();
+					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
+			}
+		}
+	}
+
+	public sealed class LockConfigurationConverter : AbstractGenericJsonConverter<LockConfiguration>
+	{
+		private const string ATTR_LOCK = "Enable";
+
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, LockConfiguration value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value != null)
+				writer.WriteProperty(ATTR_LOCK, value.Lock);
+		}
+
+		protected override void ReadProperty(string property, JsonReader reader, LockConfiguration instance,
+		                                     JsonSerializer serializer)
+		{
+			switch (property)
+			{
+				case ATTR_LOCK:
+					instance.Lock = reader.GetValueAsBool();
 					break;
 
 				default:

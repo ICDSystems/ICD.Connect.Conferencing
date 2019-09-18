@@ -18,11 +18,19 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public MuteConfiguration Microphone { get; set; }
 
 		public MuteConfiguration Camera { get; set; }
+
+		public LockConfiguration CallLockStatus { get; set; }
 	}
 
 	[JsonConverter(typeof(MuteConfigurationConverter))]
 	public sealed class MuteConfiguration
 	{
 		public bool Mute { get; set; }
+	}
+
+	[JsonConverter(typeof(LockConfigurationConverter))]
+	public sealed class LockConfiguration
+	{
+		public bool Lock { get; set; }
 	}
 }
