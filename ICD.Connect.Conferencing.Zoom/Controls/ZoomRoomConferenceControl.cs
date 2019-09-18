@@ -48,12 +48,19 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// </summary>
 		public event EventHandler<MeetingNeedsPasswordEventArgs> OnPasswordRequired;
 
+		/// <summary>
+		/// Raised when the far end requests a microhpone mute state change.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMicrophoneMuteRequested; 
+
 		private readonly CallComponent m_ZoomConference;
 
 		private readonly SafeCriticalSection m_IncomingCallsSection;
 		private readonly Dictionary<ThinIncomingCall, SafeTimer> m_IncomingCalls;
 
 		private string m_LastJoinNumber;
+		private bool m_RequestedMicrophoneMute;
+		private bool m_MicrophoneMuted;
 
 		#region Properties
 
@@ -61,6 +68,35 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public override eCallType Supports { get { return eCallType.Video; } }
+
+		/// <summary>
+		/// Gets the current known microphone mute state.
+		/// </summary>
+		public bool MicrophoneMuted
+		{
+			get { return m_MicrophoneMuted; }
+			private set
+			{
+				if (value == m_MicrophoneMuted)
+					return;
+
+				m_MicrophoneMuted = value;
+
+				// Hack - Zoom will stay muted while connecting a call
+				if (m_MicrophoneMuted)
+				{
+					// The conference already has "Connected" state at this point, so lets base it on time?
+					if (m_ZoomConference.GetDuration() < TimeSpan.FromSeconds(2))
+						return;
+				}
+
+				// The far end is trying to mute/unmute us
+				if (m_MicrophoneMuted != m_RequestedMicrophoneMute)
+					OnMicrophoneMuteRequested.Raise(this, new BoolEventArgs(m_MicrophoneMuted));
+
+				PrivacyMuted = m_MicrophoneMuted;
+			}
+		}
 
 		#endregion
 
@@ -126,20 +162,21 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="dialContext"></param>
 		public override void Dial(IDialContext dialContext)
 		{
-			if (dialContext.Protocol == eDialProtocol.Zoom)
+			switch (dialContext.Protocol)
 			{
-				if (dialContext.Password == null)
-					StartMeeting(dialContext.DialString);
-				else
-					JoinMeeting(dialContext.DialString, dialContext.Password);
-			}
-				
-			else if (dialContext.Protocol == eDialProtocol.ZoomContact)
-			{
-				if (m_ZoomConference.Status == eConferenceStatus.Connected)
-					InviteUser(dialContext.DialString);
-				else
-					StartPersonalMeetingAndInviteUser(dialContext.DialString);
+				case eDialProtocol.Zoom:
+					if (dialContext.Password == null)
+						StartMeeting(dialContext.DialString);
+					else
+						JoinMeeting(dialContext.DialString, dialContext.Password);
+					break;
+
+				case eDialProtocol.ZoomContact:
+					if (m_ZoomConference.Status == eConferenceStatus.Connected)
+						InviteUser(dialContext.DialString);
+					else
+						StartPersonalMeetingAndInviteUser(dialContext.DialString);
+					break;
 			}
 		}
 
@@ -167,7 +204,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="enabled"></param>
 		public override void SetPrivacyMute(bool enabled)
 		{
-			Parent.SendCommand("zConfiguration Call Microphone mute: {0}", enabled ? "on" : "off");
+			m_RequestedMicrophoneMute = enabled;
+
+			SetMicrophoneMute(enabled);
 		}
 
 		/// <summary>
@@ -188,6 +227,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		#endregion
 		
 		#region Private Methods
+
+		private void SetMicrophoneMute(bool mute)
+		{
+			Parent.SendCommand("zConfiguration Call Microphone mute: {0}", mute ? "on" : "off");
+		}
 
 		private void StartMeeting(string meetingNumber)
 		{
@@ -352,9 +396,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="response"></param>
 		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
 		{
-			var configuration = response.CallConfiguration;
+			CallConfiguration configuration = response.CallConfiguration;
+
 			if (configuration.Microphone != null)
-				PrivacyMuted = configuration.Microphone.Mute;
+				MicrophoneMuted = configuration.Microphone.Mute;
+
 			if (configuration.Camera != null)
 				CameraEnabled = !configuration.Camera.Mute;
 		}
