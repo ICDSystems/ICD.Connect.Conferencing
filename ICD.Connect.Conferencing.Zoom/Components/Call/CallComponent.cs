@@ -15,11 +15,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
 	public sealed class CallComponent : AbstractZoomRoomComponent, IWebConference
 	{
-		private eConferenceStatus m_Status;
-
-		private readonly List<ZoomParticipant> m_Participants;
-		private readonly SafeCriticalSection m_ParticipantsSection;
-
 		#region Events
 
 		/// <summary>
@@ -38,6 +33,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
 		#endregion
+
+		private readonly List<ZoomParticipant> m_Participants;
+		private readonly SafeCriticalSection m_ParticipantsSection;
+
+		private eConferenceStatus m_Status;
 
 		#region Properties
 
@@ -107,7 +107,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public IEnumerable<IWebParticipant> GetParticipants()
 		{
-			return m_ParticipantsSection.Execute(() => m_Participants.Cast<IWebParticipant>().ToList());
+			return m_ParticipantsSection.Execute(() => m_Participants.Cast<IWebParticipant>().ToArray());
 		}
 
 		IEnumerable<IParticipant> IConference.GetParticipants()
@@ -152,31 +152,22 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
 			}
 
-			m_ParticipantsSection.Enter();
-
-			try
+			switch (info.Event)
 			{
-				switch (info.Event)
-				{
-					case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
-						RemoveParticipant(info);
-						break;
+				case eUserChangedEventType.ZRCUserChangedEventLeftMeeting:
+					RemoveParticipant(info);
+					break;
 
-					case eUserChangedEventType.None:
-					case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
-					case eUserChangedEventType.ZRCUserChangedEventUserInfoUpdated:
-						AddOrUpdateParticipant(info);
-						break;
+				case eUserChangedEventType.None:
+				case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
+				case eUserChangedEventType.ZRCUserChangedEventUserInfoUpdated:
+					AddOrUpdateParticipant(info);
+					break;
 
-					case eUserChangedEventType.ZRCUserChangedEventHostChanged:
-						SetNewHost(info);
-						OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
-						break;
-				}
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
+				case eUserChangedEventType.ZRCUserChangedEventHostChanged:
+					SetNewHost(info);
+					OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
+					break;
 			}
 		}
 
@@ -207,63 +198,31 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		private void RemoveParticipant(ParticipantInfo info)
 		{
-			m_ParticipantsSection.Enter();
-
-			try
-			{
-				var participant = m_Participants.Find(p => p.UserId == info.UserId);
-				if (participant != null)
-					RemoveParticipant(participant);
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
-			}
+			ZoomParticipant participant = m_ParticipantsSection.Execute(() => m_Participants.Find(p => p.UserId == info.UserId));
+			RemoveParticipant(participant);
 		}
 
 		private void RemoveParticipant(ZoomParticipant participant)
 		{
-			m_ParticipantsSection.Enter();
+			if (participant == null)
+				return;
 
-			try
-			{
-				if (participant != null && m_Participants.Remove(participant))
-					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(participant));
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
-			}
+			if (!m_ParticipantsSection.Execute(() => m_Participants.Remove(participant)))
+				return;
+
+			OnParticipantRemoved.Raise(this, new ParticipantEventArgs(participant));
 		}
 
 		private void ClearParticipants()
 		{
-			m_ParticipantsSection.Enter();
-
-			try
-			{
-				foreach (var participant in GetParticipants().Cast<ZoomParticipant>().ToArray())
-					RemoveParticipant(participant);
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
-			}
+			foreach (var participant in m_ParticipantsSection.Execute(() => m_Participants.ToArray()))
+				RemoveParticipant(participant);
 		}
 
 		private void SetNewHost(ParticipantInfo info)
 		{
-			m_ParticipantsSection.Enter();
-
-			try
-			{
-				foreach (var participant in m_Participants.ToArray())
-					participant.SetIsHost(participant.UserId == info.UserId);
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
-			}
+			foreach (var participant in m_ParticipantsSection.Execute(() => m_Participants.ToArray()))
+				participant.SetIsHost(participant.UserId == info.UserId);
 		}
 
 		#endregion
@@ -301,17 +260,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)
 		{
-			m_ParticipantsSection.Enter();
-
-			try
-			{
-				foreach (ParticipantInfo participant in response.Participants)
-					AddUpdateOrRemoveParticipant(participant);
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
-			}
+			foreach (ParticipantInfo participant in response.Participants)
+				AddUpdateOrRemoveParticipant(participant);
 		}
 
 		private void DisconnectCallback(ZoomRoom zoomRoom, CallDisconnectResponse response)
