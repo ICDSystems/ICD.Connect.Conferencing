@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+ - Fixed NullReferenceException when handling Zoom camera selection responses
+
 ## [13.7.0] - 2019-09-16
 ### Added
  - ZoomRoomConferenceControl raises all relevant information when a password is requested
