@@ -82,17 +82,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 				m_MicrophoneMuted = value;
 
-				// Hack - Zoom will stay muted while connecting a call
-				if (m_MicrophoneMuted)
-				{
-					// The conference already has "Connected" state at this point, so lets base it on time?
-					if (m_ZoomConference.GetDuration() < TimeSpan.FromSeconds(2))
-						return;
-				}
-
 				// The far end is trying to mute/unmute us
 				if (m_MicrophoneMuted != m_RequestedMicrophoneMute)
-					OnMicrophoneMuteRequested.Raise(this, new BoolEventArgs(m_MicrophoneMuted));
+				{
+					// Hack - Zoom will stay muted while connecting a call
+					// The conference already has "Connected" state at this point, so lets base it on time?
+					if (m_ZoomConference.GetDuration() >= TimeSpan.FromSeconds(2))
+						OnMicrophoneMuteRequested.Raise(this, new BoolEventArgs(m_MicrophoneMuted));
+				}
 
 				PrivacyMuted = m_MicrophoneMuted;
 			}
