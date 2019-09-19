@@ -87,7 +87,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 				{
 					// Hack - Zoom will stay muted while connecting a call
 					// The conference already has "Connected" state at this point, so lets base it on time?
-					if (m_ZoomConference.GetDuration() >= TimeSpan.FromSeconds(2))
+					if (m_ZoomConference.GetDuration() >= TimeSpan.FromSeconds(4))
 						OnMicrophoneMuteRequested.Raise(this, new BoolEventArgs(m_MicrophoneMuted));
 				}
 
