@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+ - Zoom conference control raises an event when a far end participant requests a mute state change
+
 ### Changed
  - Fixed NullReferenceException when handling Zoom camera selection responses
 
