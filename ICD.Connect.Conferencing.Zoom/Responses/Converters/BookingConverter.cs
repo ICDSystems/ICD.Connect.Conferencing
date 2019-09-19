@@ -54,10 +54,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					instance.MeetingName = reader.GetValueAsString();
 					break;
 				case ATTR_START_TIME:
-					instance.StartTime = reader.GetValueAsDateTime();
+					instance.StartTime = GetValueAsDateTimeOrDefault(reader);
 					break;
 				case ATTR_END_TIME:
-					instance.EndTime = reader.GetValueAsDateTime();
+					instance.EndTime = GetValueAsDateTimeOrDefault(reader);
 					break;
 				case ATTR_CREATOR_NAME:
 					instance.OrganizerName = reader.GetValueAsString();
@@ -79,6 +79,23 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					base.ReadProperty(property, reader, instance, serializer);
 					break;
 			}
+		}
+
+		/// <summary>
+		/// Sometimes Zoom reports events with no start or end time :/
+		/// </summary>
+		/// <param name="reader"></param>
+		/// <returns></returns>
+		private DateTime GetValueAsDateTimeOrDefault(JsonReader reader)
+		{
+			if (reader == null)
+				throw new ArgumentNullException("reader");
+
+			string value = reader.GetValueAsString();
+			if (string.IsNullOrEmpty(value))
+				return default(DateTime);
+
+			return reader.GetValueAsDateTime();
 		}
 	}
 }

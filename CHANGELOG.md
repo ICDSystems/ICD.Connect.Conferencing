@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
  - Fixed NullReferenceException when handling Zoom camera selection responses
+ - Fixed a bug where all-day Google events were being serialized in Zoom as empty strings
 
 ## [13.7.0] - 2019-09-16
 ### Added
