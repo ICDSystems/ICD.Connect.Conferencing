@@ -157,9 +157,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 		/// <param name="args"></param>
 		private void ZoomRoomOnInitializedChanged(object sender, BoolEventArgs args)
 		{
+			Initialized = args.Data;
+
 			if (args.Data)
 				Initialize();
-			Initialized = args.Data;
 		}
 
 		/// <summary>

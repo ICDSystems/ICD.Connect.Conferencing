@@ -6,7 +6,7 @@ using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 {
-	public class BookingsComponent : AbstractZoomRoomComponent
+	public sealed class BookingsComponent : AbstractZoomRoomComponent
 	{
 		public event EventHandler OnBookingsUpdated;
 
@@ -64,7 +64,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		{
 			base.Initialize();
 
-			UpdateBookings();
+			ListBookings();
 		}
 
 		#endregion
