@@ -162,7 +162,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			switch (dialContext.Protocol)
 			{
 				case eDialProtocol.Zoom:
-					if (dialContext.Password == null)
+					if (string.IsNullOrEmpty(dialContext.Password))
 						StartMeeting(dialContext.DialString);
 					else
 						JoinMeeting(dialContext.DialString, dialContext.Password);
