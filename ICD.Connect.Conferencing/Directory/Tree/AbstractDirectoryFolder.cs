@@ -129,7 +129,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IDirectoryFolder[] GetFolders()
 		{
-			return m_FoldersSection.Execute(() => m_FoldersSorted.ToArray(m_FoldersSorted.Count));
+			return m_FoldersSection.Execute(() => m_FoldersSorted.ToArray());
 		}
 
 		/// <summary>
@@ -148,7 +148,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 		/// <returns></returns>
 		public IContact[] GetContacts()
 		{
-			return m_ContactsSection.Execute(() => m_ContactsSorted.ToArray(m_ContactsSorted.Count));
+			return m_ContactsSection.Execute(() => m_ContactsSorted.ToArray());
 		}
 
 		/// <summary>
@@ -301,7 +301,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 					return false;
 
 				m_NameToFolder.Add(folder.Name, folder);
-				m_FoldersSorted.AddSorted(folder, m_FolderComparer);
+				m_FoldersSorted.InsertSorted(folder, m_FolderComparer);
 			}
 			finally
 			{
@@ -348,7 +348,7 @@ namespace ICD.Connect.Conferencing.Directory.Tree
 					return false;
 
 				m_NameToContact.Add(contact.Name, contact);
-				m_ContactsSorted.AddSorted(contact, m_ContactComparer);
+				m_ContactsSorted.InsertSorted(contact, m_ContactComparer);
 			}
 			finally
 			{
