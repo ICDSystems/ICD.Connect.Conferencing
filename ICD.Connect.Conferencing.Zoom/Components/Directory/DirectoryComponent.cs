@@ -4,14 +4,16 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Directory.Tree;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 {
-	public class DirectoryComponent : AbstractZoomRoomComponent
+	public sealed class DirectoryComponent : AbstractZoomRoomComponent
 	{
-		private const bool USE_FOLDERS = false; // put this to true to have zoom rooms and contacts sorted into folders
+		// Make this to true to have zoom rooms and contacts sorted into folders
+		private const bool USE_FOLDERS = false;
 
 		private const string ROOMS_FOLDER = "Rooms";
 		private readonly ZoomFolder m_RootFolder;
@@ -55,22 +57,58 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		private void AddOrUpdateContact(ZoomContact contact)
 		{
-			var folder = USE_FOLDERS ? GetFolder(contact) : m_RootFolder;
+			if (contact == null)
+				throw new ArgumentNullException("contact");
 
-			// fix for SIP/H.323 devices showing up with no first and last name
-			if (string.IsNullOrEmpty(contact.FirstName) && string.IsNullOrEmpty(contact.LastName))
+			AddOrUpdateContacts(new[] {contact});
+		}
+
+		private void AddOrUpdateContacts(IEnumerable<ZoomContact> zoomContacts)
+		{
+			if (zoomContacts == null)
+				throw new ArgumentNullException("zoomContacts");
+
+			if (!USE_FOLDERS)
 			{
-				if (!string.IsNullOrEmpty(contact.ScreenName))
-					contact.LastName = contact.ScreenName;
-				else
-					return;
+				AddOrUpdateContacts(m_RootFolder, zoomContacts);
+				return;
 			}
 
-			var existingContact = folder.GetContacts().OfType<ZoomContact>().SingleOrDefault(c => c.JoinId == contact.JoinId);
-			if (existingContact == null)
-				folder.AddContact(contact);
-			else
-				existingContact.Update(contact);
+			foreach (var groupByFolder in zoomContacts.GroupBy(c => GetFolder(c)))
+				AddOrUpdateContacts(groupByFolder.Key, groupByFolder);
+		}
+
+		private static void AddOrUpdateContacts(IDirectoryFolder folder, IEnumerable<ZoomContact> zoomContacts)
+		{
+			if (zoomContacts == null)
+				throw new ArgumentNullException("zoomContacts");
+
+			List<IContact> toAdd = new List<IContact>();
+
+			foreach (ZoomContact contact in zoomContacts)
+			{
+				// fix for SIP/H.323 devices showing up with no first and last name
+				if (string.IsNullOrEmpty(contact.FirstName) && string.IsNullOrEmpty(contact.LastName))
+				{
+					if (string.IsNullOrEmpty(contact.ScreenName))
+						continue;
+
+					contact.LastName = contact.ScreenName;
+				}
+
+				ZoomContact closure = contact;
+				var existingContact = folder.GetContacts()
+				                            .OfType<ZoomContact>()
+				                            .SingleOrDefault(c => c.JoinId == closure.JoinId);
+
+				if (existingContact == null)
+					toAdd.Add(contact);
+				else
+					existingContact.Update(contact);
+			}
+
+			// Perf - Add as many contacts as possible in a single pass
+			folder.AddContacts(toAdd);
 		}
 
 		[NotNull]
@@ -78,11 +116,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		{
 			var folderName = GetFolderNameForContact(contact);
 			var folder = m_RootFolder.GetFolder(folderName);
-			if (folder == null)
-			{
-				folder = new ZoomFolder(folderName);
-				m_RootFolder.AddFolder(folder);
-			}
+			if (folder != null)
+				return folder;
+
+			folder = new ZoomFolder(folderName);
+			m_RootFolder.AddFolder(folder);
 
 			return folder;
 		}
@@ -113,14 +151,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		private void PhonebookListCallback(ZoomRoom zoomRoom, PhonebookListCommandResponse response)
 		{
 			var result = response.PhonebookListResult;
-			foreach (var contact in result.Contacts)
-			{
-				if (contact == null)
-					continue;
+			AddOrUpdateContacts(result.Contacts.Where(c => c != null));
 
-				AddOrUpdateContact(contact);
-			}
-			if (result.Contacts.Count() >= result.Limit)
+			if (result.Contacts.Length >= result.Limit)
 				Parent.SendCommand("zCommand Phonebook List offset: {0} limit: 1000", result.Offset + result.Limit);
 		}
 
