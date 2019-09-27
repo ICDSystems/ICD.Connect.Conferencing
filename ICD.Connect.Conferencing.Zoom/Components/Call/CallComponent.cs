@@ -42,6 +42,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// Raised when the zoom room informs us the call record status has changed.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnCallRecordChanged;
+
+		/// <summary>
+		/// Raised when the far end sends a video un-mute request.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnVideoUnMuteRequestSent; 
 		#endregion
 
 		private readonly List<ZoomParticipant> m_Participants;
@@ -154,6 +159,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			OnStatusChanged = null;
 			OnCallLockChanged = null;
 			OnCallRecordChanged = null;
+			OnVideoUnMuteRequestSent = null;
 
 			Unsubscribe(Parent);
 		}
@@ -196,6 +202,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			Parent.Log(eSeverity.Debug, "Setting the Call Record state to: {0}", enabled);
 			Parent.SendCommand("zCommand Call Record Enable: {0}", enabled ? "on" : "off");
+		}
+
+		public void SetCallCameraMute(bool enabled)
+		{
+			Parent.Log(eSeverity.Debug, "Setting the Call Camera Mute state to: {0}", enabled);
+			Parent.SendCommand("zConfiguration Call Camera Mute: {0}", enabled ? "on" : "off");
 		}
 
 		#endregion
@@ -306,6 +318,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.RegisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.RegisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			zoomRoom.RegisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
+			zoomRoom.RegisterResponseCallback<VideoUnMuteRequestResponse>(VideoUnMuteRequestCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom zoomRoom)
@@ -316,6 +329,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.UnregisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.UnregisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			zoomRoom.UnregisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
+			zoomRoom.UnregisterResponseCallback<VideoUnMuteRequestResponse>(VideoUnMuteRequestCallback);
 		}
 
 		private void CallConfigurationCallback(ZoomRoom room, CallConfigurationResponse response)
@@ -385,8 +399,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		private void UpdatedCallRecordInfoCallback(ZoomRoom zoomroom, UpdatedCallRecordInfoResponse response)
 		{
-			var callRecordInfo = response.callRecordInfo;
+			var callRecordInfo = response.CallRecordInfo;
 			CallRecord = callRecordInfo.AmIRecording;
+		}
+
+		private void VideoUnMuteRequestCallback(ZoomRoom zoomroom, VideoUnMuteRequestResponse response)
+		{
+			OnVideoUnMuteRequestSent.Raise(this, new BoolEventArgs(true));
 		}
 
 		#endregion

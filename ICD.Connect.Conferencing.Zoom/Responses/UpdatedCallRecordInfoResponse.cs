@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	[JsonConverter(typeof(UpdatedCallRecordInfoResponseConverter))]
 	public sealed class UpdatedCallRecordInfoResponse : AbstractZoomRoomResponse
 	{
-		public UpdateCallRecordInfoEvent callRecordInfo { get; set; }
+		public UpdateCallRecordInfoEvent CallRecordInfo { get; set; }
 	}
 
 	[JsonConverter(typeof(UpdatedCallRecordInfoEventConverter))]

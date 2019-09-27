@@ -13,10 +13,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		{
 			base.WriteProperties(writer, value, serializer);
 
-			if (value.callRecordInfo != null)
+			if (value.CallRecordInfo != null)
 			{
 				writer.WritePropertyName(ATTR_UPDATE_CALL_RECORD_INFO);
-				serializer.Serialize(writer,value.callRecordInfo);
+				serializer.Serialize(writer,value.CallRecordInfo);
 			}
 		}
 
@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 			switch (property)
 			{
 				case ATTR_UPDATE_CALL_RECORD_INFO:
-					instance.callRecordInfo = serializer.Deserialize<UpdateCallRecordInfoEvent>(reader);
+					instance.CallRecordInfo = serializer.Deserialize<UpdateCallRecordInfoEvent>(reader);
 					break;
 
 				default:

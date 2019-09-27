@@ -6,8 +6,6 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
-using ICD.Connect.API.Commands;
-using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
@@ -55,6 +53,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// Raised when the far end requests a microhpone mute state change.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnMicrophoneMuteRequested;
+
+		/// <summary>
+		/// Raised when the far end sends a video un-mute request.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnVideoUnMuteRequested;
 
 		private readonly CallComponent m_ZoomConference;
 
@@ -108,6 +111,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			: base(parent, id)
 		{
 			m_ZoomConference = Parent.Components.GetComponent<CallComponent>();
+			Subscribe(m_ZoomConference);
+
 			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
 		}
@@ -124,6 +129,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			OnIncomingCallRemoved = null;
 			OnCallError = null;
 			OnPasswordRequired = null;
+			OnVideoUnMuteRequested = null;
+
+			Unsubscribe(m_ZoomConference);
 
 			base.DisposeFinal(disposing);
 		}
@@ -417,7 +425,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		}
 
 		/// <summary>
-		/// Called when
+		/// Called when the Zoom Room tries to join a meeting that needs a password
 		/// </summary>
 		/// <param name="zoomRoom"></param>
 		/// <param name="response"></param>
@@ -437,5 +445,28 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#endregion
 
+		#region Call Component Callbacks
+
+		private void Subscribe(CallComponent call)
+		{
+			call.OnVideoUnMuteRequestSent += VideoUnMuteRequest;
+		}
+
+		private void Unsubscribe(CallComponent call)
+		{
+			call.OnVideoUnMuteRequestSent -= VideoUnMuteRequest;
+		}
+
+		/// <summary>
+		/// Called when the far end sends a video un-mute request.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void VideoUnMuteRequest(object sender, BoolEventArgs e)
+		{
+			OnVideoUnMuteRequested.Raise(this, e);
+		}
+
+		#endregion
 	}
 }
