@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+ - ZoomRoom Allow Participant to record call console command
  - ZoomRoom Call Record console command
  - ZoomRoom Call Lock console command
  - Zoom Call Lock Converter/Response to Call Configuration Converter/Response

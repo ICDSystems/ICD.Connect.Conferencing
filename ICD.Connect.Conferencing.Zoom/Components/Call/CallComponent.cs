@@ -341,7 +341,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void DisconnectCallback(ZoomRoom zoomRoom, CallDisconnectResponse response)
 		{
 			if (response.Disconnect.Success == eZoomBoolean.on)
+			{
 				Status = eConferenceStatus.Disconnected;
+				CallLock = false;
+				CallRecord = false;
+			}
 		}
 
 		private void CallInfoCallback(ZoomRoom zoomRoom, InfoResultResponse response)

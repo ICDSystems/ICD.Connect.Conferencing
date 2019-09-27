@@ -1,4 +1,7 @@
-﻿using ICD.Common.Utils;
+﻿using System.Collections.Generic;
+using ICD.Common.Utils;
+using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
@@ -12,6 +15,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public string UserId { get; private set; }
 		public string AvatarUrl { get; private set; }
+		public bool CanRecord { get; private set; }
+		public bool IsRecording { get; private set; }
 
 		public ZoomParticipant(ZoomRoom zoomRoom, ParticipantInfo info)
 		{
@@ -32,6 +37,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			IsHost = info.IsHost;
 			IsSelf = info.IsMyself;
 			AvatarUrl = info.AvatarUrl;
+
+			//ParticipantInfo Doesn't track recording information if the Participant is the host.
+			if (IsHost)
+			{
+				CanRecord = true;
+				IsRecording = m_ZoomRoom.Components.GetComponent<CallComponent>().CallRecord;
+			}
+			else
+			{
+				CanRecord = info.CanRecord;
+				IsRecording = info.IsRecording;
+			}
 		}
 
 		public override void Kick()
@@ -44,6 +61,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			m_ZoomRoom.SendCommand("zCommand Call MuteParticipant mute: {0} Id: {1}", 
 				mute ? "on" : "off", 
 				UserId);
+		}
+
+		public void AllowParticipantRecord(bool enabled)
+		{
+			m_ZoomRoom.Log(eSeverity.Debug, "Participant with userId: {0} Call Record Enable set to: {1}", UserId,
+			               enabled);
+			m_ZoomRoom.SendCommand("zCommand Call AllowRecord Id: {0} Enable: {1}", UserId, enabled ? "on" : "off");
 		}
 
 		#endregion
@@ -69,6 +93,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 			addRow("User ID", UserId);
 			addRow("Avatar URL", AvatarUrl);
+			addRow("Can Record", CanRecord);
+			addRow("Is Recording", IsRecording);
+		}
+
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in base.GetConsoleCommands())
+				yield return command;
+
+			yield return new GenericConsoleCommand<bool>("AllowRecord",
+			                                             "Allows a participant to record <true/false>",
+			                                             b => AllowParticipantRecord(b));
 		}
 
 		#endregion
