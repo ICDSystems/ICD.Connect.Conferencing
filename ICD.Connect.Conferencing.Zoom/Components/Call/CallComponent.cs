@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -32,12 +33,24 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
+		/// <summary>
+		/// Raised when the call lock status changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCallLockChanged;
+
+		/// <summary>
+		/// Raised when the zoom room informs us the call record status has changed.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCallRecordChanged;
 		#endregion
 
 		private readonly List<ZoomParticipant> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private eConferenceStatus m_Status;
+
+		private bool m_CallLockEnabled;
+		private bool m_CallRecordEnabled;
 
 		#region Properties
 
@@ -74,6 +87,44 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public bool AmIHost { get; private set; }
 
+		/// <summary>
+		/// Gets the CallLock State.
+		/// </summary>
+		public bool CallLock
+		{
+			get { return m_CallLockEnabled; }
+			private set
+			{
+				if (value == m_CallLockEnabled)
+					return;
+
+				m_CallLockEnabled = value;
+
+				Parent.Log(eSeverity.Informational, "CallLock set to {0}", m_CallLockEnabled);
+
+				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLockEnabled));
+			}
+		}
+
+		/// <summary>
+		/// Gets the Call Record State.
+		/// </summary>
+		public bool CallRecord
+		{
+			get { return m_CallRecordEnabled; }
+			private set
+			{
+				if (value == m_CallRecordEnabled)
+					return;
+
+				m_CallRecordEnabled = value;
+
+				Parent.Log(eSeverity.Informational, "Call Record set to {0}", m_CallRecordEnabled);
+
+				OnCallRecordChanged.Raise(this, new BoolEventArgs(m_CallRecordEnabled));
+			}
+		}
+
 		#endregion
 
 		#region Constructors
@@ -97,6 +148,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		protected override void DisposeFinal()
 		{
 			base.DisposeFinal();
+
+			OnParticipantRemoved = null;
+			OnParticipantAdded = null;
+			OnStatusChanged = null;
+			OnCallLockChanged = null;
+			OnCallRecordChanged = null;
 
 			Unsubscribe(Parent);
 		}
@@ -127,6 +184,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Parent.Log(eSeverity.Debug, "Ending Zoom Meeting {0}", Number);
 			Status = eConferenceStatus.Disconnecting;
 			Parent.SendCommand("zCommand Call Disconnect");
+		}
+
+		public void SetCallLock(bool enabled)
+		{
+			Parent.Log(eSeverity.Debug, "Setting the Call Lock state to: {0}", enabled);
+			Parent.SendCommand("zConfiguration Call Lock Enable: {0}", enabled ? "on" : "off");
+		}
+
+		public void SetCallRecord(bool enabled)
+		{
+			Parent.Log(eSeverity.Debug, "Setting the Call Record state to: {0}", enabled);
+			Parent.SendCommand("zCommand Call Record Enable: {0}", enabled ? "on" : "off");
 		}
 
 		#endregion
@@ -236,6 +305,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.RegisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 			zoomRoom.RegisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.RegisterResponseCallback<CallStatusResponse>(CallStatusCallback);
+			zoomRoom.RegisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom zoomRoom)
@@ -245,6 +315,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.UnregisterResponseCallback<CallDisconnectResponse>(DisconnectCallback);
 			zoomRoom.UnregisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.UnregisterResponseCallback<CallStatusResponse>(CallStatusCallback);
+			zoomRoom.UnregisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
 		}
 
 		private void CallConfigurationCallback(ZoomRoom room, CallConfigurationResponse response)
@@ -256,6 +327,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 			if (config.Camera != null)
 				CameraMute = config.Camera.Mute;
+
+			if (config.CallLockStatus != null)
+				CallLock = config.CallLockStatus.Lock;
 		}
 
 		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)
@@ -305,6 +379,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			}
 		}
 
+		private void UpdatedCallRecordInfoCallback(ZoomRoom zoomroom, UpdatedCallRecordInfoResponse response)
+		{
+			var callRecordInfo = response.callRecordInfo;
+			CallRecord = callRecordInfo.AmIRecording;
+		}
+
 		#endregion
 
 		#region Console
@@ -330,6 +410,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			addRow("Number", Number);
 			addRow("Status", Status);
 			addRow("Participants", GetParticipants().Count());
+			addRow("CallLock", CallLock);
+			addRow("CallRecord", CallRecord);
 		}
 
 		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
@@ -341,6 +423,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
 			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
 			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
+			yield return new GenericConsoleCommand<bool>("SetCallLock", "SetCallLock <true/false>",
+			                                             b => SetCallLock(b));
+			yield return new GenericConsoleCommand<bool>("SetCallRecord", "SetCallRecord <true/false>",
+			                                             b => SetCallRecord(b));
 		}
 
 		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
