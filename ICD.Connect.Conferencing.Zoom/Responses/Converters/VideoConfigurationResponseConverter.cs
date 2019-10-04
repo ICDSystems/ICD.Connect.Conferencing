@@ -43,6 +43,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	public sealed class VideoConfigurationConverter : AbstractGenericJsonConverter<VideoConfiguration>
 	{
 		private const string ATTR_CAMERA = "Camera";
+		private const string ATTR_HIDE_CONF_SELF_VIDEO = "hide_conf_self_video";
 
 		/// <summary>
 		/// Override to write properties to the writer.
@@ -59,6 +60,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				writer.WritePropertyName(ATTR_CAMERA);
 				serializer.Serialize(writer, value.Camera);
 			}
+
+			if (value.HideConferenceSelfVideo)
+			{
+				writer.WritePropertyName(ATTR_HIDE_CONF_SELF_VIDEO);
+				serializer.Serialize(writer, value.HideConferenceSelfVideo);
+			}
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, VideoConfiguration instance, JsonSerializer serializer)
@@ -67,6 +74,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 			{
 				case ATTR_CAMERA:
 					instance.Camera = serializer.Deserialize<VideoCameraConfiguration>(reader);
+					break;
+				case ATTR_HIDE_CONF_SELF_VIDEO:
+					instance.HideConferenceSelfVideo = serializer.Deserialize<bool>(reader);
 					break;
 
 				default:

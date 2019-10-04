@@ -45,6 +45,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_MICROPHONE = "Microphone";
 		private const string ATTR_CAMERA = "Camera";
 		private const string ATTR_LOCK = "Lock";
+		private const string ATTR_LAYOUT = "Layout";
 
 		/// <summary>
 		/// Override to write properties to the writer.
@@ -73,6 +74,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				writer.WritePropertyName(ATTR_LOCK);
 				serializer.Serialize(writer, value.CallLockStatus);
 			}
+
+			if (value.Layout != null)
+			{
+				writer.WritePropertyName(ATTR_LAYOUT);
+				serializer.Serialize(writer, value.Layout);
+			}
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, CallConfiguration instance, JsonSerializer serializer)
@@ -89,6 +96,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 				case ATTR_LOCK:
 					instance.CallLockStatus = serializer.Deserialize<LockConfiguration>(reader);
+					break;
+
+				case ATTR_LAYOUT:
+					instance.Layout = serializer.Deserialize<CallLayoutConfigurationQuery>(reader);
 					break;
 
 				default:
@@ -156,6 +167,43 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 			{
 				case ATTR_LOCK:
 					instance.Lock = reader.GetValueAsBool();
+					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
+			}
+		}
+	}
+
+	public sealed class CallLayoutConfigurationQueryConverter : AbstractGenericJsonConverter<CallLayoutConfigurationQuery>
+	{
+		private const string ATTR_SIZE = "Size";
+		private const string ATTR_POSITION = "Position";
+
+		protected override void WriteProperties(JsonWriter writer, CallLayoutConfigurationQuery value,
+		                                        JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value.Size != 0)
+				writer.WriteProperty(ATTR_SIZE, value.Size);
+
+			if (value.Position != 0)
+				writer.WriteProperty(ATTR_POSITION, value.Position);
+		}
+
+		protected override void ReadProperty(string property, JsonReader reader, CallLayoutConfigurationQuery instance,
+		                                     JsonSerializer serializer)
+		{
+			switch (property)
+			{
+				case ATTR_SIZE:
+					instance.Size = reader.GetValueAsEnum<eZoomLayoutSize>();
+					break;
+
+				case ATTR_POSITION:
+					instance.Position = reader.GetValueAsEnum<eZoomLayoutPosition>();
 					break;
 
 				default:

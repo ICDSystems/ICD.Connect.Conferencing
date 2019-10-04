@@ -19,6 +19,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		[CanBeNull]
 		public VideoCameraConfiguration Camera { get; set; }
+
+		public bool HideConferenceSelfVideo { get; set; }
 	}
 
 	[JsonConverter(typeof(VideoCameraConfigurationConverter))]

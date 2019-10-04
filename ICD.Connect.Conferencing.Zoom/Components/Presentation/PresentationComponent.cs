@@ -1,7 +1,9 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
+using ICD.Connect.Conferencing.Zoom.Components.Layout;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
@@ -35,7 +37,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_InputConnected = value;
-				OnInputConnectedUpdated.Raise(this, new BoolEventArgs(value));
+				Parent.Log(eSeverity.Informational, "Setting InputConnected to: {0}", m_InputConnected);
+				OnInputConnectedUpdated.Raise(this, new BoolEventArgs(m_InputConnected));
 			}
 		}
 
@@ -48,7 +51,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_SignalDetected = value;
-				OnSignalDetectedUpdated.Raise(this, new BoolEventArgs(value));
+				Parent.Log(eSeverity.Informational, "Setting SignalDetected to: {0}", m_SignalDetected);
+				OnSignalDetectedUpdated.Raise(this, new BoolEventArgs(m_SignalDetected));
 			}
 		}
 
@@ -59,8 +63,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 			{
 				if (m_Sharing == value)
 					return;
+
 				m_Sharing = value;
-				OnLocalSharingChanged.Raise(this, new BoolEventArgs(value));
+				Parent.Log(eSeverity.Informational, "Setting Sharing to: {0}", m_Sharing);
+				OnLocalSharingChanged.Raise(this, new BoolEventArgs(m_Sharing));
 			}
 		}
 
@@ -73,6 +79,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_ShareOutput = value;
+				Parent.Log(eSeverity.Informational, "Setting PresentationOutput to: {0}", m_ShareOutput);
 				OnPresentationOutputChanged.Raise(this, new PresentationOutputEventArgs(m_ShareOutput));
 			}
 		}

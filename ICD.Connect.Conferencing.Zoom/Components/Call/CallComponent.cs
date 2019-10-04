@@ -11,6 +11,8 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Conferencing.Conferences;
+using ICD.Connect.Conferencing.Zoom.Components.Layout;
+using ICD.Connect.Conferencing.Zoom.EventArguments;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
@@ -46,7 +48,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <summary>
 		/// Raised when the far end sends a video un-mute request.
 		/// </summary>
-		public event EventHandler<BoolEventArgs> OnVideoUnMuteRequestSent; 
+		public event EventHandler<BoolEventArgs> OnVideoUnMuteRequestSent;
+
 		#endregion
 
 		private readonly List<ZoomParticipant> m_Participants;

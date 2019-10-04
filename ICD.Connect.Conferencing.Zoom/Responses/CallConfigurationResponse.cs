@@ -20,6 +20,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public MuteConfiguration Camera { get; set; }
 
 		public LockConfiguration CallLockStatus { get; set; }
+
+		public CallLayoutConfigurationQuery Layout { get; set; }
 	}
 
 	[JsonConverter(typeof(MuteConfigurationConverter))]
@@ -32,5 +34,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	public sealed class LockConfiguration
 	{
 		public bool Lock { get; set; }
+	}
+
+	[JsonConverter(typeof(CallLayoutConfigurationQueryConverter))]
+	public sealed class CallLayoutConfigurationQuery
+	{
+		public eZoomLayoutSize Size { get; set; }
+		public eZoomLayoutPosition Position { get; set; }
 	}
 }

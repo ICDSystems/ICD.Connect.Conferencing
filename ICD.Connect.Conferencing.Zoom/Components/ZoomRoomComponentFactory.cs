@@ -8,6 +8,7 @@ using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
 using ICD.Connect.Conferencing.Zoom.Components.Directory;
+using ICD.Connect.Conferencing.Zoom.Components.Layout;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 
@@ -26,7 +27,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 				{typeof(SystemComponent), zoomRoom => new SystemComponent(zoomRoom)},
 				{typeof(CameraComponent), zoomRoom => new CameraComponent(zoomRoom)},
 				{typeof(BookingsComponent), zoomRoom => new BookingsComponent(zoomRoom)},
-				{typeof(CallComponent), zoomRoom => new CallComponent(zoomRoom)}
+				{typeof(CallComponent), zoomRoom => new CallComponent(zoomRoom)},
+				{typeof(LayoutComponent), zoomRoom => new LayoutComponent(zoomRoom)}
 			};
 
 		private readonly ZoomRoom m_ZoomRoom;

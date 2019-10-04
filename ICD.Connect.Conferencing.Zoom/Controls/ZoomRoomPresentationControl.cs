@@ -1,24 +1,33 @@
-﻿using ICD.Common.Utils.EventArguments;
+﻿using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Controls.Presentation;
+using ICD.Connect.Conferencing.Zoom.Components.Layout;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
 {
-	public class ZoomRoomPresentationControl : AbstractPresentationControl<ZoomRoom>
+	public sealed class ZoomRoomPresentationControl : AbstractPresentationControl<ZoomRoom>
 	{
-		private readonly PresentationComponent m_Component;
+		[NotNull]
+		private readonly PresentationComponent m_PresentationComponent;
+		private readonly LayoutComponent m_LayoutComponent;
 
-		public ZoomRoomPresentationControl(ZoomRoom parent, int id) : base(parent, id)
+
+		public ZoomRoomPresentationControl(ZoomRoom parent, int id)
+			: base(parent, id)
 		{
-			m_Component = Parent.Components.GetComponent<PresentationComponent>();
-			Subscribe(m_Component);
+			m_PresentationComponent = Parent.Components.GetComponent<PresentationComponent>();
+			m_LayoutComponent = Parent.Components.GetComponent<LayoutComponent>();
+			Subscribe(m_PresentationComponent);
+			Subscribe(m_LayoutComponent);
 		}
 
 		protected override void DisposeFinal(bool disposing)
 		{
 			base.DisposeFinal(disposing);
 
-			Unsubscribe(m_Component);
+			Unsubscribe(m_PresentationComponent);
+			Unsubscribe(m_LayoutComponent);
 		}
 
 		#region Methods
@@ -32,7 +41,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="input"></param>
 		public override void StartPresentation(int input)
 		{
-			m_Component.StartPresentation();
+			m_PresentationComponent.StartPresentation();
 		}
 
 		/// <summary>
@@ -40,33 +49,35 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// </summary>
 		public override void StopPresentation()
 		{
-			m_Component.StopPresentation();
+			m_PresentationComponent.StopPresentation();
 		}
 
 		private void UpdatePresentationActive()
 		{
-			PresentationActive = m_Component != null && (m_Component.Sharing || m_Component.PresentationOutput != null);
+			PresentationActive = m_PresentationComponent.Sharing ||
+			                     m_LayoutComponent.ShareThumb ||
+			                     m_PresentationComponent.PresentationOutput != null;
 		}
 
 		#endregion
 
-		#region Component Callbacks
+		#region Presentation Component Callbacks
 
 		private void Subscribe(PresentationComponent component)
 		{
-			component.OnLocalSharingChanged += ComponentOnOnLocalSharingChanged;
+			component.OnLocalSharingChanged += ComponentOnLocalSharingChanged;
 			component.OnPresentationOutputChanged += ComponentOnPresentationOutputChanged;
 		}
 
 		private void Unsubscribe(PresentationComponent component)
 		{
-			component.OnLocalSharingChanged -= ComponentOnOnLocalSharingChanged;
+			component.OnLocalSharingChanged -= ComponentOnLocalSharingChanged;
 			component.OnPresentationOutputChanged -= ComponentOnPresentationOutputChanged;
 		}
 
-		private void ComponentOnOnLocalSharingChanged(object sender, BoolEventArgs args)
+		private void ComponentOnLocalSharingChanged(object sender, BoolEventArgs args)
 		{
-			PresentationActiveInput = m_Component != null && m_Component.Sharing ? 1 : (int?) null;
+			PresentationActiveInput = m_PresentationComponent.Sharing ? 1 : (int?) null;
 			UpdatePresentationActive();
 		}
 		
@@ -75,6 +86,24 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			UpdatePresentationActive();
 		}
 
+		#endregion
+
+		#region Layout Component Callbacks
+
+		private void Subscribe(LayoutComponent component)
+		{
+			component.OnShareThumbChanged += LayoutComponentOnShareThumbLayoutChanged;
+		}
+
+		private void Unsubscribe(LayoutComponent component)
+		{
+			component.OnShareThumbChanged -= LayoutComponentOnShareThumbLayoutChanged;
+		}
+
+		private void LayoutComponentOnShareThumbLayoutChanged(object sender, LayoutConfigurationEventArgs args)
+		{
+			UpdatePresentationActive();
+		}
 		#endregion
 	}
 }
