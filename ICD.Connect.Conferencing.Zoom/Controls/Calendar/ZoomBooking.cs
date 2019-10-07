@@ -42,7 +42,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 
 	    public override IEnumerable<IDialContext> GetBookingNumbers()
 	    {
-			yield return new ZoomDialContext { DialString = m_Booking.MeetingNumber };
+			if (!string.IsNullOrEmpty(m_Booking.MeetingNumber))
+				yield return new ZoomDialContext { DialString = m_Booking.MeetingNumber };
 		}
 
 		public ZoomBooking(Booking booking)

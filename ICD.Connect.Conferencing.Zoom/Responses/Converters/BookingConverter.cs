@@ -66,7 +66,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					instance.OrganizerEmail = reader.GetValueAsString();
 					break;
 				case ATTR_MEETING_NUMBER:
-					instance.MeetingNumber = reader.GetValueAsString();
+					string meetingNumber = reader.GetValueAsString();
+					instance.MeetingNumber = meetingNumber == "0" ? null : meetingNumber;
 					break;
 				case ATTR_IS_PRIVATE:
 					instance.IsPrivate = reader.GetValueAsBool();
