@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+ - ZoomRoom Audio Component
+ - ZoomRoom Layout Component & Control
  - Event for when far end requests ZoomRoom to Unmute video
  - ZoomRoom Allow Participant to record call console command
  - ZoomRoom Call Record console command

@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Zoom.Components.Audio;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
@@ -28,7 +29,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 				{typeof(CameraComponent), zoomRoom => new CameraComponent(zoomRoom)},
 				{typeof(BookingsComponent), zoomRoom => new BookingsComponent(zoomRoom)},
 				{typeof(CallComponent), zoomRoom => new CallComponent(zoomRoom)},
-				{typeof(LayoutComponent), zoomRoom => new LayoutComponent(zoomRoom)}
+				{typeof(LayoutComponent), zoomRoom => new LayoutComponent(zoomRoom)},
+				{typeof(AudioComponent), zoomRoom => new AudioComponent(zoomRoom)}
 			};
 
 		private readonly ZoomRoom m_ZoomRoom;
