@@ -6,13 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [13.8.0] - 2019-10-07
 ### Added
  - Zoom conference control raises an event when a far end participant requests a mute state change
+ - Added an extension method to get the duration of a conference
 
 ### Changed
  - Fixed NullReferenceException when handling Zoom camera selection responses
  - Fixed a bug where all-day Google events were being serialized in Zoom as empty strings
  - Fixed a bug where zoom bookings were not being listed when the zoom room was initialized
+ - Fixed deadlocks in the Zoom CallComponent
+ - Fixed a bug where Zoom contexts would be dialed with an empty password
+ - Zoom contact directory optimizations
+ - Zoom bookings are initialized when the device initializes
 
 ## [13.7.0] - 2019-09-16
 ### Added
