@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+ - Fixed a bug where zoom bookings without a meeting number were not being handled correctly
+
 ## [13.8.0] - 2019-10-07
 ### Added
  - Zoom conference control raises an event when a far end participant requests a mute state change
