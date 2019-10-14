@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+ - ZoomRoom Traditional Call Component & Control
  - ZoomRoom Audio Component
  - ZoomRoom Layout Component & Control
  - Event for when far end requests ZoomRoom to Unmute video

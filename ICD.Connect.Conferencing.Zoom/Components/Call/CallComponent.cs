@@ -11,8 +11,6 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Conferencing.Conferences;
-using ICD.Connect.Conferencing.Zoom.Components.Layout;
-using ICD.Connect.Conferencing.Zoom.EventArguments;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
