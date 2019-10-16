@@ -60,11 +60,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 				Parent.SendCommand("zCommand Bookings List");
 		}
 
+		public void CheckIn(string meetingNumber)
+		{
+			if (Initialized)
+				Parent.SendCommand("zCommand Dial CheckIn MeetingNumber: {0}", meetingNumber);
+		}
+
 		protected override void Initialize()
 		{
 			base.Initialize();
 
-			ListBookings();
+			UpdateBookings();
 		}
 
 		#endregion
@@ -74,16 +80,23 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		private void Subscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.RegisterResponseCallback<BookingsUpdateResponse>(BookingsUpdateCallback);
+			zoomRoom.RegisterResponseCallback<BookingsUpdatedEventResponse>(BoookingsUpdatedEventCallback);
 			zoomRoom.RegisterResponseCallback<BookingsListCommandResponse>(ListBookingsCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<BookingsUpdateResponse>(BookingsUpdateCallback);
+			zoomRoom.UnregisterResponseCallback<BookingsUpdatedEventResponse>(BoookingsUpdatedEventCallback);
 			zoomRoom.UnregisterResponseCallback<BookingsListCommandResponse>(ListBookingsCallback);
 		}
 
 		private void BookingsUpdateCallback(ZoomRoom zoomRoom, BookingsUpdateResponse response)
+		{
+			ListBookings();
+		}
+
+		private void BoookingsUpdatedEventCallback(ZoomRoom zoomroom, BookingsUpdatedEventResponse response)
 		{
 			ListBookings();
 		}

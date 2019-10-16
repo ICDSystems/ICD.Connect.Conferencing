@@ -55,6 +55,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// </remarks>
 		public string HostName { get; set; }
 
+		/// <summary>
+		/// Whether the meeting has been checked into or not by the zoomroom?
+		/// </summary>
+		public bool CheckIn { get; set; }
+
 		#endregion
 
 		#region Methods

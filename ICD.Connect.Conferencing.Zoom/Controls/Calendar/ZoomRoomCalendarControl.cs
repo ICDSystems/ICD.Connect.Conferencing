@@ -75,7 +75,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 
 	    public override void Refresh()
 	    {
-			m_BookingsComponent.UpdateBookings();
+		    m_BookingsComponent.UpdateBookings();
 	    }
 
 		public override IEnumerable<IBooking> GetBookings()

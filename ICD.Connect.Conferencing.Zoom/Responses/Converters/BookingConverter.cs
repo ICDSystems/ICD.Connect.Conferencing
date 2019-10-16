@@ -16,6 +16,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_MEETING_NUMBER = "meetingNumber";
 		private const string ATTR_IS_PRIVATE = "isPrivate";
 		private const string ATTR_HOST_NAME = "hostName";
+		private const string ATTR_CHECK_IN = "checkIn";
+		private const string ATTR_CHECKED_IN = "checkedIn";
 
 		protected override void WriteProperties(JsonWriter writer, Booking value, JsonSerializer serializer)
 		{
@@ -44,6 +46,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 			if (value.HostName != null)
 				writer.WriteProperty(ATTR_HOST_NAME, value.HostName);
+
+			if (value.CheckIn)
+				writer.WriteProperty(ATTR_CHECKED_IN, value.CheckIn);
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, Booking instance, JsonSerializer serializer)
@@ -74,6 +79,13 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					break;
 				case ATTR_HOST_NAME:
 					instance.HostName = reader.GetValueAsString();
+					break;
+				//Zoom's checkIn JSON attribute changes based on value so check for both.
+				case ATTR_CHECK_IN:
+					instance.CheckIn = reader.GetValueAsBool();
+					break;
+				case ATTR_CHECKED_IN:
+					instance.CheckIn = reader.GetValueAsBool();
 					break;
 
 				default:

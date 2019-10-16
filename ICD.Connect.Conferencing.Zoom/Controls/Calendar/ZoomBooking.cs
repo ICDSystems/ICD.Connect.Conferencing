@@ -40,13 +40,18 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    get { return m_Booking.IsPrivate; }
 	    }
 
+	    public bool CheckIn
+	    {
+		    get { return m_Booking.CheckIn; }
+	    }
+
 	    public override IEnumerable<IDialContext> GetBookingNumbers()
 	    {
 			if (!string.IsNullOrEmpty(m_Booking.MeetingNumber))
 				yield return new ZoomDialContext { DialString = m_Booking.MeetingNumber };
 		}
 
-		public ZoomBooking(Booking booking)
+	    public ZoomBooking(Booking booking)
 	    {
 		    m_Booking = booking;
 	    }
