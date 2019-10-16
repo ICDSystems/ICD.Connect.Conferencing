@@ -93,7 +93,7 @@
     <Compile Include="Controls\Dialing\IWebConferenceDeviceControl.cs" />
     <Compile Include="DialContexts\AbstractDialContext.cs" />
     <Compile Include="DialContexts\eDialProtocol.cs" />
-    <Compile Include="DialContexts\GenericDialContext.cs" />
+    <Compile Include="DialContexts\TraditionalDialContext.cs" />
     <Compile Include="DialContexts\IDialContext.cs" />
     <Compile Include="DialContexts\PstnDialContext.cs" />
     <Compile Include="DialContexts\SipDialContext.cs" />

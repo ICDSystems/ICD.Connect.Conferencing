@@ -3,11 +3,8 @@
 	/// <summary>
 	/// Represents a dial context which is either sip or pstn, but it doesn't really matter.
 	/// </summary>
-	public class GenericDialContext : AbstractDialContext
+	public sealed class TraditionalDialContext : AbstractDialContext
 	{
-		public override eDialProtocol Protocol
-		{
-			get { return eDialProtocol.Unknown; }
-		}
+		public override eDialProtocol Protocol { get { return eDialProtocol.Unknown; } }
 	}
 }

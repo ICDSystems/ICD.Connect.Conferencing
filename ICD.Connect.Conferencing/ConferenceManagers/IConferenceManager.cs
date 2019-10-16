@@ -283,7 +283,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (callType == eCallType.Unknown)
 				callType = extends.DialingPlan.DefaultSourceType;
 
-			extends.Dial(new GenericDialContext { DialString = number, CallType = callType });
+			extends.Dial(new TraditionalDialContext { DialString = number, CallType = callType });
 		}
 
 		/// <summary>

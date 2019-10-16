@@ -1,4 +1,6 @@
-﻿using ICD.Connect.Conferencing.Zoom.Responses;
+﻿using System;
+using ICD.Common.Properties;
+using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 {
@@ -18,8 +20,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 
 		public eZoomPhoneCallTerminatedReason Reason { get; set; }
 
-		public void UpdateStatusInfo(PhoneCallStatus status)
+		public void UpdateStatusInfo([NotNull] PhoneCallStatus status)
 		{
+			if (status == null)
+				throw new ArgumentNullException("status");
+
 			CallId = status.CallId;
 			PeerDisplayName = status.PeerDisplayName;
 			PeerNumber = status.PeerNumber;
@@ -28,8 +33,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 			Status = status.Status;
 		}
 
-		public void UpdateTerminateInfo(PhoneCallTerminated terminated)
+		public void UpdateTerminateInfo([NotNull] PhoneCallTerminated terminated)
 		{
+			if (terminated == null)
+				throw new ArgumentNullException("terminated");
+
 			CallId = terminated.CallId;
 			PeerDisplayName = terminated.PeerDisplayName;
 			PeerNumber = terminated.PeerNumber;

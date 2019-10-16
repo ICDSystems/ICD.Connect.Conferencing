@@ -1,106 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.API.Commands;
-using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Conferences;
-using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 {
-	public sealed class TraditionalCallComponent : AbstractZoomRoomComponent, ITraditionalConference
+	public sealed class TraditionalCallComponent : AbstractZoomRoomComponent
 	{
-		#region Events
+		public event EventHandler<GenericEventArgs<TraditionalZoomPhoneCallInfo>> OnCallStatusChanged;
+		public event EventHandler<GenericEventArgs<TraditionalZoomPhoneCallInfo>> OnCallTerminated;
 
-		/// <summary>
-		/// Raised when a participant is added to the conference.
-		/// </summary>
-		public event EventHandler<ParticipantEventArgs> OnParticipantAdded;
-
-		/// <summary>
-		/// Raised when a participant is removed from the conference.
-		/// </summary>
-		public event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
-
-		/// <summary>
-		/// Raised when the conference status changes.
-		/// </summary>
-		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
-
-		/// <summary>
-		/// Raised when the Call Id changes.
-		/// </summary>
-		public event EventHandler<StringEventArgs> OnCallIdChanged; 
-
-		#endregion
-
-		private eConferenceStatus m_Status;
-		private string m_CallId;
-
-		private readonly TraditionalZoomPhoneCallInfo m_CallInfo;
-		private TraditionalZoomParticipant m_Participant;
-
-		#region Properties
-
-		public string CallId
-		{
-			get { return m_CallId; }
-			private set
-			{
-				if (value == m_CallId)
-					return;
-
-				m_CallId = value;
-				Parent.Log(eSeverity.Informational, "Call ID set to: {0}", m_CallId);
-				OnCallIdChanged.Raise(this, new StringEventArgs(m_CallId));
-			}
-		}
-
-		public eConferenceStatus Status
-		{
-			get { return m_Status; }
-			private set
-			{
-				if (value == m_Status)
-					return;
-
-				m_Status = value;
-				Parent.Log(eSeverity.Informational, "Traditional Zoom Call status changed to: {0}",
-				           StringUtils.NiceName(m_Status));
-				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(m_Status));
-			}
-		}
-
-		public DateTime? Start { get; private set; }
-
-		public DateTime? End { get; private set; }
-
-		public eCallType CallType { get { return eCallType.Audio; } }
-
-		#endregion
+		private readonly IcdOrderedDictionary<string, TraditionalZoomPhoneCallInfo> m_CallInfos;
+		private readonly SafeCriticalSection m_CallInfosSection;
 
 		#region Constructor
 
-		public TraditionalCallComponent(ZoomRoom parent) : base(parent)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		public TraditionalCallComponent(ZoomRoom parent)
+			: base(parent)
 		{
+			m_CallInfos = new IcdOrderedDictionary<string, TraditionalZoomPhoneCallInfo>();
+			m_CallInfosSection = new SafeCriticalSection();
+
 			Subscribe(Parent);
-			m_CallInfo = new TraditionalZoomPhoneCallInfo();
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		protected override void DisposeFinal()
 		{
-			base.DisposeFinal();
+			OnCallStatusChanged = null;
+			OnCallTerminated = null;
 
-			OnParticipantAdded = null;
-			OnParticipantRemoved = null;
-			OnStatusChanged = null;
-			OnCallIdChanged = null;
+			base.DisposeFinal();
 
 			Unsubscribe(Parent);
 		}
@@ -109,70 +48,70 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 
 		#region Methods
 
-		IEnumerable<ITraditionalParticipant> IConference<ITraditionalParticipant>.GetParticipants()
+		public IEnumerable<TraditionalZoomPhoneCallInfo> GetCallInfo()
 		{
-			return GetParticipants();
+			return m_CallInfosSection.Execute(() => m_CallInfos.Values.ToArray(m_CallInfos.Count));
 		}
 
-		IEnumerable<IParticipant> IConference.GetParticipants()
+		public void PhoneCallOut(string dialString)
 		{
-			return GetParticipants();
+			Parent.SendCommand("zCommand Dial PhoneCallOut Number: {0}", dialString);
+		}
+
+		public void Hangup(string callId)
+		{
+			Parent.SendCommand("zCommand Dial PhoneHangUp CallId: {0}", callId);
+		}
+
+		public void SendDtmf(string callId, char data)
+		{
+			Parent.SendCommand("zCommand SendSIPDTMF CallID: {0} Key: {1}", callId, data);
 		}
 
 		#endregion
 
 		#region Private Methods
 
-		private IEnumerable<ITraditionalParticipant> GetParticipants()
+		private void UpdateOrAddInfo(PhoneCallStatus data)
 		{
-			yield return m_Participant;
-		}
+			TraditionalZoomPhoneCallInfo info;
 
-		private void AddParticipant(TraditionalZoomParticipant participant)
-		{
-			if (CallId == participant.CallId)
-				participant.Update(m_CallInfo);
-			else
+			m_CallInfosSection.Enter();
+
+			try
 			{
-				CallId = participant.CallId;
-				m_Participant = participant;
-				Parent.Log(eSeverity.Informational, "Adding New Participant: {0}", participant.Name);
-				OnParticipantAdded.Raise(this, new ParticipantEventArgs(m_Participant));
+				info = m_CallInfos.GetOrAddNew(data.CallId);
+				info.UpdateStatusInfo(data);
+			}
+			finally
+			{
+				m_CallInfosSection.Leave();
 			}
 
-			switch (m_CallInfo.Status)
-			{
-				case eZoomPhoneCallStatus.Ringing:
-				case eZoomPhoneCallStatus.Init:
-					Status = eConferenceStatus.Connecting;
-					break;
-
-				case eZoomPhoneCallStatus.InCall:
-					Status = eConferenceStatus.Connected;
-					break;
-
-				case eZoomPhoneCallStatus.Incoming:
-				case eZoomPhoneCallStatus.NotFound:
-				case eZoomPhoneCallStatus.None:
-					Status = eConferenceStatus.Undefined;
-					break;
-
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			OnCallStatusChanged.Raise(this, new GenericEventArgs<TraditionalZoomPhoneCallInfo>(info));
 		}
 
-		private void RemoveParticipant(TraditionalZoomParticipant participant)
+		private void RemoveInfo(PhoneCallTerminated data)
 		{
-			if (CallId != participant.CallId)
-				return;
+			TraditionalZoomPhoneCallInfo info;
 
-			CallId = null;
-			m_Participant = null;
-			Status = eConferenceStatus.Disconnected;
-			Parent.Log(eSeverity.Informational, "Removing Participant: {0} Reason: {1}", m_CallInfo.PeerDisplayName,
-			           m_CallInfo.Reason);
-			OnParticipantRemoved.Raise(this, new ParticipantEventArgs(participant));
+			m_CallInfosSection.Enter();
+
+			try
+			{
+				if (!m_CallInfos.TryGetValue(data.CallId, out info))
+					return;
+
+				info.UpdateTerminateInfo(data);
+				m_CallInfos.Remove(data.CallId);
+			}
+			finally
+			{
+				m_CallInfosSection.Leave();
+			}
+
+			OnCallTerminated.Raise(this, new GenericEventArgs<TraditionalZoomPhoneCallInfo>(info));
+
 		}
 
 		#endregion
@@ -196,11 +135,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 			var data = response.PhoneCallStatus;
 			if (data == null)
 				return;
-			
-			m_CallInfo.UpdateStatusInfo(data);
 
-			var participant = new TraditionalZoomParticipant(Parent, m_CallInfo);
-			AddParticipant(participant);
+			if (data.IsIncomingCall)
+			{
+				Hangup(data.CallId);
+				return;
+			}
+
+			UpdateOrAddInfo(data);
 		}
 
 		private void PhoneCallTerminatedResponse(ZoomRoom zoomroom, PhoneCallTerminatedResponse response)
@@ -209,11 +151,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 			if (data == null)
 				return;
 
-			m_CallInfo.UpdateTerminateInfo(data);
-
-			var participant =
-				GetParticipants().FirstOrDefault(p => p.Number == data.PeerNumber) as TraditionalZoomParticipant;
-			RemoveParticipant(participant);
+			RemoveInfo(data);
 		}
 
 		#endregion
@@ -221,39 +159,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 		#region Console
 
 		public override string ConsoleHelp { get { return "Zoom Room Traditional Call"; } }
-
-		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
-			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-				yield return node;
-
-			foreach (var participant in GetParticipants())
-				if (participant != null)
-					yield return participant;
-		}
-
-		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-			base.BuildConsoleStatus(addRow);
-
-			addRow("CallID", CallId);
-			addRow("Status", Status);
-		}
-
-		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
-		{
-			return GetBaseConsoleCommands();
-		}
-
-		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
-		{
-			return base.GetConsoleNodes();
-		}
-
-		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
-		{
-			return base.GetConsoleCommands();
-		}
 
 		#endregion
 	}
