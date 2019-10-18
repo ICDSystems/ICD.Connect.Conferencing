@@ -47,8 +47,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 			if (value.HostName != null)
 				writer.WriteProperty(ATTR_HOST_NAME, value.HostName);
 
-			if (value.CheckIn)
-				writer.WriteProperty(ATTR_CHECKED_IN, value.CheckIn);
+			if (value.CheckedIn)
+				writer.WriteProperty(ATTR_CHECKED_IN, value.CheckedIn);
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, Booking instance, JsonSerializer serializer)
@@ -83,7 +83,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				//Zoom's checkIn JSON attribute changes based on value so check for both.
 				case ATTR_CHECK_IN:
 				case ATTR_CHECKED_IN:
-					instance.CheckIn = reader.GetValueAsBool();
+					instance.CheckedIn = reader.GetValueAsBool();
 					break;
 
 				default:

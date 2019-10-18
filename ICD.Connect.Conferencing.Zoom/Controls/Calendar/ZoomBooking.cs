@@ -40,9 +40,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    get { return m_Booking.IsPrivate; }
 	    }
 
-	    public bool CheckIn
+	    public override bool CheckedIn
 	    {
-		    get { return m_Booking.CheckIn; }
+		    get { return m_Booking.CheckedIn; }
+	    }
+
+	    public override bool CheckedOut
+	    {
+		    get { return false; }
 	    }
 
 	    public override IEnumerable<IDialContext> GetBookingNumbers()

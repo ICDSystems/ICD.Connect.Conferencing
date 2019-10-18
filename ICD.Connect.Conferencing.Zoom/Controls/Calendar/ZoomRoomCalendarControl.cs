@@ -83,7 +83,38 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 			return m_CriticalSection.Execute(() => m_BookingToZoomBooking.Values.ToArray(m_BookingToZoomBooking.Count));
 	    }
 
-	    #endregion
+		/// <summary>
+		/// Returns true if the booking argument can be checked in.
+		/// </summary>
+		/// <returns></returns>
+		public override bool CanCheckIn(IBooking booking)
+		{
+			return booking is ZoomBooking && !booking.CheckedIn;
+		}
+
+		public override bool CanCheckOut(IBooking booking)
+		{
+			return false;
+		}
+
+		/// <summary>
+		/// Checks in to the specified booking.
+		/// </summary>
+		/// <param name="booking"></param>
+		public override void CheckIn(IBooking booking)
+		{
+			if (CanCheckIn(booking))
+			{
+				m_BookingsComponent.CheckIn(booking.MeetingName);
+			}
+		}
+
+		public override void CheckOut(IBooking booking)
+		{
+			throw new NotSupportedException();
+		}
+
+		#endregion
 
 	    #region Private Methods
 

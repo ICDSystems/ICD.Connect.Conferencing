@@ -83,6 +83,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 			return m_CriticalSection.Execute(() => m_BookingToCiscoBookings.Values.ToArray(m_BookingToCiscoBookings.Count));
 		}
 
+		public override bool CanCheckIn(IBooking booking)
+		{
+			return false;
+		}
+
+		public override bool CanCheckOut(IBooking booking)
+		{
+			return false;
+		}
+
+		public override void CheckIn(IBooking booking)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void CheckOut(IBooking booking)
+		{
+			throw new NotSupportedException();
+		}
+
 		#endregion
 
 		#region Private Methods

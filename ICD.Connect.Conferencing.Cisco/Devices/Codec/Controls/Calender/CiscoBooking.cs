@@ -44,6 +44,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		    get { return m_Booking.Privacy == Booking.ePrivacy.Private; }
 	    }
 
+	    public override bool CheckedIn { get { return false; } }
+	    public override bool CheckedOut { get { return false; } }
+
 	    public override IEnumerable<IDialContext> GetBookingNumbers()
 	    {
 			return m_BookingNumbers.ToArray(m_BookingNumbers.Count);

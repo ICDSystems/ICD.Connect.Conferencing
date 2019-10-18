@@ -58,7 +58,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// <summary>
 		/// Whether the meeting has been checked into or not by the ZoomRoom.
 		/// </summary>
-		public bool CheckIn { get; set; }
+		public bool CheckedIn { get; set; }
 
 		#endregion
 
@@ -79,7 +79,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 			       other.OrganizerEmail == OrganizerEmail &&
 			       other.MeetingNumber == MeetingNumber &&
 			       other.IsPrivate == IsPrivate &&
-			       other.HostName == HostName;
+			       other.HostName == HostName &&
+			       other.CheckedIn == CheckedIn;
 		}
 
 		public override int GetHashCode()
@@ -95,6 +96,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 				hash = hash * 23 + (MeetingNumber == null ? 0 : MeetingNumber.GetHashCode());
 				hash = hash * 23 + IsPrivate.GetHashCode();
 				hash = hash * 23 + (HostName == null ? 0 : HostName.GetHashCode());
+				hash = hash * 23 + CheckedIn.GetHashCode();
 				return hash;
 			}
 		}

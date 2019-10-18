@@ -86,7 +86,27 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 		    return m_CriticalSection.Execute(() => m_MeetingInfoToBooking.Values.ToArray(m_MeetingInfoToBooking.Count));
 	    }
 
-	    #endregion
+		public override bool CanCheckIn(IBooking booking)
+		{
+			return false;
+		}
+
+		public override bool CanCheckOut(IBooking booking)
+		{
+			return false;
+		}
+
+		public override void CheckIn(IBooking booking)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void CheckOut(IBooking booking)
+		{
+			throw new NotSupportedException();
+		}
+
+		#endregion
 
 	    #region Private Methods
 
