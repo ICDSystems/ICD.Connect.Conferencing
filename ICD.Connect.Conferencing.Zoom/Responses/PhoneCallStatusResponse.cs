@@ -1,4 +1,5 @@
-﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+﻿using ICD.Common.Properties;
+using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
 
@@ -9,6 +10,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	[JsonConverter(typeof(PhoneCallStatusResponseConverter))]
 	public sealed class PhoneCallStatusResponse : AbstractZoomRoomResponse
 	{
+		[CanBeNull]
 		public PhoneCallStatus PhoneCallStatus { get; set; }
 	}
 

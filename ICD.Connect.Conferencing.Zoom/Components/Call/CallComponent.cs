@@ -401,7 +401,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void UpdatedCallRecordInfoCallback(ZoomRoom zoomroom, UpdatedCallRecordInfoResponse response)
 		{
 			var callRecordInfo = response.CallRecordInfo;
-			CallRecord = callRecordInfo.AmIRecording;
+			if (callRecordInfo != null)
+				CallRecord = callRecordInfo.AmIRecording;
 		}
 
 		private void VideoUnMuteRequestCallback(ZoomRoom zoomroom, VideoUnMuteRequestResponse response)

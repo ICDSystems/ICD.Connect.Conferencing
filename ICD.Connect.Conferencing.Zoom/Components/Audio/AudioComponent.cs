@@ -42,7 +42,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_IsSapDisabled = value;
-				Parent.Log(eSeverity.Informational, "Setting IsSapDisabled to: {0}", m_IsSapDisabled);
+				Parent.Log(eSeverity.Informational, "IsSapDisabled changed to: {0}", m_IsSapDisabled);
 				OnSoftwareAudioProcessingChanged.Raise(this, new BoolEventArgs(m_IsSapDisabled));
 			}
 		}
@@ -59,7 +59,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_ReduceReverb = value;
-				Parent.Log(eSeverity.Informational, "Setting ReduceReverb to {0}", m_ReduceReverb);
+				Parent.Log(eSeverity.Informational, "ReduceReverb changed to: {0}", m_ReduceReverb);
 				OnReduceReverbChanged.Raise(this, new BoolEventArgs(m_ReduceReverb));
 			}
 		}
@@ -98,11 +98,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 		public void SetSapDisabled(bool disabled)
 		{
 			Parent.SendCommand("zConfiguration Audio Input is_sap_disabled: {0}", disabled ? "on" : "off");
+			Parent.Log(eSeverity.Informational, "Setting SAP disabled to: {0}", disabled);
 		}
 
 		public void SetReduceReverb(bool enabled)
 		{
 			Parent.SendCommand("zConfiguration Audio Input reduce_reverb: {0}", enabled ? "on" : "off");
+			Parent.Log(eSeverity.Informational, "Setting Reduce Reverb to: {0}", enabled);
 		}
 
 		public void UpdateAudio()
@@ -117,7 +119,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 		private void Subscribe(ZoomRoom parent)
 		{
-			Parent.RegisterResponseCallback<AudioConfigurationResponse>(AudioConfigurationResponseCallback);;
+			Parent.RegisterResponseCallback<AudioConfigurationResponse>(AudioConfigurationResponseCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
@@ -127,7 +129,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 		private void AudioConfigurationResponseCallback(ZoomRoom zoomroom, AudioConfigurationResponse response)
 		{
-			var data = response.AudioInputConfiguration.InputConfiguration;
+			var topData = response.AudioInputConfiguration;
+			if (topData == null)
+				return;
+
+			var data = topData.InputConfiguration;
 			if (data == null)
 				return;
 

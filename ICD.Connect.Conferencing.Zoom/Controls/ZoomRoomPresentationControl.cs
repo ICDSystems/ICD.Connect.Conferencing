@@ -100,7 +100,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			component.OnShareThumbChanged -= LayoutComponentOnShareThumbLayoutChanged;
 		}
 
-		private void LayoutComponentOnShareThumbLayoutChanged(object sender, LayoutConfigurationEventArgs args)
+		private void LayoutComponentOnShareThumbLayoutChanged(object sender, BoolEventArgs boolEventArgs)
 		{
 			UpdatePresentationActive();
 		}

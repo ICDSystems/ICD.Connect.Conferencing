@@ -125,7 +125,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomPresentationControl(this, Controls.Count));
-			//Controls.Add(new ZoomRoomConferenceControl(this, Controls.Count));
+			Controls.Add(new ZoomRoomConferenceControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomTraditionalCallControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomCalendarControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomLayoutControl(this, Controls.Count));

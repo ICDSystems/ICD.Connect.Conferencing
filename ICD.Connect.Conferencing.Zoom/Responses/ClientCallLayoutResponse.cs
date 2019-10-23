@@ -1,4 +1,5 @@
-﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+﻿using ICD.Common.Properties;
+using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
 
@@ -9,18 +10,21 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	[JsonConverter(typeof(ClientCallLayoutResponseConverter))]
 	public sealed class ClientCallLayoutResponse : AbstractZoomRoomResponse
 	{
+		[CanBeNull]
 		public CallLayoutConfiguration CallLayoutConfiguration { get; set; }
 	}
 
 	[JsonConverter(typeof(CallLayoutResponseConverter))]
 	public sealed class CallLayoutConfiguration
 	{
+		[CanBeNull]
 		public LayoutConfigurationHeader LayoutConfigurationHeader { get; set; }
 	}
 
 	[JsonConverter(typeof(LayoutConfigurationHeaderConverter))]
 	public sealed class LayoutConfigurationHeader
 	{
+		[CanBeNull]
 		public LayoutConfiguration LayoutConfiguration { get; set; }
 	}
 

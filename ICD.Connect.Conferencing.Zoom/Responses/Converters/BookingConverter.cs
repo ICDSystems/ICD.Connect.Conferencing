@@ -82,8 +82,6 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					break;
 				//Zoom's checkIn JSON attribute changes based on value so check for both.
 				case ATTR_CHECK_IN:
-					instance.CheckIn = reader.GetValueAsBool();
-					break;
 				case ATTR_CHECKED_IN:
 					instance.CheckIn = reader.GetValueAsBool();
 					break;

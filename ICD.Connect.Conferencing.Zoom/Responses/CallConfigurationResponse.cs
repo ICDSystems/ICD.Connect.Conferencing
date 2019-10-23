@@ -1,4 +1,5 @@
-﻿using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
+﻿using ICD.Common.Properties;
+using ICD.Connect.Conferencing.Zoom.Responses.Attributes;
 using ICD.Connect.Conferencing.Zoom.Responses.Converters;
 using Newtonsoft.Json;
 
@@ -15,12 +16,16 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	[JsonConverter(typeof(CallConfigurationConverter))]
 	public sealed class CallConfiguration
 	{
+		[CanBeNull]
 		public MuteConfiguration Microphone { get; set; }
 
+		[CanBeNull]
 		public MuteConfiguration Camera { get; set; }
 
+		[CanBeNull]
 		public LockConfiguration CallLockStatus { get; set; }
 
+		[CanBeNull]
 		public CallLayoutConfigurationQuery Layout { get; set; }
 	}
 

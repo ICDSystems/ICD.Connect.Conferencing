@@ -4,6 +4,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
@@ -56,16 +57,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 		public void PhoneCallOut(string dialString)
 		{
 			Parent.SendCommand("zCommand Dial PhoneCallOut Number: {0}", dialString);
+			Parent.Log(eSeverity.Informational, "PSTN Dialing out to: {0}");
 		}
 
 		public void Hangup(string callId)
 		{
 			Parent.SendCommand("zCommand Dial PhoneHangUp CallId: {0}", callId);
+			Parent.Log(eSeverity.Informational, "Hanging up call with ID: {0}", callId);
 		}
 
 		public void SendDtmf(string callId, char data)
 		{
 			Parent.SendCommand("zCommand SendSIPDTMF CallID: {0} Key: {1}", callId, data);
+			Parent.Log(eSeverity.Informational, "Sending Call with ID: {0} DTMF character: {1}", callId, data);
 		}
 
 		#endregion
@@ -136,9 +140,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 			if (data == null)
 				return;
 
+			// There is currently no way for a ZoomRoom to answer an incoming call, so we reject the call.
 			if (data.IsIncomingCall)
 			{
 				Hangup(data.CallId);
+				Parent.Log(eSeverity.Warning, "Unable to answer incoming call via Zoom API. Rejecting.");
 				return;
 			}
 

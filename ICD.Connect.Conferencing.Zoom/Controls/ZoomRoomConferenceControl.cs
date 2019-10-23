@@ -111,10 +111,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			: base(parent, id)
 		{
 			m_ZoomConference = Parent.Components.GetComponent<CallComponent>();
-			Subscribe(m_ZoomConference);
 
 			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
+
+			Subscribe(m_ZoomConference);
 		}
 
 		/// <summary>
@@ -464,7 +465,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="e"></param>
 		private void VideoUnMuteRequest(object sender, BoolEventArgs e)
 		{
-			OnVideoUnMuteRequested.Raise(this, e);
+			OnVideoUnMuteRequested.Raise(this, new BoolEventArgs(e.Data));
 		}
 
 		#endregion

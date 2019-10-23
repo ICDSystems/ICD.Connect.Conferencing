@@ -37,7 +37,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_InputConnected = value;
-				Parent.Log(eSeverity.Informational, "Setting InputConnected to: {0}", m_InputConnected);
+				Parent.Log(eSeverity.Informational, "InputConnected changed to: {0}", m_InputConnected);
 				OnInputConnectedUpdated.Raise(this, new BoolEventArgs(m_InputConnected));
 			}
 		}
@@ -51,7 +51,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_SignalDetected = value;
-				Parent.Log(eSeverity.Informational, "Setting SignalDetected to: {0}", m_SignalDetected);
+				Parent.Log(eSeverity.Informational, "SignalDetected changed to: {0}", m_SignalDetected);
 				OnSignalDetectedUpdated.Raise(this, new BoolEventArgs(m_SignalDetected));
 			}
 		}
@@ -65,7 +65,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_Sharing = value;
-				Parent.Log(eSeverity.Informational, "Setting Sharing to: {0}", m_Sharing);
+				Parent.Log(eSeverity.Informational, "Sharing changed to: {0}", m_Sharing);
 				OnLocalSharingChanged.Raise(this, new BoolEventArgs(m_Sharing));
 			}
 		}
@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_ShareOutput = value;
-				Parent.Log(eSeverity.Informational, "Setting PresentationOutput to: {0}", m_ShareOutput);
+				Parent.Log(eSeverity.Informational, "PresentationOutput changed to: {0}", m_ShareOutput);
 				OnPresentationOutputChanged.Raise(this, new PresentationOutputEventArgs(m_ShareOutput));
 			}
 		}

@@ -136,9 +136,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			layoutComponent.OnSizeChanged -= LayoutComponentOnSizeChanged;
 		}
 
-		private void LayoutComponentOnSizeChanged(object sender, LayoutConfigurationEventArgs e)
+		private void LayoutComponentOnSizeChanged(object sender, ZoomLayoutSizeEventArgs args)
 		{
-			SelfViewEnabled = e.LayoutSize != eZoomLayoutSize.Off;
+			SelfViewEnabled = args.LayoutSize != eZoomLayoutSize.Off;
 		}
 
 		#endregion

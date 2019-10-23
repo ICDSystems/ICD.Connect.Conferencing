@@ -85,7 +85,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			if (CanDial(dialContext) == eDialContextSupport.Unsupported)
 			{
 				Parent.Log(eSeverity.Error, "Zoom Room traditional calls only support PSTN Currently");
-				return;
+				throw new ArgumentException();
 			}
 
 			PhoneCallOut(dialContext.DialString);
@@ -323,16 +323,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private void SendDtmfCallback(ThinTraditionalParticipant sender, string data)
 		{
-			try
-			{
-				char dtmfData = char.Parse(data);
-				string callId = GetIdForParticipant(sender);
-				SendDtmf(callId, dtmfData);
-			}
-			catch (FormatException e)
-			{
-				Parent.Log(eSeverity.Error, e, "ZoomRoom can only send one DTMF character at a time", "data");
-			}
+			string callId = GetIdForParticipant(sender);
+
+			foreach (char index in data)
+				SendDtmf(callId, index);
 		}
 
 		private void HangupCallback(ThinTraditionalParticipant sender)

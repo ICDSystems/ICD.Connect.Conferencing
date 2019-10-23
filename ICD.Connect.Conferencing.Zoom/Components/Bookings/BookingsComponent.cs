@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
@@ -62,8 +63,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 
 		public void CheckIn(string meetingNumber)
 		{
-			if (Initialized)
-				Parent.SendCommand("zCommand Dial CheckIn MeetingNumber: {0}", meetingNumber);
+			if (!Initialized)
+				return;
+
+			Parent.SendCommand("zCommand Dial CheckIn MeetingNumber: {0}", meetingNumber);
+			Parent.Log(eSeverity.Informational, "Checking into meeting: {0}", meetingNumber);
 		}
 
 		protected override void Initialize()

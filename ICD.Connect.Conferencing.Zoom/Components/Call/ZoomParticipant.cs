@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
@@ -12,6 +13,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 	public sealed class ZoomParticipant : AbstractWebParticipant
 	{
 		private readonly ZoomRoom m_ZoomRoom;
+		private readonly CallComponent m_CallComponent;
 
 		public string UserId { get; private set; }
 		public string AvatarUrl { get; private set; }
@@ -21,9 +23,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public ZoomParticipant(ZoomRoom zoomRoom, ParticipantInfo info)
 		{
 			m_ZoomRoom = zoomRoom;
+			m_CallComponent = m_ZoomRoom.Components.GetComponent<CallComponent>();
 			UserId = info.UserId;
 			Start = IcdEnvironment.GetLocalTime();
 			Update(info);
+			Subscribe(m_CallComponent);
+		}
+
+		protected override void DisposeFinal()
+		{
+			Unsubscribe(m_CallComponent);
 		}
 
 		#region Methods
@@ -42,7 +51,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			if (IsHost)
 			{
 				CanRecord = true;
-				IsRecording = m_ZoomRoom.Components.GetComponent<CallComponent>().CallRecord;
+				IsRecording = m_CallComponent.CallRecord;
 			}
 			else
 			{
@@ -65,8 +74,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		public void AllowParticipantRecord(bool enabled)
 		{
-			m_ZoomRoom.Log(eSeverity.Debug, "Participant with userId: {0} Call Record Enable set to: {1}", UserId,
-			               enabled);
+			m_ZoomRoom.Log(eSeverity.Informational, "Setting Call Record Enable to: {0} for participant with ID: {1}",
+			               enabled,
+			               UserId);
 			m_ZoomRoom.SendCommand("zCommand Call AllowRecord Id: {0} Enable: {1}", UserId, enabled ? "on" : "off");
 		}
 
@@ -79,6 +89,26 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		internal void SetIsHost(bool isHost)
 		{
 			IsHost = isHost;
+		}
+
+		#endregion
+
+		#region Call Component Callbacks
+
+		private void Subscribe(CallComponent callComponent)
+		{
+			callComponent.OnCallRecordChanged += CallComponentOnCallRecordChanged;
+		}
+
+		private void Unsubscribe(CallComponent callComponent)
+		{
+			callComponent.OnCallRecordChanged -= CallComponentOnCallRecordChanged;
+		}
+
+		private void CallComponentOnCallRecordChanged(object sender, BoolEventArgs e)
+		{
+			if (IsHost)
+				IsRecording = e.Data;
 		}
 
 		#endregion
