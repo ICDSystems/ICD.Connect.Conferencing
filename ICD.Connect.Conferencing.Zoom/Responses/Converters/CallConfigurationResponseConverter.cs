@@ -46,6 +46,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_CAMERA = "Camera";
 		private const string ATTR_LOCK = "Lock";
 		private const string ATTR_LAYOUT = "Layout";
+		private const string ATTR_MUTE_USER_ON_ENTRY = "MuteUserOnEntry";
 
 		/// <summary>
 		/// Override to write properties to the writer.
@@ -80,6 +81,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				writer.WritePropertyName(ATTR_LAYOUT);
 				serializer.Serialize(writer, value.Layout);
 			}
+
+			if (value.MuteUserOnEntry != null)
+			{
+				writer.WritePropertyName(ATTR_MUTE_USER_ON_ENTRY);
+				serializer.Serialize(writer, value.MuteUserOnEntry);
+			}
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, CallConfiguration instance, JsonSerializer serializer)
@@ -100,6 +107,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 				case ATTR_LAYOUT:
 					instance.Layout = serializer.Deserialize<CallLayoutConfigurationQuery>(reader);
+					break;
+
+				case ATTR_MUTE_USER_ON_ENTRY:
+					instance.MuteUserOnEntry = serializer.Deserialize<MuteUserOnEntryConfiguration>(reader);
 					break;
 
 				default:
@@ -204,6 +215,40 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 				case ATTR_POSITION:
 					instance.Position = reader.GetValueAsEnum<eZoomLayoutPosition>();
+					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
+			}
+		}
+	}
+
+	public sealed class MuteUserOnEntryConfigurationConverter : AbstractGenericJsonConverter<MuteUserOnEntryConfiguration>
+	{
+		private const string ATTR_ENABLE = "Enable";
+
+		/// <summary>
+		/// Override to write properties to the writer.
+		/// </summary>
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, MuteUserOnEntryConfiguration value, JsonSerializer serializer)
+		{
+			base.WriteProperties(writer, value, serializer);
+
+			if (value != null)
+				writer.WriteProperty(ATTR_ENABLE, value.Enabled);
+		}
+
+		protected override void ReadProperty(string property, JsonReader reader, MuteUserOnEntryConfiguration instance,
+		                                     JsonSerializer serializer)
+		{
+			switch (property)
+			{
+				case ATTR_ENABLE:
+					instance.Enabled = reader.GetValueAsBool();
 					break;
 
 				default:

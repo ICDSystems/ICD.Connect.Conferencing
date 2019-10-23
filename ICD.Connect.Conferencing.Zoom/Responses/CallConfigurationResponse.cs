@@ -27,6 +27,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 
 		[CanBeNull]
 		public CallLayoutConfigurationQuery Layout { get; set; }
+
+		[CanBeNull]
+		public MuteUserOnEntryConfiguration MuteUserOnEntry { get; set; }
 	}
 
 	[JsonConverter(typeof(MuteConfigurationConverter))]
@@ -46,5 +49,11 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		public eZoomLayoutSize Size { get; set; }
 		public eZoomLayoutPosition Position { get; set; }
+	}
+
+	[JsonConverter(typeof(MuteUserOnEntryConfigurationConverter))]
+	public class MuteUserOnEntryConfiguration
+	{
+		public bool Enabled { get; set; }
 	}
 }

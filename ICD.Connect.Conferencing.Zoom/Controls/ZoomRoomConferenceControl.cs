@@ -59,6 +59,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnVideoUnMuteRequested;
 
+		/// <summary>
+		/// Raised when the state of mute user on entry is changed.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteUserOnEntryChanged; 
+
 		private readonly CallComponent m_ZoomConference;
 
 		private readonly SafeCriticalSection m_IncomingCallsSection;
@@ -67,6 +72,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private string m_LastJoinNumber;
 		private bool m_RequestedMicrophoneMute;
 		private bool m_MicrophoneMuted;
+		private bool m_MuteUserOnEntry;
 
 		#region Properties
 
@@ -97,6 +103,24 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 				}
 
 				PrivacyMuted = m_MicrophoneMuted;
+			}
+		}
+
+		/// <summary>
+		/// Whether or not participants will be muted upon joining a meeting.
+		/// </summary>
+		public bool MuteUserOnEntry
+		{
+			get { return m_MuteUserOnEntry; }
+			private set
+			{
+				if (value == m_MuteUserOnEntry)
+					return;
+
+				m_MuteUserOnEntry = value;
+
+				Parent.Log(eSeverity.Informational, "MuteUserOnEntry changed to: {0}", m_MuteUserOnEntry);
+				OnMuteUserOnEntryChanged.Raise(this, new BoolEventArgs(m_MuteUserOnEntry));
 			}
 		}
 
@@ -230,6 +254,16 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
 			Parent.SendCommand("zCommand Dial StartPmi Duration: 30");
+		}
+
+		/// <summary>
+		/// Sets whether participants should be muted upon entering a meeting or not.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public void SetMuteUserOnEntry(bool enabled)
+		{
+			Parent.Log(eSeverity.Informational, "Setting MuteUserOnEntry to: {0}", enabled);
+			Parent.SendCommand("zConfiguration Call MuteUserOnEntry Enable: {0}", enabled);
 		}
 
 		#endregion
@@ -411,6 +445,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 			if (configuration.Camera != null)
 				CameraEnabled = !configuration.Camera.Mute;
+
+			if (configuration.MuteUserOnEntry != null)
+				MuteUserOnEntry = configuration.MuteUserOnEntry.Enabled;
 		}
 
 		/// <summary>
