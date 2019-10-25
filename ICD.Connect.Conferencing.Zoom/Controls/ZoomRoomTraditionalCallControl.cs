@@ -84,8 +84,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			if (CanDial(dialContext) == eDialContextSupport.Unsupported)
 			{
-				Parent.Log(eSeverity.Error, "Zoom Room traditional calls only support PSTN Currently");
-				throw new ArgumentException();
+				throw new ArgumentException("Zoom Room traditional calls only support PSTN Currently", "dialContext");
 			}
 
 			PhoneCallOut(dialContext.DialString);

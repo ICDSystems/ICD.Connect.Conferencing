@@ -54,7 +54,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 					return;
 
 				m_ShareThumb = value;
+
 				Parent.Log(eSeverity.Informational, "ShareThumb set to: {0}", m_ShareThumb);
+
 				OnShareThumbChanged.Raise(this, new BoolEventArgs(m_ShareThumb));
 			}
 		}
@@ -152,27 +154,27 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 		public void SetLayoutShareThumb(bool enabled)
 		{
-			Parent.SendCommand("zConfiguration Call Layout ShareThumb: {0}", enabled ? "on" : "off");
 			Parent.Log(eSeverity.Informational, "Setting ShareThumb to: {0}", enabled);
+			Parent.SendCommand("zConfiguration Call Layout ShareThumb: {0}", enabled ? "on" : "off");
 		}
 
 		public void SetLayoutStyle(eZoomLayoutStyle style)
 		{
-			Parent.SendCommand("zConfiguration Call Layout Style: {0}", style.ToString());
 			Parent.Log(eSeverity.Informational, "Setting Call Layout Style to: {0}", style.ToString());
+			Parent.SendCommand("zConfiguration Call Layout Style: {0}", style.ToString());
 		}
 
 		public void SetLayoutSize(eZoomLayoutSize size)
 		{
-			Parent.SendCommand("zConfiguration Call Layout Size: {0}", size.ToString());
 			Parent.Log(eSeverity.Informational, "Setting Call Layout Size to: {0}", size.ToString());
+			Parent.SendCommand("zConfiguration Call Layout Size: {0}", size.ToString());
 		}
 
 		public void SetLayoutPosition(eZoomLayoutPosition position)
 		{
-			// Currently only UpRight, UpLeft, DownRight, DownLeft are supported by Zoom.
 			if (position > eZoomLayoutPosition.DownLeft)
-				throw new ArgumentOutOfRangeException();
+				throw new ArgumentOutOfRangeException("position",
+				                                      "Currently only UpRight, UpLeft, DownRight, DownLeft are supported by Zoom.");
 
 			Parent.SendCommand("zConfiguration Call Layout Position: {0}", position.ToString());
 			Parent.Log(eSeverity.Informational, "Setting Call Layout Position to: {0}", position.ToString());
@@ -223,15 +225,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 				return;
 
 			ShareThumb = data.ShareThumb;
-			
-			if (data.Style != 0)
-				LayoutStyle = data.Style;
-
-			if (data.Size != 0)
-				LayoutSize = data.Size;
-
-			if (data.Position != 0)
-				LayoutPosition = data.Position;
+			LayoutStyle = data.Style;
+			LayoutSize = data.Size;
+			LayoutPosition = data.Position;
 		}
 
 		private void CallConfigurationCallback(ZoomRoom zoomroom, CallConfigurationResponse response)
@@ -244,11 +240,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			if (data == null)
 				return;
 
-			if (data.Size != 0)
-				LayoutSize = data.Size;
-
-			if (data.Position != 0)
-				LayoutPosition = data.Position;
+			LayoutSize = data.Size;
+			LayoutPosition = data.Position;
 		}
 
 		#endregion

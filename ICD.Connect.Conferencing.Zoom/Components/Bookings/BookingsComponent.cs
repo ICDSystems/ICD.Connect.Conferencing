@@ -66,8 +66,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 			if (!Initialized)
 				return;
 
-			Parent.SendCommand("zCommand Dial CheckIn MeetingNumber: {0}", meetingNumber);
 			Parent.Log(eSeverity.Informational, "Checking into meeting: {0}", meetingNumber);
+			Parent.SendCommand("zCommand Dial CheckIn MeetingNumber: {0}", meetingNumber);
 		}
 
 		protected override void Initialize()
