@@ -103,10 +103,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		/// <param name="booking"></param>
 		public override void CheckIn(IBooking booking)
 		{
-			if (CanCheckIn(booking))
-			{
-				m_BookingsComponent.CheckIn(booking.MeetingName);
-			}
+			if (!CanCheckIn(booking))
+				throw new ArgumentException("The specified booking does not support check ins.", "booking");
+
+			m_BookingsComponent.CheckIn(booking.MeetingName);
 		}
 
 		public override void CheckOut(IBooking booking)
