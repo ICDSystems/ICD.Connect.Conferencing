@@ -97,14 +97,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 		public void SetSapDisabled(bool disabled)
 		{
-			Parent.SendCommand("zConfiguration Audio Input is_sap_disabled: {0}", disabled ? "on" : "off");
 			Parent.Log(eSeverity.Informational, "Setting SAP disabled to: {0}", disabled);
+			Parent.SendCommand("zConfiguration Audio Input is_sap_disabled: {0}", disabled ? "on" : "off");
 		}
 
 		public void SetReduceReverb(bool enabled)
 		{
-			Parent.SendCommand("zConfiguration Audio Input reduce_reverb: {0}", enabled ? "on" : "off");
 			Parent.Log(eSeverity.Informational, "Setting Reduce Reverb to: {0}", enabled);
+			Parent.SendCommand("zConfiguration Audio Input reduce_reverb: {0}", enabled ? "on" : "off");
 		}
 
 		public void UpdateAudio()

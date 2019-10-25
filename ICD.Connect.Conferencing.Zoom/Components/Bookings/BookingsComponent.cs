@@ -84,14 +84,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		private void Subscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.RegisterResponseCallback<BookingsUpdateResponse>(BookingsUpdateCallback);
-			zoomRoom.RegisterResponseCallback<BookingsUpdatedEventResponse>(BoookingsUpdatedEventCallback);
+			zoomRoom.RegisterResponseCallback<BookingsUpdatedEventResponse>(BookingsUpdatedEventCallback);
 			zoomRoom.RegisterResponseCallback<BookingsListCommandResponse>(ListBookingsCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<BookingsUpdateResponse>(BookingsUpdateCallback);
-			zoomRoom.UnregisterResponseCallback<BookingsUpdatedEventResponse>(BoookingsUpdatedEventCallback);
+			zoomRoom.UnregisterResponseCallback<BookingsUpdatedEventResponse>(BookingsUpdatedEventCallback);
 			zoomRoom.UnregisterResponseCallback<BookingsListCommandResponse>(ListBookingsCallback);
 		}
 
@@ -100,7 +100,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 			ListBookings();
 		}
 
-		private void BoookingsUpdatedEventCallback(ZoomRoom zoomroom, BookingsUpdatedEventResponse response)
+		private void BookingsUpdatedEventCallback(ZoomRoom zoomroom, BookingsUpdatedEventResponse response)
 		{
 			ListBookings();
 		}

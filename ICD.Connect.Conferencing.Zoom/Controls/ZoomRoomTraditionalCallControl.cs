@@ -83,9 +83,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override void Dial(IDialContext dialContext)
 		{
 			if (CanDial(dialContext) == eDialContextSupport.Unsupported)
-			{
 				throw new ArgumentException("Zoom Room traditional calls only support PSTN Currently", "dialContext");
-			}
 
 			PhoneCallOut(dialContext.DialString);
 		}
