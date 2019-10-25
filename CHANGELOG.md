@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+ - Conferencing Check In/Check Out support
  - ZoomRoom MuteUserOnEntry API
  - ZoomRoom booking check in API
  - ZoomRoom Traditional Call Component & Control
