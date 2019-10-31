@@ -210,7 +210,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			value.Name = info.PeerDisplayName;
 			value.Direction = info.IsIncomingCall ? eCallDirection.Incoming : eCallDirection.Outgoing;
 			value.Status = GetStatus(info.Status);
-			value.SourceType = Supports;
+			value.CallType = Supports;
 
 			if (value.GetIsOnline())
 				value.Start = value.Start ?? IcdEnvironment.GetLocalTime();

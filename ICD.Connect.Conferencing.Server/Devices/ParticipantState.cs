@@ -43,7 +43,7 @@ namespace ICD.Connect.Conferencing.Server.Devices
 			{
 				Name = participant.Name,
 				Number = participant.Number,
-				SourceType = participant.SourceType,
+				SourceType = participant.CallType,
 				Status = participant.Status,
 				Direction = participant.Direction,
 				Start = participant.Start,

@@ -900,7 +900,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			participant.OnStatusChanged += ParticipantOnPropertyChanged;
 			participant.OnNameChanged += ParticipantOnPropertyChanged;
 			participant.OnNumberChanged += ParticipantOnPropertyChanged;
-			participant.OnSourceTypeChanged += ParticipantOnPropertyChanged;
+			participant.OnParticipantTypeChanged += ParticipantOnPropertyChanged;
 		}
 
 		private void Unsubscribe(ITraditionalParticipant participant)
@@ -908,7 +908,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			participant.OnStatusChanged -= ParticipantOnPropertyChanged;
 			participant.OnNameChanged -= ParticipantOnPropertyChanged;
 			participant.OnNumberChanged -= ParticipantOnPropertyChanged;
-			participant.OnSourceTypeChanged -= ParticipantOnPropertyChanged;
+			participant.OnParticipantTypeChanged -= ParticipantOnPropertyChanged;
 		}
 
 		private void ParticipantOnPropertyChanged(object sender, EventArgs args)

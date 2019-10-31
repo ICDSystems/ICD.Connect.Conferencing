@@ -25,7 +25,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public event EventHandler<ParticipantStatusEventArgs> OnStatusChanged;
 		public event EventHandler<StringEventArgs> OnNameChanged;
 		public event EventHandler<StringEventArgs> OnNumberChanged;
-		public event EventHandler<ParticipantTypeEventArgs> OnSourceTypeChanged;
+		public event EventHandler<ParticipantTypeEventArgs> OnParticipantTypeChanged;
 
 		public ThinParticipantHoldCallback HoldCallback { get; set; }
 		public ThinParticipantResumeCallback ResumeCallback { get; set; }
@@ -168,7 +168,7 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
-		public eCallType SourceType
+		public eCallType CallType
 		{
 			get { return m_SourceType; }
 			set
@@ -178,7 +178,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 				m_SourceType = value;
 
-				Log(eSeverity.Informational, "SourceType set to {0}", m_SourceType);
+				Log(eSeverity.Informational, "CallType set to {0}", m_SourceType);
 			}
 		}
 
@@ -205,7 +205,7 @@ namespace ICD.Connect.Conferencing.Participants
 			OnStatusChanged = null;
 			OnNameChanged = null;
 			OnNumberChanged = null;
-			OnSourceTypeChanged = null;
+			OnParticipantTypeChanged = null;
 
 			HoldCallback = null;
 			ResumeCallback = null;

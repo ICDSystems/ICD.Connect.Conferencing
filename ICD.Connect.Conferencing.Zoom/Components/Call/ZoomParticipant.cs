@@ -41,7 +41,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			Name = info.UserName;
 			Status = eParticipantStatus.Connected;
-			SourceType = info.IsSendingVideo ? eCallType.Video : eCallType.Audio;
+			CallType = info.IsSendingVideo ? eCallType.Video : eCallType.Audio;
 			IsMuted = info.AudioState == eAudioState.AUDIO_MUTED;
 			IsHost = info.IsHost;
 			IsSelf = info.IsMyself;

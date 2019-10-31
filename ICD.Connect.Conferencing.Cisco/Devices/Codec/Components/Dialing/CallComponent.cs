@@ -82,7 +82,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Raised when the source type changes.
 		/// </summary>
-		public event EventHandler<ParticipantTypeEventArgs> OnSourceTypeChanged;
+		public event EventHandler<ParticipantTypeEventArgs> OnParticipantTypeChanged;
 
 		private eParticipantStatus m_Status;
 		private FarCamera m_CachedCamera;
@@ -243,14 +243,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_CiscoCallType = value;
 
-				SourceType = m_CiscoCallType.ToCallType();
+				CallType = m_CiscoCallType.ToCallType();
 			}
 		}
 
 		/// <summary>
 		/// Gets the source type.
 		/// </summary>
-		public eCallType SourceType
+		public eCallType CallType
 		{
 			get { return m_SourceType; }
 			private set
@@ -260,7 +260,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_SourceType = value;
 
-				OnSourceTypeChanged.Raise(this, new ParticipantTypeEventArgs(m_SourceType));
+				OnParticipantTypeChanged.Raise(this, new ParticipantTypeEventArgs(m_SourceType));
 			}
 		}
 
@@ -272,7 +272,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		{
 			get
 			{
-				if (SourceType != eCallType.Video)
+				if (CallType != eCallType.Video)
 					return null;
 				return m_CachedCamera ?? (m_CachedCamera = new FarCamera(CallId, Codec));
 			}
@@ -322,7 +322,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			OnAnswerStateChanged = null;
 			OnStatusChanged = null;
 			OnNameChanged = null;
-			OnSourceTypeChanged = null;
+			OnParticipantTypeChanged = null;
 			OnNumberChanged = null;
 
 			base.Dispose(disposing);
@@ -631,7 +631,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			foreach (IConsoleNodeBase group in GetBaseConsoleNodes())
 				yield return group;
 
-			if (SourceType == eCallType.Video)
+			if (CallType == eCallType.Video)
 				yield return Camera;
 		}
 

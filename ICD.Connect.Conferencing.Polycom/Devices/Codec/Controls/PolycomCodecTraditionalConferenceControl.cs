@@ -379,7 +379,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				source.Direction = (bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming;
 
 			source.Status = GetStatus(callStatus.ConnectionState);
-			source.SourceType = callStatus.VideoCall ? eCallType.Video : eCallType.Audio;
+			source.CallType = callStatus.VideoCall ? eCallType.Video : eCallType.Audio;
 
 			if (source.GetIsOnline())
 				source.Start = source.Start ?? IcdEnvironment.GetLocalTime();

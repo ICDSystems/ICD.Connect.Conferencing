@@ -18,8 +18,8 @@ using ICD.Connect.Conferencing.Participants;
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {
 	/// <summary>
-	/// The ConferenceManager contains an IDialingPlan and a collection of IDialingProviders
-	/// to place calls and manage an active conference.
+	/// The ConferenceManager contains an IDialingPlan and a collection of IConferenceDeviceControls
+	/// to place calls and manage the active conferences.
 	/// </summary>
 	public sealed class ConferenceManager : IConferenceManager, IDisposable
 	{
@@ -31,12 +31,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
-		public event EventHandler OnConferenceSourceAddedOrRemoved;
+		public event EventHandler OnConferenceParticipantAddedOrRemoved;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
 
-		public event EventHandler<ParticipantEventArgs> OnRecentSourceAdded;
-		public event EventHandler<ParticipantStatusEventArgs> OnActiveSourceStatusChanged;
+		public event EventHandler<ParticipantEventArgs> OnRecentParticipantAdded;
+		public event EventHandler<ParticipantStatusEventArgs> OnActiveParticipantStatusChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 		public event EventHandler<InCallEventArgs> OnInCallChanged;
 
@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly IcdHashSet<IConferenceDeviceControl> m_FeedbackProviders;
 
 		private readonly SafeCriticalSection m_ConferencesSection;
-		private readonly SafeCriticalSection m_RecentSourcesSection;
+		private readonly SafeCriticalSection m_RecentParticipantsSection;
 		private readonly SafeCriticalSection m_DialingProviderSection;
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
 
@@ -155,7 +155,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_FeedbackProviders = new IcdHashSet<IConferenceDeviceControl>();
 
 			m_ConferencesSection = new SafeCriticalSection();
-			m_RecentSourcesSection = new SafeCriticalSection();
+			m_RecentParticipantsSection = new SafeCriticalSection();
 			m_DialingProviderSection = new SafeCriticalSection();
 			m_FeedbackProviderSection = new SafeCriticalSection();
 
@@ -172,8 +172,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnIsAuthoritativeChanged = null;
 			OnConferenceAdded = null;
 			OnActiveConferenceStatusChanged = null;
-			OnRecentSourceAdded = null;
-			OnActiveSourceStatusChanged = null;
+			OnRecentParticipantAdded = null;
+			OnActiveParticipantStatusChanged = null;
 			OnPrivacyMuteStatusChange = null;
 			OnInCallChanged = null;
 
@@ -246,12 +246,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Gets the recent sources in order of time.
+		/// Gets the recent participants in order of time.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IParticipant> GetRecentSources()
+		public IEnumerable<IParticipant> GetRecentParticipants()
 		{
-			return m_RecentSourcesSection.Execute(() => m_RecentParticipants.ToArray());
+			return m_RecentParticipantsSection.Execute(() => m_RecentParticipants.ToArray());
 		}
 
 		/// <summary>
@@ -266,15 +266,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the registered conference components.
 		/// </summary>
-		/// <param name="sourceType"></param>
+		/// <param name="callType"></param>
 		/// <returns></returns>
-		public IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType sourceType)
+		public IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType callType)
 		{
 			m_DialingProviderSection.Enter();
 
 			try
 			{
-				return m_DialingProviders.Where(kvp => kvp.Value.HasFlags(sourceType))
+				return m_DialingProviders.Where(kvp => kvp.Value.HasFlags(callType))
 				                         .Select(kvp => kvp.Key)
 				                         .ToArray();
 			}
@@ -526,8 +526,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		private void AddRecentParticipant(IParticipant participant)
 		{
-			m_RecentSourcesSection.Execute(() => m_RecentParticipants.Enqueue(participant));
-			OnRecentSourceAdded.Raise(this, new ParticipantEventArgs(participant));
+			m_RecentParticipantsSection.Execute(() => m_RecentParticipants.Enqueue(participant));
+			OnRecentParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
 
 			Subscribe(participant);
 		}
@@ -674,6 +674,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#endregion
 
 		#region Conference Callbacks
+
 		/// <summary>
 		/// Subscribe to the conference events.
 		/// </summary>
@@ -687,9 +688,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantAdded += ConferenceOnParticipantAdded;
 			conference.OnParticipantRemoved += ConferenceOnParticipantRemoved;
 			
-			// Subscribe to the sources.
-			foreach (IParticipant source in conference.GetParticipants())
-				Subscribe(source);
+			foreach (IParticipant participant in conference.GetParticipants())
+				Subscribe(participant);
 		}
 
 		/// <summary>
@@ -705,9 +705,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantAdded -= ConferenceOnParticipantAdded;
 			conference.OnParticipantRemoved -= ConferenceOnParticipantRemoved;
 
-			// Unsubscribe from the sources.
-			foreach (IParticipant source in conference.GetParticipants())
-				Unsubscribe(source);
+			foreach (IParticipant participant in conference.GetParticipants())
+				Unsubscribe(participant);
 		}
 
 		/// <summary>
@@ -722,7 +721,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Called when a provider adds a source to the conference.
+		/// Called when a provider adds a participant to the conference.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
@@ -732,58 +731,58 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			Subscribe(args.Data);
 			UpdateIsInCall();
-			OnConferenceSourceAddedOrRemoved.Raise(this);
+			OnConferenceParticipantAddedOrRemoved.Raise(this);
 		}
 
 		private void ConferenceOnParticipantRemoved(object sender, ParticipantEventArgs args)
 		{
 			Unsubscribe(args.Data);
 			UpdateIsInCall();
-			OnConferenceSourceAddedOrRemoved.Raise(this);
+			OnConferenceParticipantAddedOrRemoved.Raise(this);
 		}
 
 		#endregion
 
-		#region Source Callbacks
+		#region Participant Callbacks
 
 		/// <summary>
-		/// Subscribe to the source events.
+		/// Subscribe to the participant events.
 		/// </summary>
-		/// <param name="source"></param>
-		private void Subscribe(IParticipant source)
+		/// <param name="participant"></param>
+		private void Subscribe(IParticipant participant)
 		{
-			source.OnStatusChanged += SourceOnStatusChanged;
-			source.OnSourceTypeChanged += SourceOnSourceTypeChanged;
+			participant.OnStatusChanged += ParticipantOnStatusChanged;
+			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
 		}
 
 		/// <summary>
-		/// Unsubscribe from the source events.
+		/// Unsubscribe from the participant events.
 		/// </summary>
-		/// <param name="source"></param>
-		private void Unsubscribe(IParticipant source)
+		/// <param name="participant"></param>
+		private void Unsubscribe(IParticipant participant)
 		{
-			source.OnStatusChanged -= SourceOnStatusChanged;
-			source.OnSourceTypeChanged -= SourceOnSourceTypeChanged;
+			participant.OnStatusChanged -= ParticipantOnStatusChanged;
+			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
 		}
 
 		/// <summary>
-		/// Called when a source status changes.
+		/// Called when a participant status changes.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void SourceOnStatusChanged(object sender, ParticipantStatusEventArgs args)
+		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
 		{
 			UpdateIsInCall();
 
-			OnActiveSourceStatusChanged.Raise(this, new ParticipantStatusEventArgs(args.Data));
+			OnActiveParticipantStatusChanged.Raise(this, new ParticipantStatusEventArgs(args.Data));
 		}
 
 		/// <summary>
-		/// Called when a source status changes.
+		/// Called when a participant status changes.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="eventArgs"></param>
-		private void SourceOnSourceTypeChanged(object sender, EventArgs eventArgs)
+		private void ParticipantOnParticipantTypeChanged(object sender, EventArgs eventArgs)
 		{
 			UpdateIsInCall();
 		}

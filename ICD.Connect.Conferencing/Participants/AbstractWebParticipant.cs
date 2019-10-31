@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// Raised when the participant's source type changes.
 		/// </summary>
-		public event EventHandler<ParticipantTypeEventArgs> OnSourceTypeChanged;
+		public event EventHandler<ParticipantTypeEventArgs> OnParticipantTypeChanged;
 
 		/// <summary>
 		/// Raised when the participant's name changes.
@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
-		public eCallType SourceType
+		public eCallType CallType
 		{
 			get { return m_SourceType; }
 			protected set
@@ -76,8 +76,8 @@ namespace ICD.Connect.Conferencing.Participants
 					return;
 
 				m_SourceType = value;
-				Log(eSeverity.Informational, "SourceType set to {0}", m_SourceType);
-				OnSourceTypeChanged.Raise(this, new ParticipantTypeEventArgs(m_SourceType));
+				Log(eSeverity.Informational, "CallType set to {0}", m_SourceType);
+				OnParticipantTypeChanged.Raise(this, new ParticipantTypeEventArgs(m_SourceType));
 			}
 		}
 
@@ -176,7 +176,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public void Dispose()
 		{
 			OnStatusChanged = null;
-			OnSourceTypeChanged = null;
+			OnParticipantTypeChanged = null;
 			OnNameChanged = null;
 			OnIsMutedChanged = null;
 			OnIsHostChanged = null;
@@ -245,7 +245,7 @@ namespace ICD.Connect.Conferencing.Participants
 		{
 			addRow("Name", Name);
 			addRow("Status", Status);
-			addRow("SourceType", SourceType);
+			addRow("CallType", CallType);
 			addRow("Start", Start);
 			addRow("End", End);
 			addRow("Is Muted", IsMuted);

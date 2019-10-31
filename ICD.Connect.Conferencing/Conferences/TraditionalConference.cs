@@ -95,7 +95,7 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		public override eCallType CallType
 		{
-			get { return this.GetOnlineParticipants().Max(p => p.SourceType); }
+			get { return this.GetOnlineParticipants().Max(p => p.CallType); }
 		}
 
 		#endregion

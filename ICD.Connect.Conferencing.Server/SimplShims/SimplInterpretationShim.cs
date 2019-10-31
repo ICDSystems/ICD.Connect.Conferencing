@@ -269,7 +269,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					m_Source.Number = number;
 					m_Source.Direction = (eCallDirection)direction;
 					m_Source.Status = (eParticipantStatus)status;
-					m_Source.SourceType = eCallType.Audio;
+					m_Source.CallType = eCallType.Audio;
 				}
 				else
 				{
@@ -282,7 +282,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 						Direction = (eCallDirection)direction,
 						Status = (eParticipantStatus)status,
 						Start = IcdEnvironment.GetLocalTime(),
-						SourceType = eCallType.Audio
+						CallType = eCallType.Audio
 					};
 					Subscribe(m_Source);
 
@@ -385,7 +385,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 						Direction = m_CallDirection,
 						Status = m_CallStatus,
 						Start = IcdEnvironment.GetLocalTime(),
-						SourceType = eCallType.Audio
+						CallType = eCallType.Audio
 					};
 					Subscribe(m_Source);
 

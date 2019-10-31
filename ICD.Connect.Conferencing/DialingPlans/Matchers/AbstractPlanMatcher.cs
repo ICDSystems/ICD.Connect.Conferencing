@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.DialingPlans.Matchers
 			ReprBuilder builder = new ReprBuilder(this);
 
 			builder.AppendProperty("Name", Name);
-			builder.AppendProperty("SourceType", SourceType);
+			builder.AppendProperty("CallType", SourceType);
 
 			return builder.ToString();
 		}

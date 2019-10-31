@@ -19,7 +19,7 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// Raised when the participant source type changes.
 		/// </summary>
-		event EventHandler<ParticipantTypeEventArgs> OnSourceTypeChanged;
+		event EventHandler<ParticipantTypeEventArgs> OnParticipantTypeChanged;
 
 		/// <summary>
 		/// Raised when the participant's name changes.
@@ -34,7 +34,7 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// Gets the participant's source type.
 		/// </summary>
-		eCallType SourceType { get; }
+		eCallType CallType { get; }
 
 		/// <summary>
 		/// Gets the participant's status (Idle, Dialing, Ringing, etc)

@@ -96,14 +96,14 @@ namespace ICD.Connect.Conferencing.Participants.EventHelpers
 		protected virtual void SubscribeInternal(T participant)
 		{
 			participant.OnNameChanged += ParticipantOnNameChanged;
-			participant.OnSourceTypeChanged += ParticipantOnSourceTypeChanged;
+			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
 			participant.OnStatusChanged += ParticipantOnStatusChanged;
 		}
 
 		protected virtual void UnsubscribeInternal(T participant)
 		{
 			participant.OnNameChanged -= ParticipantOnNameChanged;
-			participant.OnSourceTypeChanged -= ParticipantOnSourceTypeChanged;
+			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
 			participant.OnStatusChanged -= ParticipantOnStatusChanged;
 		}
 
@@ -112,7 +112,7 @@ namespace ICD.Connect.Conferencing.Participants.EventHelpers
 			Callback(sender as T);
 		}
 
-		private void ParticipantOnSourceTypeChanged(object sender, ParticipantTypeEventArgs participantTypeEventArgs)
+		private void ParticipantOnParticipantTypeChanged(object sender, ParticipantTypeEventArgs participantTypeEventArgs)
 		{
 			Callback(sender as T);
 		}

@@ -147,7 +147,7 @@ namespace ICD.Connect.Conferencing.Mock
 					Number = number,
 					Name = "Mock Call To: " + number,
 					Status = eParticipantStatus.Connected,
-					SourceType = type,
+					CallType = type,
 					HangupCallback = HangupCallback
 				};
 

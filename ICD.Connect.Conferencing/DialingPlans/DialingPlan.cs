@@ -19,14 +19,14 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		private readonly Dictionary<IPlanMatcher, int> m_Matchers;
 		private readonly SafeCriticalSection m_MatchersSection;
 
-		private eCallType m_DefaultSourceType;
+		private eCallType m_DefaultCallType;
 
 		#region Properties
 
 		/// <summary>
 		/// The default source type.
 		/// </summary>
-		public eCallType DefaultSourceType { get { return m_DefaultSourceType; } }
+		public eCallType DefaultCallType { get { return m_DefaultCallType; } }
 
 		#endregion
 
@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 			m_Matchers = new Dictionary<IPlanMatcher, int>();
 			m_MatchersSection = new SafeCriticalSection();
 
-			m_DefaultSourceType = eCallType.Audio;
+			m_DefaultCallType = eCallType.Audio;
 		}
 
 		#endregion
@@ -70,7 +70,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 				string matchingXml = XmlUtils.GetChildElementAsString(xml, "Matching");
 				string defaultString = XmlUtils.GetAttributeAsString(matchingXml, "default");
 
-				m_DefaultSourceType = EnumUtils.Parse<eCallType>(defaultString, true);
+				m_DefaultCallType = EnumUtils.Parse<eCallType>(defaultString, true);
 
 				foreach (IcdXmlReader child in XmlUtils.GetChildElements(matchingXml))
 				{
@@ -152,7 +152,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			return GetDialContext(contact, DefaultSourceType);
+			return GetDialContext(contact, DefaultCallType);
 		}
 
 		/// <summary>

@@ -44,7 +44,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 				return string.Join(", ", m_Parent.GetConferences()
 				                                 .SelectMany(c => c.GetOnlineParticipants())
-				                                 .Select(s => s.SourceType.ToString())
+				                                 .Select(s => s.CallType.ToString())
 				                                 .ToArray());
 			}
 		}

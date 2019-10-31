@@ -17,8 +17,8 @@ using ICD.Connect.Settings.Cores;
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {
 	/// <summary>
-	/// The IConferenceManager contains an IDialingPlan and a collection of IDialingProviders
-	/// to place calls and manage an active conference.
+	/// The ConferenceManager contains an IDialingPlan and a collection of IConferenceDeviceControls
+	/// to place calls and manage the active conferences.
 	/// </summary>
 	public interface IConferenceManager
 	{
@@ -30,9 +30,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
 
 		/// <summary>
-		/// Raised when a source is added to the current active conference.
+		/// Raised when a participant is added to the current active conference.
 		/// </summary>
-		event EventHandler<ParticipantEventArgs> OnRecentSourceAdded;
+		event EventHandler<ParticipantEventArgs> OnRecentParticipantAdded;
 
 		/// <summary>
 		/// Raised when the active conference changes.
@@ -50,9 +50,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
 
 		/// <summary>
-		/// Called when an active source status changes.
+		/// Called when an active participant status changes.
 		/// </summary>
-		event EventHandler<ParticipantStatusEventArgs> OnActiveSourceStatusChanged;
+		event EventHandler<ParticipantStatusEventArgs> OnActiveParticipantStatusChanged;
 
 		/// <summary>
 		/// Raised when the privacy mute status changes.
@@ -65,9 +65,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<InCallEventArgs> OnInCallChanged;
 
 		/// <summary>
-		/// Raises when the conference adds or removes a source.
+		/// Raises when the conference adds or removes a participant.
 		/// </summary>
-		event EventHandler OnConferenceSourceAddedOrRemoved;
+		event EventHandler OnConferenceParticipantAddedOrRemoved;
 
 		event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
 
@@ -154,10 +154,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void EnablePrivacyMute(bool state);
 
 		/// <summary>
-		/// Gets the recent sources in order of time.
+		/// Gets the recent participants in order of time.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IParticipant> GetRecentSources();
+		IEnumerable<IParticipant> GetRecentParticipants();
 
 		/// <summary>
 		/// Gets the registered conference components.
@@ -168,17 +168,17 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the registered conference components.
 		/// </summary>
-		/// <param name="sourceType"></param>
+		/// <param name="callType"></param>
 		/// <returns></returns>
-		IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType sourceType);
+		IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType callType);
 
 		/// <summary>
 		/// Registers the conference component.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
-		/// <param name="sourceType"></param>
+		/// <param name="callType"></param>
 		/// <returns></returns>
-		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl, eCallType sourceType);
+		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl, eCallType callType);
 
 		/// <summary>
 		/// Registers the conference component, for feedback only.
@@ -237,7 +237,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Dials the given contact. Call type is taken from the dialling plan.
+		/// Dials the given contact. Call type is taken from the dialing plan.
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="contact"></param>
@@ -257,31 +257,37 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Redials the contact from the given conference source.
+		/// Redials the contact from the given conference participant.
 		/// </summary>
 		/// <param name="extends"></param>
-		/// <param name="source"></param>
-		public static void Dial(this IConferenceManager extends, ITraditionalParticipant source)
+		/// <param name="participant"></param>
+		public static void Dial(this IConferenceManager extends, ITraditionalParticipant participant)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			if (source == null)
-				throw new ArgumentNullException("source");
+			if (participant == null)
+				throw new ArgumentNullException("participant");
 
-			extends.Dial(source.Number, source.SourceType);
+			extends.Dial(participant.Number, participant.CallType);
 		}
 
+		/// <summary>
+		/// Dials the given number for the given call type.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="number"></param>
+		/// <param name="callType"></param>
 		private static void Dial(this IConferenceManager extends, string number, eCallType callType)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
 			if (number == null)
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException("number");
 			
 			if (callType == eCallType.Unknown)
-				callType = extends.DialingPlan.DefaultSourceType;
+				callType = extends.DialingPlan.DefaultCallType;
 
 			extends.Dial(new TraditionalDialContext { DialString = number, CallType = callType });
 		}
