@@ -150,6 +150,35 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		}
 
 		/// <summary>
+		/// Gets the favorites with the given protocol.
+		/// </summary>
+		/// <param name="protocol"></param>
+		/// <returns></returns>
+		public IEnumerable<Favorite> GetFavoritesByProtocol(eDialProtocol protocol)
+		{
+			string query = string.Format(@"SELECT * FROM {0} INNER JOIN {1} ON {2}.{3}={4}.{5} WHERE {6}={7}",
+			                             TABLE, SqLiteFavoriteContactMethods.TABLE, TABLE, COLUMN_ID,
+			                             SqLiteFavoriteContactMethods.TABLE,
+			                             SqLiteFavoriteContactMethods.COLUMN_FAVORITE_ID,
+			                             SqLiteFavoriteContactMethods.COLUMN_DIAL_PROTOCOL,
+			                             SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL
+			                            );
+
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
+			{
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
+				{
+					command.Parameters.Add(SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL, eDbType.Int32).Value = (int)protocol;
+
+					connection.Open();
+
+					using (IcdSqliteDataReader reader = command.ExecuteReader())
+						return FavoritesFromReader(reader).ToArray();
+				}
+			}
+		}
+
+		/// <summary>
 		/// Adds the source as a favorite. Returns null if the source is already a favorite.
 		/// </summary>
 		/// <param name="favorite"></param>

@@ -36,6 +36,13 @@ namespace ICD.Connect.Conferencing.Favorites
 		IEnumerable<Favorite> GetFavoritesByDialContext(IDialContext dialContext);
 
 		/// <summary>
+		/// Gets the favorites with the given protocol.
+		/// </summary>
+		/// <param name="protocol"></param>
+		/// <returns></returns>
+		IEnumerable<Favorite> GetFavoritesByProtocol(eDialProtocol protocol);
+
+		/// <summary>
 		/// Adds the favorite. Returns null if a favorite with the same id already exists.
 		/// </summary>
 		/// <param name="favorite"></param>

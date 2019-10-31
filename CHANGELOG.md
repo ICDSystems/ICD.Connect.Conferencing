@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - ZoomRoom Call Lock console command
  - Zoom Call Lock Converter/Response to Call Configuration Converter/Response
  - Zoom Updated Call Record Info Event Converter/Response
+ - Added method to IFavorites for getting favorites by dial protocol
 
 ## [13.8.1] - 2019-10-08
 ### Changed
