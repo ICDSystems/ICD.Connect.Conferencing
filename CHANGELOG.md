@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom Call Lock Converter/Response to Call Configuration Converter/Response
  - Zoom Updated Call Record Info Event Converter/Response
  - Added method to IFavorites for getting favorites by dial protocol
+ - Added OnIncomingCallAdded and Removed events to conference manager
 
 ### Changed
  - Renamed old appearances of "Source" to "Participant", and "SourceType" to "CallType"

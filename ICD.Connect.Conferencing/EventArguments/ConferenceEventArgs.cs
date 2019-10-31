@@ -9,7 +9,8 @@ namespace ICD.Connect.Conferencing.EventArguments
 		/// Constructor.
 		/// </summary>
 		/// <param name="conference"></param>
-		public ConferenceEventArgs(IConference conference) : base(conference)
+		public ConferenceEventArgs(IConference conference)
+			: base(conference)
 		{
 		}
 	}

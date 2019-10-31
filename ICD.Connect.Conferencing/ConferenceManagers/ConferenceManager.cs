@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
@@ -34,6 +35,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler OnConferenceParticipantAddedOrRemoved;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
+		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
+		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
 
 		public event EventHandler<ParticipantEventArgs> OnRecentParticipantAdded;
 		public event EventHandler<ParticipantStatusEventArgs> OnActiveParticipantStatusChanged;
@@ -171,7 +174,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			OnIsAuthoritativeChanged = null;
 			OnConferenceAdded = null;
+			OnConferenceRemoved = null;
 			OnActiveConferenceStatusChanged = null;
+			OnConferenceParticipantAddedOrRemoved = null;
+			OnProviderAdded = null;
+			OnProviderRemoved = null;
+			OnIncomingCallAdded = null;
+			OnIncomingCallRemoved = null;
 			OnRecentParticipantAdded = null;
 			OnActiveParticipantStatusChanged = null;
 			OnPrivacyMuteStatusChange = null;
@@ -299,7 +308,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="conferenceControl"></param>
 		/// <param name="callType"></param>
 		/// <returns></returns>
-		public bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl, eCallType callType)
+		public bool RegisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl, eCallType callType)
 		{
 			if (conferenceControl == null)
 				throw new ArgumentNullException("conferenceControl");
@@ -366,7 +375,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		public bool RegisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl)
+		public bool RegisterFeedbackDialingProvider([NotNull] IConferenceDeviceControl conferenceControl)
 		{
 			if (conferenceControl == null)
 				throw new ArgumentNullException("conferenceControl");
@@ -455,20 +464,27 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		#region Private Methods
 
-		private void AddConferences(IEnumerable<IConference> conferences)
+		/// <summary>
+		/// Adds the conferences to the conferences collection.
+		/// </summary>
+		/// <param name="conferences"></param>
+		private void AddConferences([NotNull] IEnumerable<IConference> conferences)
 		{
+			if (conferences == null)
+				throw new ArgumentNullException("conferences");
+
 			foreach (IConference conference in conferences)
 				AddConference(conference);
 		}
 
 		/// <summary>
-		/// Adds the conference to the recent conferences collection.
+		/// Adds the conference to the conferences collection.
 		/// </summary>
 		/// <param name="conference"></param>
-		private void AddConference(IConference conference)
+		private void AddConference([NotNull] IConference conference)
 		{
 			if (conference == null)
-				return;
+				throw new ArgumentNullException("conference");
 
 			m_ConferencesSection.Enter();
 
@@ -479,8 +495,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 				Subscribe(conference);
 
-				OnConferenceAdded.Raise(this, new ConferenceEventArgs(conference));
-
 				foreach (IParticipant participant in conference.GetParticipants())
 					AddRecentParticipant(participant);
 			}
@@ -490,18 +504,31 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			UpdateIsInCall();
+
+			OnConferenceAdded.Raise(this, new ConferenceEventArgs(conference));
 		}
 
-		private void RemoveConferences(IEnumerable<IConference> conferences)
+		/// <summary>
+		/// Removes the conferences from the conferences collection.
+		/// </summary>
+		/// <param name="conferences"></param>
+		private void RemoveConferences([NotNull] IEnumerable<IConference> conferences)
 		{
+			if (conferences == null)
+				throw new ArgumentNullException("conferences");
+
 			foreach (IConference conference in conferences)
 				RemoveConference(conference);
 		}
 
-		private void RemoveConference(IConference conference)
+		/// <summary>
+		/// Removes the conference from the conferences collection.
+		/// </summary>
+		/// <param name="conference"></param>
+		private void RemoveConference([NotNull] IConference conference)
 		{
 			if (conference == null)
-				return;
+				throw new ArgumentNullException("conference");
 
 			m_ConferencesSection.Enter();
 
@@ -521,15 +548,25 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			UpdateIsInCall();
+
 			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(conference));
 		}
 
-		private void AddRecentParticipant(IParticipant participant)
+		/// <summary>
+		/// Adds the participant to the recent participants collection.
+		/// </summary>
+		/// <param name="participant"></param>
+		private void AddRecentParticipant([NotNull] IParticipant participant)
 		{
-			m_RecentParticipantsSection.Execute(() => m_RecentParticipants.Enqueue(participant));
-			OnRecentParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
+			if (participant == null)
+				throw new ArgumentNullException("participant");
 
+			m_RecentParticipantsSection.Execute(() => m_RecentParticipants.Enqueue(participant));
+
+			// TODO - Why?
 			Subscribe(participant);
+
+			OnRecentParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
 		}
 
 		/// <summary>
@@ -548,8 +585,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Updates the feedback conference provider to match the state of the conference manager.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
-		private void UpdateFeedbackProvider(IConferenceDeviceControl conferenceControl)
+		private void UpdateFeedbackProvider([NotNull] IConferenceDeviceControl conferenceControl)
 		{
+			if (conferenceControl == null)
+				throw new ArgumentNullException("conferenceControl");
+
 			if (!m_IsAuthoritative)
 				return;
 
@@ -562,8 +602,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Updates the conference provider to match the state of the conference manager.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
-		private void UpdateProvider(IConferenceDeviceControl conferenceControl)
+		private void UpdateProvider([NotNull] IConferenceDeviceControl conferenceControl)
 		{
+			if (conferenceControl == null)
+				throw new ArgumentNullException("conferenceControl");
+
 			if (!m_IsAuthoritative)
 				return;
 
@@ -599,16 +642,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Subscribe to the provider events.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
-		private void Subscribe(IConferenceDeviceControl conferenceControl)
+		private void Subscribe([NotNull] IConferenceDeviceControl conferenceControl)
 		{
 			if (conferenceControl == null)
-				return;
+				throw new ArgumentNullException("conferenceControl");
 
 			conferenceControl.OnConferenceAdded += ConferenceControlOnConferenceAdded;
 			conferenceControl.OnConferenceRemoved += ConferenceControlOnConferenceRemoved;
 			conferenceControl.OnAutoAnswerChanged += ConferenceControlOnAutoAnswerChanged;
 			conferenceControl.OnDoNotDisturbChanged += ConferenceControlOnDoNotDisturbChanged;
 			conferenceControl.OnPrivacyMuteChanged += ConferenceControlOnPrivacyMuteChanged;
+			conferenceControl.OnIncomingCallAdded += ConferenceControlOnIncomingCallAdded;
+			conferenceControl.OnIncomingCallRemoved += ConferenceControlOnIncomingCallRemoved;
 
 			AddConferences(conferenceControl.GetConferences());
 		}
@@ -617,28 +662,62 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Unsubscribe from the provider events.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
-		private void Unsubscribe(IConferenceDeviceControl conferenceControl)
+		private void Unsubscribe([NotNull] IConferenceDeviceControl conferenceControl)
 		{
 			if (conferenceControl == null)
-				return;
+				throw new ArgumentNullException("conferenceControl");
 
 			conferenceControl.OnConferenceAdded -= ConferenceControlOnConferenceAdded;
 			conferenceControl.OnConferenceRemoved -= ConferenceControlOnConferenceRemoved;
 			conferenceControl.OnAutoAnswerChanged -= ConferenceControlOnAutoAnswerChanged;
 			conferenceControl.OnDoNotDisturbChanged -= ConferenceControlOnDoNotDisturbChanged;
 			conferenceControl.OnPrivacyMuteChanged -= ConferenceControlOnPrivacyMuteChanged;
+			conferenceControl.OnIncomingCallAdded -= ConferenceControlOnIncomingCallAdded;
+			conferenceControl.OnIncomingCallRemoved -= ConferenceControlOnIncomingCallRemoved;
 
 			RemoveConferences(conferenceControl.GetConferences());
 		}
 
+		/// <summary>
+		/// Called when a conference control adds a conference.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
 		private void ConferenceControlOnConferenceAdded(object sender, ConferenceEventArgs args)
 		{
 			AddConference(args.Data);
 		}
 
+		/// <summary>
+		/// Called when a conference control removes a conference.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
 		private void ConferenceControlOnConferenceRemoved(object sender, ConferenceEventArgs args)
 		{
 			RemoveConference(args.Data);
+		}
+
+		/// <summary>
+		/// Called when a conference control adds an incoming call.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void ConferenceControlOnIncomingCallAdded(object sender, GenericEventArgs<IIncomingCall> eventArgs)
+		{
+			IConferenceDeviceControl control = sender as IConferenceDeviceControl;
+			OnIncomingCallAdded.Raise(this, new ConferenceControlIncomingCallEventArgs(control, eventArgs.Data));
+		}
+
+		/// <summary>
+		/// Called when a conference control removes an incoming call.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void ConferenceControlOnIncomingCallRemoved(object sender, GenericEventArgs<IIncomingCall> eventArgs)
+		{
+			IConferenceDeviceControl control = sender as IConferenceDeviceControl;
+			OnIncomingCallRemoved.Raise(this, new ConferenceControlIncomingCallEventArgs(control, eventArgs.Data));
 		}
 
 		/// <summary>
@@ -679,10 +758,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Subscribe to the conference events.
 		/// </summary>
 		/// <param name="conference"></param>
-		private void Subscribe(IConference conference)
+		private void Subscribe([NotNull] IConference conference)
 		{
 			if (conference == null)
-				return;
+				throw new ArgumentNullException("conference");
 
 			conference.OnStatusChanged += ConferenceOnStatusChanged;
 			conference.OnParticipantAdded += ConferenceOnParticipantAdded;
@@ -696,10 +775,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Unsubscribe from the conference events.
 		/// </summary>
 		/// <param name="conference"></param>
-		private void Unsubscribe(IConference conference)
+		private void Unsubscribe([NotNull] IConference conference)
 		{
 			if (conference == null)
-				return;
+				throw new ArgumentNullException("conference");
 
 			conference.OnStatusChanged -= ConferenceOnStatusChanged;
 			conference.OnParticipantAdded -= ConferenceOnParticipantAdded;

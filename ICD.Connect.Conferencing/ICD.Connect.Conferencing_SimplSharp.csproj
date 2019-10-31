@@ -100,6 +100,7 @@
     <Compile Include="DialContexts\ThinDialContext.cs" />
     <Compile Include="DialContexts\ZoomContactDialContext.cs" />
     <Compile Include="DialContexts\ZoomDialContext.cs" />
+    <Compile Include="EventArguments\ConferenceControlIncomingCallEventArgs.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
     <Compile Include="EventArguments\PresentationActiveApiEventArgs.cs" />
     <Compile Include="KrangPlugin.cs" />

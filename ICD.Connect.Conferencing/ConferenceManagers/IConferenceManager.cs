@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Services;
 using ICD.Connect.Conferencing.ConferencePoints;
@@ -69,9 +70,25 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		event EventHandler OnConferenceParticipantAddedOrRemoved;
 
+		/// <summary>
+		/// Raised when a conference control is added to the manager.
+		/// </summary>
 		event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
 
+		/// <summary>
+		/// Raised when a conference control is removed from the manager.
+		/// </summary>
 		event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
+
+		/// <summary>
+		/// Called when an incoming call is added by a conference control.
+		/// </summary>
+		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
+
+		/// <summary>
+		/// Called when an incoming call is removed by a conference control.
+		/// </summary>
+		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
 
 		#endregion
 
@@ -86,18 +103,25 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Gets the dialing plan.
 		/// </summary>
+		[NotNull]
 		DialingPlan DialingPlan { get; }
 
 		/// <summary>
 		/// Gets the favorites.
 		/// </summary>
+		[CanBeNull]
 		IFavorites Favorites { get; set; }
 
 		/// <summary>
-		/// Gets the active conference.
+		/// Gets the active conferences.
 		/// </summary>
+		[NotNull]
 		IEnumerable<IConference> ActiveConferences { get; }
 
+		/// <summary>
+		/// Gets the online conferences.
+		/// </summary>
+		[NotNull]
 		IEnumerable<IConference> OnlineConferences { get; }
 
 		/// <summary>
@@ -121,7 +145,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		eInCall IsInCall { get; }
 
 		/// <summary>
-		/// Gets the number of registered dialling providers.
+		/// Gets the number of registered dialing providers.
 		/// </summary>
 		int DialingProvidersCount { get; }
 
@@ -133,7 +157,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Dials the given context.
 		/// </summary>
 		/// <param name="context"></param>
-		void Dial(IDialContext context);
+		void Dial([NotNull] IDialContext context);
 
 		/// <summary>
 		/// Enables DoNotDisturb.
@@ -157,12 +181,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Gets the recent participants in order of time.
 		/// </summary>
 		/// <returns></returns>
+		[NotNull]
 		IEnumerable<IParticipant> GetRecentParticipants();
 
 		/// <summary>
 		/// Gets the registered conference components.
 		/// </summary>
 		/// <returns></returns>
+		[NotNull]
 		IEnumerable<IConferenceDeviceControl> GetDialingProviders();
 
 		/// <summary>
@@ -170,6 +196,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="callType"></param>
 		/// <returns></returns>
+		[NotNull]
 		IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType callType);
 
 		/// <summary>
@@ -178,28 +205,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="conferenceControl"></param>
 		/// <param name="callType"></param>
 		/// <returns></returns>
-		bool RegisterDialingProvider(IConferenceDeviceControl conferenceControl, eCallType callType);
+		bool RegisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl, eCallType callType);
 
 		/// <summary>
 		/// Registers the conference component, for feedback only.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		bool RegisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl);
+		bool RegisterFeedbackDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
 		/// Deregisters the conference component.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		bool DeregisterDialingProvider(IConferenceDeviceControl conferenceControl);
+		bool DeregisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Deregisters the conference componet from the feedback only list.
+		/// Deregisters the conference component from the feedback only list.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
-		bool DeregisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl);
+		bool DeregisterFeedbackDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
 		/// Deregisters all of the conference components.
@@ -219,7 +246,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="conferencePoint"></param>
-		public static void RegisterDialingProvider(this IConferenceManager extends, IConferencePoint conferencePoint)
+		public static void RegisterDialingProvider([NotNull] this IConferenceManager extends, [NotNull] IConferencePoint conferencePoint)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -241,7 +268,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="contact"></param>
-		public static void Dial(this IConferenceManager extends, IContact contact)
+		public static void Dial([NotNull] this IConferenceManager extends, [NotNull] IContact contact)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -261,7 +288,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="participant"></param>
-		public static void Dial(this IConferenceManager extends, ITraditionalParticipant participant)
+		public static void Dial([NotNull] this IConferenceManager extends, [NotNull] ITraditionalParticipant participant)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -278,7 +305,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="extends"></param>
 		/// <param name="number"></param>
 		/// <param name="callType"></param>
-		private static void Dial(this IConferenceManager extends, string number, eCallType callType)
+		private static void Dial([NotNull] this IConferenceManager extends, [NotNull] string number, eCallType callType)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -296,7 +323,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Toggles the current privacy mute state.
 		/// </summary>
 		/// <param name="extends"></param>
-		public static void TogglePrivacyMute(this IConferenceManager extends)
+		public static void TogglePrivacyMute([NotNull] this IConferenceManager extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");

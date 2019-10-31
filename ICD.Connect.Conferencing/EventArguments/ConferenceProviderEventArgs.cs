@@ -3,7 +3,6 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 
 namespace ICD.Connect.Conferencing.EventArguments
 {
-
 	public sealed class ConferenceProviderInfo
 	{
 		public eCallType ProviderType { get; set; }
