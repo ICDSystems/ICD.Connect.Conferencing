@@ -86,6 +86,7 @@
     <Compile Include="ConferencePoints\IConferencePoint.cs" />
     <Compile Include="ConferencePoints\IConferencePointSettings.cs" />
     <Compile Include="Conferences\AbstractConference.cs" />
+    <Compile Include="Conferences\AbstractWebConference.cs" />
     <Compile Include="Conferences\TraditionalConference.cs" />
     <Compile Include="Controls\Dialing\AbstractTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\AbstractWebConferenceDeviceControl.cs" />

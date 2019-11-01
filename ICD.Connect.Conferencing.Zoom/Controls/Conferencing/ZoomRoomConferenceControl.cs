@@ -38,8 +38,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		private readonly CallComponent m_CallComponent;
-
-		private readonly IWebConference m_Conference;
+		private readonly ZoomWebConference m_Conference;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
 		private readonly Dictionary<ThinIncomingCall, SafeTimer> m_IncomingCalls;
 
@@ -61,9 +60,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			: base(parent, id)
 		{
 			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
-
 			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
+			m_Conference = new ZoomWebConference(m_CallComponent);
 
 			Subscribe(m_CallComponent);
 		}
@@ -121,16 +120,23 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			{
 				case eDialProtocol.Zoom:
 					if (string.IsNullOrEmpty(dialContext.Password))
-						StartMeeting(dialContext.DialString);
+						m_CallComponent.StartMeeting(dialContext.DialString);
 					else
-						JoinMeeting(dialContext.DialString, dialContext.Password);
+						m_CallComponent.JoinMeeting(dialContext.DialString, dialContext.Password);
 					break;
 
 				case eDialProtocol.ZoomContact:
-					if (m_CallComponent.Status == eConferenceStatus.Connected)
-						InviteUser(dialContext.DialString);
-					else
-						StartPersonalMeetingAndInviteUser(dialContext.DialString);
+					switch (m_CallComponent.Status)
+					{
+						case eCallStatus.CONNECTING_MEETING:
+						case eCallStatus.IN_MEETING:
+							m_CallComponent.InviteUser(dialContext.DialString);
+							break;
+
+						default:
+							StartPersonalMeetingAndInviteUser(dialContext.DialString);
+							break;
+					}
 					break;
 			}
 		}
@@ -190,22 +196,16 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			inviteContactOnCallStart = (a, b) =>
 			                           {
 				                           Parent.UnregisterResponseCallback(inviteContactOnCallStart);
-				                           InviteUser(userJoinId);
+				                           m_CallComponent.InviteUser(userJoinId);
 			                           };
 			Parent.RegisterResponseCallback(inviteContactOnCallStart);
 
 			// start meeting
-			if (m_CallComponent.Status == eConferenceStatus.Disconnected)
+			if (m_Conference.Status == eConferenceStatus.Disconnected)
 			{
 				Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
 				StartPersonalMeeting();
 			}
-		}
-
-		private void InviteUser(string userJoinId)
-		{
-			Parent.Log(eSeverity.Informational, "Inviting user: {0}", userJoinId);
-			Parent.SendCommand("zCommand Call Invite user: {0}", userJoinId);
 		}
 
 		#endregion
@@ -272,6 +272,39 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			}
 
 			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(incomingCall));
+		}
+
+		#endregion
+
+		#region CallComponent Callbacks
+
+		/// <summary>
+		/// Subscribe to the call component events.
+		/// </summary>
+		/// <param name="callComponent"></param>
+		private void Subscribe(CallComponent callComponent)
+		{
+			callComponent.OnIncomingCall += CallComponentOnIncomingCall;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the call component events.
+		/// </summary>
+		/// <param name="callComponent"></param>
+		private void Unsubscribe(CallComponent callComponent)
+		{
+			callComponent.OnIncomingCall -= CallComponentOnIncomingCall;
+		}
+
+		/// <summary>
+		/// Called when there is an incoming call.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void CallComponentOnIncomingCall(object sender, GenericEventArgs<IncomingCall> eventArgs)
+		{
+			ThinIncomingCall incomingCall = CreateThinIncomingCall(eventArgs.Data);
+			AddIncomingCall(incomingCall);
 		}
 
 		#endregion

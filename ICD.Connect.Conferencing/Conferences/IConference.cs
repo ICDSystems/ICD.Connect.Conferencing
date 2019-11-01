@@ -40,6 +40,9 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		DateTime? End { get; }
 
+		/// <summary>
+		/// Gets the type of call.
+		/// </summary>
 		eCallType CallType { get; }
 
 		#endregion

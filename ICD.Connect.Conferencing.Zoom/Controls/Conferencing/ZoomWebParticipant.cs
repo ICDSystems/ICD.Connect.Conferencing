@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
@@ -13,7 +13,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 {
 	public sealed class ZoomWebParticipant : AbstractWebParticipant
 	{
-		private readonly ZoomRoom m_ZoomRoom;
 		private readonly CallComponent m_CallComponent;
 
 		public string UserId { get; private set; }
@@ -21,16 +20,28 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		public bool CanRecord { get; private set; }
 		public bool IsRecording { get; private set; }
 
-		public ZoomWebParticipant(ZoomRoom zoomRoom, ParticipantInfo info)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="callComponent"></param>
+		/// <param name="info"></param>
+		public ZoomWebParticipant(CallComponent callComponent, ParticipantInfo info)
 		{
-			m_ZoomRoom = zoomRoom;
-			m_CallComponent = m_ZoomRoom.Components.GetComponent<CallComponent>();
+			if (callComponent == null)
+				throw new ArgumentNullException("callComponent");
+
+			m_CallComponent = callComponent;
+
 			UserId = info.UserId;
 			Start = IcdEnvironment.GetLocalTime();
 			Update(info);
+
 			Subscribe(m_CallComponent);
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		protected override void DisposeFinal()
 		{
 			Unsubscribe(m_CallComponent);
@@ -48,7 +59,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			IsSelf = info.IsMyself;
 			AvatarUrl = info.AvatarUrl;
 
-			//ParticipantInfo Doesn't track recording information if the Participant is the host.
+			// ParticipantInfo doesn't track recording information if the Participant is the host.
 			if (IsHost)
 			{
 				CanRecord = true;
@@ -63,22 +74,17 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override void Kick()
 		{
-			m_ZoomRoom.SendCommand("zCommand Call Expel Id: {0}", UserId);
+			m_CallComponent.ExpelParticipant(UserId);
 		}
 
 		public override void Mute(bool mute)
 		{
-			m_ZoomRoom.SendCommand("zCommand Call MuteParticipant mute: {0} Id: {1}", 
-				mute ? "on" : "off", 
-				UserId);
+			m_CallComponent.MuteParticipant(UserId, mute);
 		}
 
 		public void AllowParticipantRecord(bool enabled)
 		{
-			m_ZoomRoom.Log(eSeverity.Informational, "Setting Call Record Enable to: {0} for participant with ID: {1}",
-			               enabled,
-			               UserId);
-			m_ZoomRoom.SendCommand("zCommand Call AllowRecord Id: {0} Enable: {1}", UserId, enabled ? "on" : "off");
+			m_CallComponent.AllowParticipantRecord(UserId, enabled);
 		}
 
 		#endregion

@@ -360,6 +360,48 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		}
 
 		/// <summary>
+		/// Invites the user with the given id to the current conference.
+		/// </summary>
+		/// <param name="joinId"></param>
+		public void InviteUser(string joinId)
+		{
+			Parent.Log(eSeverity.Informational, "Inviting user: {0}", joinId);
+			Parent.SendCommand("zCommand Call Invite user: {0}", joinId);
+		}
+
+		/// <summary>
+		/// Expels the participant with the given user id.
+		/// </summary>
+		/// <param name="userId"></param>
+		public void ExpelParticipant(string userId)
+		{
+			Parent.Log(eSeverity.Informational, "Expelling participant with id: {1}", userId);
+			Parent.SendCommand("zCommand Call Expel Id: {0}", userId);
+		}
+
+		/// <summary>
+		/// Mutes/unmutes the participant with the given user id.
+		/// </summary>
+		/// <param name="userId"></param>
+		/// <param name="mute"></param>
+		public void MuteParticipant(string userId, bool mute)
+		{
+			Parent.Log(eSeverity.Informational, "{0} participant with id: {1}", mute ? "Muting" : "Unmuting", userId);
+			Parent.SendCommand("zCommand Call MuteParticipant mute: {0} Id: {1}", mute ? "on" : "off", userId);
+		}
+
+		/// <summary>
+		/// Allows/disallows recording for the participant with the given user id.
+		/// </summary>
+		/// <param name="userId"></param>
+		/// <param name="enabled"></param>
+		public void AllowParticipantRecord(string userId, bool enabled)
+		{
+			Parent.Log(eSeverity.Informational, "Setting Call Record Enable to: {0} for participant: {1}", enabled, userId);
+			Parent.SendCommand("zCommand Call AllowRecord Id: {0} Enable: {1}", userId, enabled ? "on" : "off");
+		}
+
+		/// <summary>
 		/// Locks the current active conference so no more participants may join.
 		/// </summary>
 		/// <param name="enabled"></param>

@@ -217,20 +217,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		}
 
 		/// <summary>
-		/// Sends commands.
-		/// </summary>
-		/// <param name="commands"></param>
-		[PublicAPI]
-		public void SendCommands(params string[] commands)
-		{
-			if (commands == null)
-				throw new ArgumentNullException("commands");
-
-			foreach (string command in commands)
-				SendCommand(command);
-		}
-
-		/// <summary>
 		/// Registers the given callback.
 		/// </summary>
 		/// <param name="callback"></param>
