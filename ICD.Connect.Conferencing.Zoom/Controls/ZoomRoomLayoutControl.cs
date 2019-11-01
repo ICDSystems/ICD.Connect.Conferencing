@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Layout;
-using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.Layout;
 using ICD.Connect.Conferencing.Zoom.Responses;
@@ -166,12 +165,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			callComponent.OnParticipantRemoved -= CallComponentOnParticipantRemoved;
 		}
 
-		private void CallComponentOnStatusChanged(object sender, ConferenceStatusEventArgs args)
+		private void CallComponentOnStatusChanged(object sender, GenericEventArgs<eCallStatus> eventArgs)
 		{
 			UpdateLayout();
 		}
 
-		private void CallComponentOnParticipantRemoved(object sender, ParticipantEventArgs e)
+		private void CallComponentOnParticipantRemoved(object sender, GenericEventArgs<ParticipantInfo> eventArgs)
 		{
 			if (m_CallComponent.GetParticipants().Count() <= 1)
 				SelfViewEnabled = true;

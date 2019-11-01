@@ -6,11 +6,12 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
-namespace ICD.Connect.Conferencing.Zoom.Components.Call
+namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 {
-	public sealed class ZoomParticipant : AbstractWebParticipant
+	public sealed class ZoomWebParticipant : AbstractWebParticipant
 	{
 		private readonly ZoomRoom m_ZoomRoom;
 		private readonly CallComponent m_CallComponent;
@@ -20,7 +21,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public bool CanRecord { get; private set; }
 		public bool IsRecording { get; private set; }
 
-		public ZoomParticipant(ZoomRoom zoomRoom, ParticipantInfo info)
+		public ZoomWebParticipant(ZoomRoom zoomRoom, ParticipantInfo info)
 		{
 			m_ZoomRoom = zoomRoom;
 			m_CallComponent = m_ZoomRoom.Components.GetComponent<CallComponent>();

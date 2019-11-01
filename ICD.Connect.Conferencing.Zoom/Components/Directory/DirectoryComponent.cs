@@ -150,10 +150,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		private void PhonebookListCallback(ZoomRoom zoomRoom, PhonebookListCommandResponse response)
 		{
-			var result = response.PhonebookListResult;
-			AddOrUpdateContacts(result.Contacts.Where(c => c != null));
+			PhonebookListResult result = response.PhonebookListResult;
+			if (result == null)
+				return;
 
-			if (result.Contacts.Length >= result.Limit)
+			ZoomContact[] contacts = result.Contacts;
+			if (contacts == null)
+				return;
+
+			AddOrUpdateContacts(contacts.Where(c => c != null));
+
+			if (contacts.Length >= result.Limit)
 				Parent.SendCommand("zCommand Phonebook List offset: {0} limit: 1000", result.Offset + result.Limit);
 		}
 

@@ -5,9 +5,9 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Zoom.Components;
-using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Controls;
 using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
+using ICD.Connect.Conferencing.Zoom.Controls.Conferencing;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
@@ -22,7 +22,6 @@ using System.Linq;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Components.Audio;
-using ICD.Connect.Conferencing.Zoom.Components.TraditionalCall;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
@@ -36,7 +35,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Callback for responses.
 		/// </summary>
-		public delegate void ResponseCallback<T>(ZoomRoom zoomRoom, T response) where T : AbstractZoomRoomResponse;
+		public delegate void ResponseCallback<T>(ZoomRoom zoomRoom, T response)
+			where T : AbstractZoomRoomResponse;
 
 		private sealed class ResponseCallbackPair
 		{
@@ -68,6 +68,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		private bool m_Initialized;
+		private bool m_IsConnected;
 
 		#region Properties
 
@@ -91,18 +92,23 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Returns true when the codec is connected.
 		/// </summary>
-		public bool IsConnected { get { return m_ConnectionStateManager.IsConnected; } }
+		public bool IsConnected
+		{
+			get { return m_IsConnected; }
+			private set
+			{
+				if (value == m_IsConnected)
+					return;
+
+				m_IsConnected = value;
+
+				OnConnectedStateChanged.Raise(this, new BoolEventArgs(m_IsConnected));
+			}
+		}
 
 		/// <summary>
-		/// Causes this ZoomRoom to auto-accept any incoming calls.
+		/// Gets the API components for the driver.
 		/// </summary>
-		public bool AutoAnswer { get; set; }
-
-		/// <summary>
-		/// Causes this ZoomRoom to auto-reject any incoming calls. Overrides AutoAnswer
-		/// </summary>
-		public bool DoNotDisturb { get; set; }
-
 		public ZoomRoomComponentFactory Components { get; private set; }
 
 		#endregion
@@ -133,7 +139,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomPresentationControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomConferenceControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomTraditionalCallControl(this, Controls.Count));
+			Controls.Add(new ZoomRoomTraditionalConferenceControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomCalendarControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomLayoutControl(this, Controls.Count));
 		}
@@ -386,6 +392,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs args)
 		{
 			m_SerialBuffer.Clear();
+			IsConnected = m_ConnectionStateManager.IsConnected;
 
 			if (args.Data)
 				return;
@@ -443,7 +450,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			catch (Exception ex)
 			{
 				// Zoom gives us bad json (unescaped characters) in some error messages
-				Log(eSeverity.Error, ex, "Failed to deserialize JSON");
+				Log(eSeverity.Error, ex, "Failed to deserialize JSON - {0}", args.Data);
 			}
 
 			if (response == null)
@@ -517,8 +524,6 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			addRow("Initialized", Initialized);
 			addRow("IsConnected", IsConnected);
-			addRow("AutoAnswer", AutoAnswer);
-			addRow("DoNotDisturb", DoNotDisturb);
 		}
 
 		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()

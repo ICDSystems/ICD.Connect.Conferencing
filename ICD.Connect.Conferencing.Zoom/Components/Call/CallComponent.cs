@@ -2,36 +2,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Zoom.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Responses;
-using ICD.Connect.Conferencing.Conferences;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
-	public sealed class CallComponent : AbstractZoomRoomComponent, IWebConference
+	public sealed class CallComponent : AbstractZoomRoomComponent
 	{
 		#region Events
 
 		/// <summary>
 		/// Raised when a participant is removed from the conference.
 		/// </summary>
-		public event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
+		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantRemoved;
 
 		/// <summary>
 		/// Raised when a participant is added to the conference.
 		/// </summary>
-		public event EventHandler<ParticipantEventArgs> OnParticipantAdded;
+		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantAdded;
 
 		/// <summary>
 		/// Raised when the conference status changes.
 		/// </summary>
-		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
+		public event EventHandler<GenericEventArgs<eCallStatus>> OnStatusChanged;
 
 		/// <summary>
 		/// Raised when the call lock status changes.
@@ -44,71 +43,173 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public event EventHandler<BoolEventArgs> OnCallRecordChanged;
 
 		/// <summary>
+		/// Raised when the meeting id changes.
+		/// </summary>
+		public event EventHandler<StringEventArgs> OnMeetingIdChanged;
+
+		/// <summary>
+		/// Raised when the microphone mute state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMicrophoneMuteChanged;
+
+		/// <summary>
+		/// Raised when the far end requests a microphone mute state change.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnFarEndRequestedMicrophoneMute;
+
+		/// <summary>
+		/// Raised when the camera mute state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCameraMuteChanged;
+
+		/// <summary>
 		/// Raised when the far end sends a video un-mute request.
 		/// </summary>
-		public event EventHandler<BoolEventArgs> OnVideoUnMuteRequestSent;
+		public event EventHandler OnFarEndRequestedVideoUnMute;
+
+		/// <summary>
+		/// Raised when we start/stop being the host of the active conference.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnAmIHostChanged;
+
+		/// <summary>
+		/// Raised when the Zoom Room reports a call error.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<CallConnectError>> OnCallError;
+
+		/// <summary>
+		/// Raised when the Zoom Room informs us that a password is required.
+		/// </summary>
+		public event EventHandler<MeetingNeedsPasswordEventArgs> OnPasswordRequired;
+
+		/// <summary>
+		/// Raised when the state of mute user on entry is changed.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteUserOnEntryChanged;
+
+		/// <summary>
+		/// Raised when there is an incoming call.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<IncomingCall>> OnIncomingCall;
 
 		#endregion
 
-		private readonly List<ZoomParticipant> m_Participants;
+		private readonly IcdOrderedDictionary<string, ParticipantInfo> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
-		private eConferenceStatus m_Status;
+		private bool m_CallLock;
+		private bool m_CallRecord;
+		private string m_MeetingId;
+		private eCallStatus m_Status;
+		private bool m_CameraMute;
+		private bool m_MicrophoneMute;
+		private bool m_AmIHost;
+		private bool m_MuteUserOnEntry;
 
-		private bool m_CallLockEnabled;
-		private bool m_CallRecordEnabled;
+		// We track the last number we tried to join in order to give password feedback
+		private string m_LastJoinNumber;
+
+		// We track the last time we set our microphone mute state so we can determine if the
+		// far end is trying to mute/unmute us.
+		private bool m_LastMicrophoneMute;
 
 		#region Properties
 
-		public string Number { get; private set; }
-
-		public string Name { get; private set; }
-
-		public eConferenceStatus Status
+		/// <summary>
+		/// Gets the meeting ID.
+		/// </summary>
+		public string MeetingId
 		{
-			get { return m_Status; }
+			get { return m_MeetingId; }
 			private set
 			{
-				if (value == m_Status)
+				if (value == m_MeetingId)
 					return;
 
-				m_Status = value;
-				Parent.Log(eSeverity.Informational, "Call {0} status changed: {1}", Number, StringUtils.NiceName(m_Status));
+				m_MeetingId = value;
+				Parent.Log(eSeverity.Informational, "MeetingId changed to {0}", m_MeetingId);
 
-				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(m_Status));
+				OnMeetingIdChanged.Raise(this, new StringEventArgs(m_MeetingId));
 			}
 		}
 
-		public DateTime? Start { get; private set; }
+		/// <summary>
+		/// Gets the camera mute state.
+		/// </summary>
+		public bool CameraMute
+		{ 
+			get { return m_CameraMute; }
+			private set
+			{
+				if (value == m_CameraMute)
+					return;
 
-		public DateTime? End { get; private set; }
+				m_CameraMute = value;
+				Parent.Log(eSeverity.Informational, "CameraMute changed to {0}", m_CameraMute);
 
-		public bool CameraMute { get; private set; }
+				OnCameraMuteChanged.Raise(this, new BoolEventArgs(m_CameraMute));
+			}
+		}
 
-		public bool MicrophoneMute { get; private set; }
+		/// <summary>
+		/// Gets the microphone mute state.
+		/// </summary>
+		public bool MicrophoneMute
+		{
+			get { return m_MicrophoneMute; }
+			private set
+			{
+				if (value == m_MicrophoneMute)
+					return;
 
-		public CallInfo CallInfo { get; private set; }
+				m_MicrophoneMute = value;
+				Parent.Log(eSeverity.Informational, "MicrophoneMute changed to {0}", m_MicrophoneMute);
 
-		public eCallType CallType { get { return eCallType.Video; } }
+				// The far end is trying to mute/unmute us
+				if (m_MicrophoneMute != m_LastMicrophoneMute)
+				{
+					// Hack - Zoom will mute and unmute while connecting a call
+					if (GetParticipants().Any())
+						OnFarEndRequestedMicrophoneMute.Raise(this, new BoolEventArgs(m_MicrophoneMute));
+				}
 
-		public bool AmIHost { get; private set; }
+				OnMicrophoneMuteChanged.Raise(this, new BoolEventArgs(m_MicrophoneMute));
+			}
+		}
+
+		/// <summary>
+		/// Returns true if we are the host of the current conference.
+		/// </summary>
+		public bool AmIHost
+		{
+			get { return m_AmIHost; }
+			private set
+			{
+				if (value == m_AmIHost)
+					return;
+
+				m_AmIHost = value;
+				Parent.Log(eSeverity.Informational, "AmIHost changed to {0}", m_AmIHost);
+
+				OnAmIHostChanged.Raise(this, new BoolEventArgs(m_AmIHost));
+			}
+		}
 
 		/// <summary>
 		/// Gets the CallLock State.
 		/// </summary>
 		public bool CallLock
 		{
-			get { return m_CallLockEnabled; }
+			get { return m_CallLock; }
 			private set
 			{
-				if (value == m_CallLockEnabled)
+				if (value == m_CallLock)
 					return;
 
-				m_CallLockEnabled = value;
+				m_CallLock = value;
+				Parent.Log(eSeverity.Informational, "CallLock set to {0}", m_CallLock);
 
-				Parent.Log(eSeverity.Informational, "CallLock set to {0}", m_CallLockEnabled);
-
-				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLockEnabled));
+				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
 			}
 		}
 
@@ -117,19 +218,56 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public bool CallRecord
 		{
-			get { return m_CallRecordEnabled; }
+			get { return m_CallRecord; }
 			private set
 			{
-				if (value == m_CallRecordEnabled)
+				if (value == m_CallRecord)
 					return;
 
-				m_CallRecordEnabled = value;
+				m_CallRecord = value;
+				Parent.Log(eSeverity.Informational, "CallRecord set to {0}", m_CallRecord);
 
-				Parent.Log(eSeverity.Informational, "Call Record set to {0}", m_CallRecordEnabled);
-
-				OnCallRecordChanged.Raise(this, new BoolEventArgs(m_CallRecordEnabled));
+				OnCallRecordChanged.Raise(this, new BoolEventArgs(m_CallRecord));
 			}
 		}
+
+		/// <summary>
+		/// Gets the current conference status.
+		/// </summary>
+		public eCallStatus Status
+		{
+			get { return m_Status; }
+			private set
+			{
+				if (value == m_Status)
+					return;
+
+				m_Status = value;
+				Parent.Log(eSeverity.Informational, "Status changed to {0}", m_Status);
+
+				OnStatusChanged.Raise(this, new GenericEventArgs<eCallStatus>(m_Status));
+			}
+		}
+
+		/// <summary>
+		/// Whether or not participants will be muted upon joining a meeting.
+		/// </summary>
+		public bool MuteUserOnEntry
+		{
+			get { return m_MuteUserOnEntry; }
+			private set
+			{
+				if (value == m_MuteUserOnEntry)
+					return;
+
+				m_MuteUserOnEntry = value;
+				Parent.Log(eSeverity.Informational, "MuteUserOnEntry changed to {0}", m_MuteUserOnEntry);
+
+				OnMuteUserOnEntryChanged.Raise(this, new BoolEventArgs(m_MuteUserOnEntry));
+			}
+		}
+
+		public CallInfo CallInfo { get; private set; }
 
 		#endregion
 
@@ -142,9 +280,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public CallComponent(ZoomRoom parent)
 			: base(parent)
 		{
-			Name = "Zoom Meeting";
-			m_Participants = new List<ZoomParticipant>();
+			m_Participants = new IcdOrderedDictionary<string, ParticipantInfo>();
 			m_ParticipantsSection = new SafeCriticalSection();
+
 			Subscribe(Parent);
 		}
 
@@ -153,14 +291,23 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		protected override void DisposeFinal()
 		{
-			base.DisposeFinal();
-
 			OnParticipantRemoved = null;
 			OnParticipantAdded = null;
 			OnStatusChanged = null;
 			OnCallLockChanged = null;
 			OnCallRecordChanged = null;
-			OnVideoUnMuteRequestSent = null;
+			OnMeetingIdChanged = null;
+			OnMicrophoneMuteChanged = null;
+			OnFarEndRequestedMicrophoneMute = null;
+			OnCameraMuteChanged = null;
+			OnFarEndRequestedVideoUnMute = null;
+			OnAmIHostChanged = null;
+			OnCallError = null;
+			OnPasswordRequired = null;
+			OnMuteUserOnEntryChanged = null;
+			OnIncomingCall = null;
+
+			base.DisposeFinal();
 
 			Unsubscribe(Parent);
 		}
@@ -169,46 +316,133 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		#region Methods
 
-		public IEnumerable<IWebParticipant> GetParticipants()
+		public IEnumerable<ParticipantInfo> GetParticipants()
 		{
-			return m_ParticipantsSection.Execute(() => m_Participants.Cast<IWebParticipant>().ToArray());
+			return m_ParticipantsSection.Execute(() => m_Participants.Values.ToArray());
 		}
 
-		IEnumerable<IParticipant> IConference.GetParticipants()
+		/// <summary>
+		/// Leaves the current active conference.
+		/// </summary>
+		public void CallLeave()
 		{
-			return GetParticipants().Cast<IParticipant>();
-		}
-
-		public void LeaveConference()
-		{
-			Parent.Log(eSeverity.Debug, "Leaving Zoom Meeting {0}", Number);
-			Status = eConferenceStatus.Disconnecting;
+			Parent.Log(eSeverity.Debug, "Leaving Zoom Meeting {0}", MeetingId);
 			Parent.SendCommand("zCommand Call Leave");
 		}
 
-		public void EndConference()
+		/// <summary>
+		/// Ends the current active conference for all participants.
+		/// </summary>
+		public void CallDisconnect()
 		{
-			Parent.Log(eSeverity.Debug, "Ending Zoom Meeting {0}", Number);
-			Status = eConferenceStatus.Disconnecting;
+			Parent.Log(eSeverity.Debug, "Ending Zoom Meeting {0}", MeetingId);
 			Parent.SendCommand("zCommand Call Disconnect");
 		}
 
-		public void SetCallLock(bool enabled)
+		/// <summary>
+		/// Accepts the incoming call with the given id.
+		/// </summary>
+		/// <param name="joinId"></param>
+		public void CallAccept(string joinId)
+		{
+			Parent.Log(eSeverity.Debug, "Accepting incoming call {0}", joinId);
+			Parent.SendCommand("zCommand Call Accept callerJid: {0}", joinId);
+		}
+
+		/// <summary>
+		/// Rejects the incoming call with the given id.
+		/// </summary>
+		/// <param name="joinId"></param>
+		public void CallReject(string joinId)
+		{
+			Parent.Log(eSeverity.Debug, "Rejecting incoming call {0}", joinId);
+			Parent.SendCommand("zCommand Call Reject callerJid: {0}", joinId);
+		}
+
+		/// <summary>
+		/// Locks the current active conference so no more participants may join.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public void EnableCallLock(bool enabled)
 		{
 			Parent.Log(eSeverity.Debug, "Setting the Call Lock state to: {0}", enabled);
 			Parent.SendCommand("zConfiguration Call Lock Enable: {0}", enabled ? "on" : "off");
 		}
 
-		public void SetCallRecord(bool enabled)
+		/// <summary>
+		/// Sets the enabled state of call recording.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public void EnableCallRecord(bool enabled)
 		{
 			Parent.Log(eSeverity.Debug, "Setting the Call Record state to: {0}", enabled);
 			Parent.SendCommand("zCommand Call Record Enable: {0}", enabled ? "on" : "off");
 		}
 
-		public void SetCallCameraMute(bool enabled)
+		/// <summary>
+		/// Sets the mute state of the camera.
+		/// </summary>
+		/// <param name="mute"></param>
+		public void MuteCamera(bool mute)
 		{
-			Parent.Log(eSeverity.Debug, "Setting the Call Camera Mute state to: {0}", enabled);
-			Parent.SendCommand("zConfiguration Call Camera Mute: {0}", enabled ? "on" : "off");
+			Parent.Log(eSeverity.Debug, "Setting the Call Camera Mute state to: {0}", mute);
+			Parent.SendCommand("zConfiguration Call Camera Mute: {0}", mute ? "on" : "off");
+		}
+
+		/// <summary>
+		/// Starts a personal zoom meeting.
+		/// </summary>
+		public void StartPersonalMeeting()
+		{
+			Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
+			Parent.SendCommand("zCommand Dial StartPmi Duration: 30");
+		}
+
+		/// <summary>
+		/// Sets whether participants should be muted upon entering a meeting or not.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public void EnableMuteUserOnEntry(bool enabled)
+		{
+			Parent.Log(eSeverity.Informational, "Setting MuteUserOnEntry to: {0}", enabled);
+			Parent.SendCommand("zConfiguration Call MuteUserOnEntry Enable: {0}", enabled);
+		}
+
+		/// <summary>
+		/// Sets the mute state of the microphone.
+		/// </summary>
+		/// <param name="mute"></param>
+		public void MuteMicrophone(bool mute)
+		{
+			m_LastMicrophoneMute = mute;
+
+			Parent.Log(eSeverity.Debug, "Setting the Microphone Mute state to: {0}", mute);
+			Parent.SendCommand("zConfiguration Call Microphone mute: {0}", mute ? "on" : "off");
+		}
+
+		/// <summary>
+		/// Starts a new meeting with the given number.
+		/// </summary>
+		/// <param name="meetingNumber"></param>
+		public void StartMeeting(string meetingNumber)
+		{
+			m_LastJoinNumber = meetingNumber;
+
+			Parent.Log(eSeverity.Debug, "Starting a meeting with number: {0}", meetingNumber);
+			Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", meetingNumber);
+		}
+
+		/// <summary>
+		/// Starts an existing meeting with the given number and password.
+		/// </summary>
+		/// <param name="meetingNumber"></param>
+		/// <param name="meetingPassword"></param>
+		public void JoinMeeting(string meetingNumber, string meetingPassword)
+		{
+			m_LastJoinNumber = meetingNumber;
+
+			Parent.Log(eSeverity.Debug, "Joining a meeting with number: {0} and password: {1}", meetingNumber, meetingPassword);
+			Parent.SendCommand("zCommand Dial Join meetingNumber: {0} password: {1}", meetingNumber, meetingPassword);
 		}
 
 		#endregion
@@ -226,13 +460,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Parent.SendCommand("zCommand Call Info");
 		}
 
+		#endregion
+
+		#region Participants
+
 		private void AddUpdateOrRemoveParticipant(ParticipantInfo info)
 		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
 			if (info.IsMyself)
-			{
 				AmIHost = info.IsHost || info.IsCohost;
-				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
-			}
 
 			switch (info.Event)
 			{
@@ -240,77 +478,41 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					RemoveParticipant(info);
 					break;
 
-				case eUserChangedEventType.None:
-				case eUserChangedEventType.ZRCUserChangedEventJoinedMeeting:
-				case eUserChangedEventType.ZRCUserChangedEventUserInfoUpdated:
+				default:
 					AddOrUpdateParticipant(info);
-					break;
-
-				case eUserChangedEventType.ZRCUserChangedEventHostChanged:
-					SetNewHost(info);
-					OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
 					break;
 			}
 		}
 
 		private void AddOrUpdateParticipant(ParticipantInfo info)
 		{
-			ZoomParticipant participant;
+			if (info == null)
+				throw new ArgumentNullException("info");
 
-			m_ParticipantsSection.Enter();
+			m_ParticipantsSection.Execute(() => m_Participants[info.UserId] = info);
 
-			try
-			{
-				participant = m_Participants.Find(p => p.UserId == info.UserId);
-				if (participant != null)
-					participant.Update(info);
-				else
-				{
-					participant = new ZoomParticipant(Parent, info);
-					m_Participants.Add(participant);
-				}
-			}
-			finally
-			{
-				m_ParticipantsSection.Leave();
-			}
-
-			OnParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
+			OnParticipantAdded.Raise(this, new GenericEventArgs<ParticipantInfo>(info));
 		}
 
 		private void RemoveParticipant(ParticipantInfo info)
 		{
-			ZoomParticipant participant = m_ParticipantsSection.Execute(() => m_Participants.Find(p => p.UserId == info.UserId));
-			RemoveParticipant(participant);
-		}
+			if (info == null)
+				throw new ArgumentNullException("info");
 
-		private void RemoveParticipant(ZoomParticipant participant)
-		{
-			if (participant == null)
+			if (!m_ParticipantsSection.Execute(() => m_Participants.Remove(info.UserId)))
 				return;
 
-			if (!m_ParticipantsSection.Execute(() => m_Participants.Remove(participant)))
-				return;
-
-			OnParticipantRemoved.Raise(this, new ParticipantEventArgs(participant));
-		}
-
-		private void ClearParticipants()
-		{
-			foreach (var participant in m_ParticipantsSection.Execute(() => m_Participants.ToArray()))
-				RemoveParticipant(participant);
-		}
-
-		private void SetNewHost(ParticipantInfo info)
-		{
-			foreach (var participant in m_ParticipantsSection.Execute(() => m_Participants.ToArray()))
-				participant.SetIsHost(participant.UserId == info.UserId);
+			OnParticipantRemoved.Raise(this, new GenericEventArgs<ParticipantInfo>(info));
 		}
 
 		#endregion
 
-		#region Zoom Room Callbacks
+		#region ZoomRoom Callbacks
 
+		/// <summary>
+		/// Subscribe to the ZoomRoom events.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
 		private void Subscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
@@ -320,8 +522,15 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.RegisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			zoomRoom.RegisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
 			zoomRoom.RegisterResponseCallback<VideoUnMuteRequestResponse>(VideoUnMuteRequestCallback);
+			zoomRoom.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
+			zoomRoom.RegisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
+			zoomRoom.RegisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
 		}
 
+		/// <summary>
+		/// Unsubscribe from the ZoomRoom events.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
 		private void Unsubscribe(ZoomRoom zoomRoom)
 		{
 			zoomRoom.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
@@ -331,20 +540,78 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.UnregisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			zoomRoom.UnregisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
 			zoomRoom.UnregisterResponseCallback<VideoUnMuteRequestResponse>(VideoUnMuteRequestCallback);
+			zoomRoom.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
+			zoomRoom.UnregisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
+			zoomRoom.UnregisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
 		}
 
-		private void CallConfigurationCallback(ZoomRoom room, CallConfigurationResponse response)
+		/// <summary>
+		/// Called when the Zoom Room reports a call connect error.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		/// <param name="response"></param>
+		private void CallConnectErrorCallback(ZoomRoom zoomRoom, CallConnectErrorResponse response)
 		{
-			CallConfiguration config = response.CallConfiguration;
+			if (response.Error != null)
+				OnCallError.Raise(this, new GenericEventArgs<CallConnectError>(response.Error));
+		}
 
-			if (config.Microphone != null)
-				MicrophoneMute = config.Microphone.Mute;
+		/// <summary>
+		/// Called when the Zoom Room reports a call configuration change.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		/// <param name="response"></param>
+		private void CallConfigurationCallback(ZoomRoom zoomRoom, CallConfigurationResponse response)
+		{
+			CallConfiguration configuration = response.CallConfiguration;
+			if (configuration == null)
+				return;
 
-			if (config.Camera != null)
-				CameraMute = config.Camera.Mute;
+			if (configuration.MuteUserOnEntry != null)
+				MuteUserOnEntry = configuration.MuteUserOnEntry.Enabled;
 
-			if (config.CallLockStatus != null)
-				CallLock = config.CallLockStatus.Lock;
+			if (configuration.Microphone != null)
+				MicrophoneMute = configuration.Microphone.Mute;
+
+			if (configuration.Camera != null)
+				CameraMute = configuration.Camera.Mute;
+
+			if (configuration.CallLockStatus != null)
+				CallLock = configuration.CallLockStatus.Lock;
+		}
+
+		/// <summary>
+		/// Called when the Zoom Room reports an incoming call.
+		/// </summary>
+		/// <param name="zoomroom"></param>
+		/// <param name="response"></param>
+		private void IncomingCallCallback(ZoomRoom zoomroom, IncomingCallResponse response)
+		{
+			IncomingCall incoming = response.IncomingCall;
+			if (incoming == null)
+				return;
+
+			Parent.Log(eSeverity.Informational, "Incoming call: {0}", incoming.CallerName);
+			OnIncomingCall.Raise(this, new GenericEventArgs<IncomingCall>(incoming));
+		}
+
+		/// <summary>
+		/// Called when the Zoom Room tries to join a meeting that needs a password
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		/// <param name="response"></param>
+		private void MeetingNeedsPasswordCallback(ZoomRoom zoomRoom, MeetingNeedsPasswordResponse response)
+		{
+			var meetingNeedsPasswordData = response.MeetingNeedsPassword;
+
+			if (meetingNeedsPasswordData.NeedsPassword)
+				Parent.Log(eSeverity.Informational, "Meeting needs password NeedsPassword: {0} Wrong/Retry: {1}",
+						   meetingNeedsPasswordData.NeedsPassword, meetingNeedsPasswordData.WrongAndRetry);
+
+			OnPasswordRequired.Raise(this,
+									 new MeetingNeedsPasswordEventArgs(m_LastJoinNumber,
+																	   meetingNeedsPasswordData.NeedsPassword,
+																	   meetingNeedsPasswordData.WrongAndRetry));
 		}
 
 		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)
@@ -355,88 +622,63 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 		private void DisconnectCallback(ZoomRoom zoomRoom, CallDisconnectResponse response)
 		{
-			if (response.Disconnect.Success == eZoomBoolean.on)
-			{
-				Status = eConferenceStatus.Disconnected;
-				CallLock = false;
-				CallRecord = false;
-			}
+			if (response.Disconnect.Success != eZoomBoolean.on)
+				return;
+
+			CallLock = false;
+			CallRecord = false;
 		}
 
 		private void CallInfoCallback(ZoomRoom zoomRoom, InfoResultResponse response)
 		{
-			CallInfo result = response.InfoResult;
 			CallInfo = response.InfoResult;
-			Number = result.MeetingId;
+			if (CallInfo == null)
+				return;
 
-			OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(Status));
+			MeetingId = CallInfo.MeetingId;
 		}
 
 		private void CallStatusCallback(ZoomRoom zoomRoom, CallStatusResponse response)
 		{
-			var status = response.CallStatus.Status;
-			switch (status)
-			{
-				case eCallStatus.CONNECTING_MEETING:
-					Status = eConferenceStatus.Connecting;
-					break;
+			var callStatus = response.CallStatus;
+			if (callStatus == null)
+				return;
 
-				case eCallStatus.IN_MEETING:
-					Status = eConferenceStatus.Connected;
-					Start = IcdEnvironment.GetLocalTime();
-					break;
-
-				case eCallStatus.NOT_IN_MEETING:
-				case eCallStatus.LOGGED_OUT:
-					ClearParticipants();
-					Status = eConferenceStatus.Disconnected;
-					break;
-
-				case eCallStatus.UNKNOWN:
-					Status = eConferenceStatus.Undefined;
-					break;
-			}
+			eCallStatus? status = response.CallStatus.Status;
+			Status = status ?? Status;
 		}
 
 		private void UpdatedCallRecordInfoCallback(ZoomRoom zoomroom, UpdatedCallRecordInfoResponse response)
 		{
-			var callRecordInfo = response.CallRecordInfo;
-			if (callRecordInfo != null)
-				CallRecord = callRecordInfo.AmIRecording;
+			UpdateCallRecordInfoEvent callRecordInfo = response.CallRecordInfo;
+			if (callRecordInfo == null)
+				return;
+
+			CallRecord = callRecordInfo.AmIRecording;
 		}
 
 		private void VideoUnMuteRequestCallback(ZoomRoom zoomroom, VideoUnMuteRequestResponse response)
 		{
-			OnVideoUnMuteRequestSent.Raise(this, new BoolEventArgs(true));
+			OnFarEndRequestedVideoUnMute.Raise(this);
 		}
 
 		#endregion
 
 		#region Console
 
-		public override string ConsoleName { get { return Name; } }
-
-		public override string ConsoleHelp { get { return "Zoom Room Conference"; } }
-
-		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
-			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-				yield return node;
-
-			foreach (var participant in GetParticipants())
-				yield return participant;
-		}
-
 		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
 			base.BuildConsoleStatus(addRow);
 
-			addRow("Name", Name);
-			addRow("Number", Number);
-			addRow("Status", Status);
 			addRow("Participants", GetParticipants().Count());
+			addRow("MeetingId", MeetingId);
+			addRow("CameraMute", CameraMute);
+			addRow("MicrophoneMute", MicrophoneMute);
+			addRow("AmIHost", AmIHost);
 			addRow("CallLock", CallLock);
 			addRow("CallRecord", CallRecord);
+			addRow("Status", Status);
+			addRow("MuteUserOnEntry", MuteUserOnEntry);
 		}
 
 		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
@@ -444,19 +686,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new ConsoleCommand("Leave", "Leaves the conference", () => LeaveConference());
-			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
-			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
-			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
-			yield return new GenericConsoleCommand<bool>("SetCallLock", "SetCallLock <true/false>",
-			                                             b => SetCallLock(b));
-			yield return new GenericConsoleCommand<bool>("SetCallRecord", "SetCallRecord <true/false>",
-			                                             b => SetCallRecord(b));
-		}
-
-		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
-		{
-			return base.GetConsoleNodes();
+			yield return new ConsoleCommand("CallLeave", "Leaves the conference", () => CallLeave());
+			yield return new ConsoleCommand("CallDisconnect", "Ends the conference", () => CallDisconnect());
+			yield return new GenericConsoleCommand<bool>("EnableCallLock", "EnableCallLock <true/false>",
+			                                             b => EnableCallLock(b));
+			yield return new GenericConsoleCommand<bool>("EnableCallLock", "EnableCallLock <true/false>",
+			                                             b => EnableCallRecord(b));
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()

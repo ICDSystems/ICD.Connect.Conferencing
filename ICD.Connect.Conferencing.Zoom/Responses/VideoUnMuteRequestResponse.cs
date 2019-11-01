@@ -17,7 +17,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	[JsonConverter(typeof(VideoUnMuteRequestEventConverter))]
 	public sealed class VideoUnMuteRequestEvent
 	{
-			public string ID { get; set; }
+			public string Id { get; set; }
 			public bool IsCoHost { get; set; }
 			public bool IsHost { get; set; }
 	}

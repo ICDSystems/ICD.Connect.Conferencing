@@ -13,9 +13,9 @@ using ICD.Connect.Conferencing.Utils;
 using ICD.Connect.Conferencing.Zoom.Components.TraditionalCall;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
-namespace ICD.Connect.Conferencing.Zoom.Controls
+namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 {
-	public sealed class ZoomRoomTraditionalCallControl : AbstractTraditionalConferenceDeviceControl<ZoomRoom>
+	public sealed class ZoomRoomTraditionalConferenceControl : AbstractTraditionalConferenceDeviceControl<ZoomRoom>
 	{
 		#region Events
 
@@ -39,7 +39,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#region Constructor
 
-		public ZoomRoomTraditionalCallControl(ZoomRoom parent, int id)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		public ZoomRoomTraditionalConferenceControl(ZoomRoom parent, int id)
 			: base(parent, id)
 		{
 			m_CallComponent = Parent.Components.GetComponent<TraditionalCallComponent>();
@@ -49,6 +54,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			Subscribe(m_CallComponent);
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnIncomingCallAdded = null;
@@ -90,7 +99,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override void SetDoNotDisturb(bool enabled)
 		{
-			Parent.DoNotDisturb = enabled;
+			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting do-not-disturb through the SSH API");
 		}
 
 		public override void SetAutoAnswer(bool enabled)

@@ -47,8 +47,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		{
 			base.WriteProperties(writer, value, serializer);
 
-			if(value.ID != null)
-				writer.WriteProperty(ATTR_ID, value.ID);
+			if(value.Id != null)
+				writer.WriteProperty(ATTR_ID, value.Id);
 
 			if(value.IsCoHost)
 				writer.WriteProperty(ATTR_IS_COHOST, value.IsCoHost);
@@ -63,7 +63,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 			switch (property)
 			{
 				case ATTR_ID:
-					instance.ID = reader.GetValueAsString();
+					instance.Id = reader.GetValueAsString();
 					break;
 				case ATTR_IS_COHOST:
 					instance.IsCoHost = reader.GetValueAsBool();
