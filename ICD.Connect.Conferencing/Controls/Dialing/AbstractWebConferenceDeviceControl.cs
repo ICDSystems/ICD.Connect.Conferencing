@@ -161,7 +161,10 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public abstract eCallType Supports { get; }
-		
+
+		/// <summary>
+		/// Gets the camera enabled state.
+		/// </summary>
 		public bool CameraEnabled
 		{
 			get { return m_CameraEnabled;}
@@ -169,7 +172,9 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			{
 				if (m_CameraEnabled == value)
 					return;
+
 				m_CameraEnabled = value;
+
 				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
@@ -249,6 +254,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		/// <param name="enabled"></param>
 		public abstract void SetCameraEnabled(bool enabled);
+
+		/// <summary>
+		/// Starts a personal meeting.
+		/// </summary>
+		public abstract void StartPersonalMeeting();
 
 		#endregion
 

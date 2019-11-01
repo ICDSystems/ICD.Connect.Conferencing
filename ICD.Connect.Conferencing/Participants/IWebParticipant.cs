@@ -9,8 +9,14 @@ namespace ICD.Connect.Conferencing.Participants
 	/// </summary>
 	public interface IWebParticipant : IParticipant
 	{
+		/// <summary>
+		/// Raised when the participant's mute status changes.
+		/// </summary>
 		event EventHandler<BoolEventArgs> OnIsMutedChanged;
 
+		/// <summary>
+		/// Raised when the participant's host status changes.
+		/// </summary>
 		event EventHandler<BoolEventArgs> OnIsHostChanged;
 
 		/// <summary>

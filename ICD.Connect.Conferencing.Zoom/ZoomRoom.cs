@@ -50,7 +50,14 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		private const string END_OF_LINE = "\r";
 
+		/// <summary>
+		/// Raised when the connected state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
+
+		/// <summary>
+		/// Raised when the initialization state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;

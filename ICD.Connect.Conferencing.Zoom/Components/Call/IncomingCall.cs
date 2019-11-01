@@ -36,6 +36,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public string MeetingNumber { get; set; }
 
+		/// <summary>
+		/// The name of the person calling.
+		/// </summary>
 		public string CallerName { get; set; }
 
 		/// <summary>

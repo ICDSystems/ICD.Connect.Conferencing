@@ -19,6 +19,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#region Constructor
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
 		public ZoomRoomLayoutControl(ZoomRoom parent, int id) 
 			: base(parent, id)
 		{
@@ -31,6 +36,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			LayoutAvailable = true;
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
 			Unsubscribe(m_LayoutComponent);
