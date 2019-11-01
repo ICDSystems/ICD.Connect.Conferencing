@@ -34,13 +34,13 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		/// <summary>
 		/// On for share content in thumbnail off for camera content
 		/// </summary>
-		public bool ShareThumb { get; set; }
+		public bool? ShareThumb { get; set; }
 
-		public eZoomLayoutStyle Style { get; set; }
+		public eZoomLayoutStyle? Style { get; set; }
 
-		public eZoomLayoutSize Size { get; set; }
+		public eZoomLayoutSize? Size { get; set; }
 
-		public eZoomLayoutPosition Position { get; set; }
+		public eZoomLayoutPosition? Position { get; set; }
 	}
 
 	public enum eZoomLayoutStyle

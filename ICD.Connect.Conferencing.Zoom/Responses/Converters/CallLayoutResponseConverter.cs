@@ -112,16 +112,16 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		{
 			base.WriteProperties(writer, value, serializer);
 
-			if (value.ShareThumb)
+			if (value.ShareThumb != null)
 				writer.WriteProperty(ATTR_SHARE_THUMB, value.ShareThumb);
 
-			if (value.Style != 0)
+			if (value.Style != null)
 				writer.WriteProperty(ATTR_STYLE, value.Style);
 
-			if (value.Size != 0)
+			if (value.Size != null)
 				writer.WriteProperty(ATTR_SIZE, value.Size);
 
-			if (value.Position != 0)
+			if (value.Position != null)
 				writer.WriteProperty(ATTR_POSITION, value.Position);
 		}
 

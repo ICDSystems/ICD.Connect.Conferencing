@@ -197,10 +197,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		{
 			base.WriteProperties(writer, value, serializer);
 
-			if (value.Size != 0)
+			if (value.Size != null)
 				writer.WriteProperty(ATTR_SIZE, value.Size);
 
-			if (value.Position != 0)
+			if (value.Position != null)
 				writer.WriteProperty(ATTR_POSITION, value.Position);
 		}
 

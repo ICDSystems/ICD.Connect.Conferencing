@@ -47,8 +47,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	[JsonConverter(typeof(CallLayoutConfigurationQueryConverter))]
 	public sealed class CallLayoutConfigurationQuery
 	{
-		public eZoomLayoutSize Size { get; set; }
-		public eZoomLayoutPosition Position { get; set; }
+		public eZoomLayoutSize? Size { get; set; }
+		public eZoomLayoutPosition? Position { get; set; }
 	}
 
 	[JsonConverter(typeof(MuteUserOnEntryConfigurationConverter))]

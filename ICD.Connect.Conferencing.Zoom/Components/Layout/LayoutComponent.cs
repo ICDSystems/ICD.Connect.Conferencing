@@ -224,10 +224,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			if (data == null)
 				return;
 
-			ShareThumb = data.ShareThumb;
-			LayoutStyle = data.Style;
-			LayoutSize = data.Size;
-			LayoutPosition = data.Position;
+			if (data.ShareThumb != null)
+				ShareThumb = (bool)data.ShareThumb;
+			if (data.Style != null)
+				LayoutStyle = (eZoomLayoutStyle)data.Style;
+			if (data.Size != null)
+				LayoutSize = (eZoomLayoutSize)data.Size;
+			if (data.Position != null)
+				LayoutPosition = (eZoomLayoutPosition)data.Position;
 		}
 
 		private void CallConfigurationCallback(ZoomRoom zoomroom, CallConfigurationResponse response)
@@ -240,8 +244,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			if (data == null)
 				return;
 
-			LayoutSize = data.Size;
-			LayoutPosition = data.Position;
+			if (data.Size != null)
+				LayoutSize = (eZoomLayoutSize)data.Size;
+
+			if (data.Position != null)
+				LayoutPosition = (eZoomLayoutPosition)data.Position;
 		}
 
 		#endregion
