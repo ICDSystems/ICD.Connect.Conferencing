@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
@@ -13,11 +14,32 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 {
 	public sealed class ZoomWebParticipant : AbstractWebParticipant
 	{
+		/// <summary>
+		/// Raised when the participant can record state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCanRecordChanged; 
+
 		private readonly CallComponent m_CallComponent;
+
+		private bool m_CanRecord;
 
 		public string UserId { get; private set; }
 		public string AvatarUrl { get; private set; }
-		public bool CanRecord { get; private set; }
+
+		public bool CanRecord
+		{
+			get { return m_CanRecord; }
+			private set
+			{
+				if (value == m_CanRecord)
+					return;
+
+				m_CanRecord = value;
+
+				OnCanRecordChanged.Raise(this, new BoolEventArgs(m_CanRecord));
+			}
+		}
+
 		public bool IsRecording { get; private set; }
 
 		/// <summary>
@@ -44,6 +66,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		protected override void DisposeFinal()
 		{
+			OnCanRecordChanged = null;
+
+			base.DisposeFinal();
+
 			Unsubscribe(m_CallComponent);
 		}
 
