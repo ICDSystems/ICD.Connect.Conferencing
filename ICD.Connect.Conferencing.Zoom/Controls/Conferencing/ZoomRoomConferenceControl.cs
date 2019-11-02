@@ -185,6 +185,15 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_CallComponent.StartPersonalMeeting();
 		}
 
+		/// <summary>
+		/// Locks the current active conference so no more participants may join.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public override void EnableCallLock(bool enabled)
+		{
+			m_CallComponent.EnableCallLock(enabled);
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -285,6 +294,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private void Subscribe(CallComponent callComponent)
 		{
 			callComponent.OnIncomingCall += CallComponentOnIncomingCall;
+			callComponent.OnCameraMuteChanged += CallComponentOnCameraMuteChanged;
+			callComponent.OnAmIHostChanged += CallComponentOnAmIHostChanged;
+			callComponent.OnCallLockChanged += CallComponentOnCallLockChanged;
 		}
 
 		/// <summary>
@@ -294,6 +306,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private void Unsubscribe(CallComponent callComponent)
 		{
 			callComponent.OnIncomingCall -= CallComponentOnIncomingCall;
+			callComponent.OnCameraMuteChanged -= CallComponentOnCameraMuteChanged;
+			callComponent.OnAmIHostChanged -= CallComponentOnAmIHostChanged;
+			callComponent.OnCallLockChanged -= CallComponentOnCallLockChanged;
 		}
 
 		/// <summary>
@@ -305,6 +320,36 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		{
 			ThinIncomingCall incomingCall = CreateThinIncomingCall(eventArgs.Data);
 			AddIncomingCall(incomingCall);
+		}
+
+		/// <summary>
+		/// Called when the camera mute state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void CallComponentOnCameraMuteChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			CameraEnabled = !m_CallComponent.CameraMute;
+		}
+
+		/// <summary>
+		/// Called when the host state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void CallComponentOnAmIHostChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			AmIHost = m_CallComponent.AmIHost;
+		}
+
+		/// <summary>
+		/// Called when the call lock state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void CallComponentOnCallLockChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			CallLock = m_CallComponent.CallLock;
 		}
 
 		#endregion

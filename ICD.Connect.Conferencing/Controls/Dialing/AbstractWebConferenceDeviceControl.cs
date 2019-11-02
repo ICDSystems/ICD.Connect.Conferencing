@@ -60,13 +60,24 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
 
+		/// <summary>
+		/// Raised when the call lock status changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCallLockChanged;
+
+		/// <summary>
+		/// Raised when we start/stop being the host of the active conference.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnAmIHostChanged;
+
 		private readonly SafeCriticalSection m_StateSection;
 
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
 		private bool m_CameraEnabled;
-
+		private bool m_AmIHost;
+		private bool m_CallLock;
 
 		#region Properties
 
@@ -170,12 +181,82 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			get { return m_CameraEnabled;}
 			protected set
 			{
-				if (m_CameraEnabled == value)
-					return;
+				m_StateSection.Enter();
 
-				m_CameraEnabled = value;
+				try
+				{
+					if (m_CameraEnabled == value)
+						return;
+
+					m_CameraEnabled = value;
+
+					Log(eSeverity.Informational, "CameraEnabled set to {0}", m_CameraEnabled);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
 
 				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
+
+		/// <summary>
+		/// Returns true if we are the host of the current conference.
+		/// </summary>
+		public bool AmIHost
+		{
+			get { return m_AmIHost; }
+			protected set
+			{
+				m_StateSection.Enter();
+
+				try
+				{
+					if (value == m_AmIHost)
+						return;
+
+					m_AmIHost = value;
+
+					Log(eSeverity.Informational, "AmIHost set to {0}", m_AmIHost);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
+
+				OnAmIHostChanged.Raise(this, new BoolEventArgs(m_AmIHost));
+			}
+		}
+
+		/// <summary>
+		/// Gets the CallLock State.
+		/// </summary>
+		public bool CallLock
+		{
+			get { return m_CallLock; }
+			protected set
+			{
+				m_StateSection.Enter();
+
+				try
+				{
+					if (value == m_CallLock)
+						return;
+
+					m_CallLock = value;
+
+					Log(eSeverity.Informational, "CallLock set to {0}", m_CallLock);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
+
+				if (value == m_CallLock)
+					return;
+
+				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
 			}
 		}
 
@@ -259,6 +340,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// Starts a personal meeting.
 		/// </summary>
 		public abstract void StartPersonalMeeting();
+
+		/// <summary>
+		/// Locks the current active conference so no more participants may join.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public abstract void EnableCallLock(bool enabled);
 
 		#endregion
 
