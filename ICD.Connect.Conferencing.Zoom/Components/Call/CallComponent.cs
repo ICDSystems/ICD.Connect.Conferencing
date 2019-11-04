@@ -732,7 +732,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			yield return new ConsoleCommand("CallDisconnect", "Ends the conference", () => CallDisconnect());
 			yield return new GenericConsoleCommand<bool>("EnableCallLock", "EnableCallLock <true/false>",
 			                                             b => EnableCallLock(b));
-			yield return new GenericConsoleCommand<bool>("EnableCallLock", "EnableCallLock <true/false>",
+			yield return new GenericConsoleCommand<bool>("EnableCallRecord", "EnableCallRecord <true/false>",
 			                                             b => EnableCallRecord(b));
 		}
 
