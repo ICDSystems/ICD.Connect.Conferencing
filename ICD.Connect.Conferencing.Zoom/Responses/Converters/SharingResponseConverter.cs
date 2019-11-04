@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class SharingResponseConverter : AbstractGenericJsonConverter<SharingResponse>
+	public sealed class SharingResponseConverter : AbstractZoomRoomResponseConverter<SharingResponse>
 	{
 		private const string ATTR_SHARING = "Sharing";
 

@@ -124,7 +124,7 @@
     <Compile Include="Responses\Converters\CallConnectErrorResponseConverter.cs" />
     <Compile Include="Responses\Converters\CallDisconnectResponseConverter.cs" />
     <Compile Include="Responses\Converters\CallInfoConverter.cs" />
-    <Compile Include="Responses\Converters\CallLayoutResponseConverter.cs" />
+    <Compile Include="Responses\Converters\CallLayoutConfigurationConverter.cs" />
     <Compile Include="Responses\Converters\CallStatusResponseConverter.cs" />
     <Compile Include="Responses\Converters\CameraInfoConverter.cs" />
     <Compile Include="Responses\Converters\IncomingCallConverter.cs" />
@@ -145,6 +145,7 @@
     <Compile Include="Responses\Converters\VideoConfigurationResponseConverter.cs" />
     <Compile Include="Responses\Converters\VideoUnMuteRequestResponseConverter.cs" />
     <Compile Include="Responses\Converters\ZoomContactConverter.cs" />
+    <Compile Include="Responses\Converters\AbstractZoomRoomResponseConverter.cs" />
     <Compile Include="Responses\Converters\ZoomRoomResponseStatusConverter.cs" />
     <Compile Include="Responses\eAudioState.cs" />
     <Compile Include="Responses\eAudioType.cs" />

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class PhoneCallStatusResponseConverter : AbstractGenericJsonConverter<PhoneCallStatusResponse>
+	public sealed class PhoneCallStatusResponseConverter : AbstractZoomRoomResponseConverter<PhoneCallStatusResponse>
 	{
 		private const string ATTR_PHONE_CALL_STATUS = "PhoneCallStatus";
 
@@ -160,7 +160,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		}
 	}
 
-	public sealed class PhoneCallTerminatedResponseConverter : AbstractGenericJsonConverter<PhoneCallTerminatedResponse>
+	public sealed class PhoneCallTerminatedResponseConverter : AbstractZoomRoomResponseConverter<PhoneCallTerminatedResponse>
 	{
 		private const string ATTR_PHONE_CALL_TERMINATED = "PhoneCallTerminated";
 

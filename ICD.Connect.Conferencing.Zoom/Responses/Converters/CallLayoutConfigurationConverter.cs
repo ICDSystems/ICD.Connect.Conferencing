@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
 
-	public sealed class ClientCallLayoutResponseConverter : AbstractGenericJsonConverter<ClientCallLayoutResponse>
+	public sealed class ClientCallLayoutResponseConverter : AbstractZoomRoomResponseConverter<ClientCallLayoutResponse>
 	{
 		private const string ATTR_CLIENT = "Client";
 
@@ -37,9 +37,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		}
 	}
 
-	public sealed class CallLayoutResponseConverter : AbstractGenericJsonConverter<CallLayoutConfiguration>
+	public sealed class CallLayoutConfigurationConverter : AbstractGenericJsonConverter<CallLayoutConfiguration>
 	{
-		private const string ATTR_CLIENT = "Call";
+		private const string ATTR_CALL = "Call";
 
 		protected override void WriteProperties(JsonWriter writer, CallLayoutConfiguration value,
 		                                        JsonSerializer serializer)
@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 			if (value.LayoutConfigurationHeader != null)
 			{
-				writer.WritePropertyName(ATTR_CLIENT);
+				writer.WritePropertyName(ATTR_CALL);
 				serializer.Serialize(writer, value.LayoutConfigurationHeader);
 			}
 		}
@@ -58,7 +58,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		{
 			switch (property)
 			{
-				case ATTR_CLIENT:
+				case ATTR_CALL:
 					instance.LayoutConfigurationHeader = serializer.Deserialize<LayoutConfigurationHeader>(reader);
 					break;
 
@@ -150,7 +150,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		}
 	}
 
-	public sealed class CallLayoutStatusResponseConverter : AbstractGenericJsonConverter<CallLayoutStatusResponse>
+	public sealed class CallLayoutStatusResponseConverter : AbstractZoomRoomResponseConverter<CallLayoutStatusResponse>
 	{
 		private const string ATTR_LAYOUT = "Layout";
 

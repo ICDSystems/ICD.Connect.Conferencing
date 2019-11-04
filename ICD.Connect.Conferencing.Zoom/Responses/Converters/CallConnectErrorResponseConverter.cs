@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class CallConnectErrorResponseConverter : AbstractGenericJsonConverter<CallConnectErrorResponse>
+	public sealed class CallConnectErrorResponseConverter : AbstractZoomRoomResponseConverter<CallConnectErrorResponse>
 	{
 		private const string ATTR_CALL_CONNECT_ERROR = "CallConnectError";
 

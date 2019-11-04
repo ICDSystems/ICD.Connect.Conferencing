@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class CallDisconnectResponseConverter : AbstractGenericJsonConverter<CallDisconnectResponse>
+	public sealed class CallDisconnectResponseConverter : AbstractZoomRoomResponseConverter<CallDisconnectResponse>
 	{
 		private const string ATTR_CALL_DISCONNECT = "CallDisconnect";
 

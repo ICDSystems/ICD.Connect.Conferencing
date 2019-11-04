@@ -2,7 +2,7 @@
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public class BookingsUpdatedEventResponseConverter : AbstractGenericJsonConverter<BookingsUpdatedEventResponse>
+	public class BookingsUpdatedEventResponseConverter : AbstractZoomRoomResponseConverter<BookingsUpdatedEventResponse>
 	{
 	}
 }

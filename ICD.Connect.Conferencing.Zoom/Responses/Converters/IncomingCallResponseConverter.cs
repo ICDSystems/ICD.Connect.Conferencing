@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class IncomingCallResponseConverter : AbstractGenericJsonConverter<IncomingCallResponse>
+	public sealed class IncomingCallResponseConverter : AbstractZoomRoomResponseConverter<IncomingCallResponse>
 	{
 		private const string ATTR_INCOMING_CALL_INDICATION = "IncomingCallIndication";
 

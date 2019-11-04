@@ -14,7 +14,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public CallLayoutConfiguration CallLayoutConfiguration { get; set; }
 	}
 
-	[JsonConverter(typeof(CallLayoutResponseConverter))]
+	[JsonConverter(typeof(CallLayoutConfigurationConverter))]
 	public sealed class CallLayoutConfiguration
 	{
 		[CanBeNull]

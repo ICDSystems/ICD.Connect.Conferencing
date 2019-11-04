@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class SystemUnitResponseConverter : AbstractGenericJsonConverter<SystemUnitResponse>
+	public sealed class SystemUnitResponseConverter : AbstractZoomRoomResponseConverter<SystemUnitResponse>
 	{
 		private const string ATTR_SYSTEM_UNIT = "SystemUnit";
 

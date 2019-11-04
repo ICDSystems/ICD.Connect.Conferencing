@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class ListParticipantsResponseConverter : AbstractGenericJsonConverter<ListParticipantsResponse>
+	public sealed class ListParticipantsResponseConverter : AbstractZoomRoomResponseConverter<ListParticipantsResponse>
 	{
 		private const string ATTR_LIST_PARTICIPANTS_RESULT = "ListParticipantsResult";
 

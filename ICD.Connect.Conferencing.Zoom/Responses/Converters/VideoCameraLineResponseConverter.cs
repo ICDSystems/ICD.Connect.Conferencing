@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class VideoCameraLineResponseConverter : AbstractGenericJsonConverter<VideoCameraLineResponse>
+	public sealed class VideoCameraLineResponseConverter : AbstractZoomRoomResponseConverter<VideoCameraLineResponse>
 	{
 		private const string ATTR_VIDEO_CAMERA_LINE = "Video Camera Line";
 

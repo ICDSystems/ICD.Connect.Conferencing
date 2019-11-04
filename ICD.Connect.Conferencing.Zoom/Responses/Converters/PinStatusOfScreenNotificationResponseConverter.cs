@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class PinStatusOfScreenNotificationResponseConverter : AbstractGenericJsonConverter<PinStatusOfScreenNotificationResponse>
+	public sealed class PinStatusOfScreenNotificationResponseConverter : AbstractZoomRoomResponseConverter<PinStatusOfScreenNotificationResponse>
 	{
 		private const string ATTR_PIN_STATUS_OF_SCREEN_NOTIFICATION = "PinStatusOfScreenNotification";
 

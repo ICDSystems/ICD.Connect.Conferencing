@@ -1,12 +1,11 @@
 ﻿using System.Linq;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Json;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class BookingsListCommandResponseConverter : AbstractGenericJsonConverter<BookingsListCommandResponse>
+	public sealed class BookingsListCommandResponseConverter : AbstractZoomRoomResponseConverter<BookingsListCommandResponse>
 	{
 		private const string ATTR_BOOKINGS_LIST_RESULT = "BookingsListResult";
 

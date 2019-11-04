@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class MeetingNeedsPasswordResponseConverter : AbstractGenericJsonConverter<MeetingNeedsPasswordResponse>
+	public sealed class MeetingNeedsPasswordResponseConverter : AbstractZoomRoomResponseConverter<MeetingNeedsPasswordResponse>
 	{
 		private const string ATTR_MEETING_NEEDS_PASSWORD = "MeetingNeedsPassword";
 

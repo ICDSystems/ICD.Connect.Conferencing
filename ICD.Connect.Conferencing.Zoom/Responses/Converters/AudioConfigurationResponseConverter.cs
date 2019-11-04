@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public sealed class AudioConfigurationResponseConverter : AbstractGenericJsonConverter<AudioConfigurationResponse>
+	public sealed class AudioConfigurationResponseConverter : AbstractZoomRoomResponseConverter<AudioConfigurationResponse>
 	{
 		private const string ATTR_AUDIO = "Audio";
 
