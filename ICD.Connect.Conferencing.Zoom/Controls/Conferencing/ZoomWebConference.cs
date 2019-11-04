@@ -199,6 +199,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			{
 				if (!m_Participants.TryGetValue(eventArgs.Data.UserId, out participant))
 					return;
+
+				participant.Update(eventArgs.Data);
 			}
 			finally
 			{

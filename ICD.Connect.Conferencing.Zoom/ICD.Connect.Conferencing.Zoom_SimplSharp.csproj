@@ -114,6 +114,7 @@
     <Compile Include="Components\Call\CallInOutListEntry.cs" />
     <Compile Include="Components\Call\CallInOutLists.cs" />
     <Compile Include="Components\Camera\CameraInfo.cs" />
+    <Compile Include="Responses\CallRecordStatusResponse.cs" />
     <Compile Include="Responses\CallStatusResponse.cs" />
     <Compile Include="Responses\ClientCallLayoutResponse.cs" />
     <Compile Include="Responses\Converters\AudioConfigurationResponseConverter.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Responses\Converters\CallDisconnectResponseConverter.cs" />
     <Compile Include="Responses\Converters\CallInfoConverter.cs" />
     <Compile Include="Responses\Converters\CallLayoutConfigurationConverter.cs" />
+    <Compile Include="Responses\Converters\CallRecordStatusResponseConverter.cs" />
     <Compile Include="Responses\Converters\CallStatusResponseConverter.cs" />
     <Compile Include="Responses\Converters\CameraInfoConverter.cs" />
     <Compile Include="Responses\Converters\IncomingCallConverter.cs" />
