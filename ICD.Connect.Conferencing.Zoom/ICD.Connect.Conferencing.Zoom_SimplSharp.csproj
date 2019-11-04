@@ -145,7 +145,6 @@
     <Compile Include="Responses\Converters\VideoConfigurationResponseConverter.cs" />
     <Compile Include="Responses\Converters\VideoUnMuteRequestResponseConverter.cs" />
     <Compile Include="Responses\Converters\ZoomContactConverter.cs" />
-    <Compile Include="Responses\Converters\ZoomRoomResponseHeaderConverter.cs" />
     <Compile Include="Responses\Converters\ZoomRoomResponseStatusConverter.cs" />
     <Compile Include="Responses\eAudioState.cs" />
     <Compile Include="Responses\eAudioType.cs" />
@@ -174,7 +173,6 @@
     <Compile Include="Responses\Attributes\ZoomRoomApiResponseAttribute.cs" />
     <Compile Include="Responses\VideoConfigurationResponse.cs" />
     <Compile Include="Responses\VideoUnMuteRequestResponse.cs" />
-    <Compile Include="Responses\ZoomRoomResponseHeader.cs" />
     <Compile Include="Responses\ZoomRoomResponseStatus.cs" />
     <Compile Include="ZoomLoopbackServerDevice.cs" />
     <Compile Include="ZoomLoopbackServerSettings.cs" />
