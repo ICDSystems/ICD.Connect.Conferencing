@@ -43,6 +43,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public event EventHandler<BoolEventArgs> OnCallRecordChanged;
 
 		/// <summary>
+		/// Raised when the zoom room attempts to record the call but is not able to.
+		/// </summary>
+		public event EventHandler<StringEventArgs> OnCallRecordErrorState; 
+
+		/// <summary>
 		/// Raised when the meeting id changes.
 		/// </summary>
 		public event EventHandler<StringEventArgs> OnMeetingIdChanged;
@@ -563,6 +568,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.RegisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.RegisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			zoomRoom.RegisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
+			zoomRoom.RegisterResponseCallback<CallRecordStatusResponse>(CallRecordStatusCallback);
 			zoomRoom.RegisterResponseCallback<VideoUnMuteRequestResponse>(VideoUnMuteRequestCallback);
 			zoomRoom.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			zoomRoom.RegisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
@@ -581,6 +587,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.UnregisterResponseCallback<InfoResultResponse>(CallInfoCallback);
 			zoomRoom.UnregisterResponseCallback<CallStatusResponse>(CallStatusCallback);
 			zoomRoom.UnregisterResponseCallback<UpdatedCallRecordInfoResponse>(UpdatedCallRecordInfoCallback);
+			zoomRoom.UnregisterResponseCallback<CallRecordStatusResponse>(CallRecordStatusCallback);
 			zoomRoom.UnregisterResponseCallback<VideoUnMuteRequestResponse>(VideoUnMuteRequestCallback);
 			zoomRoom.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			zoomRoom.UnregisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
@@ -697,6 +704,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				return;
 
 			CallRecord = callRecordInfo.AmIRecording;
+		}
+
+		private void CallRecordStatusCallback(ZoomRoom zoomroom, CallRecordStatusResponse response)
+		{
+			if (response.Status.State != eZoomRoomResponseState.Error)
+				return;
+
+			OnCallRecordErrorState.Raise(this, new StringEventArgs(response.Status.Message));
 		}
 
 		private void VideoUnMuteRequestCallback(ZoomRoom zoomroom, VideoUnMuteRequestResponse response)
