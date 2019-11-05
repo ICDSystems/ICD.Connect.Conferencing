@@ -253,9 +253,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 					m_StateSection.Leave();
 				}
 
-				if (value == m_CallLock)
-					return;
-
 				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
 			}
 		}
