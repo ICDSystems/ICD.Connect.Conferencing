@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Camera
@@ -66,6 +67,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 
 		public void SetActiveCameraByUsbId(string usbId)
 		{
+			Parent.Log(eSeverity.Informational, "Selecting video camera {0}", usbId);
 			Parent.SendCommand("zConfiguration Video Camera selectedId: {0}", usbId);
 		}
 

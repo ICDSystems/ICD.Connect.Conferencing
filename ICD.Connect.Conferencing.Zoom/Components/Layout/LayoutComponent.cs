@@ -176,14 +176,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 				throw new ArgumentOutOfRangeException("position",
 				                                      "Currently only UpRight, UpLeft, DownRight, DownLeft are supported by Zoom.");
 
-			Parent.SendCommand("zConfiguration Call Layout Position: {0}", position.ToString());
 			Parent.Log(eSeverity.Informational, "Setting Call Layout Position to: {0}", position.ToString());
+			Parent.SendCommand("zConfiguration Call Layout Position: {0}", position.ToString());
 		}
 
 		public void HideSelfView(bool enabled)
 		{
-			Parent.SendCommand("zConfiguration Video hide_conf_self_video: {0}", enabled ? "on" : "off");
 			Parent.Log(eSeverity.Informational, "Setting Hide Self Video to: {0}", enabled);
+			Parent.SendCommand("zConfiguration Video hide_conf_self_video: {0}", enabled ? "on" : "off");
 		}
 
 		public void UpdateLayout()

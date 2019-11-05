@@ -3,7 +3,6 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
-using ICD.Connect.Conferencing.Zoom.Components.Layout;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
@@ -104,15 +103,23 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		public void StartPresentation()
 		{
 			m_RequestedSharing = true;
-			if (InputConnected && !Sharing)
-				Parent.SendCommand("zCommand Call Sharing HDMI Start");
+
+			if (!InputConnected || Sharing)
+				return;
+
+			Parent.Log(eSeverity.Informational, "Starting HDMI share");
+			Parent.SendCommand("zCommand Call Sharing HDMI Start");
 		}
 
 		public void StopPresentation()
 		{
 			m_RequestedSharing = false;
-			if (Sharing)
-				Parent.SendCommand("zCommand Call Sharing HDMI Stop");
+
+			if (!Sharing)
+				return;
+
+			Parent.Log(eSeverity.Informational, "Stopping HDMI share");
+			Parent.SendCommand("zCommand Call Sharing HDMI Stop");
 		}
 
 		protected override void Initialize()
@@ -128,14 +135,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 		private void Subscribe(ZoomRoom parent)
 		{
-			Parent.RegisterResponseCallback<SharingResponse>(SharingResponseCallback);
-			Parent.RegisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
+			parent.RegisterResponseCallback<SharingResponse>(SharingResponseCallback);
+			parent.RegisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
-			Parent.UnregisterResponseCallback<SharingResponse>(SharingResponseCallback);
-			Parent.UnregisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
+			parent.UnregisterResponseCallback<SharingResponse>(SharingResponseCallback);
+			parent.UnregisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
 		}
 
 		private void SharingResponseCallback(ZoomRoom zoomRoom, SharingResponse response)

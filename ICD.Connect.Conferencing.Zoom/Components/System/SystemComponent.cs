@@ -4,7 +4,7 @@ using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.System
 {
-	public class SystemComponent : AbstractZoomRoomComponent
+	public sealed class SystemComponent : AbstractZoomRoomComponent
 	{
 		private SystemInfo m_SystemInfo;
 

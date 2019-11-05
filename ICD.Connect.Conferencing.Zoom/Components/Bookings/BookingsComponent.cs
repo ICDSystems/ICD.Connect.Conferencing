@@ -9,10 +9,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 {
 	public sealed class BookingsComponent : AbstractZoomRoomComponent
 	{
+		/// <summary>
+		/// Called when the bookings change.
+		/// </summary>
 		public event EventHandler OnBookingsUpdated;
 
 		private readonly List<Booking> m_Bookings;
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
 		public BookingsComponent(ZoomRoom zoomRoom)
 			: base(zoomRoom)
 		{
@@ -21,6 +28,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 			Subscribe(zoomRoom);
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		protected override void DisposeFinal()
 		{
 			OnBookingsUpdated = null;
@@ -51,21 +61,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// </remarks>
 		public void UpdateBookings()
 		{
-			if (Initialized)
-				Parent.SendCommand("zCommand Bookings Update");
+			Parent.Log(eSeverity.Informational, "Updating bookings");
+			Parent.SendCommand("zCommand Bookings Update");
 		}
 
 		public void ListBookings()
 		{
-			if (Initialized)
-				Parent.SendCommand("zCommand Bookings List");
+			Parent.Log(eSeverity.Informational, "Listing bookings");
+			Parent.SendCommand("zCommand Bookings List");
 		}
 
 		public void CheckIn(string meetingNumber)
 		{
-			if (!Initialized)
-				return;
-
 			Parent.Log(eSeverity.Informational, "Checking into meeting: {0}", meetingNumber);
 			Parent.SendCommand("zCommand Dial CheckIn MeetingNumber: {0}", meetingNumber);
 		}
@@ -97,12 +104,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 
 		private void BookingsUpdateCallback(ZoomRoom zoomRoom, BookingsUpdateResponse response)
 		{
-			ListBookings();
+			if (Initialized)
+				ListBookings();
 		}
 
-		private void BookingsUpdatedEventCallback(ZoomRoom zoomroom, BookingsUpdatedEventResponse response)
+		private void BookingsUpdatedEventCallback(ZoomRoom zoomRoom, BookingsUpdatedEventResponse response)
 		{
-			ListBookings();
+			if (Initialized)
+				ListBookings();
 		}
 
 		private void ListBookingsCallback(ZoomRoom zoomRoom, BookingsListCommandResponse response)
