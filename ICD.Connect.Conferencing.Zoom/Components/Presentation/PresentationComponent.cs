@@ -104,8 +104,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		{
 			m_RequestedSharing = true;
 
-			if (!InputConnected || Sharing)
+			if (!InputConnected)
+			{
+				Parent.Log(eSeverity.Error, "Unable to start HDMI share - BlackMagic is not connected");
 				return;
+			}
 
 			Parent.Log(eSeverity.Informational, "Starting HDMI share");
 			Parent.SendCommand("zCommand Call Sharing HDMI Start");
@@ -114,9 +117,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		public void StopPresentation()
 		{
 			m_RequestedSharing = false;
-
-			if (!Sharing)
-				return;
 
 			Parent.Log(eSeverity.Informational, "Stopping HDMI share");
 			Parent.SendCommand("zCommand Call Sharing HDMI Stop");
