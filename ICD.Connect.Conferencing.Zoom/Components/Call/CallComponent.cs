@@ -174,7 +174,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				if (m_MicrophoneMute != m_LastMicrophoneMute)
 				{
 					// Hack - Zoom will mute and unmute while connecting a call
-					if (GetParticipants().Any())
+					if (GetParticipants().Any(p => !p.IsMyself))
 						OnFarEndRequestedMicrophoneMute.Raise(this, new BoolEventArgs(m_MicrophoneMute));
 				}
 
