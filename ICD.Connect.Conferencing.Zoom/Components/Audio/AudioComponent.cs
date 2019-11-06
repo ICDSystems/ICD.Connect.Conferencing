@@ -137,8 +137,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 			if (data == null)
 				return;
 
-			IsSapDisabled = data.IsSapDisabled;
-			ReduceReverb = data.ReduceReverb;
+			if (data.IsSapDisabled != null)
+				IsSapDisabled = (bool)data.IsSapDisabled;
+
+			if (data.ReduceReverb != null)
+				ReduceReverb = (bool)data.ReduceReverb;
 		}
 
 		#endregion

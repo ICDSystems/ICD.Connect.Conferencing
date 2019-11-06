@@ -56,7 +56,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 
 		public void PhoneCallOut(string dialString)
 		{
-			Parent.Log(eSeverity.Informational, "PSTN Dialing out to: {0}");
+			Parent.Log(eSeverity.Informational, "PSTN Dialing out to: {0}", dialString);
 			Parent.SendCommand("zCommand Dial PhoneCallOut Number: {0}", dialString);
 		}
 

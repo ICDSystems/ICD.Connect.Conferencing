@@ -79,10 +79,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		{
 			base.WriteProperties(writer, value, serializer);
 
-			if (value.IsSapDisabled)
+			if (value != null)
 				writer.WriteProperty(ATTR_IS_SAP_DISABLED, serializer);
 
-			if (value.ReduceReverb)
+			if (value != null)
 				writer.WriteProperty(ATTR_REDUCE_REVERB, serializer);
 		}
 

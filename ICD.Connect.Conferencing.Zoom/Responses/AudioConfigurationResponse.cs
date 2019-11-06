@@ -24,8 +24,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	[JsonConverter(typeof(InputConfigurationConverter))]
 	public sealed class InputConfiguration
 	{
-		public bool IsSapDisabled { get; set; }
+		public bool? IsSapDisabled { get; set; }
 
-		public bool ReduceReverb { get; set; }
+		public bool? ReduceReverb { get; set; }
 	}
 }
