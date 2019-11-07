@@ -37,10 +37,17 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
+		/// <summary>
+		/// Raised when the MuteUserOnEntry state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteUserOnEntryChanged;
+
 		private readonly CallComponent m_CallComponent;
 		private readonly ZoomWebConference m_Conference;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
 		private readonly Dictionary<ThinIncomingCall, SafeTimer> m_IncomingCalls;
+
+		private bool m_MuteUserOnEntry;
 
 		#region Properties
 
@@ -48,6 +55,27 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public override eCallType Supports { get { return eCallType.Video; } }
+
+		/// <summary>
+		/// When true this control will enable the MuteUserOnEntry feature for the current meeting
+		/// and when new meetings are started.
+		/// </summary>
+		/// <value></value>
+		public bool MuteUserOnEntry
+		{
+			get { return m_MuteUserOnEntry; }
+			set
+			{
+				if (value == m_MuteUserOnEntry)
+					return;
+
+				m_MuteUserOnEntry = value;
+
+				UpdateMuteUserOnEntry();
+
+				OnMuteUserOnEntryChanged.Raise(this, new BoolEventArgs(m_MuteUserOnEntry));
+			}
+		}
 
 		#endregion
 
@@ -62,7 +90,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
 			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
+
 			m_Conference = new ZoomWebConference(m_CallComponent);
+			m_Conference.OnStatusChanged += ConferenceOnStatusChanged;
 
 			Subscribe(m_CallComponent);
 		}
@@ -77,8 +107,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			OnConferenceRemoved = null;
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
+			OnMuteUserOnEntryChanged = null;
 
 			base.DisposeFinal(disposing);
+
+			m_Conference.OnStatusChanged -= ConferenceOnStatusChanged;
 
 			Unsubscribe(m_CallComponent);
 		}
@@ -215,6 +248,26 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
 				StartPersonalMeeting();
 			}
+		}
+
+		/// <summary>
+		/// Called when the conference status changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ConferenceOnStatusChanged(object sender, ConferenceStatusEventArgs e)
+		{
+			if (e.Data == eConferenceStatus.Connected)
+				UpdateMuteUserOnEntry();
+		}
+
+		/// <summary>
+		/// Enables/disables the MuteUserOnEntry feature when we become the host.
+		/// </summary>
+		private void UpdateMuteUserOnEntry()
+		{
+			if (m_CallComponent.AmIHost)
+				m_CallComponent.EnableMuteUserOnEntry(m_MuteUserOnEntry);
 		}
 
 		#endregion
