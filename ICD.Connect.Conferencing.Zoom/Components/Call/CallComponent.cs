@@ -255,7 +255,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		}
 
 		/// <summary>
-		/// Whether or not participants will be muted upon joining a meeting.
+		/// Whether or not participants are being muted upon joining the current meeting.
 		/// </summary>
 		public bool MuteUserOnEntry
 		{
@@ -452,7 +452,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public void EnableMuteUserOnEntry(bool enabled)
 		{
 			Parent.Log(eSeverity.Informational, "Setting MuteUserOnEntry to: {0}", enabled);
-			Parent.SendCommand("zConfiguration Call MuteUserOnEntry Enable: {0}", enabled);
+			Parent.SendCommand("zConfiguration Call MuteUserOnEntry Enable: {0}", enabled ? "on" : "off");
 		}
 
 		/// <summary>
