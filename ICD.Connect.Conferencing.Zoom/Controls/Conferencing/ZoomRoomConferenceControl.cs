@@ -350,6 +350,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			callComponent.OnCameraMuteChanged += CallComponentOnCameraMuteChanged;
 			callComponent.OnAmIHostChanged += CallComponentOnAmIHostChanged;
 			callComponent.OnCallLockChanged += CallComponentOnCallLockChanged;
+			callComponent.OnMicrophoneMuteChanged += CallComponentOnMicrophoneMuteChanged;
 		}
 
 		/// <summary>
@@ -362,6 +363,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			callComponent.OnCameraMuteChanged -= CallComponentOnCameraMuteChanged;
 			callComponent.OnAmIHostChanged -= CallComponentOnAmIHostChanged;
 			callComponent.OnCallLockChanged -= CallComponentOnCallLockChanged;
+			callComponent.OnMicrophoneMuteChanged -= CallComponentOnMicrophoneMuteChanged;
 		}
 
 		/// <summary>
@@ -403,6 +405,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private void CallComponentOnCallLockChanged(object sender, BoolEventArgs boolEventArgs)
 		{
 			CallLock = m_CallComponent.CallLock;
+		}
+
+		private void CallComponentOnMicrophoneMuteChanged(object sender, BoolEventArgs e)
+		{
+			PrivacyMuted = m_CallComponent.MicrophoneMute;
 		}
 
 		#endregion

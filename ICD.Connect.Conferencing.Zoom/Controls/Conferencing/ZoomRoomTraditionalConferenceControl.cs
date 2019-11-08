@@ -10,6 +10,7 @@ using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Utils;
+using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.TraditionalCall;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
@@ -31,7 +32,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		#endregion
 
-		private readonly TraditionalCallComponent m_CallComponent;
+		private readonly CallComponent m_CallComponent;
+		private readonly TraditionalCallComponent m_TraditionalCallComponent;
 		private readonly IcdOrderedDictionary<string, ThinTraditionalParticipant> m_CallIdToParticipant;
 		private readonly SafeCriticalSection m_ParticipantSection;
 
@@ -47,11 +49,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		public ZoomRoomTraditionalConferenceControl(ZoomRoom parent, int id)
 			: base(parent, id)
 		{
-			m_CallComponent = Parent.Components.GetComponent<TraditionalCallComponent>();
+			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
+			m_TraditionalCallComponent = Parent.Components.GetComponent<TraditionalCallComponent>();
 			m_CallIdToParticipant = new IcdOrderedDictionary<string, ThinTraditionalParticipant>();
 			m_ParticipantSection = new SafeCriticalSection();
 
 			Subscribe(m_CallComponent);
+			Subscribe(m_TraditionalCallComponent);
 		}
 
 		/// <summary>
@@ -64,6 +68,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			OnIncomingCallRemoved = null;
 
 			Unsubscribe(m_CallComponent);
+			Unsubscribe(m_TraditionalCallComponent);
 
 			base.DisposeFinal(disposing);
 		}
@@ -109,7 +114,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override void SetPrivacyMute(bool enabled)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting PSTN privacy mute outside of meetings");
+			m_CallComponent.MuteMicrophone(enabled);
 		}
 
 		#endregion
@@ -121,7 +126,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			if (m_CallIdToParticipant.Any())
 				throw new InvalidOperationException("Zoom Room only supports singular call out");
 
-			m_CallComponent.PhoneCallOut(dialString);
+			m_TraditionalCallComponent.PhoneCallOut(dialString);
 		}
 
 		private void Hangup(string callId)
@@ -129,7 +134,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			if (!m_CallIdToParticipant.Any())
 				throw new InvalidOperationException("No active call to hangup");
 
-			m_CallComponent.Hangup(callId);
+			m_TraditionalCallComponent.Hangup(callId);
 		}
 
 		private void SendDtmf(string callId, char data)
@@ -137,7 +142,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			if (!m_CallIdToParticipant.Any())
 				throw new InvalidOperationException("No active call to send DTMF data to");
 
-			m_CallComponent.SendDtmf(callId, data);
+			m_TraditionalCallComponent.SendDtmf(callId, data);
 		}
 
 		/// <summary>
@@ -252,6 +257,38 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		#endregion
 
 		#region Call Component Callbacks
+
+		/// <summary>
+		/// Subscribe to the call component events.
+		/// </summary>
+		/// <param name="callComponent"></param>
+		private void Subscribe(CallComponent callComponent)
+		{
+			callComponent.OnMicrophoneMuteChanged += CallComponentOnMicrophoneMuteChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the call component events.
+		/// </summary>
+		/// <param name="callComponent"></param>
+		private void Unsubscribe(CallComponent callComponent)
+		{
+			callComponent.OnMicrophoneMuteChanged -= CallComponentOnMicrophoneMuteChanged;
+		}
+
+		/// <summary>
+		/// Called when the microphone mute state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void CallComponentOnMicrophoneMuteChanged(object sender, BoolEventArgs e)
+		{
+			PrivacyMuted = m_CallComponent.MicrophoneMute;
+		}
+
+		#endregion
+
+		#region Traditional Call Component Callbacks
 
 		private void Subscribe(TraditionalCallComponent callComponent)
 		{
