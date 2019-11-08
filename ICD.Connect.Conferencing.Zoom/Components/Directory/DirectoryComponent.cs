@@ -39,8 +39,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		public void Populate()
 		{
+			// After Listing contacts we subscribe for any changes.
 			if (Initialized)
-				Parent.SendCommand("zCommand Phonebook List offset: 0 limit: 1000");
+			{
+				Parent.SendCommand("zCommand Phonebook List offset: 0 limit: 500");
+				Parent.SendCommand("zCommand Phonebook Subscribe offset: 0 limit: 500");
+			}
 		}
 
 		#endregion
