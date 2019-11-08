@@ -67,6 +67,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 			if (value.Event != default(eUserChangedEventType))
 				writer.WriteProperty(ATTR_EVENT, value.Event);
+
+			if (value.CanRecord)
+				writer.WriteProperty(ATTR_CAN_RECORD, value.CanRecord);
+
+			if (value.IsRecording)
+				writer.WriteProperty(ATTR_IS_RECORDING, value.IsRecording);
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, ParticipantInfo instance, JsonSerializer serializer)
@@ -99,6 +105,12 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					break;
 				case ATTR_EVENT:
 					instance.Event = reader.GetValueAsEnum<eUserChangedEventType>();
+					break;
+				case ATTR_CAN_RECORD:
+					instance.CanRecord = reader.GetValueAsBool();
+					break;
+				case ATTR_IS_RECORDING:
+					instance.IsRecording = reader.GetValueAsBool();
 					break;
 
 				default:
