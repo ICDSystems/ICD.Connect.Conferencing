@@ -266,8 +266,18 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		private void UpdateMuteUserOnEntry()
 		{
-			if (m_CallComponent.AmIHost)
-				m_CallComponent.EnableMuteUserOnEntry(m_MuteUserOnEntry);
+			if (!m_CallComponent.AmIHost)
+				return;
+
+			m_CallComponent.EnableMuteUserOnEntry(m_MuteUserOnEntry);
+
+			// If the setting is enabled & the host joins and there are other participants, mute them.
+			var participants = m_CallComponent.GetParticipants();
+			if (participants == null || !m_MuteUserOnEntry)
+				return;
+
+			foreach (ParticipantInfo participant in participants)
+				m_CallComponent.MuteParticipant(participant.UserId, true);
 		}
 
 		#endregion
