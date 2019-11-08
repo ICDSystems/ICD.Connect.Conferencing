@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
@@ -73,8 +74,14 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <param name="contact"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public static bool ContainsFavorite(this IFavorites extends, IContact contact)
+		public static bool ContainsFavorite([NotNull] this IFavorites extends, [NotNull] IContact contact)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
 			return extends.GetFavorite(contact) != null;
 		}
 
@@ -85,8 +92,14 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <param name="contact"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public static bool RemoveFavorite(this IFavorites extends, IContact contact)
+		public static bool RemoveFavorite([NotNull] this IFavorites extends, [NotNull] IContact contact)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
 			Favorite favorite = extends.GetFavorite(contact);
 			return favorite != null && extends.RemoveFavorite(favorite);
 		}
@@ -98,8 +111,15 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <param name="contact"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public static Favorite SubmitFavorite(this IFavorites extends, IContact contact)
+		[NotNull]
+		public static Favorite SubmitFavorite([NotNull] this IFavorites extends, [NotNull] IContact contact)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
 			Favorite favorite = Favorite.FromContact(contact);
 			return extends.SubmitFavorite(favorite);
 		}
@@ -111,8 +131,15 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <param name="contact"></param>
 		/// <returns></returns>
 		[PublicAPI]
-		public static Favorite GetFavorite(this IFavorites extends, IContact contact)
+		[CanBeNull]
+		public static Favorite GetFavorite([NotNull] this IFavorites extends, [NotNull] IContact contact)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
 			// First try to find the favorite by looking up the contact number
 			Favorite output = contact.GetDialContexts()
 			                         .SelectMany(d => extends.GetFavoritesByDialContext(d))
@@ -120,6 +147,31 @@ namespace ICD.Connect.Conferencing.Favorites
 
 			// Then try to find the favorite by name
 			return output ?? extends.GetFavoritesByName(contact.Name).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// If the contact is already stored as a favorite remove the favorite,
+		/// otherwise add the contact as a new favorite.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="contact"></param>
+		/// <returns>True if the contact is stored as a favorite, false if removed.</returns>
+		public static bool ToggleFavorite([NotNull] this IFavorites extends, [NotNull] IContact contact)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (contact == null)
+				throw new ArgumentNullException("contact");
+
+			if (extends.ContainsFavorite(contact))
+			{
+				extends.RemoveFavorite(contact);
+				return false;
+			}
+
+			extends.SubmitFavorite(contact);
+			return true;
 		}
 	}
 }
