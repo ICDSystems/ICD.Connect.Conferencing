@@ -107,6 +107,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_IN_CALL = "PhoneCallStatus_InCall";
 		private const string ATTR_INCOMING = "PhoneCallStatus_Incoming";
 		private const string ATTR_NOT_FOUND = "PhoneCallStatus_NotFound";
+		private const string ATTR_CALL_OUT_FAILED = "PhoneCallStatus_CallOutFailed";
 
 		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
@@ -129,6 +130,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				case eZoomPhoneCallStatus.NotFound:
 					writer.WriteValue(ATTR_NOT_FOUND);
 					break;
+				case eZoomPhoneCallStatus.CallOutFailed:
+					writer.WriteValue(ATTR_CALL_OUT_FAILED);
+					break;
 			}
 		}
 
@@ -148,6 +152,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					return eZoomPhoneCallStatus.Incoming;
 				case ATTR_NOT_FOUND:
 					return eZoomPhoneCallStatus.NotFound;
+				case ATTR_CALL_OUT_FAILED:
+					return eZoomPhoneCallStatus.CallOutFailed;
 
 				default:
 					return eZoomPhoneCallStatus.None;

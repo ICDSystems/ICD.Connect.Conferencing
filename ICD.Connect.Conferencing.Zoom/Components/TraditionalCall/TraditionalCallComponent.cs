@@ -115,7 +115,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 			}
 
 			OnCallTerminated.Raise(this, new GenericEventArgs<TraditionalZoomPhoneCallInfo>(info));
-
 		}
 
 		#endregion

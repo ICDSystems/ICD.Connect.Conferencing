@@ -38,7 +38,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		Init = 2,
 		InCall = 3,
 		Incoming = 4,
-		NotFound = 5
+		NotFound = 5,
+		CallOutFailed = 6
 	}
 
 	[ZoomRoomApiResponse("PhoneCallTerminated", eZoomRoomApiType.zEvent, false),

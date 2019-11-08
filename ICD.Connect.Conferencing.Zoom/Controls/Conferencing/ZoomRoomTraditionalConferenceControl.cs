@@ -30,6 +30,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
+		/// <summary>
+		/// Raised when Zoom tells us the call out attempt failed.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<TraditionalZoomPhoneCallInfo>> OnCallOutFailed;
+
 		#endregion
 
 		private readonly CallComponent m_CallComponent;
@@ -96,6 +101,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override void Dial(IDialContext dialContext)
 		{
+			if (string.IsNullOrEmpty(dialContext.DialString) || dialContext.DialString.Contains('*') ||
+			    dialContext.DialString.Contains('#'))
+				throw new ArgumentOutOfRangeException("dialContext", "Invalid Dial String");
+
 			if (CanDial(dialContext) == eDialContextSupport.Unsupported)
 				throw new ArgumentException("Zoom Room traditional calls only support PSTN Currently", "dialContext");
 
@@ -312,6 +321,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			{
 				case eZoomPhoneCallStatus.None:
 				case eZoomPhoneCallStatus.NotFound:
+					break;
+
+				case eZoomPhoneCallStatus.CallOutFailed:
+					Parent.Log(eSeverity.Warning, "ZoomRoom PSTN Call Out Failed!");
+					OnCallOutFailed.Raise(this, new GenericEventArgs<TraditionalZoomPhoneCallInfo>(data));
 					break;
 
 				// Zoom doesn't support answering incoming calls so we pretend they don't exist
