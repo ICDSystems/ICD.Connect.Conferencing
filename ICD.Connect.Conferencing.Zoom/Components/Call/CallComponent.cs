@@ -97,6 +97,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public event EventHandler<GenericEventArgs<IncomingCall>> OnIncomingCall;
 
+		/// <summary>
+		/// Raised when the Call Record info updates.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<UpdateCallRecordInfoEvent>> OnUpdatedCallRecordInfo; 
+
 		#endregion
 
 		private readonly IcdOrderedDictionary<string, ParticipantInfo> m_Participants;
@@ -311,6 +316,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			OnPasswordRequired = null;
 			OnMuteUserOnEntryChanged = null;
 			OnIncomingCall = null;
+			OnUpdatedCallRecordInfo = null;
 
 			base.DisposeFinal();
 
@@ -704,6 +710,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 				return;
 
 			CallRecord = callRecordInfo.AmIRecording;
+			OnUpdatedCallRecordInfo.Raise(this, new GenericEventArgs<UpdateCallRecordInfoEvent>(callRecordInfo));
 		}
 
 		private void CallRecordStatusCallback(ZoomRoom zoomroom, CallRecordStatusResponse response)
