@@ -558,6 +558,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			OnParticipantRemoved.Raise(this, new GenericEventArgs<ParticipantInfo>(info));
 		}
 
+		private void ClearParticipants()
+		{
+			foreach (ParticipantInfo participant in GetParticipants())
+				RemoveParticipant(participant);
+		}
+
 		#endregion
 
 		#region ZoomRoom Callbacks
@@ -682,6 +688,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 
 			CallLock = false;
 			CallRecord = false;
+
+			ClearParticipants();
 		}
 
 		private void CallInfoCallback(ZoomRoom zoomRoom, InfoResultResponse response)
