@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -129,8 +130,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="participant"></param>
 		/// <returns>False if the participant is already in the conference.</returns>
-		public bool AddParticipant(T participant)
+		public bool AddParticipant([NotNull] T participant)
 		{
+			if (participant == null)
+				throw new ArgumentNullException("participant");
+
 			m_ParticipantsSection.Enter();
 
 			try
@@ -157,8 +161,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="participant"></param>
 		/// <returns>False if the participant is not in the conference.</returns>
-		public bool RemoveParticipant(T participant)
+		public bool RemoveParticipant([NotNull] T participant)
 		{
+			if (participant == null)
+				throw new ArgumentNullException("participant");
+
 			m_ParticipantsSection.Enter();
 
 			try
@@ -213,25 +220,19 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// Subscribes to the participant events.
 		/// </summary>
-		/// <param name="source"></param>
-		private void Subscribe(IParticipant source)
+		/// <param name="participant"></param>
+		private void Subscribe(IParticipant participant)
 		{
-			if (source == null)
-				return;
-
-			source.OnStatusChanged += SourceOnStatusChanged;
+			participant.OnStatusChanged += ParticipantOnStatusChanged;
 		}
 
 		/// <summary>
 		/// Unsubscribes from the participant events.
 		/// </summary>
-		/// <param name="source"></param>
-		private void Unsubscribe(IParticipant source)
+		/// <param name="participant"></param>
+		private void Unsubscribe(IParticipant participant)
 		{
-			if (source == null)
-				return;
-
-			source.OnStatusChanged -= SourceOnStatusChanged;
+			participant.OnStatusChanged -= ParticipantOnStatusChanged;
 		}
 
 		/// <summary>
@@ -239,7 +240,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
-		private void SourceOnStatusChanged(object sender, ParticipantStatusEventArgs args)
+		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
 		{
 			UpdateStatus();
 		}
@@ -257,8 +258,13 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		private eConferenceStatus GetStatusFromSources()
 		{
-			IEnumerable<eConferenceStatus> enumerable = GetParticipants().Select(s => s_StatusMap[s.Status]);
-			IcdHashSet<eConferenceStatus> statuses = new IcdHashSet<eConferenceStatus>(enumerable);
+			IcdHashSet<eConferenceStatus> statuses =
+				GetParticipants().Select(s => s_StatusMap[s.Status])
+				                 .ToIcdHashSet();
+
+			// All participants left the conference
+			if (statuses.Count == 0)
+				return eConferenceStatus.Disconnected;
 
 			// All statuses are the same
 			if (statuses.Count == 1)
