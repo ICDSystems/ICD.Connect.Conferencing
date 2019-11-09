@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Timers;
@@ -45,6 +47,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private readonly ZoomWebConference m_Conference;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
 		private readonly Dictionary<ThinIncomingCall, SafeTimer> m_IncomingCalls;
+		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
+		private readonly SafeCriticalSection m_InviteSection;
 
 		private bool m_MuteUserOnEntry;
 
@@ -89,6 +93,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
 			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
+			m_InviteOnMeetingStart = new IcdHashSet<string>();
+			m_InviteSection = new SafeCriticalSection();
 
 			m_Conference = new ZoomWebConference(m_CallComponent);
 			m_Conference.OnStatusChanged += ConferenceOnStatusChanged;
@@ -168,7 +174,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 						// Hard case - Start a new meeting and invite once the meeting starts
 						default:
-							StartPersonalMeetingAndInviteUser(dialContext.DialString);
+							m_InviteSection.Execute(() => m_InviteOnMeetingStart.Add(dialContext.DialString));
+							m_CallComponent.StartPersonalMeeting();
 							break;
 					}
 					break;
@@ -232,25 +239,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		#region Private Methods
 
-		private void StartPersonalMeetingAndInviteUser(string userJoinId)
-		{
-			// set up one-time invite on call start
-			ZoomRoom.ResponseCallback<InfoResultResponse> inviteContactOnCallStart = null;
-			inviteContactOnCallStart = (a, b) =>
-			                           {
-				                           Parent.UnregisterResponseCallback(inviteContactOnCallStart);
-				                           m_CallComponent.InviteUser(userJoinId);
-			                           };
-			Parent.RegisterResponseCallback(inviteContactOnCallStart);
-
-			// start meeting
-			if (m_Conference.Status == eConferenceStatus.Disconnected)
-			{
-				Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
-				StartPersonalMeeting();
-			}
-		}
-
 		/// <summary>
 		/// Called when the conference status changes.
 		/// </summary>
@@ -258,8 +246,49 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <param name="e"></param>
 		private void ConferenceOnStatusChanged(object sender, ConferenceStatusEventArgs e)
 		{
-			if (e.Data == eConferenceStatus.Connected)
-				UpdateMuteUserOnEntry();
+			switch (e.Data)
+			{
+				case eConferenceStatus.Connected:
+					UpdateMuteUserOnEntry();
+					InviteContacts();
+					break;
+
+				case eConferenceStatus.Disconnected:
+				case eConferenceStatus.Disconnecting:
+					ClearInviteContacts();
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Invites the contacts that have been stored for the next meeting start.
+		/// </summary>
+		private void InviteContacts()
+		{
+			string[] ids;
+
+			m_InviteSection.Enter();
+
+			try
+			{
+				ids = m_InviteOnMeetingStart.ToArray();
+				m_InviteOnMeetingStart.Clear();
+			}
+			finally
+			{
+				m_InviteSection.Leave();
+			}
+
+			foreach (string id in ids)
+				m_CallComponent.InviteUser(id);
+		}
+
+		/// <summary>
+		/// Clears the contacts that have been queued for the next meeting start.
+		/// </summary>
+		private void ClearInviteContacts()
+		{
+			m_InviteSection.Execute(() => m_InviteOnMeetingStart.Clear());
 		}
 
 		/// <summary>
