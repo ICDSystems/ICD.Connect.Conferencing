@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override void SetDoNotDisturb(bool enabled)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting do-not-disturb through the SSH API");
+			DoNotDisturb = enabled;
 		}
 
 		public override void SetAutoAnswer(bool enabled)

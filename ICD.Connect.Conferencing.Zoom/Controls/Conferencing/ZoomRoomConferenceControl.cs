@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
@@ -161,11 +160,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				case eDialProtocol.ZoomContact:
 					switch (m_CallComponent.Status)
 					{
+						// Easy case - Invite the contact to the current meeting
 						case eCallStatus.CONNECTING_MEETING:
 						case eCallStatus.IN_MEETING:
 							m_CallComponent.InviteUser(dialContext.DialString);
 							break;
 
+						// Hard case - Start a new meeting and invite once the meeting starts
 						default:
 							StartPersonalMeetingAndInviteUser(dialContext.DialString);
 							break;
@@ -180,7 +181,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <param name="enabled"></param>
 		public override void SetDoNotDisturb(bool enabled)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting do-not-disturb through the SSH API");
+			DoNotDisturb = enabled;
 		}
 
 		/// <summary>
@@ -189,7 +190,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <param name="enabled"></param>
 		public override void SetAutoAnswer(bool enabled)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting auto-answer through the SSH API");
+			AutoAnswer = enabled;
 		}
 
 		/// <summary>
@@ -383,6 +384,18 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <param name="eventArgs"></param>
 		private void CallComponentOnIncomingCall(object sender, GenericEventArgs<IncomingCall> eventArgs)
 		{
+			if (DoNotDisturb)
+			{
+				m_CallComponent.CallReject(eventArgs.Data.CallerJoinId);
+				return;
+			}
+
+			if (AutoAnswer)
+			{
+				m_CallComponent.CallAccept(eventArgs.Data.CallerJoinId);
+				return;
+			}
+
 			ThinIncomingCall incomingCall = CreateThinIncomingCall(eventArgs.Data);
 			AddIncomingCall(incomingCall);
 		}
