@@ -386,7 +386,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="userId"></param>
 		public void ExpelParticipant(string userId)
 		{
-			Parent.Log(eSeverity.Informational, "Expelling participant with id: {1}", userId);
+			Parent.Log(eSeverity.Informational, "Expelling participant with id: {0}", userId);
 			Parent.SendCommand("zCommand Call Expel Id: {0}", userId);
 		}
 
