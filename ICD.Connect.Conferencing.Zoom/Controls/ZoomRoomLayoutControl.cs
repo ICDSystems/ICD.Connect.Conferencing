@@ -105,33 +105,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		#endregion
 
-		#region Zoom Room Callbacks
-
-		protected override void Subscribe(ZoomRoom parent)
-		{
-			base.Subscribe(parent);
-
-			parent.RegisterResponseCallback<VideoConfigurationResponse>(VideoConfigurationResponseCallback);;
-		}
-
-		protected override void Unsubscribe(ZoomRoom parent)
-		{
-			base.Unsubscribe(parent);
-
-			parent.UnregisterResponseCallback<VideoConfigurationResponse>(VideoConfigurationResponseCallback);
-		}
-
-		private void VideoConfigurationResponseCallback(ZoomRoom zoomroom, VideoConfigurationResponse response)
-		{
-			if (response.Video == null)
-				return;
-
-			var data = response.Video.HideConferenceSelfVideo;
-			SelfViewEnabled = !data;
-		}
-
-		#endregion
-
 		#region Layout Component Callbacks
 
 		private void Subscribe(LayoutComponent layoutComponent)

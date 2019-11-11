@@ -33,12 +33,18 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 		/// </summary>
 		public event EventHandler<ZoomLayoutPositionEventArgs> OnPositionChanged;
 
+		/// <summary>
+		/// Raised when selfview becomes enabled or disabled.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnSelfViewEnabledChanged; 
+
 		#endregion
 		
 		private bool m_ShareThumb;
 		private eZoomLayoutStyle m_LayoutStyle;
 		private eZoomLayoutSize m_LayoutSize;
 		private eZoomLayoutPosition m_LayoutPosition;
+		private bool m_SelfViewEnabled;
 
 		#region Properties
 
@@ -119,6 +125,25 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			}
 		}
 
+		/// <summary>
+		/// Returns true if selfview is currently enabled.
+		/// </summary>
+		public bool SelfViewEnabled
+		{
+			get { return m_SelfViewEnabled; }
+			private set
+			{
+				if (value == m_SelfViewEnabled)
+					return;
+
+				m_SelfViewEnabled = value;
+
+				Parent.Log(eSeverity.Informational, "SelfViewEnabled set to {0}", m_SelfViewEnabled);
+
+				OnSelfViewEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewEnabled));
+			}
+		}
+
 		#endregion
 
 		#region Constructor
@@ -131,12 +156,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 		protected override void DisposeFinal()
 		{
-			base.DisposeFinal();
-
 			OnShareThumbChanged = null;
 			OnStyleChanged = null;
 			OnSizeChanged = null;
 			OnPositionChanged = null;
+			OnSelfViewEnabledChanged = null;
+
+			base.DisposeFinal();
 
 			Unsubscribe(Parent);
 		}
@@ -202,12 +228,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 		{
 			parent.RegisterResponseCallback<ClientCallLayoutResponse>(ClientCallLayoutResponseCallback);
 			parent.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
+			parent.RegisterResponseCallback<VideoConfigurationResponse>(VideoConfigurationResponseCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			parent.UnregisterResponseCallback<ClientCallLayoutResponse>(ClientCallLayoutResponseCallback);
 			parent.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
+			parent.UnregisterResponseCallback<VideoConfigurationResponse>(VideoConfigurationResponseCallback);
 		}
 
 		private void ClientCallLayoutResponseCallback(ZoomRoom zoomroom, ClientCallLayoutResponse response)
@@ -249,6 +277,15 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 			if (data.Position != null)
 				LayoutPosition = (eZoomLayoutPosition)data.Position;
+		}
+
+		private void VideoConfigurationResponseCallback(ZoomRoom zoomroom, VideoConfigurationResponse response)
+		{
+			if (response.Video == null)
+				return;
+
+			var data = response.Video.HideConferenceSelfVideo;
+			SelfViewEnabled = !data;
 		}
 
 		#endregion
