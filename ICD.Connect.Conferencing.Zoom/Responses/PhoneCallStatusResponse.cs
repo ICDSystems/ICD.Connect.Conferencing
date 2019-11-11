@@ -70,6 +70,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	{
 		None = 0,
 		ByLocal = 1,
-		ByRemote = 2
+		ByRemote = 2,
+		ByInitAudioDeviceFailed = 3
 	}
 }

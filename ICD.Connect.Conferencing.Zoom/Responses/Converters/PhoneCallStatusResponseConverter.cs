@@ -265,6 +265,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	{
 		private const string ATTR_BY_LOCAL = "PhoneCallTerminateReason_ByLocal";
 		private const string ATTR_BY_REMOTE = "PhoneCallTerminateReason_ByRemote";
+		private const string ATTR_BY_INIT_AUDIO_DEVICE_FAILED = "PhoneCallTerminateReason_ByInitAudioDeviceFailed";
 
 		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
@@ -277,6 +278,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					break;
 				case eZoomPhoneCallTerminatedReason.ByRemote:
 					writer.WriteValue(ATTR_BY_REMOTE);
+					break;
+				case eZoomPhoneCallTerminatedReason.ByInitAudioDeviceFailed:
+					writer.WriteValue(ATTR_BY_INIT_AUDIO_DEVICE_FAILED);
 					break;
 			}
 		}
@@ -291,7 +295,8 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					return eZoomPhoneCallTerminatedReason.ByLocal;
 				case ATTR_BY_REMOTE:
 					return eZoomPhoneCallTerminatedReason.ByRemote;
-
+				case ATTR_BY_INIT_AUDIO_DEVICE_FAILED:
+					return eZoomPhoneCallTerminatedReason.ByInitAudioDeviceFailed;
 				default:
 					return eZoomPhoneCallTerminatedReason.None;
 			}
