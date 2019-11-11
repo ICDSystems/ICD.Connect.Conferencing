@@ -18,7 +18,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		private const string ROOMS_FOLDER = "Rooms";
 		private readonly ZoomFolder m_RootFolder;
 
-		public DirectoryComponent(ZoomRoom parent) : base(parent)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		public DirectoryComponent(ZoomRoom parent)
+			: base(parent)
 		{
 			m_RootFolder = new ZoomFolder("Root");
 			Subscribe(parent);
@@ -40,11 +45,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 		public void Populate()
 		{
 			// After Listing contacts we subscribe for any changes.
-			if (Initialized)
-			{
-				Parent.SendCommand("zCommand Phonebook List offset: 0 limit: 500");
-				Parent.SendCommand("zCommand Phonebook Subscribe offset: 0 limit: 500");
-			}
+			Parent.SendCommand("zCommand Phonebook List offset: 0 limit: 500");
+			Parent.SendCommand("zCommand Phonebook Subscribe offset: 0 limit: 500");
 		}
 
 		#endregion

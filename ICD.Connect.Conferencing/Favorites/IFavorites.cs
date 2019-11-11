@@ -27,20 +27,23 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// </summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
-		IEnumerable<Favorite> GetFavoritesByName(string name);
+		[NotNull]
+		IEnumerable<Favorite> GetFavoritesByName([NotNull] string name);
 
 		/// <summary>
 		/// Gets the favorites with the given dialContext.
 		/// </summary>
 		/// <param name="dialContext"></param>
 		/// <returns></returns>
-		IEnumerable<Favorite> GetFavoritesByDialContext(IDialContext dialContext);
+		[NotNull]
+		IEnumerable<Favorite> GetFavoritesByDialContext([NotNull] IDialContext dialContext);
 
 		/// <summary>
 		/// Gets the favorites with the given protocol.
 		/// </summary>
 		/// <param name="protocol"></param>
 		/// <returns></returns>
+		[NotNull]
 		IEnumerable<Favorite> GetFavoritesByProtocol(eDialProtocol protocol);
 
 		/// <summary>
@@ -62,7 +65,7 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// </summary>
 		/// <param name="favorite"></param>
 		/// <returns>False if the favorite does not exist.</returns>
-		bool RemoveFavorite(Favorite favorite);
+		bool RemoveFavorite([NotNull] Favorite favorite);
 	}
 
 	public static class FavoritesExtensions
@@ -105,7 +108,7 @@ namespace ICD.Connect.Conferencing.Favorites
 		}
 
 		/// <summary>
-		/// Returns true if the contact was successfully stored as a favorite.
+		/// Stores the contact as a favorite.
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="contact"></param>

@@ -20,16 +20,10 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		private readonly SqLiteFavoriteContactMethods m_ContactMethods;
 		private readonly string m_DataPath;
 
-		#region Properties
-
 		/// <summary>
 		/// Gets the connection string.
 		/// </summary>
 		private string ConnectionString { get { return string.Format("Data Source={0};", m_DataPath); } }
-
-		#endregion
-
-		#region Constructors
 
 		/// <summary>
 		/// Constructor.
@@ -46,8 +40,6 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 
 			CreateTable();
 		}
-
-		#endregion
 
 		#region Methods
 
