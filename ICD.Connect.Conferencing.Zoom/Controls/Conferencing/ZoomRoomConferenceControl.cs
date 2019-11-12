@@ -300,12 +300,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				return;
 
 			m_CallComponent.EnableMuteUserOnEntry(m_MuteUserOnEntry);
-
+			
 			// If the setting is enabled & the host joins and there are other participants, mute them.
-			var participants = m_CallComponent.GetParticipants();
-			if (participants == null || !m_MuteUserOnEntry)
+			if (!m_MuteUserOnEntry)
 				return;
 
+			IEnumerable<ParticipantInfo> participants =
+				m_CallComponent.GetParticipants().Where(p => !p.IsMyself);
 			foreach (ParticipantInfo participant in participants)
 				m_CallComponent.MuteParticipant(participant.UserId, true);
 		}
@@ -391,6 +392,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			callComponent.OnAmIHostChanged += CallComponentOnAmIHostChanged;
 			callComponent.OnCallLockChanged += CallComponentOnCallLockChanged;
 			callComponent.OnMicrophoneMuteChanged += CallComponentOnMicrophoneMuteChanged;
+			callComponent.OnParticipantAdded += CallComponentOnParticipantAdded;
 		}
 
 		/// <summary>
@@ -404,6 +406,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			callComponent.OnAmIHostChanged -= CallComponentOnAmIHostChanged;
 			callComponent.OnCallLockChanged -= CallComponentOnCallLockChanged;
 			callComponent.OnMicrophoneMuteChanged -= CallComponentOnMicrophoneMuteChanged;
+			callComponent.OnParticipantAdded -= CallComponentOnParticipantAdded;
 		}
 
 		/// <summary>
@@ -462,6 +465,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private void CallComponentOnMicrophoneMuteChanged(object sender, BoolEventArgs e)
 		{
 			PrivacyMuted = m_CallComponent.MicrophoneMute;
+		}
+
+		private void CallComponentOnParticipantAdded(object sender, GenericEventArgs<ParticipantInfo> genericEventArgs)
+		{
+			// This accounts for being late to an existing meeting that we are the
+			// host of, and "discovering" the participants on entry.
+			UpdateMuteUserOnEntry();
 		}
 
 		#endregion
