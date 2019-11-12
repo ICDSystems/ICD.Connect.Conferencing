@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
@@ -13,8 +15,31 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 {
 	public sealed class ZoomRoomLayoutControl : AbstractConferenceLayoutControl<ZoomRoom>
 	{
+		/// <summary>
+		/// Raised when the share thumbnail enabled state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnShareThumbnailEnabledStateChanged;
+
 		private readonly LayoutComponent m_LayoutComponent;
 		private readonly CallComponent m_CallComponent;
+		private bool m_ShareThumbnailEnabled;
+
+		/// <summary>
+		/// Returns true if the share thumbnail is enabled.
+		/// </summary>
+		public bool ShareThumbnailEnabled
+		{
+			get { return m_ShareThumbnailEnabled; }
+			private set
+			{
+				if (value == m_ShareThumbnailEnabled)
+					return;
+
+				m_ShareThumbnailEnabled = value;
+
+				OnShareThumbnailEnabledStateChanged.Raise(this, new BoolEventArgs(m_ShareThumbnailEnabled));
+			}
+		}
 
 		#region Constructor
 
@@ -41,12 +66,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
+			OnShareThumbnailEnabledStateChanged = null;
+
+			base.DisposeFinal(disposing);
+
 			Unsubscribe(m_LayoutComponent);
 			Unsubscribe(m_CallComponent);
 
 			LayoutAvailable = false;
-
-			base.DisposeFinal(disposing);
 		}
 
 		#endregion
@@ -74,7 +101,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			throw new System.NotSupportedException();
 		}
 
-		public void SetShareThumb(bool enabled)
+		public void SetShareThumbnailEnabled(bool enabled)
 		{
 			m_LayoutComponent.SetLayoutShareThumb(enabled);
 		}
@@ -100,6 +127,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private void UpdateLayout()
 		{
+			if (m_CallComponent.GetParticipants().Count() <= 1)
+				SelfViewEnabled = true;
+
 			m_LayoutComponent.UpdateLayout();
 		}
 
@@ -110,16 +140,37 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void Subscribe(LayoutComponent layoutComponent)
 		{
 			layoutComponent.OnSizeChanged += LayoutComponentOnSizeChanged;
+			layoutComponent.OnSelfViewEnabledChanged += LayoutComponentOnSelfViewEnabledChanged;
+			layoutComponent.OnShareThumbChanged += LayoutComponentOnShareThumbChanged;
 		}
 
 		private void Unsubscribe(LayoutComponent layoutComponent)
 		{
 			layoutComponent.OnSizeChanged -= LayoutComponentOnSizeChanged;
+			layoutComponent.OnSelfViewEnabledChanged -= LayoutComponentOnSelfViewEnabledChanged;
+			layoutComponent.OnShareThumbChanged -= LayoutComponentOnShareThumbChanged;
+		}
+
+		private void LayoutComponentOnShareThumbChanged(object sender, BoolEventArgs eventArgs)
+		{
+			ShareThumbnailEnabled = m_LayoutComponent.ShareThumb;
 		}
 
 		private void LayoutComponentOnSizeChanged(object sender, ZoomLayoutSizeEventArgs args)
 		{
-			SelfViewEnabled = args.LayoutSize != eZoomLayoutSize.Off;
+			UpdateSelfViewEnabled();
+		}
+
+		private void LayoutComponentOnSelfViewEnabledChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateSelfViewEnabled();
+		}
+
+		private void UpdateSelfViewEnabled()
+		{
+			SelfViewEnabled =
+				m_LayoutComponent.SelfViewEnabled &&
+				m_LayoutComponent.LayoutSize != eZoomLayoutSize.Off;
 		}
 
 		#endregion
@@ -129,12 +180,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void Subscribe(CallComponent callComponent)
 		{
 			callComponent.OnStatusChanged += CallComponentOnStatusChanged;
+			callComponent.OnParticipantAdded += CallComponentOnParticipantAdded;
 			callComponent.OnParticipantRemoved += CallComponentOnParticipantRemoved;
 		}
 
 		private void Unsubscribe(CallComponent callComponent)
 		{
 			callComponent.OnStatusChanged -= CallComponentOnStatusChanged;
+			callComponent.OnParticipantAdded -= CallComponentOnParticipantAdded;
 			callComponent.OnParticipantRemoved -= CallComponentOnParticipantRemoved;
 		}
 
@@ -143,11 +196,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			UpdateLayout();
 		}
 
+		private void CallComponentOnParticipantAdded(object sender, GenericEventArgs<ParticipantInfo> genericEventArgs)
+		{
+			UpdateLayout();
+		}
+
 		private void CallComponentOnParticipantRemoved(object sender, GenericEventArgs<ParticipantInfo> eventArgs)
 		{
-			if (m_CallComponent.GetParticipants().Count() <= 1)
-				SelfViewEnabled = true;
-
 			UpdateLayout();	
 		}
 
