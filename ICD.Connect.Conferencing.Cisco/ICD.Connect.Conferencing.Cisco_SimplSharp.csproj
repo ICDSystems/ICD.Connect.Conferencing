@@ -83,6 +83,7 @@
     <Compile Include="Devices\Codec\CiscoCodecSettings.cs" />
     <Compile Include="Devices\Codec\Components\AbstractCiscoComponent.cs" />
     <Compile Include="Devices\Codec\CiscoCodecDevice.cs" />
+    <Compile Include="Devices\Codec\Components\Audio\AudioComponent.cs" />
     <Compile Include="Devices\Codec\Components\Bookings\Booking.cs" />
     <Compile Include="Devices\Codec\Components\Bookings\BookingsComponent.cs" />
     <Compile Include="Devices\Codec\Components\Bookings\BookingCall.cs" />
@@ -141,6 +142,7 @@
     <Compile Include="Devices\Codec\Controls\CiscoCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDialingControl.cs" />
+    <Compile Include="Devices\Codec\Controls\CiscoCodecVolumeControl.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />
@@ -153,6 +155,10 @@
     <ProjectReference Include="..\..\ICD.Connect.API\ICD.Connect.API\ICD.Connect.API_SimplSharp.csproj">
       <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
       <Name>ICD.Connect.API_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Audio\ICD.Connect.Audio\ICD.Connect.Audio_SimplSharp.csproj">
+      <Project>{8ED25D96-E9A5-4E9A-A890-B4EF3AB62041}</Project>
+      <Name>ICD.Connect.Audio_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Calendaring\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
       <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
