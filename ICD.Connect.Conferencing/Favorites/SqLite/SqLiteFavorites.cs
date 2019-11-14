@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Sqlite;
@@ -49,7 +50,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <returns></returns>
 		public IEnumerable<Favorite> GetFavorites()
 		{
-			string query = string.Format("SELECT * FROM {0}", TABLE);
+			string query = string.Format("SELECT {0}.{1}, {0}.{2} FROM {0}", TABLE, COLUMN_ID, COLUMN_NAME);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
@@ -70,7 +71,8 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <returns></returns>
 		public Favorite GetFavorite(long id)
 		{
-			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_ID, PARAM_ID);
+			string query = string.Format("SELECT {0}.{1}, {0}.{2} FROM {0} WHERE {0}.{3}={4} LIMIT 1", TABLE, COLUMN_ID, COLUMN_NAME,
+			                             COLUMN_ID, PARAM_ID);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
@@ -91,9 +93,10 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="name"></param>
 		/// <returns></returns>
-		public IEnumerable<Favorite> GetFavoritesByName(string name)
+		public Favorite GetFavorite(string name)
 		{
-			string query = string.Format("SELECT * FROM {0} WHERE {1}={2}", TABLE, COLUMN_NAME, PARAM_NAME);
+			string query = string.Format("SELECT {0}.{1}, {0}.{2} FROM {0} WHERE {0}.{3}={4} LIMIT 1", TABLE, COLUMN_ID, COLUMN_NAME,
+			                             COLUMN_NAME, PARAM_NAME);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
@@ -104,39 +107,7 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 					connection.Open();
 
 					using (IcdSqliteDataReader reader = command.ExecuteReader())
-						return FavoritesFromReader(reader).ToArray();
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets the favorites with the given contact number.
-		/// </summary>
-		/// <param name="dialContext"></param>
-		/// <returns></returns>
-		public IEnumerable<Favorite> GetFavoritesByDialContext(IDialContext dialContext)
-		{
-			string query = string.Format(@"SELECT * FROM {0} INNER JOIN {1} ON {2}.{3}={4}.{5} WHERE {6}={7} AND {8}={9}",
-			                             TABLE, SqLiteFavoriteContactMethods.TABLE, TABLE, COLUMN_ID,
-			                             SqLiteFavoriteContactMethods.TABLE,
-			                             SqLiteFavoriteContactMethods.COLUMN_FAVORITE_ID,
-			                             SqLiteFavoriteContactMethods.COLUMN_DIAL_STRING,
-			                             SqLiteFavoriteContactMethods.PARAM_DIAL_STRING,
-										 SqLiteFavoriteContactMethods.COLUMN_DIAL_PROTOCOL,
-										 SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL
-				);
-
-			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
-			{
-				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
-				{
-					command.Parameters.Add(SqLiteFavoriteContactMethods.PARAM_DIAL_STRING, eDbType.String).Value = dialContext.DialString;
-					command.Parameters.Add(SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL, eDbType.Int32).Value = (int)dialContext.Protocol;
-
-					connection.Open();
-
-					using (IcdSqliteDataReader reader = command.ExecuteReader())
-						return FavoritesFromReader(reader).ToArray();
+						return FavoritesFromReader(reader).First();
 				}
 			}
 		}
@@ -146,15 +117,14 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// </summary>
 		/// <param name="protocol"></param>
 		/// <returns></returns>
-		public IEnumerable<Favorite> GetFavoritesByProtocol(eDialProtocol protocol)
+		public IEnumerable<Favorite> GetFavorites(eDialProtocol protocol)
 		{
-			string query = string.Format(@"SELECT * FROM {0} INNER JOIN {1} ON {2}.{3}={4}.{5} WHERE {6}={7}",
-			                             TABLE, SqLiteFavoriteContactMethods.TABLE, TABLE, COLUMN_ID,
+			string query = string.Format(@"SELECT {0}.{1}, {0}.{2} FROM {0} INNER JOIN {3} ON {0}.{1}={3}.{4} WHERE {5}={6}",
+										 TABLE, COLUMN_ID, COLUMN_NAME,
 			                             SqLiteFavoriteContactMethods.TABLE,
 			                             SqLiteFavoriteContactMethods.COLUMN_FAVORITE_ID,
 			                             SqLiteFavoriteContactMethods.COLUMN_DIAL_PROTOCOL,
-			                             SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL
-			                            );
+			                             SqLiteFavoriteContactMethods.PARAM_DIAL_PROTOCOL);
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
@@ -171,17 +141,38 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		}
 
 		/// <summary>
+		/// Returns true if there is a stored favorite with the given name.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public bool ContainsFavorite(string name)
+		{
+			string query = string.Format("SELECT 1 FROM {0} WHERE {0}.{1}={2} LIMIT 1", TABLE,
+			                             COLUMN_NAME, PARAM_NAME);
+
+			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
+			{
+				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
+				{
+					command.Parameters.Add(PARAM_NAME, eDbType.String).Value = name;
+
+					connection.Open();
+
+					return command.ExecuteScalar() != null;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Adds the source as a favorite. Returns null if the source is already a favorite.
 		/// </summary>
 		/// <param name="favorite"></param>
 		/// <returns></returns>
 		public Favorite SubmitFavorite(Favorite favorite)
 		{
-			// Add the favorite
 			string query = string.Format("INSERT INTO {0} ({1}) VALUES ({2})", TABLE, COLUMN_NAME, PARAM_NAME);
 
-			bool inserted;
-			long lastId = 0;
+			long lastId;
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
@@ -190,55 +181,50 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
 					command.Parameters.Add(PARAM_NAME, eDbType.String).Value = favorite.Name;
-					inserted = command.ExecuteNonQuery() == 1;
+					if (command.ExecuteNonQuery() != 1)
+						throw new InvalidOperationException("Failed to insert new favorite");
 				}
 
-				// Retrieval
-				if (inserted)
-				{
-					using (IcdSqliteCommand command = new IcdSqliteCommand("select last_insert_rowid()", connection))
-						lastId = (long)command.ExecuteScalar();
-				}
+				using (IcdSqliteCommand command = new IcdSqliteCommand("select last_insert_rowid()", connection))
+					lastId = (long)command.ExecuteScalar();
 			}
 
-			if (!inserted)
-				return null;
-
 			// Add all of the contact methods
-			foreach (FavoriteDialContext contactMethod in favorite.GetContactMethods())
-				m_ContactMethods.SubmitContactMethod(lastId, contactMethod);
+			m_ContactMethods.SubmitContactMethods(lastId, favorite.GetContactMethods());
 
 			return GetFavorite(lastId);
 		}
 
 		/// <summary>
-		/// Updates the existing favorite.
+		/// Removes the favorite with the given name.
 		/// </summary>
-		/// <param name="favorite"></param>
-		/// <returns>Null if the favorite does not exist.</returns>
-		public Favorite UpdateFavorite(Favorite favorite)
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public bool RemoveFavorite(string name)
 		{
-			// Add all of the contact methods
-			foreach (FavoriteDialContext contactMethod in favorite.GetContactMethods())
-				m_ContactMethods.SubmitContactMethod(favorite.Id, contactMethod);
+			// Get the id
+			string query = string.Format("SELECT {0}.{1} FROM {0} WHERE {0}.{2}={3} LIMIT 1", TABLE, COLUMN_ID,
+			                             COLUMN_NAME, PARAM_NAME);
 
-			string query = string.Format("UPDATE {0} SET {1}={2} WHERE {3}={4}", TABLE, COLUMN_NAME, PARAM_NAME, COLUMN_ID,
-			                             PARAM_ID);
+			long id;
 
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = favorite.Id;
-					command.Parameters.Add(PARAM_NAME, eDbType.String).Value = favorite.Name;
+					command.Parameters.Add(PARAM_NAME, eDbType.String).Value = name;
 
 					connection.Open();
-					if (command.ExecuteNonQuery() != 1)
-						return null;
+
+					object result = command.ExecuteScalar();
+					if (result == null)
+						return false;
+
+					id = (long)result;
 				}
 			}
 
-			return GetFavorite(favorite.Id);
+			return RemoveFavorite(id);
 		}
 
 		/// <summary>
@@ -248,18 +234,30 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 		/// <returns>False if the favorite does not exist.</returns>
 		public bool RemoveFavorite(Favorite favorite)
 		{
-			// Remove contact methods
-			foreach (FavoriteDialContext method in m_ContactMethods.GetContactMethodsForFavorite(favorite.Id))
-				m_ContactMethods.RemoveContactMethod(method);
+			if (favorite == null)
+				throw new ArgumentNullException("favorite");
 
-			string query = string.Format("DELETE FROM {0} WHERE {1}={2}", TABLE, COLUMN_ID, PARAM_ID);
+			return RemoveFavorite(favorite.Id);
+		}
+
+		/// <summary>
+		/// Removes the favorite with the given id.
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns>False if the favorite does not exist.</returns>
+		private bool RemoveFavorite(long id)
+		{
+			// Remove contact methods
+			m_ContactMethods.RemoveContactMethodsForFavorite(id);
+
+			string query = string.Format("DELETE FROM {0} WHERE {0}.{1}={2}", TABLE, COLUMN_ID, PARAM_ID);
 
 			// Remove the favorite
 			using (IcdSqliteConnection connection = new IcdSqliteConnection(ConnectionString))
 			{
 				using (IcdSqliteCommand command = new IcdSqliteCommand(query, connection))
 				{
-					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = favorite.Id;
+					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = id;
 
 					connection.Open();
 					return command.ExecuteNonQuery() == 1;
