@@ -9,6 +9,11 @@ namespace ICD.Connect.Conferencing.Favorites
 	public interface IFavorites
 	{
 		/// <summary>
+		/// Raised when the favorites change.
+		/// </summary>
+		event EventHandler OnFavoritesChanged;
+
+		/// <summary>
 		/// Gets all of the favorites.
 		/// </summary>
 		/// <returns></returns>

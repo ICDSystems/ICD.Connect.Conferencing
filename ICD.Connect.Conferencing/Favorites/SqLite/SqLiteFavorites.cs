@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Sqlite;
 using ICD.Connect.Conferencing.DialContexts;
@@ -17,6 +18,11 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 
 		private const string PARAM_ID = "@" + COLUMN_ID;
 		private const string PARAM_NAME = "@" + COLUMN_NAME;
+
+		/// <summary>
+		/// Raised when the favorites change.
+		/// </summary>
+		public event EventHandler OnFavoritesChanged;
 
 		private readonly SqLiteFavoriteContactMethods m_ContactMethods;
 		private readonly string m_DataPath;
@@ -192,6 +198,8 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 			// Add all of the contact methods
 			m_ContactMethods.SubmitContactMethods(lastId, favorite.GetContactMethods());
 
+			OnFavoritesChanged.Raise(this);
+
 			return GetFavorite(lastId);
 		}
 
@@ -260,9 +268,14 @@ namespace ICD.Connect.Conferencing.Favorites.SqLite
 					command.Parameters.Add(PARAM_ID, eDbType.Int64).Value = id;
 
 					connection.Open();
-					return command.ExecuteNonQuery() == 1;
+					if (command.ExecuteNonQuery() != 1)
+						return false;
 				}
 			}
+
+			OnFavoritesChanged.Raise(this);
+
+			return true;
 		}
 
 		#endregion
