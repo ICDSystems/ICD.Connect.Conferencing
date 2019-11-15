@@ -13,6 +13,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
 	public sealed class CiscoCodecVolumeControl : AbstractVolumeLevelDeviceControl<CiscoCodecDevice>, IVolumeMuteFeedbackDeviceControl
 	{
+		private const float INCREMENT_VALUE = 5;
+
 		private readonly AudioComponent m_Component;
 
 		public event EventHandler<BoolEventArgs> OnMuteStateChanged;
@@ -58,6 +60,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="id">Id of this control in the device</param>
 		public CiscoCodecVolumeControl(CiscoCodecDevice parent, int id) : base(parent, id)
 		{
+			IncrementValue = INCREMENT_VALUE;
+			
 			m_Component = parent.Components.GetComponent<AudioComponent>();
 
 			Subscribe(m_Component);
