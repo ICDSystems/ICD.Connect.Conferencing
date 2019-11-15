@@ -54,6 +54,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Audio
 		public AudioComponent(CiscoCodecDevice codec) : base(codec)
 		{
 			Subscribe(codec);
+
+			if(codec.Initialized)
+				Initialize();
 		}
 
 		public void SetVolume(int volume)
