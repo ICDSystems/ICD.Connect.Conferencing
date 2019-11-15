@@ -17,6 +17,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private readonly AudioComponent m_Component;
 
+		private bool m_VolumeIsMuted;
+
 		public event EventHandler<BoolEventArgs> OnMuteStateChanged;
 
 		/// <summary>
@@ -50,7 +52,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// </summary>
 		public bool VolumeIsMuted
 		{
-			get { return m_Component.Mute; }
+			get { return m_VolumeIsMuted; }
+			private set
+			{
+				if (m_VolumeIsMuted == value)
+					return;
+
+				m_VolumeIsMuted = value;
+
+				OnMuteStateChanged.Raise(this, new BoolEventArgs(m_VolumeIsMuted));
+			}
 		}
 
 		/// <summary>
@@ -105,15 +116,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void ComponentOnMuteChanged(object sender, BoolEventArgs args)
 		{
-			OnMuteStateChanged.Raise(this, args);
+			VolumeIsMuted = args.Data;
 		}
 
 		private void UpdateVolume()
 		{
 			VolumeFeedback(m_Component.Volume);
 
-			if (m_Component.Mute)
-				OnMuteStateChanged.Raise(this, new BoolEventArgs(m_Component.Mute));
+			VolumeIsMuted = m_Component.Mute;
 		}
 
 		/// <summary>
