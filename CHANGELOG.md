@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [14.0.0] - 2019-11-18
 ### Added
  - Conferencing Check In/Check Out support
  - ZoomRoom MuteUserOnEntry API
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
  - Renamed old appearances of "Source" to "Participant", and "SourceType" to "CallType"
+ - Substantial refactoring of Zoom device driver to better seperate Controls from Components
 
 ## [13.8.1] - 2019-10-08
 ### Changed
