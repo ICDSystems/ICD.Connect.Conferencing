@@ -322,7 +322,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					return false;
 
 				Unsubscribe(conferenceControl);
-				m_DialingProviders[conferenceControl] = callType;
+				m_DialingProviders.Add(conferenceControl, callType);
 				Subscribe(conferenceControl);
 
 				UpdateProvider(conferenceControl);
@@ -410,14 +410,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public bool DeregisterFeedbackDialingProvider(IConferenceDeviceControl conferenceControl)
 		{
 			m_FeedbackProviderSection.Enter();
+
 			try
 			{
-				if (!m_FeedbackProviders.Contains(conferenceControl))
+				if (!m_FeedbackProviders.Remove(conferenceControl))
 					return false;
 
 				Unsubscribe(conferenceControl);
-
-				m_FeedbackProviders.Remove(conferenceControl);
 			}
 			finally
 			{
