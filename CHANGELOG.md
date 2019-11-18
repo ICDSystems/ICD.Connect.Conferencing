@@ -85,6 +85,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.8.0] - 2019-11-18
+### Added
+ - Cisco Codec now has a volume control (id 8) for the main volume level/mute
+
 ## [11.7.0] - 2019-08-02
 ### Added
  - Cisco "Bookings Updated" event is subscribed to and causes bookings to be listed again

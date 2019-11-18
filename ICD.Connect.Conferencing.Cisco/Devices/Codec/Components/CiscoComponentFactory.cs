@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Audio;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics;
@@ -32,7 +33,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 				{typeof(PresentationComponent), codec => new PresentationComponent(codec)},
 				{typeof(RoomAnalyticsComponent), codec => new RoomAnalyticsComponent(codec)},
 				{typeof(SystemComponent), codec => new SystemComponent(codec)},
-				{typeof(VideoComponent), codec => new VideoComponent(codec)}
+				{typeof(VideoComponent), codec => new VideoComponent(codec)},
+				{typeof(AudioComponent), codec => new AudioComponent(codec)}
 			};
 
 		private readonly Dictionary<Type, ICiscoComponent> m_Components;
