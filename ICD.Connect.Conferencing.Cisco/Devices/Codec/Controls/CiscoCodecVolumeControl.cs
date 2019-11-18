@@ -7,6 +7,7 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Audio.Console.Mute;
 using ICD.Connect.Audio.Controls.Mute;
 using ICD.Connect.Audio.Controls.Volume;
+using ICD.Connect.Audio.EventArguments;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Audio;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
@@ -19,7 +20,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private bool m_VolumeIsMuted;
 
-		public event EventHandler<BoolEventArgs> OnMuteStateChanged;
+		public event EventHandler<MuteDeviceMuteStateChangedApiEventArgs> OnMuteStateChanged;
 
 		/// <summary>
 		/// Gets the current volume, in the parent device's format
@@ -60,7 +61,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 				m_VolumeIsMuted = value;
 
-				OnMuteStateChanged.Raise(this, new BoolEventArgs(m_VolumeIsMuted));
+				OnMuteStateChanged.Raise(this, new MuteDeviceMuteStateChangedApiEventArgs(m_VolumeIsMuted));
 			}
 		}
 
