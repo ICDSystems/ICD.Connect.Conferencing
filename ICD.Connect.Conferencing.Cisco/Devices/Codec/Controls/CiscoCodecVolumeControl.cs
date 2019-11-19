@@ -29,13 +29,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		/// <summary>
 		/// Absolute Minimum the raw volume can be
-		/// Used as a last resort for position caculation
+		/// Used as a last resort for position calculation
 		/// </summary>
 		protected override float VolumeRawMinAbsolute { get { return 0; } }
 
 		/// <summary>
 		/// Absolute Maximum the raw volume can be
-		/// Used as a last resport for position caculation
+		/// Used as a last resort for position calculation
 		/// </summary>
 		protected override float VolumeRawMaxAbsolute { get { return 100; } }
 
@@ -143,7 +143,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			m_Component.SetMute(mute);
 		}
-
 
 		#region console
 
