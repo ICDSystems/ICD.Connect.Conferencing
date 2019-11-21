@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+ - Implemented Zoom event for call-out failing to be placed
+
 ### Changed
  - Fixed a bug that was preventing ZoomRoom from properly interpreting all-day bookings
 

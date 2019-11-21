@@ -13,6 +13,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 	{
 		public event EventHandler<GenericEventArgs<TraditionalZoomPhoneCallInfo>> OnCallStatusChanged;
 		public event EventHandler<GenericEventArgs<TraditionalZoomPhoneCallInfo>> OnCallTerminated;
+		public event EventHandler<GenericEventArgs<PhoneCallTerminated>> OnCallFailed; 
 
 		private readonly IcdOrderedDictionary<string, TraditionalZoomPhoneCallInfo> m_CallInfos;
 		private readonly SafeCriticalSection m_CallInfosSection;
@@ -39,6 +40,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 		{
 			OnCallStatusChanged = null;
 			OnCallTerminated = null;
+			OnCallFailed = null;
 
 			base.DisposeFinal();
 
@@ -123,17 +125,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 
 		private void Subscribe(ZoomRoom parent)
 		{
-			Parent.RegisterResponseCallback<PhoneCallStatusResponse>(PhoneCallStatusResponseCallback);
-			Parent.RegisterResponseCallback<PhoneCallTerminatedResponse>(PhoneCallTerminatedResponse);
+			parent.RegisterResponseCallback<PhoneCallStatusResponse>(PhoneCallStatusResponseCallback);
+			parent.RegisterResponseCallback<PhoneCallTerminatedResponse>(PhoneCallTerminatedResponse);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
-			Parent.UnregisterResponseCallback<PhoneCallStatusResponse>(PhoneCallStatusResponseCallback);
-			Parent.UnregisterResponseCallback<PhoneCallTerminatedResponse>(PhoneCallTerminatedResponse);
+			parent.UnregisterResponseCallback<PhoneCallStatusResponse>(PhoneCallStatusResponseCallback);
+			parent.UnregisterResponseCallback<PhoneCallTerminatedResponse>(PhoneCallTerminatedResponse);
 		}
 
-		private void PhoneCallStatusResponseCallback(ZoomRoom zoomroom, PhoneCallStatusResponse response)
+		private void PhoneCallStatusResponseCallback(ZoomRoom zoomRoom, PhoneCallStatusResponse response)
 		{
 			var data = response.PhoneCallStatus;
 			if (data == null)
@@ -150,13 +152,24 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 			UpdateOrAddInfo(data);
 		}
 
-		private void PhoneCallTerminatedResponse(ZoomRoom zoomroom, PhoneCallTerminatedResponse response)
+		private void PhoneCallTerminatedResponse(ZoomRoom zoomRoom, PhoneCallTerminatedResponse response)
 		{
 			var data = response.PhoneCallTerminated;
 			if (data == null)
 				return;
 
 			RemoveInfo(data);
+
+			switch (data.Reason)
+			{
+				case eZoomPhoneCallTerminatedReason.ByLocal:
+				case eZoomPhoneCallTerminatedReason.ByRemote:
+					break;
+
+				default:
+					OnCallFailed.Raise(this, new GenericEventArgs<PhoneCallTerminated>(data));
+					break;
+			}
 		}
 
 		#endregion

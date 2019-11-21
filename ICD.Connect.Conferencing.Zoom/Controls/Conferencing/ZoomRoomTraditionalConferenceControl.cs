@@ -71,6 +71,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		{
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
+			OnCallOutFailed = null;
 
 			Unsubscribe(m_CallComponent);
 			Unsubscribe(m_TraditionalCallComponent);
