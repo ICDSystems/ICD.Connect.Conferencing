@@ -1,4 +1,5 @@
 ﻿using System;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Json;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
@@ -59,10 +60,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					instance.MeetingName = reader.GetValueAsString();
 					break;
 				case ATTR_START_TIME:
-					instance.StartTime = GetValueAsDateTimeOrDefault(reader);
+					instance.StartTime = GetValueAsDateTime(reader, IcdEnvironment.GetLocalTime().Date);
 					break;
 				case ATTR_END_TIME:
-					instance.EndTime = GetValueAsDateTimeOrDefault(reader);
+					instance.EndTime = GetValueAsDateTime(reader, IcdEnvironment.GetLocalTime().Date + TimeSpan.FromDays(1));
 					break;
 				case ATTR_CREATOR_NAME:
 					instance.OrganizerName = reader.GetValueAsString();
@@ -93,18 +94,19 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		}
 
 		/// <summary>
-		/// Sometimes Zoom reports events with no start or end time :/
+		/// Zoom reports all-day meetings by omitting the start and end times.
 		/// </summary>
 		/// <param name="reader"></param>
+		/// <param name="defaultValue"></param>
 		/// <returns></returns>
-		private DateTime GetValueAsDateTimeOrDefault(JsonReader reader)
+		private DateTime GetValueAsDateTime(JsonReader reader, DateTime defaultValue)
 		{
 			if (reader == null)
 				throw new ArgumentNullException("reader");
 
 			string value = reader.GetValueAsString();
 			if (string.IsNullOrEmpty(value))
-				return default(DateTime);
+				return defaultValue;
 
 			return reader.GetValueAsDateTime();
 		}
