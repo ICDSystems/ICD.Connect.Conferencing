@@ -95,7 +95,8 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// Sets the input address to use for the camera feed.
 		/// </summary>
 		/// <param name="address"></param>
-		public abstract void SetCameraInput(int address);
+		/// <param name="cameraDeviceId"></param>
+		public abstract void SetCameraInput(int address, int cameraDeviceId);
 
 		/// <summary>
 		/// Returns true if the device is actively transmitting on the given output.

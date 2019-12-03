@@ -43,7 +43,7 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 			if (instance == null)
 				throw new ArgumentNullException("instance");
 
-			yield return new GenericConsoleCommand<int>("SetCameraInput", "SetCameraInput <INPUT>", i => instance.SetCameraInput(i));
+			yield return new GenericConsoleCommand<int, int>("SetCameraInput", "SetCameraInput <INPUT> <CAMERA ID>", (a, b) => instance.SetCameraInput(a, b));
 		}
 	}
 }

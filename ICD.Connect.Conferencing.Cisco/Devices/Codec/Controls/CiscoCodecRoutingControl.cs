@@ -129,7 +129,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// Sets the input address to use for the camera feed.
 		/// </summary>
 		/// <param name="address"></param>
-		public override void SetCameraInput(int address)
+		/// <param name="cameraDeviceId"></param>
+		public override void SetCameraInput(int address, int cameraDeviceId)
 		{
 			Parent.Components.GetComponent<VideoComponent>().SetMainVideoSourceByConnectorId(address);
 		}

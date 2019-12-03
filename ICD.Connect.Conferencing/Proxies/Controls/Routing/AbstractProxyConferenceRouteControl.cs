@@ -115,7 +115,8 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 		/// Sets the input address to use for the camera feed.
 		/// </summary>
 		/// <param name="address"></param>
-		public void SetCameraInput(int address)
+		/// <param name="cameraDeviceId"></param>
+		public void SetCameraInput(int address, int cameraDeviceId)
 		{
 			CallMethod(VideoConferenceRouteDestinationControlApi.METHOD_SET_CAMERA_INPUT, address);
 		}

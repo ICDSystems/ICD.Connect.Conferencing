@@ -145,7 +145,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// Sets the input address to use for the camera feed.
 		/// </summary>
 		/// <param name="address"></param>
-		public override void SetCameraInput(int address)
+		/// <param name="cameraDeviceId"></param>
+		public override void SetCameraInput(int address, int cameraDeviceId)
 		{
 			m_CameraComponent.SetNearCameraAsVideoSource(address);
 		}

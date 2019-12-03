@@ -43,7 +43,8 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// Sets the input address to use for the camera feed.
 		/// </summary>
 		/// <param name="address"></param>
+		/// <param name="cameraDeviceId"></param>
 		[ApiMethod(VideoConferenceRouteDestinationControlApi.METHOD_SET_CAMERA_INPUT, VideoConferenceRouteDestinationControlApi.HELP_METHOD_SET_CAMERA_INPUT)]
-		void SetCameraInput(int address);
+		void SetCameraInput(int address, int cameraDeviceId);
 	}
 }
