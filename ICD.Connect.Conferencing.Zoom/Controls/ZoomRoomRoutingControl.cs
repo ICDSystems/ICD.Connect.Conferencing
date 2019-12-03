@@ -6,11 +6,14 @@ using ICD.Common.Utils.Services;
 using ICD.Connect.Conferencing.Controls.Routing;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
+using ICD.Connect.Devices.Windows;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
 using ICD.Connect.Routing.RoutingGraphs;
 using ICD.Connect.Routing.Utils;
+using ICD.Connect.Settings.Cores;
+using ICD.Connect.Settings.Originators;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
 {
@@ -20,7 +23,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 	/// <remarks>
 	/// Input address 1 is reserved for the officially supported HDMI->USB dongles. Input addresses 2+ are for USB camera inputs.
 	/// </remarks>
-	public class ZoomRoomRoutingControl : AbstractVideoConferenceRouteControl<ZoomRoom>
+	public sealed class ZoomRoomRoutingControl : AbstractVideoConferenceRouteControl<ZoomRoom>
 	{
 		public override event EventHandler<SourceDetectionStateChangeEventArgs> OnSourceDetectionStateChange;
 		public override event EventHandler<ActiveInputStateChangeEventArgs> OnActiveInputsChanged;
@@ -32,16 +35,31 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private readonly PresentationComponent m_PresentationComponent;
 
 		private IRoutingGraph m_CachedRoutingGraph;
+		private ICore m_CachedCore;
 
 		/// <summary>
 		/// Gets the routing graph.
 		/// </summary>
-		public IRoutingGraph RoutingGraph
+		private IRoutingGraph RoutingGraph
 		{
 			get { return m_CachedRoutingGraph = m_CachedRoutingGraph ?? ServiceProvider.GetService<IRoutingGraph>(); }
 		}
 
-		public ZoomRoomRoutingControl(ZoomRoom parent, int id) : base(parent, id)
+		/// <summary>
+		/// Gets the core.
+		/// </summary>
+		private ICore Core
+		{
+			get { return m_CachedCore = m_CachedCore ?? ServiceProvider.GetService<ICore>(); }
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		public ZoomRoomRoutingControl(ZoomRoom parent, int id)
+			: base(parent, id)
 		{
 			m_SwitcherCache = new SwitcherCache();
 			Subscribe(m_SwitcherCache);
@@ -83,12 +101,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
-			// Presentation input
-			//yield return new ConnectorInfo(1, eConnectionType.Video);
-
-			// Camera input
-			//yield return new ConnectorInfo(2, eConnectionType.Video);
-
 			return
 				RoutingGraph.Connections
 							.GetInputConnections(Parent.Id, Id)
@@ -137,8 +149,20 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="cameraDeviceId"></param>
 		public override void SetCameraInput(int address, int cameraDeviceId)
 		{
-			// TODO - We need to better handle camera addressing
-			//m_CameraComponent.SetNearCameraAsVideoSource(address);
+			IOriginator camera;
+			if (!Core.Originators.TryGetChild(cameraDeviceId, out camera))
+				return;
+
+			IWindowsDevice windowsCamera = camera as IWindowsDevice;
+			if (windowsCamera == null)
+				return;
+
+			string usbId =
+				m_CameraComponent.GetCameras()
+				                 .Select(c => c.UsbId)
+				                 .First(u => new WindowsDevicePathInfo(u) == windowsCamera.DevicePath);
+
+			m_CameraComponent.SetActiveCameraByUsbId(usbId);
 		}
 
 		/// <summary>
