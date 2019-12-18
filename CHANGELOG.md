@@ -5,8 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
- - Now supports codecs with up to 6 inputs
+ - Codec settings have properties for up to 6 inputs
+ - Cisco codec now supports MainVideo (camera) mute on the Video Component
 
 ## [11.8.0] - 2019-11-18
 ### Added
