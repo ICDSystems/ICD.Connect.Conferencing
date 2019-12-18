@@ -101,6 +101,8 @@ namespace ICD.Connect.Conferencing.Devices
 			SetInputType(2, settings.Input2CodecInputType);
 			SetInputType(3, settings.Input3CodecInputType);
 			SetInputType(4, settings.Input4CodecInputType);
+			SetInputType(5, settings.Input5CodecInputType);
+			SetInputType(6, settings.Input6CodecInputType);
 		}
 
 		/// <summary>
@@ -116,6 +118,8 @@ namespace ICD.Connect.Conferencing.Devices
 			settings.Input2CodecInputType = GetInputType(2);
 			settings.Input3CodecInputType = GetInputType(3);
 			settings.Input4CodecInputType = GetInputType(4);
+			settings.Input5CodecInputType = GetInputType(5);
+			settings.Input6CodecInputType = GetInputType(6);
 		}
 
 		#endregion

@@ -8,5 +8,7 @@ namespace ICD.Connect.Conferencing.Devices
 		eCodecInputType Input2CodecInputType { get; set; }
 		eCodecInputType Input3CodecInputType { get; set; }
 		eCodecInputType Input4CodecInputType { get; set; }
+		eCodecInputType Input5CodecInputType { get; set; }
+		eCodecInputType Input6CodecInputType { get; set; }
 	}
 }
