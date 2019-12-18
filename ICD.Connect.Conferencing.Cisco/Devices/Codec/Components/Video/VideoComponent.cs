@@ -76,6 +76,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public event EventHandler<VideoConnectionStateEventArgs> OnVideoInputConnectorConnectionStateChanged;
 
 		/// <summary>
+		/// Raised when the main video (camera) mute state changes.
+		/// </summary>
+		[PublicAPI]
+		public event EventHandler<BoolEventArgs> OnMainVideoMuteChanged;
+
+		/// <summary>
 		/// Called when the number of monitors changes.
 		/// </summary>
 		[PublicAPI]
@@ -88,10 +94,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		private ePipPosition m_ActiveSpeakerPosition;
 		private int m_MainVideoSource;
 		private eMonitors m_Monitors;
+		private bool m_MainVideoMute;
 
 		private readonly Dictionary<int, VideoSource> m_VideoSources;
 		private readonly Dictionary<int, VideoInputConnector> m_VideoInputConnectors;
 		private readonly Dictionary<int, VideoOutputConnector> m_VideoOutputConnectors;
+		
 
 		#region Properties
 
@@ -220,6 +228,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 				Codec.Log(eSeverity.Informational, "Near End Input {0} is Selected", m_MainVideoSource);
 
 				OnMainVideoSourceChanged.Raise(this, new IntEventArgs(m_MainVideoSource));
+			}
+		}
+
+		/// <summary>
+		/// Gets if the main video source is muted (camera mute)
+		/// </summary>
+		[PublicAPI]
+		public bool MainVideoMute
+		{
+			get { return m_MainVideoMute; }
+			private set
+			{
+				if (value == m_MainVideoMute)
+					return;
+
+				m_MainVideoMute = value;
+
+				Codec.Log(eSeverity.Informational, "Main video mute set to {0}", m_MainVideoMute);
+
+				OnMainVideoMuteChanged.Raise(this, new BoolEventArgs(m_MainVideoMute));
 			}
 		}
 
@@ -388,6 +416,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		}
 
 		/// <summary>
+		/// Sets the state of the main input (Camera) video mute.
+		/// </summary>
+		/// <param name="mute"></param>
+		[PublicAPI]
+		public void SetMainVideoMute(bool mute)
+		{
+			string state = mute ? "Mute" : "Unmute";
+			Codec.SendCommand("xCommand Video Input MainVideo {0}", state);
+			Codec.Log(eSeverity.Informational, "Setting Main Video Mute: {0}", state);
+		}
+
+		/// <summary>
 		/// Gets an array of video input connectors for the given connector type.
 		/// </summary>
 		/// <param name="type"></param>
@@ -528,6 +568,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 										 "Connector");
 			codec.RegisterParserCallback(ParseMainVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										 "MainVideoSource");
+			codec.RegisterParserCallback(ParseMainVideoMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "MainVideoMute");
 			codec.RegisterParserCallback(ParseMonitors, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Monitors");
 		}
 
@@ -558,6 +599,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 										   "Connector");
 			codec.UnregisterParserCallback(ParseMainVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										   "MainVideoSource");
+			codec.UnregisterParserCallback(ParseMainVideoMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "MainVideoMute");
 			codec.UnregisterParserCallback(ParseMonitors, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Monitors");
 		}
 
@@ -604,6 +646,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 				m_VideoSources[sourceId].UpdateFromXml(xml);
 			else
 				m_VideoSources[sourceId] = source;
+		}
+
+		private void ParseMainVideoMuteStatus(CiscoCodecDevice sender, string resultid, string xml)
+		{
+			MainVideoMute = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
 		private void ParseVideoInputConnectorStatus(CiscoCodecDevice sender, string resultId, string xml)
