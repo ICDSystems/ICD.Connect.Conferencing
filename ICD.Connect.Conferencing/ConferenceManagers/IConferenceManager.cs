@@ -81,14 +81,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
 
 		/// <summary>
-		/// Called when an incoming call is added by a conference control.
+		/// Raised when the recent incoming calls list is updated.
 		/// </summary>
-		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
-
-		/// <summary>
-		/// Called when an incoming call is removed by a conference control.
-		/// </summary>
-		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
+		event EventHandler<RecentIncomingCallListUpdatedEventArgs> OnRecentIncomingCallListUpdated;
 
 		#endregion
 
@@ -234,6 +229,26 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void ClearDialingProviders();
 
 		#endregion
+	}
+
+	public class RecentParticipantListUpdatedEventArgs : EventArgs
+	{
+		public IParticipant Participant { get; private set; }
+
+		public RecentParticipantListUpdatedEventArgs(IParticipant participant)
+		{
+			Participant = participant;
+		}
+	}
+
+	public class RecentIncomingCallListUpdatedEventArgs : EventArgs
+	{
+		public IIncomingCall IncomingCall { get; private set; }
+
+		public RecentIncomingCallListUpdatedEventArgs(IIncomingCall call)
+		{
+			IncomingCall = call;
+		}
 	}
 
 	/// <summary>
