@@ -20,22 +20,22 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// Source Answer State (Ignored, Answered, etc)
 		/// </summary>
-		eCallAnswerState AnswerState { get; }
+		eCallAnswerState AnswerState { get; set; }
 
 		/// <summary>
 		/// Source direction (Incoming, Outgoing, etc)
 		/// </summary>
-		eCallDirection Direction { get; }
+		eCallDirection Direction { get; set; }
 
 		/// <summary>
 		/// Gets the number of the incoming call
 		/// </summary>
-		string Number { get; }
+		string Number { get; set; }
 
 		/// <summary>
 		/// Optional name associated with the incoming call
 		/// </summary>
-		string Name { get; }
+		string Name { get; set; }
 
 		/// <summary>
 		/// Answers the incoming call.

@@ -28,7 +28,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private readonly SystemComponent m_SystemComponent;
 
 		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations;
-		private readonly BiDictionary<CallComponent, ThinIncomingCall> m_IncomingCalls;
+		private readonly BiDictionary<CallComponent, TraditionalIncomingCall> m_IncomingCalls;
 
 		private readonly SafeCriticalSection m_CriticalSection;
 
@@ -84,7 +84,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
 
 			m_SubscribedRegistrations = new IcdHashSet<SipRegistration>();
-			m_IncomingCalls = new BiDictionary<CallComponent, ThinIncomingCall>();
+			m_IncomingCalls = new BiDictionary<CallComponent, TraditionalIncomingCall>();
 			m_CriticalSection = new SafeCriticalSection();
 
 			Subscribe(m_DialingComponent);
@@ -265,7 +265,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void AddIncomingCall(CallComponent source)
 		{
-			ThinIncomingCall incoming;
+			TraditionalIncomingCall incoming;
 
 			m_CriticalSection.Enter();
 
@@ -274,7 +274,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				if (m_IncomingCalls.ContainsKey(source))
 					return;
 
-				incoming = new ThinIncomingCall();
+				incoming = new TraditionalIncomingCall(source.CallType);
 				m_IncomingCalls.Add(source, incoming);
 
 				Subscribe(source);
@@ -290,7 +290,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void RemoveIncomingCall(CallComponent source)
 		{
-			ThinIncomingCall incoming;
+			TraditionalIncomingCall incoming;
 
 			m_CriticalSection.Enter();
 
@@ -314,27 +314,35 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		#region Incoming Call Callbacks
 
-		private void Subscribe(ThinIncomingCall incomingCall)
+		private void Subscribe(TraditionalIncomingCall incomingCall)
 		{
 			incomingCall.AnswerCallback += AnswerCallback;
 			incomingCall.RejectCallback += RejectCallback;
 		}
 
-		private void Unsubscribe(ThinIncomingCall incomingCall)
+		private void Unsubscribe(TraditionalIncomingCall incomingCall)
 		{
 			incomingCall.AnswerCallback = null;
 			incomingCall.RejectCallback = null;
 		}
 
-		private void RejectCallback(ThinIncomingCall sender)
+		private void RejectCallback(IIncomingCall sender)
 		{
-			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(sender));
+			TraditionalIncomingCall castCall = sender as TraditionalIncomingCall;
+			if (castCall == null)
+				return;
+
+			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(castCall));
 			source.Reject();
 		}
 
-		private void AnswerCallback(ThinIncomingCall sender)
+		private void AnswerCallback(IIncomingCall sender)
 		{
-			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(sender));
+			TraditionalIncomingCall castCall = sender as TraditionalIncomingCall;
+			if (castCall == null)
+				return;
+
+			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(castCall));
 			source.Answer();
 		}
 
@@ -373,7 +381,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void UpdateIncomingCall(CallComponent source)
 		{
-			ThinIncomingCall incomingCall = m_CriticalSection.Execute(() => m_IncomingCalls.GetValue(source));
+			TraditionalIncomingCall incomingCall = m_CriticalSection.Execute(() => m_IncomingCalls.GetValue(source));
 
 			incomingCall.Name = source.Name;
 			incomingCall.Number = source.Number;
