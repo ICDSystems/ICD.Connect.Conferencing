@@ -187,6 +187,8 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		IRemoteCamera ITraditionalParticipant.Camera { get { return null; } }
 
+		public eCallAnswerState AnswerState { get; set; }
+
 		#endregion
 
 		/// <summary>

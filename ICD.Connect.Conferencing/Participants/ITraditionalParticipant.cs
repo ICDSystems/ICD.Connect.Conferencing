@@ -57,6 +57,12 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		IRemoteCamera Camera { get; }
 
+		/// <summary>
+		/// Returns the answer state for the participant.
+		/// Note, in order for a participant to exist, the call must be answered, so this value will be either answered or auto-answered always.
+		/// </summary>
+		eCallAnswerState AnswerState { get; }
+
 		#endregion
 
 		#region Methods
