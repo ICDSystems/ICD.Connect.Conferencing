@@ -254,13 +254,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (conferencePoint == null)
 				throw new ArgumentNullException("conferencePoint");
 
-			IDeviceBase device = ServiceProvider.GetService<ICore>()
-			                                    .Originators
-			                                    .GetChild<IDeviceBase>(conferencePoint.DeviceId);
+			if (conferencePoint.Control == null)
+				throw new ArgumentException("Conference point does not have a conference control");
 
-			IConferenceDeviceControl control = device.Controls.GetControl<IConferenceDeviceControl>(conferencePoint.ControlId);
-
-			extends.RegisterDialingProvider(control, conferencePoint.Type);
+			extends.RegisterDialingProvider(conferencePoint.Control, conferencePoint.Type);
 		}
 
 		/// <summary>
