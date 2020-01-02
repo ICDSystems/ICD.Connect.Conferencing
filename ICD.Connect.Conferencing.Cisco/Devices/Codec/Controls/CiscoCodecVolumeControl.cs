@@ -1,79 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Utils.Extensions;
-using ICD.Connect.API.Commands;
-using ICD.Connect.API.Nodes;
-using ICD.Connect.Audio.Console.Mute;
-using ICD.Connect.Audio.Controls.Mute;
 using ICD.Connect.Audio.Controls.Volume;
-using ICD.Connect.Audio.EventArguments;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Audio;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
-	public sealed class CiscoCodecVolumeControl : AbstractVolumeLevelDeviceControl<CiscoCodecDevice>, IVolumeMuteFeedbackDeviceControl
+	public sealed class CiscoCodecVolumeControl : AbstractVolumeDeviceControl<CiscoCodecDevice>
 	{
-		private const float INCREMENT_VALUE = 5;
+		private const int INCREMENT_VALUE = 5;
 
 		private readonly AudioComponent m_Component;
 
-		private bool m_VolumeIsMuted;
-
-		public event EventHandler<MuteDeviceMuteStateChangedApiEventArgs> OnMuteStateChanged;
+		#region Properties
 
 		/// <summary>
-		/// Gets the current volume, in the parent device's format
+		/// Returns the features that are supported by this volume control.
 		/// </summary>
-		public override float VolumeLevel { get { return m_Component.Volume; } }
+		public override eVolumeFeatures SupportedVolumeFeatures
+		{
+			get
+			{
+				return eVolumeFeatures.Mute |
+					   eVolumeFeatures.MuteAssignment |
+					   eVolumeFeatures.MuteFeedback |
+					   eVolumeFeatures.Volume |
+					   eVolumeFeatures.VolumeAssignment |
+					   eVolumeFeatures.VolumeFeedback;
+			}
+		}
 
 		/// <summary>
 		/// Absolute Minimum the raw volume can be
 		/// Used as a last resort for position calculation
 		/// </summary>
-		protected override float VolumeRawMinAbsolute { get { return 0; } }
+		public override float VolumeLevelMin { get { return 0; } }
 
 		/// <summary>
 		/// Absolute Maximum the raw volume can be
 		/// Used as a last resort for position calculation
 		/// </summary>
-		protected override float VolumeRawMaxAbsolute { get { return 100; } }
+		public override float VolumeLevelMax { get { return 100; } }
 
-		/// <summary>
-		/// Sets the raw volume. This will be clamped to the min/max and safety min/max.
-		/// </summary>
-		/// <param name="volume"></param>
-		public override void SetVolumeLevel(float volume)
-		{
-			m_Component.SetVolume((int)volume);
-		}
-
-		/// <summary>
-		/// Gets the muted state.
-		/// </summary>
-		public bool VolumeIsMuted
-		{
-			get { return m_VolumeIsMuted; }
-			private set
-			{
-				if (m_VolumeIsMuted == value)
-					return;
-
-				m_VolumeIsMuted = value;
-
-				OnMuteStateChanged.Raise(this, new MuteDeviceMuteStateChangedApiEventArgs(m_VolumeIsMuted));
-			}
-		}
+		#endregion
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="parent">Device this control belongs to</param>
 		/// <param name="id">Id of this control in the device</param>
-		public CiscoCodecVolumeControl(CiscoCodecDevice parent, int id) : base(parent, id)
+		public CiscoCodecVolumeControl(CiscoCodecDevice parent, int id)
+			: base(parent, id)
 		{
-			IncrementValue = INCREMENT_VALUE;
-			
 			m_Component = parent.Components.GetComponent<AudioComponent>();
 
 			Subscribe(m_Component);
@@ -91,6 +68,85 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			Unsubscribe(m_Component);
 		}
+
+		#region Methods
+
+		/// <summary>
+		/// Sets the mute state.
+		/// </summary>
+		/// <param name="mute"></param>
+		public override void SetIsMuted(bool mute)
+		{
+			m_Component.SetMute(mute);
+		}
+
+		/// <summary>
+		/// Toggles the current mute state.
+		/// </summary>
+		public override void ToggleIsMuted()
+		{
+			m_Component.MuteToggle();
+		}
+
+		/// <summary>
+		/// Sets the raw volume. This will be clamped to the min/max and safety min/max.
+		/// </summary>
+		/// <param name="level"></param>
+		public override void SetVolumeLevel(float level)
+		{
+			m_Component.SetVolume((int)level);
+		}
+
+		/// <summary>
+		/// Raises the volume one time
+		/// Amount of the change varies between implementations - typically "1" raw unit
+		/// </summary>
+		public override void VolumeIncrement()
+		{
+			m_Component.SetVolume(m_Component.Volume + INCREMENT_VALUE);
+		}
+
+		/// <summary>
+		/// Lowers the volume one time
+		/// Amount of the change varies between implementations - typically "1" raw unit
+		/// </summary>
+		public override void VolumeDecrement()
+		{
+			m_Component.SetVolume(m_Component.Volume - INCREMENT_VALUE);
+		}
+
+		/// <summary>
+		/// Starts ramping the volume, and continues until stop is called or the timeout is reached.
+		/// If already ramping the current timeout is updated to the new timeout duration.
+		/// </summary>
+		/// <param name="increment">Increments the volume if true, otherwise decrements.</param>
+		/// <param name="timeout"></param>
+		public override void VolumeRamp(bool increment, long timeout)
+		{
+			throw new NotSupportedException();
+		}
+
+		/// <summary>
+		/// Stops any current ramp up/down in progress.
+		/// </summary>
+		public override void VolumeRampStop()
+		{
+			throw new NotSupportedException();
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void UpdateVolume()
+		{
+			VolumeLevel = m_Component.Volume;
+			IsMuted = m_Component.Mute;
+		}
+
+		#endregion
+
+		#region Audio Component Callbacks
 
 		private void Subscribe(AudioComponent component)
 		{
@@ -112,67 +168,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void ComponentOnVolumeChanged(object sender, IntEventArgs args)
 		{
-			VolumeFeedback(args.Data);
+			UpdateVolume();
 		}
 
 		private void ComponentOnMuteChanged(object sender, BoolEventArgs args)
 		{
-			VolumeIsMuted = args.Data;
-		}
-
-		private void UpdateVolume()
-		{
-			VolumeFeedback(m_Component.Volume);
-
-			VolumeIsMuted = m_Component.Mute;
-		}
-
-		/// <summary>
-		/// Toggles the current mute state.
-		/// </summary>
-		public void VolumeMuteToggle()
-		{
-			m_Component.MuteToggle();
-		}
-
-		/// <summary>
-		/// Sets the mute state.
-		/// </summary>
-		/// <param name="mute"></param>
-		public void SetVolumeMute(bool mute)
-		{
-			m_Component.SetMute(mute);
-		}
-
-		#region console
-
-		/// <summary>
-		/// Calls the delegate for each console status item.
-		/// </summary>
-		/// <param name="addRow"></param>
-		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-			base.BuildConsoleStatus(addRow);
-
-			VolumeMuteFeedbackDeviceControlConsole.BuildConsoleStatus(this, addRow);
-		}
-
-		/// <summary>
-		/// Gets the child console commands.
-		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
-		{
-			foreach (IConsoleCommand command in GetBaseConsoleCommands())
-				yield return command;
-
-			foreach (IConsoleCommand command in VolumeMuteBasicDeviceControlConsole.GetConsoleCommands(this))
-				yield return command;
-		}
-
-		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
-		{
-			return base.GetConsoleCommands();
+			UpdateVolume();
 		}
 
 		#endregion
