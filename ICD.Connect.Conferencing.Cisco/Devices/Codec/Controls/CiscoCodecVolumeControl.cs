@@ -14,22 +14,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		#region Properties
 
 		/// <summary>
-		/// Returns the features that are supported by this volume control.
-		/// </summary>
-		public override eVolumeFeatures SupportedVolumeFeatures
-		{
-			get
-			{
-				return eVolumeFeatures.Mute |
-					   eVolumeFeatures.MuteAssignment |
-					   eVolumeFeatures.MuteFeedback |
-					   eVolumeFeatures.Volume |
-					   eVolumeFeatures.VolumeAssignment |
-					   eVolumeFeatures.VolumeFeedback;
-			}
-		}
-
-		/// <summary>
 		/// Absolute Minimum the raw volume can be
 		/// Used as a last resort for position calculation
 		/// </summary>
@@ -52,6 +36,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			: base(parent, id)
 		{
 			m_Component = parent.Components.GetComponent<AudioComponent>();
+
+			SupportedVolumeFeatures = eVolumeFeatures.Mute |
+			                          eVolumeFeatures.MuteAssignment |
+			                          eVolumeFeatures.MuteFeedback |
+			                          eVolumeFeatures.Volume |
+			                          eVolumeFeatures.VolumeAssignment |
+			                          eVolumeFeatures.VolumeFeedback;
 
 			Subscribe(m_Component);
 
