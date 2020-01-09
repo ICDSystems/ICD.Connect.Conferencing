@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
@@ -16,15 +17,13 @@ namespace ICD.Connect.Conferencing.Participants
 
 	public abstract class AbstractIncomingCall : IIncomingCall, IDisposable
 	{
+		public event EventHandler<StringEventArgs> OnNameChanged;
+		public event EventHandler<StringEventArgs> OnNumberChanged;
+		public event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
 		private string m_Name;
 		private string m_Number;
 		private eCallAnswerState m_AnswerState;
 		private eCallDirection m_Direction;
-
-		protected AbstractIncomingCall()
-		{
-			Direction = eCallDirection.Incoming;
-		}
 
 		public IncomingCallAnswerCallback AnswerCallback { get; set; }
 		public IncomingCallRejectCallback RejectCallback { get; set; }
@@ -99,6 +98,11 @@ namespace ICD.Connect.Conferencing.Participants
 
 				Log(eSeverity.Informational, "AnswerState set to {0}", m_AnswerState);
 
+				IcdConsole.PrintLine(eConsoleColor.Magenta, "Raising OnAnswerStateChanged {0}",
+					OnAnswerStateChanged == null ? 0 : 
+					OnAnswerStateChanged.GetInvocationList() == null ? 0:
+					OnAnswerStateChanged.GetInvocationList().Length);
+
 				OnAnswerStateChanged.Raise(this, new IncomingCallAnswerStateEventArgs(m_AnswerState));
 			}
 		}
@@ -113,9 +117,12 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		public string ConsoleHelp { get { return string.Empty; } }
 
-		public virtual event EventHandler<StringEventArgs> OnNameChanged;
-		public virtual event EventHandler<StringEventArgs> OnNumberChanged;
-		public virtual event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
+		protected AbstractIncomingCall()
+		{
+			IcdConsole.PrintLine(eConsoleColor.Magenta, GetType().Name);
+
+			Direction = eCallDirection.Incoming;
+		}
 
 		public void Dispose()
 		{
