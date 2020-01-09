@@ -13,8 +13,14 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
 
+		/// <summary>
+		/// Raised when the name changes.
+		/// </summary>
 		event EventHandler<StringEventArgs> OnNameChanged;
 
+		/// <summary>
+		/// Raised when the number changes.
+		/// </summary>
 		event EventHandler<StringEventArgs> OnNumberChanged;
 
 		/// <summary>
@@ -36,6 +42,16 @@ namespace ICD.Connect.Conferencing.Participants
 		/// Optional name associated with the incoming call
 		/// </summary>
 		string Name { get; set; }
+
+		/// <summary>
+		/// Gets the time that this incoming call started.
+		/// </summary>
+		DateTime StartTime { get; }
+
+		/// <summary>
+		/// Gets the time that this incoming call ended either by being answered, rejected or timeout.
+		/// </summary>
+		DateTime? EndTime { get; }
 
 		/// <summary>
 		/// Answers the incoming call.
@@ -115,6 +131,20 @@ namespace ICD.Connect.Conferencing.Participants
 					throw new ArgumentOutOfRangeException();
 			}
 			return true;
+		}
+
+		/// <summary>
+		/// Gets the end time for the incoming call.
+		/// If no end time, returns the start time.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static DateTime GetEndOrStartTime(this IIncomingCall extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			return extends.EndTime ?? extends.StartTime;
 		}
 	}
 }

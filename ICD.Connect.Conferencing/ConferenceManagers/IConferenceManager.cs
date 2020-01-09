@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Utils.Services;
+using ICD.Connect.Conferencing.ConferenceManagers.Recents;
 using ICD.Connect.Conferencing.ConferencePoints;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Contacts;
@@ -12,8 +12,6 @@ using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Favorites;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Connect.Devices;
-using ICD.Connect.Settings.Cores;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {
@@ -29,11 +27,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Raised when a new conference is instantiated and becomes active.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
-
-		/// <summary>
-		/// Raised when a participant is added to the current active conference.
-		/// </summary>
-		event EventHandler<ParticipantEventArgs> OnRecentParticipantAdded;
 
 		/// <summary>
 		/// Raised when the active conference changes.
@@ -81,9 +74,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
 
 		/// <summary>
-		/// Raised when the recent incoming calls list is updated.
+		/// Called when an incoming call is added by a conference control.
+ 		/// </summary>
+		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
+
+		/// <summary>
+		/// Called when an incoming call is removed by a conference control.
 		/// </summary>
-		event EventHandler<RecentIncomingCallListUpdatedEventArgs> OnRecentIncomingCallListUpdated;
+		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
+
+		/// <summary>
+		/// Raised when a recent call is added to or removed from the recent calls collection.
+		/// </summary>
+		event EventHandler OnRecentCallsChanged;
 
 		#endregion
 
@@ -173,11 +176,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void EnablePrivacyMute(bool state);
 
 		/// <summary>
-		/// Gets the recent participants in order of time.
+		/// Gets the recent calls in order of time.
 		/// </summary>
 		/// <returns></returns>
 		[NotNull]
-		IEnumerable<IParticipant> GetRecentParticipants();
+		IEnumerable<IRecentCall> GetRecentCalls();
 
 		/// <summary>
 		/// Gets the registered conference components.
@@ -229,26 +232,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		void ClearDialingProviders();
 
 		#endregion
-	}
-
-	public class RecentParticipantListUpdatedEventArgs : EventArgs
-	{
-		public IParticipant Participant { get; private set; }
-
-		public RecentParticipantListUpdatedEventArgs(IParticipant participant)
-		{
-			Participant = participant;
-		}
-	}
-
-	public class RecentIncomingCallListUpdatedEventArgs : EventArgs
-	{
-		public IIncomingCall IncomingCall { get; private set; }
-
-		public RecentIncomingCallListUpdatedEventArgs(IIncomingCall call)
-		{
-			IncomingCall = call;
-		}
 	}
 
 	/// <summary>

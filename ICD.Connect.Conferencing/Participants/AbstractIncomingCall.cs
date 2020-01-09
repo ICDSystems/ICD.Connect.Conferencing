@@ -20,6 +20,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public event EventHandler<StringEventArgs> OnNameChanged;
 		public event EventHandler<StringEventArgs> OnNumberChanged;
 		public event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
+
 		private string m_Name;
 		private string m_Number;
 		private eCallAnswerState m_AnswerState;
@@ -46,6 +47,16 @@ namespace ICD.Connect.Conferencing.Participants
 				OnNameChanged.Raise(this, new StringEventArgs(m_Name));
 			}
 		}
+
+		/// <summary>
+		/// Gets the time that this incoming call started.
+		/// </summary>
+		public DateTime StartTime { get; private set; }
+
+		/// <summary>
+		/// Gets the time that this incoming call ended either by being answered, rejected or timeout.
+		/// </summary>
+		public DateTime? EndTime { get; private set; }
 
 		/// <summary>
 		/// Gets the source number.
@@ -98,10 +109,8 @@ namespace ICD.Connect.Conferencing.Participants
 
 				Log(eSeverity.Informational, "AnswerState set to {0}", m_AnswerState);
 
-				IcdConsole.PrintLine(eConsoleColor.Magenta, "Raising OnAnswerStateChanged {0}",
-					OnAnswerStateChanged == null ? 0 : 
-					OnAnswerStateChanged.GetInvocationList() == null ? 0:
-					OnAnswerStateChanged.GetInvocationList().Length);
+				if (m_AnswerState != eCallAnswerState.Unanswered && m_AnswerState != eCallAnswerState.Unknown)
+					EndTime = IcdEnvironment.GetLocalTime();
 
 				OnAnswerStateChanged.Raise(this, new IncomingCallAnswerStateEventArgs(m_AnswerState));
 			}
@@ -117,11 +126,13 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		public string ConsoleHelp { get { return string.Empty; } }
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		protected AbstractIncomingCall()
 		{
-			IcdConsole.PrintLine(eConsoleColor.Magenta, GetType().Name);
-
 			Direction = eCallDirection.Incoming;
+			StartTime = IcdEnvironment.GetLocalTime();
 		}
 
 		public void Dispose()

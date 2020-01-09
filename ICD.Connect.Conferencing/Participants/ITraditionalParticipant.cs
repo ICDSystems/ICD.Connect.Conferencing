@@ -1,5 +1,4 @@
 ﻿using System;
-using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Cameras;
 
@@ -17,10 +16,29 @@ namespace ICD.Connect.Conferencing.Participants
 	/// </summary>
 	public enum eCallAnswerState
 	{
-		[UsedImplicitly] Unknown = 0,
-		[UsedImplicitly] Unanswered = 1,
+		/// <summary>
+		/// No known state 
+		/// </summary>
+		Unknown = 0,
+
+		/// <summary>
+		/// No decision has been made.
+		/// </summary>
+		Unanswered = 1,
+
+		/// <summary>
+		/// Actively rejected or timed out.
+		/// </summary>
 		Ignored = 2,
+
+		/// <summary>
+		/// Automatically answered by the software.
+		/// </summary>
 		Autoanswered = 3,
+
+		/// <summary>
+		/// Actively answered by the user.
+		/// </summary>
 		Answered = 4
 	}
 

@@ -8,6 +8,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.Conferencing.ConferenceManagers.Recents;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
@@ -35,22 +36,21 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler OnConferenceParticipantAddedOrRemoved;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
-		public event EventHandler<RecentIncomingCallListUpdatedEventArgs> OnRecentIncomingCallListUpdated;
+		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
+		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
+		public event EventHandler OnRecentCallsChanged;
 
-		public event EventHandler<ParticipantEventArgs> OnRecentParticipantAdded;
 		public event EventHandler<ParticipantStatusEventArgs> OnActiveParticipantStatusChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 		public event EventHandler<InCallEventArgs> OnInCallChanged;
 
 		private readonly IcdHashSet<IConference> m_Conferences;
-		private readonly List<IParticipant> m_RecentParticipants;
-		private readonly List<IIncomingCall> m_RecentIncomingCalls;
+		private readonly List<IRecentCall> m_RecentCalls;
 		private readonly Dictionary<IConferenceDeviceControl, eCallType> m_DialingProviders; 
 		private readonly IcdHashSet<IConferenceDeviceControl> m_FeedbackProviders;
 
 		private readonly SafeCriticalSection m_ConferencesSection;
-		private readonly SafeCriticalSection m_RecentParticipantsSection;
-		private readonly SafeCriticalSection m_IncomingCallsSection;
+		private readonly SafeCriticalSection m_RecentCallsSection;
 		private readonly SafeCriticalSection m_DialingProviderSection;
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
 
@@ -153,15 +153,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_IsAuthoritative = true;
 
 			m_Conferences = new IcdHashSet<IConference>();
-			m_RecentParticipants = new List<IParticipant>();
-			m_RecentIncomingCalls = new List<IIncomingCall>();
-
+			m_RecentCalls = new List<IRecentCall>();
 			m_DialingProviders = new Dictionary<IConferenceDeviceControl, eCallType>();
 			m_FeedbackProviders = new IcdHashSet<IConferenceDeviceControl>();
 
 			m_ConferencesSection = new SafeCriticalSection();
-			m_RecentParticipantsSection = new SafeCriticalSection();
-			m_IncomingCallsSection = new SafeCriticalSection();
+			m_RecentCallsSection = new SafeCriticalSection();
 			m_DialingProviderSection = new SafeCriticalSection();
 			m_FeedbackProviderSection = new SafeCriticalSection();
 
@@ -182,8 +179,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnConferenceParticipantAddedOrRemoved = null;
 			OnProviderAdded = null;
 			OnProviderRemoved = null;
-			OnRecentIncomingCallListUpdated = null;
-			OnRecentParticipantAdded = null;
+			OnIncomingCallAdded = null;
+			OnIncomingCallRemoved = null;
+			OnRecentCallsChanged = null;
 			OnActiveParticipantStatusChanged = null;
 			OnPrivacyMuteStatusChange = null;
 			OnInCallChanged = null;
@@ -257,12 +255,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Gets the recent participants in order of time.
+		/// Gets the recent calls in order of time.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IParticipant> GetRecentParticipants()
+		public IEnumerable<IRecentCall> GetRecentCalls()
 		{
-			return m_RecentParticipantsSection.Execute(() => m_RecentParticipants.ToArray());
+			return m_RecentCallsSection.Execute(() => m_RecentCalls.ToArray());
 		}
 
 		/// <summary>
@@ -497,7 +495,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				Subscribe(conference);
 
 				foreach (IParticipant participant in conference.GetParticipants())
-					AddRecentParticipant(participant);
+					AddRecentCall(participant);
 			}
 			finally
 			{
@@ -551,102 +549,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			UpdateIsInCall();
 
 			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(conference));
-		}
-
-		private void AddRecentParticipant([NotNull] IParticipant participant)
-		{
-			if (participant == null)
-				throw new ArgumentNullException("participant");
-
-			m_RecentParticipantsSection.Enter();
-			try
-			{
-				if (m_RecentParticipants.Contains(participant))
-					return;
-
-				m_RecentParticipants.Add(participant);
-
-				if (m_RecentParticipants.Count > RECENT_LENGTH)
-					RemoveRecentParticipant(m_RecentParticipants.First());
-
-				Subscribe(participant);
-			}
-			finally
-			{
-				m_RecentParticipantsSection.Leave();
-			}
-			
-			OnRecentParticipantAdded.Raise(this, new ParticipantEventArgs(participant));
-		}
-
-		private void RemoveRecentParticipant([NotNull] IParticipant participant)
-		{
-			if (participant == null)
-				throw new ArgumentNullException("participant");
-
-			m_RecentParticipantsSection.Enter();
-			try
-			{
-				if (!m_RecentParticipants.Contains(participant))
-					return;
-
-				m_RecentParticipants.Remove(participant);
-
-				Unsubscribe(participant);
-			}
-			finally
-			{
-				m_RecentParticipantsSection.Leave();
-			}
-		}
-
-		private void AddIncomingCall([NotNull] IIncomingCall call)
-		{
-			if(call == null)
-				throw new ArgumentNullException("call");
-
-			m_IncomingCallsSection.Enter();
-			try
-			{
-				if (m_RecentIncomingCalls.Contains(call))
-					return;
-
-				m_RecentIncomingCalls.Add(call);
-
-				if(m_RecentIncomingCalls.Count > RECENT_LENGTH)
-					RemoveIncomingCall(m_RecentIncomingCalls.First());
-
-				Subscribe(call);
-			}
-			finally
-			{
-				m_IncomingCallsSection.Leave();
-			}
-
-			OnRecentIncomingCallListUpdated.Raise(this, new RecentIncomingCallListUpdatedEventArgs(call));
-		}
-
-		private void RemoveIncomingCall([NotNull] IIncomingCall call)
-		{
-			if (call == null)
-				throw new ArgumentNullException("call");
-
-			m_IncomingCallsSection.Enter();
-			try
-			{
-				if (!m_RecentIncomingCalls.Contains(call))
-					return;
-
-				m_RecentIncomingCalls.Remove(call);
-
-				Unsubscribe(call);
-			}
-			finally
-			{
-				m_IncomingCallsSection.Leave();
-			}
-
-			OnRecentIncomingCallListUpdated.Raise(this, new RecentIncomingCallListUpdatedEventArgs(call));
 		}
 
 		/// <summary>
@@ -712,6 +614,70 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				IsInCall = eInCall.None;
 			else
 				IsInCall = (eInCall)OnlineConferences.Max(c => (int)c.CallType);
+		}
+
+		#endregion
+
+		#region Recent Calls
+
+		private void AddRecentCall([NotNull] IParticipant participant)
+		{
+			if (participant == null)
+				throw new ArgumentNullException("participant");
+			
+			AddRecentCall(new RecentParticipant(participant));
+		}
+
+		private void AddRecentCall([NotNull] IIncomingCall incomingCall)
+		{
+			if (incomingCall == null)
+				throw new ArgumentNullException("incomingCall");
+
+			AddRecentCall(new RecentIncomingCall(incomingCall));
+		}
+
+		private void AddRecentCall([NotNull] IRecentCall recentCall)
+		{
+			if (recentCall == null)
+				throw new ArgumentNullException("recentCall");
+
+			m_RecentCallsSection.Enter();
+
+			try
+			{
+				m_RecentCalls.Add(recentCall);
+
+				while (m_RecentCalls.Count > RECENT_LENGTH)
+					m_RecentCalls.RemoveAt(0);
+			}
+			finally
+			{
+				m_RecentCallsSection.Leave();
+			}
+
+			OnRecentCallsChanged.Raise(this);
+		}
+
+		private void RemoveRecentCall(IIncomingCall incomingCall)
+		{
+			m_RecentCallsSection.Enter();
+
+			try
+			{
+				int count = m_RecentCalls.RemoveAll(r =>
+				                                    {
+					                                    RecentIncomingCall recentIncoming = r as RecentIncomingCall;
+					                                    return recentIncoming != null && recentIncoming.IncomingCall == incomingCall;
+				                                    });
+				if (count == 0)
+					return;
+			}
+			finally
+			{
+				m_RecentCallsSection.Leave();
+			}
+
+			OnRecentCallsChanged.Raise(this);
 		}
 
 		#endregion
@@ -786,8 +752,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private void ConferenceControlOnIncomingCallAdded(object sender, GenericEventArgs<IIncomingCall> eventArgs)
 		{
 			IConferenceDeviceControl control = sender as IConferenceDeviceControl;
+			IIncomingCall incomingCall = eventArgs.Data;
 
-			AddIncomingCall(eventArgs.Data);
+			Subscribe(incomingCall);
+			AddRecentCall(incomingCall);
+
+			OnIncomingCallAdded.Raise(this, new ConferenceControlIncomingCallEventArgs(control, incomingCall));
 		}
 
 		/// <summary>
@@ -798,6 +768,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private void ConferenceControlOnIncomingCallRemoved(object sender, GenericEventArgs<IIncomingCall> eventArgs)
 		{
 			IConferenceDeviceControl control = sender as IConferenceDeviceControl;
+			IIncomingCall incomingCall = eventArgs.Data;
+
+			Unsubscribe(incomingCall);
+
+			OnIncomingCallAdded.Raise(this, new ConferenceControlIncomingCallEventArgs(control, incomingCall));
 		}
 
 		/// <summary>
@@ -886,7 +861,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="args"></param>
 		private void ConferenceOnParticipantAdded(object sender, ParticipantEventArgs args)
 		{
-			AddRecentParticipant(args.Data);
+			AddRecentCall(args.Data);
 
 			Subscribe(args.Data);
 			UpdateIsInCall();
@@ -962,8 +937,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		private void CallOnAnswerStateChanged(object sender, IncomingCallAnswerStateEventArgs args)
 		{
-			if(args.Data == eCallAnswerState.Answered || args.Data == eCallAnswerState.Autoanswered)
-				RemoveIncomingCall((IIncomingCall)sender);
+			if (args.Data == eCallAnswerState.Answered || args.Data == eCallAnswerState.Autoanswered)
+				RemoveRecentCall((IIncomingCall)sender);
 		}
 
 		#endregion
