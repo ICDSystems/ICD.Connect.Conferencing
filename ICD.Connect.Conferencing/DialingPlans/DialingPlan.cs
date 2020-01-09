@@ -93,7 +93,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// </summary>
 		/// <param name="number"></param>
 		/// <returns></returns>
-		public eCallType GetSourceType(string number)
+		public eCallType GetCallType(string number)
 		{
 			if (string.IsNullOrEmpty(number))
 				return eCallType.Unknown;
@@ -118,13 +118,13 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// </summary>
 		/// <param name="contact"></param>
 		/// <returns></returns>
-		public eCallType GetSourceType(IContact contact)
+		public eCallType GetCallType(IContact contact)
 		{
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
 			IDialContext dialContext = GetDialContext(contact);
-			return dialContext == null ? eCallType.Unknown : GetSourceType(dialContext);
+			return dialContext == null ? eCallType.Unknown : GetCallType(dialContext);
 		}
 
 		/// <summary>
@@ -132,7 +132,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 		/// </summary>
 		/// <param name="dialContext"></param>
 		/// <returns></returns>
-		public eCallType GetSourceType(IDialContext dialContext)
+		public eCallType GetCallType(IDialContext dialContext)
 		{
 			if (dialContext == null)
 				throw new ArgumentNullException("dialContext");
