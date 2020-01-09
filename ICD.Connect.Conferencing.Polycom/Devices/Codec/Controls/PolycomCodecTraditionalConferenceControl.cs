@@ -599,14 +599,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			call.RejectCallback = null;
 		}
 
-		private void RejectCallback(ThinIncomingCall sender)
+		private void RejectCallback(IIncomingCall sender)
 		{
-			int id = GetIdForIncomingCall(sender);
+			int id = GetIdForIncomingCall(sender as ThinIncomingCall);
 
 			m_DialComponent.HangupVideo(id);
 		}
 
-		private void AnswerCallback(ThinIncomingCall sender)
+		private void AnswerCallback(IIncomingCall sender)
 		{
 			m_DialComponent.AnswerVideo();
 		}

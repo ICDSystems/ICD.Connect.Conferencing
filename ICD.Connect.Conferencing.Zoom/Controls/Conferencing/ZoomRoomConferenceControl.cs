@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private readonly CallComponent m_CallComponent;
 		private readonly ZoomWebConference m_Conference;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
-		private readonly Dictionary<ThinIncomingCall, SafeTimer> m_IncomingCalls;
+		private readonly Dictionary<IIncomingCall, SafeTimer> m_IncomingCalls;
 		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
 		private readonly SafeCriticalSection m_InviteSection;
 
@@ -91,7 +91,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			: base(parent, id)
 		{
 			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
-			m_IncomingCalls = new Dictionary<ThinIncomingCall, SafeTimer>();
+			m_IncomingCalls = new Dictionary<IIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
 			m_InviteOnMeetingStart = new IcdHashSet<string>();
 			m_InviteSection = new SafeCriticalSection();
@@ -328,7 +328,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			};
 		}
 
-		private ThinIncomingCallAnswerCallback IncomingCallAnswerCallback(IncomingCall call)
+		private IncomingCallAnswerCallback IncomingCallAnswerCallback(IncomingCall call)
 		{
 			return source =>
 			       {
@@ -338,7 +338,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			       };
 		}
 
-		private ThinIncomingCallRejectCallback IncomingCallRejectCallback(IncomingCall call)
+		private IncomingCallRejectCallback IncomingCallRejectCallback(IncomingCall call)
 		{
 			return source =>
 			       {
@@ -348,7 +348,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			       };
 		}
 
-		private void AddIncomingCall(ThinIncomingCall incomingCall)
+		private void AddIncomingCall(IIncomingCall incomingCall)
 		{
 			SafeTimer timer = new SafeTimer(incomingCall.Reject, 1000 * 60, -1);
 			m_IncomingCallsSection.Execute(() => m_IncomingCalls.Add(incomingCall, timer));
@@ -356,7 +356,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(incomingCall));
 		}
 
-		private void RemoveIncomingCall(ThinIncomingCall incomingCall)
+		private void RemoveIncomingCall(IIncomingCall incomingCall)
 		{
 			m_IncomingCallsSection.Enter();
 
