@@ -53,7 +53,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.Recents
 			}
 		}
 
-		public override eCallType CallType { get; }
+		public override eCallType CallType { get { return m_Participant.CallType; } }
 
 		public IParticipant Participant { get { return m_Participant; } }
 
