@@ -86,7 +86,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Raised when a recent call is added to or removed from the recent calls collection.
 		/// </summary>
-		event EventHandler OnRecentCallsChanged;
+		event EventHandler<RecentCallEventArgs> OnRecentCallsChanged;
 
 		#endregion
 

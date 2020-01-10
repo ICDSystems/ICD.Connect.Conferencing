@@ -108,6 +108,7 @@
     <Compile Include="EventArguments\ConferenceControlIncomingCallEventArgs.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
     <Compile Include="EventArguments\PresentationActiveApiEventArgs.cs" />
+    <Compile Include="EventArguments\RecentCallEventArgs.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Participants\AbstractIncomingCall.cs" />
     <Compile Include="Participants\AbstractWebParticipant.cs" />

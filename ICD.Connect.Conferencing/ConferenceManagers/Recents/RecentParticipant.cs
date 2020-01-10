@@ -1,4 +1,5 @@
 ﻿using System;
+using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers.Recents
@@ -33,6 +34,26 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.Recents
 				return m_Participant.Start ?? default(DateTime);
 			}
 		}
+
+		public override eCallDirection Direction
+		{
+			get
+			{
+				ITraditionalParticipant traditional = m_Participant as ITraditionalParticipant;
+				return traditional != null ? traditional.Direction : eCallDirection.Undefined;
+			}
+		}
+
+		public override eCallAnswerState AnswerState
+		{
+			get
+			{
+				ITraditionalParticipant traditional = m_Participant as ITraditionalParticipant;
+				return traditional != null ? traditional.AnswerState : eCallAnswerState.Unknown;
+			}
+		}
+
+		public override eCallType CallType { get; }
 
 		public IParticipant Participant { get { return m_Participant; } }
 

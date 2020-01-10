@@ -38,7 +38,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
 		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
 		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
-		public event EventHandler OnRecentCallsChanged;
+		public event EventHandler<RecentCallEventArgs> OnRecentCallsChanged;
 
 		public event EventHandler<ParticipantStatusEventArgs> OnActiveParticipantStatusChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
@@ -641,6 +641,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (recentCall == null)
 				throw new ArgumentNullException("recentCall");
 
+			List<IRecentCall> removed = new List<IRecentCall>();
+
 			m_RecentCallsSection.Enter();
 
 			try
@@ -648,36 +650,47 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_RecentCalls.Add(recentCall);
 
 				while (m_RecentCalls.Count > RECENT_LENGTH)
+				{
+					removed.Add(m_RecentCalls[0]);
 					m_RecentCalls.RemoveAt(0);
+				}
 			}
 			finally
 			{
 				m_RecentCallsSection.Leave();
 			}
 
-			OnRecentCallsChanged.Raise(this);
+			foreach (IRecentCall remove in removed)
+				OnRecentCallsChanged.Raise(this, new RecentCallEventArgs(remove, false));
+
+			OnRecentCallsChanged.Raise(this, new RecentCallEventArgs(recentCall, true));
 		}
 
 		private void RemoveRecentCall(IIncomingCall incomingCall)
 		{
+			List<IRecentCall> removed = new List<IRecentCall>();
+
 			m_RecentCallsSection.Enter();
 
 			try
 			{
-				int count = m_RecentCalls.RemoveAll(r =>
-				                                    {
-					                                    RecentIncomingCall recentIncoming = r as RecentIncomingCall;
-					                                    return recentIncoming != null && recentIncoming.IncomingCall == incomingCall;
-				                                    });
-				if (count == 0)
-					return;
+				for (int index = m_RecentCalls.Count - 1; index <= 0; index--)
+				{
+					RecentIncomingCall recentIncoming = m_RecentCalls[index] as RecentIncomingCall;
+					if (recentIncoming == null || recentIncoming.IncomingCall != incomingCall)
+						continue;
+
+					m_RecentCalls.RemoveAt(index);
+					removed.Insert(0, recentIncoming);
+				}
 			}
 			finally
 			{
 				m_RecentCallsSection.Leave();
 			}
 
-			OnRecentCallsChanged.Raise(this);
+			foreach (IRecentCall remove in removed)
+				OnRecentCallsChanged.Raise(this, new RecentCallEventArgs(remove, false));
 		}
 
 		#endregion
