@@ -135,8 +135,6 @@ namespace ICD.Connect.Conferencing.Zoom
 			Components.GetComponent<SystemComponent>();
 			// Create new Audio component
 			Components.GetComponent<AudioComponent>();
-			// Create new Volume component
-			Components.GetComponent<VolumeComponent>();
 
 			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
@@ -145,6 +143,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			Controls.Add(new ZoomRoomTraditionalConferenceControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomCalendarControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomLayoutControl(this, Controls.Count));
+			Controls.Add(new ZoomRoomVolumeControl(this, Controls.Count));
 		}
 
 		/// <summary>

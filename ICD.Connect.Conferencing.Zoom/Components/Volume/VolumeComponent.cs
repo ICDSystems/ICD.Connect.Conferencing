@@ -104,6 +104,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 		/// <param name="volume"></param>
 		public void SetAudioInputVolume(int volume)
 		{
+			if (volume < 0 || volume > 100)
+			{
+				Parent.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
+				return;
+			}
+
 			Parent.Log(eSeverity.Informational, "Setting Audio Input Volume to: {0}", volume);
 			Parent.SendCommand("zConfiguration Audio Input volume: {0}", volume);
 		}
@@ -114,6 +120,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 		/// <param name="volume"></param>
 		public void SetAudioOutputVolume(int volume)
 		{
+			if (volume < 0 || volume > 100)
+			{
+				Parent.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
+				return;
+			}
+
 			Parent.Log(eSeverity.Informational, "Setting Audio Output Volume to: {0}", volume);
 			Parent.SendCommand("zConfiguration Audio Output volume: {0}", volume);
 		}
