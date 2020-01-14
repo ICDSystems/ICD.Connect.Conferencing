@@ -11,14 +11,17 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	public sealed class AudioConfigurationResponse : AbstractZoomRoomResponse
 	{
 		[CanBeNull]
-		public AudioInputConfiguration AudioInputConfiguration { get; set; }
+		public AudioConfiguration AudioConfiguration { get; set; }
 	}
 
-	[JsonConverter(typeof(AudioInputConfigurationConverter))]
-	public sealed class AudioInputConfiguration
+	[JsonConverter(typeof(AudioConfigurationConverter))]
+	public sealed class AudioConfiguration
 	{
 		[CanBeNull]
 		public InputConfiguration InputConfiguration { get; set; }
+
+		[CanBeNull]
+		public OutputConfiguration OutputConfiguration { get; set; }
 	}
 
 	[JsonConverter(typeof(InputConfigurationConverter))]
@@ -27,5 +30,13 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public bool? IsSapDisabled { get; set; }
 
 		public bool? ReduceReverb { get; set; }
+
+		public int? Volume { get; set; }
+	}
+
+	[JsonConverter(typeof(OutputConfigurationConverter))]
+	public sealed class OutputConfiguration
+	{
+		public int? Volume { get; set; }
 	}
 }

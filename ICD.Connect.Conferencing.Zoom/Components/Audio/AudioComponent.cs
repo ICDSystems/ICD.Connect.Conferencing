@@ -129,7 +129,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 		private void AudioConfigurationResponseCallback(ZoomRoom zoomroom, AudioConfigurationResponse response)
 		{
-			var topData = response.AudioInputConfiguration;
+			var topData = response.AudioConfiguration;
 			if (topData == null)
 				return;
 

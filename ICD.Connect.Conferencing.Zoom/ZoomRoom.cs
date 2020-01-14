@@ -22,6 +22,7 @@ using System.Linq;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Components.Audio;
+using ICD.Connect.Conferencing.Zoom.Components.Volume;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
@@ -134,6 +135,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			Components.GetComponent<SystemComponent>();
 			// Create new Audio component
 			Components.GetComponent<AudioComponent>();
+			// Create new Volume component
+			Components.GetComponent<VolumeComponent>();
 
 			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
 			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));

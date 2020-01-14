@@ -13,6 +13,7 @@ using ICD.Connect.Conferencing.Zoom.Components.Layout;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.Conferencing.Zoom.Components.TraditionalCall;
+using ICD.Connect.Conferencing.Zoom.Components.Volume;
 
 namespace ICD.Connect.Conferencing.Zoom.Components
 {
@@ -32,7 +33,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components
 				{typeof(CallComponent), zoomRoom => new CallComponent(zoomRoom)},
 				{typeof(LayoutComponent), zoomRoom => new LayoutComponent(zoomRoom)},
 				{typeof(AudioComponent), zoomRoom => new AudioComponent(zoomRoom)},
-				{typeof(TraditionalCallComponent), zoomRoom => new TraditionalCallComponent(zoomRoom)}
+				{typeof(TraditionalCallComponent), zoomRoom => new TraditionalCallComponent(zoomRoom)},
+				{typeof(VolumeComponent), zoomRoom => new VolumeComponent(zoomRoom)}
 			};
 
 		private readonly ZoomRoom m_ZoomRoom;
