@@ -8,7 +8,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 	public sealed class ZoomRoomVolumeControl : AbstractVolumeDeviceControl<ZoomRoom>
 
 	{
-		private const int INCREMENT_VALUE = 5;
+		private const int INCREMENT_VALUE = 1;
 
 		private readonly VolumeComponent m_VolumeComponent;
 
