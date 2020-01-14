@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
  - Zoom will attempt to set the active USB camera when a camera is routed
+ - Zoom volume component and control for output devices
 
 ### Changed
  - Cameras are passed to IVideoConferenceRouteControl when setting active camera
