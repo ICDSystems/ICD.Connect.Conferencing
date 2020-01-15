@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Camera
@@ -71,6 +72,26 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 			Parent.SendCommand("zConfiguration Video Camera selectedId: {0}", usbId);
 		}
 
+		public void SetCameraControlSpeed(string cameraId,
+		                                  int speed)
+		{
+			if (speed < 1 || speed > 100)
+			{
+				Parent.Log(eSeverity.Warning, "Camera Control speed must be between 1 and 100. Speed: {0}", speed);
+				return;
+			}
+
+			Parent.Log(eSeverity.Informational, "Setting camera with id {0} control speed to: {1}", cameraId, speed);
+			Parent.SendCommand("zCommand Call CameraControl Id: {0} Speed: {1}", cameraId, speed);
+		}
+
+		public void ControlCamera(string cameraId, eCameraControlState state, eCameraControlAction action)
+		{
+			Parent.Log(eSeverity.Informational, "Sending camera with id {0} control commands: State: {1} Action: {2}",
+			           cameraId, state, action);
+			Parent.SendCommand("zCommand Call CameraControl Id: {0} State: {1} Action: {2}", cameraId, state, action);
+		}
+
 		#endregion
 
 		#region Parent Callbacks
@@ -114,5 +135,36 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		}
 
 		#endregion
+
+		public override string ConsoleHelp { get { return "Zoom Room Camera"; } }
+
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+			{
+				yield return command;
+			}
+
+			yield return new
+				GenericConsoleCommand<string, int>("SetCameraControlSpeed",
+				                                   "<string [camera id]> <int [control speed]>",
+				                                   (id,
+				                                    speed) =>
+					                                   SetCameraControlSpeed(id,
+					                                                         speed));
+
+			yield return new
+				GenericConsoleCommand<string, eCameraControlState, eCameraControlAction>("ControlCamera",
+				                                                                         "<string [camera id]> <CameraControlState [Start|Continue|Stop|RequestRemote|GiveupRemote|RequestedByFarEnd]> <CameraControlAction [Left|Right|Up|Down|In|Out]>",
+				                                                                         (id, state, action) =>
+					                                                                         ControlCamera(id,
+					                                                                                       state,
+					                                                                                       action));
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
+		}
 	}
 }
