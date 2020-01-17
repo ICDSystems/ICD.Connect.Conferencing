@@ -87,8 +87,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 
 		public void ControlCamera(string cameraId, eCameraControlState state, eCameraControlAction action)
 		{
-			Parent.Log(eSeverity.Informational, "Sending camera with id {0} control commands: State: {1} Action: {2}",
-			           cameraId, state, action);
+			// Continues create a lot of log noise so we don't log them.
+			if (state != eCameraControlState.Continue)
+				Parent.Log(eSeverity.Informational,
+				           "Sending camera with id {0} control commands: State: {1} Action: {2}",
+				           cameraId, state, action);
 			Parent.SendCommand("zCommand Call CameraControl Id: {0} State: {1} Action: {2}", cameraId, state, action);
 		}
 

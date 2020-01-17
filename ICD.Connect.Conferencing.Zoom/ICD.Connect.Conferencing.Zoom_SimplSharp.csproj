@@ -74,6 +74,8 @@
     <Compile Include="Components\Audio\AudioComponent.cs" />
     <Compile Include="Components\Bookings\Booking.cs" />
     <Compile Include="Components\AbstractZoomRoomComponent.cs" />
+    <Compile Include="Components\Camera\eCameraControlAction.cs" />
+    <Compile Include="Components\Camera\eCameraControlState.cs" />
     <Compile Include="Components\Volume\VolumeComponent.cs" />
     <Compile Include="Controls\Conferencing\ZoomWebConference.cs" />
     <Compile Include="Controls\Conferencing\ZoomWebParticipant.cs" />
@@ -96,6 +98,7 @@
     <Compile Include="Controls\Calendar\ZoomBooking.cs" />
     <Compile Include="Controls\Calendar\ZoomRoomCalendarControl.cs" />
     <Compile Include="Controls\Conferencing\ZoomRoomConferenceControl.cs" />
+    <Compile Include="Controls\ZoomRoomCameraControl.cs" />
     <Compile Include="Controls\ZoomRoomDirectoryControl.cs" />
     <Compile Include="Controls\ZoomRoomLayoutControl.cs" />
     <Compile Include="Controls\ZoomRoomPresentationControl.cs" />
@@ -202,6 +205,10 @@
     <ProjectReference Include="..\..\ICD.Connect.Calendaring\ICD.Connect.Calendaring\ICD.Connect.Calendaring_SimplSharp.csproj">
       <Project>{3C084F11-8810-4B87-970C-F97E2905ACEB}</Project>
       <Name>ICD.Connect.Calendaring_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_SimplSharp.csproj">
+      <Project>{B13D593D-8BBF-4E20-ABD8-47C6095E7D3E}</Project>
+      <Name>ICD.Connect.Cameras_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Devices\ICD.Connect.Devices\ICD.Connect.Devices_SimplSharp.csproj">
       <Project>{FD46A717-5836-4B73-ADD0-2706639DA8ED}</Project>
