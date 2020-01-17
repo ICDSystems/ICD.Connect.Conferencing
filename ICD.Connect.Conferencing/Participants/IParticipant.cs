@@ -2,6 +2,7 @@ using System;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
@@ -35,6 +36,11 @@ namespace ICD.Connect.Conferencing.Participants
 		/// Gets the participant's source type.
 		/// </summary>
 		eCallType CallType { get; }
+
+		/// <summary>
+		/// Gets the remote camera.
+		/// </summary>
+		IRemoteCamera Camera { get; }
 
 		/// <summary>
 		/// Gets the participant's status (Idle, Dialing, Ringing, etc)

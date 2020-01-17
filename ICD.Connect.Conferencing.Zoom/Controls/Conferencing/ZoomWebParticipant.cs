@@ -5,6 +5,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
@@ -41,6 +42,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		}
 
 		public bool IsRecording { get; private set; }
+
+		public override IRemoteCamera Camera
+		{
+			get { return null; }
+		}
 
 		/// <summary>
 		/// Constructor.

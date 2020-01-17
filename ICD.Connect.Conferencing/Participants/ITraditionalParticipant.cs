@@ -71,11 +71,6 @@ namespace ICD.Connect.Conferencing.Participants
 		DateTime DialTime { get; }
 
 		/// <summary>
-		/// Gets the remote camera.
-		/// </summary>
-		IRemoteCamera Camera { get; }
-
-		/// <summary>
 		/// Returns the answer state for the participant.
 		/// Note, in order for a participant to exist, the call must be answered, so this value will be either answered or auto-answered always.
 		/// </summary>

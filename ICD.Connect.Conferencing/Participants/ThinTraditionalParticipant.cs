@@ -81,6 +81,8 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
+		public IRemoteCamera Camera { get; set; }
+
 		/// <summary>
 		/// Call Status (Idle, Dialing, Ringing, etc)
 		/// </summary>
@@ -181,11 +183,6 @@ namespace ICD.Connect.Conferencing.Participants
 				Log(eSeverity.Informational, "CallType set to {0}", m_SourceType);
 			}
 		}
-
-		/// <summary>
-		/// Gets the remote camera.
-		/// </summary>
-		IRemoteCamera ITraditionalParticipant.Camera { get { return null; } }
 
 		public eCallAnswerState AnswerState { get; set; }
 

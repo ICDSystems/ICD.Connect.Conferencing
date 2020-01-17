@@ -7,6 +7,7 @@ using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
@@ -80,6 +81,8 @@ namespace ICD.Connect.Conferencing.Participants
 				OnParticipantTypeChanged.Raise(this, new ParticipantTypeEventArgs(m_SourceType));
 			}
 		}
+
+		public abstract IRemoteCamera Camera { get; }
 
 		public eParticipantStatus Status
 		{

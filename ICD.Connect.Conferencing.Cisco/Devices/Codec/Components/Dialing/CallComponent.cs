@@ -278,7 +278,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			}
 		}
 
-		IRemoteCamera ITraditionalParticipant.Camera { get { return Camera; } }
+		IRemoteCamera IParticipant.Camera { get { return Camera; } }
 
 		#endregion
 
