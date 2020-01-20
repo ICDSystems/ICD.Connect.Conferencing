@@ -112,7 +112,7 @@ namespace ICD.Connect.Conferencing.Participants.EventHelpers
 			Callback(sender as T);
 		}
 
-		private void ParticipantOnParticipantTypeChanged(object sender, ParticipantTypeEventArgs participantTypeEventArgs)
+		private void ParticipantOnParticipantTypeChanged(object sender, CallTypeEventArgs callTypeEventArgs)
 		{
 			Callback(sender as T);
 		}

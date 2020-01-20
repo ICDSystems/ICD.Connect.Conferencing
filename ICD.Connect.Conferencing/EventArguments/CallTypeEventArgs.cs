@@ -11,13 +11,13 @@ namespace ICD.Connect.Conferencing.EventArguments
 		Video = 2
 	}
 
-	public sealed class ParticipantTypeEventArgs : GenericEventArgs<eCallType>
+	public sealed class CallTypeEventArgs : GenericEventArgs<eCallType>
 	{
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="data"></param>
-		public ParticipantTypeEventArgs(eCallType data)
+		public CallTypeEventArgs(eCallType data)
 			: base(data)
 		{
 		}
