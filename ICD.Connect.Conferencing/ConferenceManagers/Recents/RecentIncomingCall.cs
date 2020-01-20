@@ -1,5 +1,6 @@
 ﻿using System;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers.Recents

@@ -3,8 +3,9 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 
-namespace ICD.Connect.Conferencing.Participants
+namespace ICD.Connect.Conferencing.IncomingCalls
 {
 	public interface IIncomingCall : IConsoleNode
 	{
