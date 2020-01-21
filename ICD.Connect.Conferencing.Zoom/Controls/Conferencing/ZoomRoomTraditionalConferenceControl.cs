@@ -204,8 +204,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				if (!m_CallIdToParticipant.TryGetValue(info.CallId, out value))
 					return;
 
-				value.End = value.End ?? IcdEnvironment.GetLocalTime();
-				value.Status = eParticipantStatus.Disconnected;
+				value.SetEnd(value.End ?? IcdEnvironment.GetLocalTime());
+				value.SetStatus(eParticipantStatus.Disconnected);
 
 				Unsubscribe(value);
 
@@ -232,14 +232,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			if (value == null)
 				return;
 
-			value.Number = info.PeerNumber;
-			value.Name = info.PeerDisplayName;
-			value.Direction = info.IsIncomingCall ? eCallDirection.Incoming : eCallDirection.Outgoing;
-			value.Status = GetStatus(info.Status);
-			value.CallType = Supports;
+			value.SetNumber(info.PeerNumber);
+			value.SetName(info.PeerDisplayName);
+			value.SetDirection(info.IsIncomingCall ? eCallDirection.Incoming : eCallDirection.Outgoing);
+			value.SetStatus(GetStatus(info.Status));
+			value.SetCallType(Supports);
 
 			if (value.GetIsOnline())
-				value.Start = value.Start ?? IcdEnvironment.GetLocalTime();
+				value.SetStart(value.Start ?? IcdEnvironment.GetLocalTime());
 		}
 
 		/// <summary>

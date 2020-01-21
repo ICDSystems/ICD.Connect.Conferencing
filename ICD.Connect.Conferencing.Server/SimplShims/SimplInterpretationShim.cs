@@ -238,7 +238,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				if (m_Source == null)
 					return;
 
-				m_Source.Status = value.ToBool() ? eParticipantStatus.OnHold : eParticipantStatus.Connected;
+				m_Source.SetStatus(value.ToBool() ? eParticipantStatus.OnHold : eParticipantStatus.Connected);
 
 				OnHoldChanged.Raise(this, new SPlusUShortEventArgs(value));
 			}
@@ -265,25 +265,25 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			{
 				if (m_Source != null)
 				{
-					m_Source.Name = name;
-					m_Source.Number = number;
-					m_Source.Direction = (eCallDirection)direction;
-					m_Source.Status = (eParticipantStatus)status;
-					m_Source.CallType = eCallType.Audio;
+					m_Source.SetName(name);
+					m_Source.SetNumber(number);
+					m_Source.SetDirection((eCallDirection)direction);
+					m_Source.SetStatus((eParticipantStatus)status);
+					m_Source.SetCallType(eCallType.Audio);
 				}
 				else
 				{
 					Originator.RemoveShimSource(m_Source);
 					Unsubscribe(m_Source);
-					m_Source = new ThinTraditionalParticipant
-					{
-						Name = name,
-						Number = number,
-						Direction = (eCallDirection)direction,
-						Status = (eParticipantStatus)status,
-						Start = IcdEnvironment.GetLocalTime(),
-						CallType = eCallType.Audio
-					};
+					m_Source = new ThinTraditionalParticipant();
+
+					m_Source.SetName(name);
+					m_Source.SetNumber(number);
+					m_Source.SetDirection((eCallDirection)direction);
+					m_Source.SetStatus((eParticipantStatus)status);
+					m_Source.SetStart(IcdEnvironment.GetLocalTime());
+					m_Source.SetCallType(eCallType.Audio);
+
 					Subscribe(m_Source);
 
 					Originator.AddShimSource(m_Source);
@@ -305,7 +305,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			{
 				m_CallName = name;
 				if (m_Source != null)
-					m_Source.Name = m_CallName;
+					m_Source.SetName(m_CallName);
 			}
 			finally
 			{
@@ -323,7 +323,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			{
 				m_CallNumber = number;
 				if (m_Source != null)
-					m_Source.Number = m_CallNumber;
+					m_Source.SetNumber(m_CallNumber);
 			}
 			finally
 			{
@@ -356,7 +356,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			{
 				m_CallDirection = (eCallDirection)callDirection;
 				if (m_Source != null)
-					m_Source.Direction = m_CallDirection;
+					m_Source.SetDirection(m_CallDirection);
 			}
 			finally
 			{
@@ -372,21 +372,21 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			{
 				m_CallStatus = (eParticipantStatus)status;
 				if (m_Source != null)
-					m_Source.Status = m_CallStatus;
+					m_Source.SetStatus(m_CallStatus);
 				else
 				{
 					// Create a new source if null
 					Originator.RemoveShimSource(m_Source);
 					Unsubscribe(m_Source);
-					m_Source = new ThinTraditionalParticipant
-					{
-						Name = m_CallName,
-						Number = m_CallNumber,
-						Direction = m_CallDirection,
-						Status = m_CallStatus,
-						Start = IcdEnvironment.GetLocalTime(),
-						CallType = eCallType.Audio
-					};
+					m_Source = new ThinTraditionalParticipant();
+
+					m_Source.SetName(m_CallName);
+					m_Source.SetNumber(m_CallNumber);
+					m_Source.SetDirection((eCallDirection)m_CallDirection);
+					m_Source.SetStatus((eParticipantStatus)m_CallStatus);
+					m_Source.SetStart(IcdEnvironment.GetLocalTime());
+					m_Source.SetCallType(eCallType.Audio);
+
 					Subscribe(m_Source);
 
 					Originator.AddShimSource(m_Source);

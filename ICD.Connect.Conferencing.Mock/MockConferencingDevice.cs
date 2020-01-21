@@ -70,7 +70,7 @@ namespace ICD.Connect.Conferencing.Mock
 				addRow("Source", source.Name);
 				addRow("Number", source.Number);
 				addRow("DialTime", source.DialTime);
-				addRow("Status",source.Status);
+				addRow("Status", source.Status);
 				addRow("-----", "-----");
 			}
 		}
@@ -105,8 +105,10 @@ namespace ICD.Connect.Conferencing.Mock
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<bool>("SetOnline", "Sets the online state of this device", val => m_Online = val);
-			yield return new ConsoleCommand("MockIncomingCall", "Generates a mock incoming call", () => MockIncomingCall());
+			yield return new GenericConsoleCommand<bool>("SetOnline", "Sets the online state of this device",
+			                                             val => m_Online = val);
+			yield return new ConsoleCommand("MockIncomingCall", "Generates a mock incoming call",
+			                                () => MockIncomingCall());
 		}
 
 		/// <summary>
@@ -140,21 +142,22 @@ namespace ICD.Connect.Conferencing.Mock
 
 		private void Dial(string number, eCallType type)
 		{
-			ITraditionalParticipant source =
+			ThinTraditionalParticipant participant =
 				new ThinTraditionalParticipant
 				{
-					DialTime = DateTime.Now,
-					Direction = eCallDirection.Outgoing,
-					Number = number,
-					Name = "Mock Call To: " + number,
-					Status = eParticipantStatus.Connected,
-					CallType = type,
 					HangupCallback = HangupCallback
 				};
 
-			m_Sources.Add(source);
+			participant.SetDialTime(DateTime.Now);
+			participant.SetDirection(eCallDirection.Outgoing);
+			participant.SetNumber(number);
+			participant.SetName("Mock Call To: " + number);
+			participant.SetStatus(eParticipantStatus.Connected);
+			participant.SetCallType(type);
 
-			OnParticipantAdded.Raise(this, new GenericEventArgs<ITraditionalParticipant>(source));
+			m_Sources.Add(participant);
+
+			OnParticipantAdded.Raise(this, new GenericEventArgs<ITraditionalParticipant>(participant));
 		}
 
 		private void HangupCallback(ThinTraditionalParticipant sender)

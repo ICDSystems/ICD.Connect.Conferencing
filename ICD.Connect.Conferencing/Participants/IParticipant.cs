@@ -10,7 +10,7 @@ namespace ICD.Connect.Conferencing.Participants
 	/// <summary>
 	/// A participant represents a conference participant
 	/// </summary>
-	public interface IParticipant : IConsoleNode
+	public interface IParticipant : IConsoleNode, IDisposable
 	{
 		/// <summary>
 		/// Raised when the participant's status changes.
@@ -20,7 +20,7 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// Raised when the participant source type changes.
 		/// </summary>
-		event EventHandler<ParticipantTypeEventArgs> OnParticipantTypeChanged;
+		event EventHandler<CallTypeEventArgs> OnParticipantTypeChanged;
 
 		/// <summary>
 		/// Raised when the participant's name changes.

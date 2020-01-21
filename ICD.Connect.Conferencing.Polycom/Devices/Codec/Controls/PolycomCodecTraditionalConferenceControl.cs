@@ -301,7 +301,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				if (!m_Participants.TryGetValue(id, out source))
 					return;
 
-				source.Status = eParticipantStatus.Disconnected;
+				source.SetStatus(eParticipantStatus.Disconnected);
 
 				Unsubscribe(source);
 
@@ -369,23 +369,23 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			// Prevents overriding a resolved name with a number when the call disconnects
 			if (callStatus.FarSiteName != callStatus.FarSiteNumber)
-				source.Name = callStatus.FarSiteName;
+				source.SetName(callStatus.FarSiteName);
 
-			source.Number = callStatus.FarSiteNumber;
+			source.SetNumber(callStatus.FarSiteNumber);
 
 			bool? outgoing = callStatus.Outgoing;
 			if (outgoing == null)
-				source.Direction = eCallDirection.Undefined;
+				source.SetDirection(eCallDirection.Undefined);
 			else
-				source.Direction = (bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming;
+				source.SetDirection((bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming);
 
-			source.Status = GetStatus(callStatus.ConnectionState);
-			source.CallType = callStatus.VideoCall ? eCallType.Video : eCallType.Audio;
+			source.SetStatus(GetStatus(callStatus.ConnectionState));
+			source.SetCallType(callStatus.VideoCall ? eCallType.Video : eCallType.Audio);
 
 			if (source.GetIsOnline())
-				source.Start = source.Start ?? IcdEnvironment.GetLocalTime();
+				source.SetStart(source.Start ?? IcdEnvironment.GetLocalTime());
 			else if (source.Start != null)
-				source.End = source.End ?? IcdEnvironment.GetLocalTime();
+				source.SetEnd(source.End ?? IcdEnvironment.GetLocalTime());
 		}
 
 		/// <summary>

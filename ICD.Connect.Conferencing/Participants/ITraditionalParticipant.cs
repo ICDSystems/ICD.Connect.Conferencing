@@ -1,6 +1,5 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
-using ICD.Connect.Conferencing.Cameras;
 
 namespace ICD.Connect.Conferencing.Participants
 {
