@@ -23,6 +23,7 @@ using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Components.Audio;
 using ICD.Connect.Conferencing.Zoom.Components.Volume;
+using ICD.Connect.Conferencing.Zoom.Controls.Camera;
 
 namespace ICD.Connect.Conferencing.Zoom
 {

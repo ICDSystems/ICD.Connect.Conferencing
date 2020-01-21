@@ -9,6 +9,8 @@ using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
+using ICD.Connect.Conferencing.Zoom.Components.Camera;
+using ICD.Connect.Conferencing.Zoom.Controls.Camera;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
@@ -18,11 +20,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <summary>
 		/// Raised when the participant can record state changes.
 		/// </summary>
-		public event EventHandler<BoolEventArgs> OnCanRecordChanged; 
+		public event EventHandler<BoolEventArgs> OnCanRecordChanged;
 
 		private readonly CallComponent m_CallComponent;
 
 		private bool m_CanRecord;
+
+		private FarEndZoomCamera m_FarEndCamera;
 
 		public string UserId { get; private set; }
 		public string AvatarUrl { get; private set; }
@@ -45,7 +49,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override IRemoteCamera Camera
 		{
-			get { return null; }
+			get
+			{
+				string user = IsSelf ? "0" : UserId;
+				CameraComponent cameraComponent = m_CallComponent.Parent.Components.GetComponent<CameraComponent>();
+
+				return m_FarEndCamera ?? (m_FarEndCamera = new FarEndZoomCamera(cameraComponent, user));
+			}
 		}
 
 		/// <summary>
