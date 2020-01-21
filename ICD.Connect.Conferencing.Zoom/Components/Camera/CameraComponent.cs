@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -14,6 +15,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 	{
 		public event EventHandler OnCamerasUpdated;
 		public event EventHandler OnActiveCameraUpdated;
+
+		public event EventHandler<CameraControlNotificationEventArgs> OnCameraControlNotification;
+		// We don't get a notification when we give up control so it is tracked in a different event.
+		public event EventHandler<StringEventArgs> OnZoomRoomGaveUpFarEndControl;
 
 		private readonly IcdOrderedDictionary<string, CameraInfo> m_Cameras;
 
@@ -47,6 +52,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		{
 			OnCamerasUpdated = null;
 			OnActiveCameraUpdated = null;
+			OnCameraControlNotification = null;
+			OnZoomRoomGaveUpFarEndControl = null;
 
 			base.DisposeFinal();
 
@@ -93,6 +100,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 				           "Sending camera with id {0} control commands: State: {1} Action: {2}",
 				           cameraId, state, action);
 			Parent.SendCommand("zCommand Call CameraControl Id: {0} State: {1} Action: {2}", cameraId, state, action);
+
+			if (state == eCameraControlState.GiveUpRemote)
+				OnZoomRoomGaveUpFarEndControl.Raise(this, new StringEventArgs(cameraId));
 		}
 
 		#endregion
@@ -103,12 +113,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		{
 			parent.RegisterResponseCallback<VideoCameraLineResponse>(CameraListCallback);
 			parent.RegisterResponseCallback<VideoConfigurationResponse>(SelectedCameraCallback);
+			parent.RegisterResponseCallback<CameraControlNotificationResponse>(CameraControlNotificationCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			parent.UnregisterResponseCallback<VideoCameraLineResponse>(CameraListCallback);
 			parent.UnregisterResponseCallback<VideoConfigurationResponse>(SelectedCameraCallback);
+			parent.UnregisterResponseCallback<CameraControlNotificationResponse>(CameraControlNotificationCallback);
 		}
 
 		private void CameraListCallback(ZoomRoom zoomroom, VideoCameraLineResponse response)
@@ -137,16 +149,25 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 			OnActiveCameraUpdated.Raise(this);
 		}
 
+		private void CameraControlNotificationCallback(ZoomRoom zoomroom, CameraControlNotificationResponse response)
+		{
+			var notification = response.CameraControlNotification;
+			if (notification == null)
+				return;
+
+			OnCameraControlNotification.Raise(this, new CameraControlNotificationEventArgs(notification));
+		}
+
 		#endregion
+
+		#region Console
 
 		public override string ConsoleHelp { get { return "Zoom Room Camera"; } }
 
 		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
-			{
 				yield return command;
-			}
 
 			yield return new
 				GenericConsoleCommand<string, int>("SetCameraControlSpeed",
@@ -169,5 +190,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		{
 			return base.GetConsoleCommands();
 		}
+
+		#endregion
 	}
 }
