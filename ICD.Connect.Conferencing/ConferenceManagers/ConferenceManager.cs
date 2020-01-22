@@ -674,7 +674,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			try
 			{
-				for (int index = m_RecentCalls.Count - 1; index <= 0; index--)
+				for (int index = m_RecentCalls.Count - 1; index >= 0; index--)
 				{
 					RecentIncomingCall recentIncoming = m_RecentCalls[index] as RecentIncomingCall;
 					if (recentIncoming == null || recentIncoming.IncomingCall != incomingCall)
