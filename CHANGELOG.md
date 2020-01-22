@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Cameras are passed to IVideoConferenceRouteControl when setting active camera
  - ConferencePoints wrap a conference control
  - Reworked Cisco volume control to fit new volume interfaces
+ - Fixed IndexOutOfBoundsException in ConferenceManager.RemoveRecentCall(IIncomingCall)
 
 ## [14.1.0] - 2019-12-03
 ### Added
