@@ -77,7 +77,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		[PublicAPI("S+")]
 		public SPlusDialerShimAnswerCallback AnswerCallCallback { get; set; }
 
-		[PublicAPI("S+")] 
+		[PublicAPI("S+")]
 		public SPlusDialerShimSetHoldCallback HoldCallCallback { get; set; }
 
 		[PublicAPI("S+")]
@@ -243,7 +243,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				OnHoldChanged.Raise(this, new SPlusUShortEventArgs(value));
 			}
 		}
-		
+
 		#endregion
 
 		#region Constructor
@@ -379,14 +379,12 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					Originator.RemoveShimSource(m_Source);
 					Unsubscribe(m_Source);
 					m_Source = new ThinTraditionalParticipant();
-
 					m_Source.SetName(m_CallName);
 					m_Source.SetNumber(m_CallNumber);
-					m_Source.SetDirection((eCallDirection)m_CallDirection);
-					m_Source.SetStatus((eParticipantStatus)m_CallStatus);
+					m_Source.SetDirection(m_CallDirection);
+					m_Source.SetStatus(m_CallStatus);
 					m_Source.SetStart(IcdEnvironment.GetLocalTime());
 					m_Source.SetCallType(eCallType.Audio);
-
 					Subscribe(m_Source);
 
 					Originator.AddShimSource(m_Source);
@@ -443,7 +441,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			ClearCallInfo();
 		}
 
-		#endregion       
+		#endregion
 
 		#region Originator Callbacks
 

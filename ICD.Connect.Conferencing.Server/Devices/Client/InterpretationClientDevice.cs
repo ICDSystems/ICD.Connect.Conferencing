@@ -29,7 +29,7 @@ using ICD.Connect.Settings;
 namespace ICD.Connect.Conferencing.Server.Devices.Client
 {
 	public sealed class InterpretationClientDevice : AbstractDevice<InterpretationClientDeviceSettings>,
-	                                                 IClientInterpretationDevice
+													 IClientInterpretationDevice
 	{
 		#region Events
 
@@ -175,7 +175,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			Controls.Add(new DialerDeviceDialerControl(this, 0));
 
-			m_ConnectionStateManager = new ConnectionStateManager(this) {ConfigurePort = ConfigurePort};
+			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectedStateChanged;
 		}

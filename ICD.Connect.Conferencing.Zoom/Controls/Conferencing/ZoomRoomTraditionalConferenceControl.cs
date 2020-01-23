@@ -104,8 +104,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		public override void Dial(IDialContext dialContext)
 		{
 			if (string.IsNullOrEmpty(dialContext.DialString) ||
-			    dialContext.DialString.Contains('*') ||
-			    dialContext.DialString.Contains('#'))
+				dialContext.DialString.Contains('*') ||
+				dialContext.DialString.Contains('#'))
 				throw new ArgumentOutOfRangeException("dialContext", "Invalid Dial String");
 
 			if (CanDial(dialContext) == eDialContextSupport.Unsupported)

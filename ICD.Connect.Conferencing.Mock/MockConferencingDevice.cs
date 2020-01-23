@@ -105,10 +105,8 @@ namespace ICD.Connect.Conferencing.Mock
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<bool>("SetOnline", "Sets the online state of this device",
-			                                             val => m_Online = val);
-			yield return new ConsoleCommand("MockIncomingCall", "Generates a mock incoming call",
-			                                () => MockIncomingCall());
+			yield return new GenericConsoleCommand<bool>("SetOnline", "Sets the online state of this device", val => m_Online = val);
+			yield return new ConsoleCommand("MockIncomingCall", "Generates a mock incoming call", () => MockIncomingCall());
 		}
 
 		/// <summary>

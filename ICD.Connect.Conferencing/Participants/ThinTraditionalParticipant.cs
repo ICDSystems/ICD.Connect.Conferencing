@@ -22,6 +22,8 @@ namespace ICD.Connect.Conferencing.Participants
 		public ThinParticipantSendDtmfCallback SendDtmfCallback { get; set; }
 		public ThinParticipantHangupCallback HangupCallback { get; set; }
 
+		public override IRemoteCamera Camera { get { return null; } }
+
 		#endregion
 
 		/// <summary>
@@ -32,8 +34,9 @@ namespace ICD.Connect.Conferencing.Participants
 			DialTime = IcdEnvironment.GetLocalTime();
 		}
 
-		public override IRemoteCamera Camera { get { return null; } }
-
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		protected override void DisposeFinal()
 		{
 			HoldCallback = null;
@@ -89,7 +92,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 		#endregion
 
-		#region Methods
+		#region Property Setters
 
 		public void SetName(string callerName)
 		{

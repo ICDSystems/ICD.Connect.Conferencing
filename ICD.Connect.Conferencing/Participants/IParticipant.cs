@@ -72,9 +72,9 @@ namespace ICD.Connect.Conferencing.Participants
 			if (extends.Start == null)
 				return new TimeSpan();
 
-			DateTime end = (extends.End != null) ? (DateTime) extends.End : IcdEnvironment.GetLocalTime();
+			DateTime end = (extends.End != null) ? (DateTime)extends.End : IcdEnvironment.GetLocalTime();
 
-			return end - (DateTime) extends.Start;
+			return end - (DateTime)extends.Start;
 		}
 
 		/// <summary>

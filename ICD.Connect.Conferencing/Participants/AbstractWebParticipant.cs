@@ -57,9 +57,9 @@ namespace ICD.Connect.Conferencing.Participants
 				OnIsHostChanged.Raise(this, new BoolEventArgs(m_IsHost));
 			}
 		}
-		
+
 		public bool IsSelf
-		{ 
+		{
 			get { return m_IsSelf; }
 			protected set
 			{
@@ -67,9 +67,9 @@ namespace ICD.Connect.Conferencing.Participants
 					return;
 
 				m_IsSelf = value;
-				
+
 				Log(eSeverity.Informational, "IsSelf set to {0}", m_IsSelf);
-			} 
+			}
 		}
 
 		#endregion

@@ -182,8 +182,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				yield return command;
 
 			yield return new GenericConsoleCommand<bool>("AllowRecord",
-			                                             "Allows a participant to record <true/false>",
-			                                             b => AllowParticipantRecord(b));
+														 "Allows a participant to record <true/false>",
+														 b => AllowParticipantRecord(b));
 		}
 
 		#endregion
