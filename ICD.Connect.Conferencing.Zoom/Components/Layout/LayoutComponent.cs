@@ -36,15 +36,21 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 		/// <summary>
 		/// Raised when selfview becomes enabled or disabled.
 		/// </summary>
-		public event EventHandler<BoolEventArgs> OnSelfViewEnabledChanged; 
+		public event EventHandler<BoolEventArgs> OnSelfViewEnabledChanged;
+
+		/// <summary>
+		/// Raised when the availability of any layout features changes.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<ZoomLayoutAvailability>> OnCallLayoutAvailabilityChanged;
 
 		#endregion
-		
+
 		private bool m_ShareThumb;
 		private eZoomLayoutStyle m_LayoutStyle;
 		private eZoomLayoutSize m_LayoutSize;
 		private eZoomLayoutPosition m_LayoutPosition;
 		private bool m_SelfViewEnabled;
+		private ZoomLayoutAvailability m_LayoutAvailability;
 
 		#region Properties
 
@@ -144,6 +150,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			}
 		}
 
+		public ZoomLayoutAvailability LayoutAvailability
+		{
+			get { return m_LayoutAvailability; }
+			private set
+			{
+				if (value == m_LayoutAvailability)
+					return;
+
+				m_LayoutAvailability = value;
+
+				OnCallLayoutAvailabilityChanged.Raise(this, new GenericEventArgs<ZoomLayoutAvailability>(m_LayoutAvailability));
+			}
+		}
+
 		#endregion
 
 		#region Constructor
@@ -161,6 +181,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			OnSizeChanged = null;
 			OnPositionChanged = null;
 			OnSelfViewEnabledChanged = null;
+			OnCallLayoutAvailabilityChanged = null;
 
 			base.DisposeFinal();
 
@@ -175,6 +196,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 		{
 			base.Initialize();
 
+			GetLayoutStatus();
 			UpdateLayout();
 		}
 
@@ -212,6 +234,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			Parent.SendCommand("zConfiguration Video hide_conf_self_video: {0}", enabled ? "on" : "off");
 		}
 
+		public void GetLayoutStatus()
+		{
+			Parent.SendCommand("zStatus Call Layout");
+		}
+
 		public void UpdateLayout()
 		{
 			Parent.SendCommand("zConfiguration Call Layout ShareThumb");
@@ -229,6 +256,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			parent.RegisterResponseCallback<ClientCallLayoutResponse>(ClientCallLayoutResponseCallback);
 			parent.RegisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.RegisterResponseCallback<VideoConfigurationResponse>(VideoConfigurationResponseCallback);
+			parent.RegisterResponseCallback<CallLayoutStatusResponse>(CallLayoutStatusResponseCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
@@ -236,6 +264,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			parent.UnregisterResponseCallback<ClientCallLayoutResponse>(ClientCallLayoutResponseCallback);
 			parent.UnregisterResponseCallback<CallConfigurationResponse>(CallConfigurationCallback);
 			parent.UnregisterResponseCallback<VideoConfigurationResponse>(VideoConfigurationResponseCallback);
+			parent.UnregisterResponseCallback<CallLayoutStatusResponse>(CallLayoutStatusResponseCallback);
 		}
 
 		private void ClientCallLayoutResponseCallback(ZoomRoom zoomroom, ClientCallLayoutResponse response)
@@ -286,6 +315,32 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 			var data = response.Video.HideConferenceSelfVideo;
 			SelfViewEnabled = !data;
+		}
+
+		private void CallLayoutStatusResponseCallback(ZoomRoom zoomroom, CallLayoutStatusResponse response)
+		{
+			if (response == null)
+				return;
+
+			var layoutStatus = response.LayoutStatus;
+			if (layoutStatus == null)
+				return;
+
+			var layoutAvailability = new ZoomLayoutAvailability
+			{
+				CanAdjustFloatingVideo = layoutStatus.CanAdjustFloatingVideo,
+				CanSwitchFloatingShareContent = layoutStatus.CanAdjustFloatingVideo,
+				CanSwitchShareOnAllScreens = layoutStatus.CanSwitchShareOnAllScreens,
+				CanSwitchSpeakerView = layoutStatus.CanSwitchSpeakerView,
+				CanSwitchWallView = layoutStatus.CanSwitchWallView,
+				IsInFirstPage = layoutStatus.IsInFirstPage,
+				IsInLastPage = layoutStatus.IsInLastPage,
+				IsSupported = layoutStatus.IsSupported,
+				VideoCountInCurrentPage = layoutStatus.VideoCountInCurrentPage,
+				VideoType = layoutStatus.VideoType
+			};
+
+			LayoutAvailability = layoutAvailability;
 		}
 
 		#endregion

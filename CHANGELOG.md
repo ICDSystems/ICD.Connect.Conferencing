@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom volume component and control for output devices
  - Zoom local and far end camera control
  - AbstractParticipant & AbstractTraditionalParticipant
+ - Zoom Layout Status querying to determine whether layout controls are available or not.
 
 ### Changed
  - Cameras are passed to IVideoConferenceRouteControl when setting active camera
