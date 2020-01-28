@@ -177,7 +177,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private void LayoutComponentOnCallLayoutAvailabilityChanged(object sender, GenericEventArgs<ZoomLayoutAvailability> e)
 		{
 			var availability = e.Data;
-			if (availability == null)
+			if (availability.Equals(null))
 				return;
 
 			LayoutAvailable = availability.IsSupported;

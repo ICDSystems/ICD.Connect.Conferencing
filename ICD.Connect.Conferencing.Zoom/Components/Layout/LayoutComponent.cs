@@ -155,7 +155,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 			get { return m_LayoutAvailability; }
 			private set
 			{
-				if (value == m_LayoutAvailability)
+				if (m_LayoutAvailability.Equals(value))
 					return;
 
 				m_LayoutAvailability = value;

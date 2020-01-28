@@ -1,8 +1,9 @@
-﻿using ICD.Connect.Conferencing.Zoom.Responses;
+﻿using System;
+using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 {
-	public sealed class ZoomLayoutAvailability
+	public struct ZoomLayoutAvailability : IEquatable<ZoomLayoutAvailability>
 	{
 		/// <summary>
 		/// Set to true if it is possible to change the position and size of the thumbnail shown in Speaker view.
@@ -59,5 +60,43 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 		/// Indicates which mode applies: Strip or Gallery.
 		/// </summary>
 		public eZoomLayoutVideoType VideoType { get; set; }
+
+		public override bool Equals(object obj)
+		{
+			return obj is ZoomLayoutAvailability && Equals((ZoomLayoutAvailability)obj);
+		}
+
+		public bool Equals(ZoomLayoutAvailability other)
+		{
+			return other.CanAdjustFloatingVideo == CanAdjustFloatingVideo &&
+			       other.CanSwitchFloatingShareContent == CanSwitchFloatingShareContent &&
+			       other.CanSwitchShareOnAllScreens == CanSwitchShareOnAllScreens &&
+			       other.CanSwitchSpeakerView == CanSwitchSpeakerView &&
+			       other.CanSwitchWallView == CanSwitchWallView &&
+			       other.IsInFirstPage == IsInFirstPage &&
+			       other.IsInLastPage == IsInLastPage &&
+			       other.IsSupported == IsSupported &&
+			       other.VideoCountInCurrentPage == VideoCountInCurrentPage &&
+			       other.VideoType == VideoType;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				int hash = 17;
+				hash = hash * 23 + CanAdjustFloatingVideo.GetHashCode();
+				hash = hash * 23 + CanSwitchFloatingShareContent.GetHashCode();
+				hash = hash * 23 + CanSwitchShareOnAllScreens.GetHashCode();
+				hash = hash * 23 + CanSwitchSpeakerView.GetHashCode();
+				hash = hash * 23 + CanSwitchWallView.GetHashCode();
+				hash = hash * 23 + IsInFirstPage.GetHashCode();
+				hash = hash * 23 + IsInLastPage.GetHashCode();
+				hash = hash * 23 + IsSupported.GetHashCode();
+				hash = hash * 23 + VideoCountInCurrentPage.GetHashCode();
+				hash = hash * 23 + VideoType.GetHashCode();
+				return hash;
+			}
+		}
 	}
 }
