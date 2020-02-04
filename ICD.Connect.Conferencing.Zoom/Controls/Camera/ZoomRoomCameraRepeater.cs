@@ -25,7 +25,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 					{eCameraPanTiltAction.Up, eCameraControlAction.Up},
 					{eCameraPanTiltAction.Down, eCameraControlAction.Down},
 					{eCameraPanTiltAction.Left, eCameraControlAction.Left},
-					{eCameraPanTiltAction.Right, eCameraControlAction.Right}
+					{eCameraPanTiltAction.Right, eCameraControlAction.Right},
 				};
 
 		/// <summary>
@@ -83,6 +83,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 
 		public void PanTilt(eCameraPanTiltAction action)
 		{
+			if (action == eCameraPanTiltAction.Stop)
+			{
+				StopPanTilt();
+				return;
+			}
+
 			if (!m_HaveControl)
 			{
 				RequestControl();
@@ -116,6 +122,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 
 		public void Zoom(eCameraZoomAction action)
 		{
+			if (action == eCameraZoomAction.Stop)
+			{
+				StopZoom();
+				return;
+			}
+
 			if (!m_HaveControl)
 			{
 				RequestControl();
