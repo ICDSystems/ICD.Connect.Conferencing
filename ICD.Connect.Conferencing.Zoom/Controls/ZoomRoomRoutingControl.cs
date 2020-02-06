@@ -9,6 +9,7 @@ using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Controls.Routing;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
+using ICD.Connect.Devices;
 using ICD.Connect.Devices.Windows;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
@@ -175,31 +176,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			m_CameraComponent.SetActiveCameraByUsbId(zoomUsbId);
 		}
 
-		[CanBeNull]
-		private string GetZoomUsbIdForOriginator([NotNull] IOriginator camera)
-		{
-			// Is the camera part of the USB table?
-			var device = camera as ICameraDevice;
-
-			WindowsDevicePathInfo usbId;
-
-			if (device != null && Parent.UsbCameras.TryGetValue(device, out usbId))
-			{
-				return m_CameraComponent.GetCameras()
-				                        .Select(c => c.UsbId)
-				                        .FirstOrDefault(u => new WindowsDevicePathInfo(u) == usbId);
-			}
-
-			// Does the camera give us USB information?
-			IWindowsDevice windowsCamera = camera as IWindowsDevice;
-			if (windowsCamera != null)
-				return m_CameraComponent.GetCameras()
-				                 .Select(c => c.UsbId)
-				                 .FirstOrDefault(u => new WindowsDevicePathInfo(u) == windowsCamera.DevicePath);
-
-			return null;
-		}
-
 		/// <summary>
 		/// Returns true if the source contains an output at the given address.
 		/// </summary>
@@ -247,6 +223,41 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 				throw new ArgumentOutOfRangeException("output");
 
 			return new ConnectorInfo(connection.Source.Address, connection.ConnectionType);
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		[CanBeNull]
+		private string GetDefaultCameraUsbId()
+		{
+			return Parent.DefaultCamera == null ? null : GetZoomUsbIdForOriginator(Parent.DefaultCamera);
+		}
+
+		[CanBeNull]
+		private string GetZoomUsbIdForOriginator([NotNull] IOriginator camera)
+		{
+			// Is the camera part of the USB table?
+			ICameraDevice device = camera as ICameraDevice;
+			WindowsDevicePathInfo? usbId;
+			if (device != null && Parent.UsbCameras.TryGetValue(device, out usbId))
+				return GetUsbId(usbId);
+
+			// Does the camera give us USB information?
+			IWindowsDevice windowsCamera = camera as IWindowsDevice;
+			if (windowsCamera != null)
+				return GetUsbId(windowsCamera.DevicePath);
+
+			return null;
+		}
+
+		[CanBeNull]
+		private string GetUsbId(WindowsDevicePathInfo? windowsDeviceInfo)
+		{
+			return m_CameraComponent.GetCameras()
+			                        .Select(c => c.UsbId)
+			                        .FirstOrDefault(u => new WindowsDevicePathInfo(u) == windowsDeviceInfo);
 		}
 
 		#endregion
@@ -316,35 +327,44 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			UpdateActiveActiveCamera();
 		}
 
+		/// <summary>
+		/// Ensure we are always setting either the previously selected camera or the default
+		/// camera when available.
+		/// </summary>
 		private void UpdateActiveActiveCamera()
 		{
-			// Make sure the last selected camera, default camera, or one of the cameras from
-			// the table are always selected.
-			if (m_CameraComponent.ActiveCamera == null)
-				return;
+			string activeCameraUsbId =
+				m_CameraComponent.ActiveCamera == null
+					? null
+					: m_CameraComponent.ActiveCamera.UsbId;
 
-			var activeCameraUsbId = new WindowsDevicePathInfo(m_CameraComponent.ActiveCamera.UsbId).ToString();
+			List<string> bestCameraUsbIds = new List<string>();
 
-			bool lastSelected = activeCameraUsbId == m_LastSelectedCameraUsbId;
-			bool defaultSelected = activeCameraUsbId == m_LastSelectedCameraUsbId;
-			bool tableSelected = Parent.UsbCameras.Values.Select(w => w.ToString())
-			                           .Any(s => s == m_LastSelectedCameraUsbId);
+			// If a camera has been selected put that at the front of the list
+			if (!string.IsNullOrEmpty(m_LastSelectedCameraUsbId))
+				bestCameraUsbIds.Add(m_LastSelectedCameraUsbId);
 
-			if (lastSelected)
-				return;
-			if (defaultSelected)
+			// Add the default camera to the end of the list
+			string defaultCameraUsbId = GetDefaultCameraUsbId();
+			if (!string.IsNullOrEmpty(defaultCameraUsbId))
+				bestCameraUsbIds.Add(defaultCameraUsbId);
+
+			// Make sure the best available camera is selected
+			foreach (string usbId in bestCameraUsbIds)
 			{
-				m_LastSelectedCameraUsbId = activeCameraUsbId;
+				bool connected = m_CameraComponent.GetCameras().Select(c => c.UsbId).Any(u => u == usbId);
+				if (!connected)
+					continue;
+
+				// Is the camera already active?
+				if (usbId == activeCameraUsbId)
+					return;
+
+				// Set this camera as active
+				m_CameraComponent.SetActiveCameraByUsbId(usbId);
+
 				return;
 			}
-			if (tableSelected)
-			{
-				m_LastSelectedCameraUsbId = Parent.UsbCameras.Values
-				                                  .FirstOrDefault(w => w.ToString() == activeCameraUsbId).ToString();
-				return;
-			}
-
-			SetCameraInput(0, Parent.DefaultCamera.Id);
 		}
 
 		#endregion
