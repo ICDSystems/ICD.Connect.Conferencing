@@ -22,8 +22,10 @@ using System.Linq;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Zoom.Components.Audio;
 using ICD.Connect.Conferencing.Zoom.Controls.Camera;
+using ICD.Connect.Devices.Windows;
 
 namespace ICD.Connect.Conferencing.Zoom
 {
@@ -86,8 +88,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly DelimiterSerialBuffer m_SerialBuffer;
 		private readonly Dictionary<Type, List<ResponseCallbackPair>> m_ResponseCallbacks;
 		private readonly SafeCriticalSection m_ResponseCallbacksSection;
-
 		private readonly SecureNetworkProperties m_NetworkProperties;
+		private readonly Dictionary<ICameraDevice, WindowsDevicePathInfo> m_UsbCameras;
 
 		private bool m_Initialized;
 		private bool m_IsConnected;
@@ -205,6 +207,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public ZoomRoomComponentFactory Components { get; private set; }
 
+		public Dictionary<ICameraDevice, WindowsDevicePathInfo> UsbCameras { get { return m_UsbCameras; } }
+
 		#endregion
 
 		/// <summary>
@@ -213,6 +217,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		public ZoomRoom()
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
+			m_UsbCameras = new Dictionary<ICameraDevice, WindowsDevicePathInfo>();
 
 			m_ResponseCallbacks = new Dictionary<Type, List<ResponseCallbackPair>>();
 			m_ResponseCallbacksSection = new SafeCriticalSection();
@@ -553,7 +558,6 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_NetworkProperties.Copy(settings);
 
 			ISerialPort port = null;
-
 			if (settings.Port != null)
 			{
 				try
@@ -565,13 +569,65 @@ namespace ICD.Connect.Conferencing.Zoom
 					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 				}
 			}
-
 			SetPort(port);
 
-			DialOutEnabled = settings.DialOutEnabled;
-			RecordEnabled = settings.RecordEnabled;
-			MuteMyCameraOnStart = settings.MuteMyCameraOnStart;
-			MuteParticipantsOnStart = settings.MuteParticipantsOnStart;
+            DialOutEnabled = settings.DialOutEnabled;
+            RecordEnabled = settings.RecordEnabled;
+            MuteMyCameraOnStart = settings.MuteMyCameraOnStart;
+            MuteParticipantsOnStart = settings.MuteParticipantsOnStart;
+
+			if (settings.Camera1 != null && settings.Camera1Usb != null)
+			{
+				try
+				{
+					UsbCameras
+						.Add(factory.GetOriginatorById((int)settings.Camera1) as ICameraDevice ?? throw new InvalidOperationException(),
+						     new WindowsDevicePathInfo(settings.Camera1Usb));
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No camera device with id {0}", settings.Camera1);
+				}
+			}
+			if (settings.Camera2 != null && settings.Camera2Usb != null)
+			{
+				try
+				{
+					UsbCameras
+						.Add(factory.GetOriginatorById((int)settings.Camera2) as ICameraDevice ?? throw new InvalidOperationException(),
+						     new WindowsDevicePathInfo(settings.Camera2Usb));
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No camera device with id {0}", settings.Camera2);
+				}
+			}
+			if (settings.Camera3 != null && settings.Camera3Usb != null)
+			{
+				try
+				{
+					UsbCameras
+						.Add(factory.GetOriginatorById((int)settings.Camera3) as ICameraDevice ?? throw new InvalidOperationException(),
+						     new WindowsDevicePathInfo(settings.Camera3Usb));
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No camera device with id {0}", settings.Camera3);
+				}
+			}
+			if (settings.Camera4 != null && settings.Camera4Usb != null)
+			{
+				try
+				{
+					UsbCameras
+						.Add(factory.GetOriginatorById((int)settings.Camera4) as ICameraDevice ?? throw new InvalidOperationException(),
+						     new WindowsDevicePathInfo(settings.Camera4Usb));
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No camera device with id {0}", settings.Camera4);
+				}
+			}
 		}
 
 		protected override void ClearSettingsFinal()
@@ -582,10 +638,12 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			SetPort(null);
 
-			DialOutEnabled = ZoomRoomSettings.DEFAULT_DIAL_OUT_ENABLED;
-			RecordEnabled = ZoomRoomSettings.DEFAULT_RECORD_ENABLED;
-			MuteMyCameraOnStart = false;
-			MuteParticipantsOnStart = false;
+            DialOutEnabled = ZoomRoomSettings.DEFAULT_DIAL_OUT_ENABLED;
+            RecordEnabled = ZoomRoomSettings.DEFAULT_RECORD_ENABLED;
+            MuteMyCameraOnStart = false;
+            MuteParticipantsOnStart = false;
+
+			UsbCameras.Clear();
 		}
 
 		protected override void CopySettingsFinal(ZoomRoomSettings settings)
@@ -596,10 +654,37 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			settings.Copy(m_NetworkProperties);
 
-			settings.DialOutEnabled = DialOutEnabled;
-			settings.RecordEnabled = RecordEnabled;
-			settings.MuteMyCameraOnStart = MuteMyCameraOnStart;
-			settings.MuteParticipantsOnStart = MuteParticipantsOnStart;
+            settings.DialOutEnabled = DialOutEnabled;
+            settings.RecordEnabled = RecordEnabled;
+            settings.MuteMyCameraOnStart = MuteMyCameraOnStart;
+            settings.MuteParticipantsOnStart = MuteParticipantsOnStart;
+
+            int incrementer = 1;
+			foreach (KeyValuePair<ICameraDevice, WindowsDevicePathInfo> usbCamera in UsbCameras)
+			{
+				if (incrementer == 1)
+				{
+					settings.Camera1 = usbCamera.Key.Id;
+					settings.Camera1Usb = usbCamera.Value.ToString();
+				}
+				if (incrementer == 2)
+				{
+					settings.Camera2 = usbCamera.Key.Id;
+					settings.Camera2Usb = usbCamera.Value.ToString();
+				}
+				if (incrementer == 3)
+				{
+					settings.Camera3 = usbCamera.Key.Id;
+					settings.Camera3Usb = usbCamera.Value.ToString();
+				}
+				if (incrementer == 4)
+				{
+					settings.Camera4 = usbCamera.Key.Id;
+					settings.Camera4Usb = usbCamera.Value.ToString();
+				}
+
+				incrementer++;
+			}
 		}
 
 		#endregion

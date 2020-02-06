@@ -30,6 +30,8 @@ namespace ICD.Connect.Conferencing.Devices
 		{
 			if (instance == null)
 				throw new ArgumentNullException("instance");
+
+			addRow("Default Camera", instance.DefaultCamera);
 		}
 
 		/// <summary>

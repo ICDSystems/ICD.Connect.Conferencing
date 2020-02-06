@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Devices;
 using ICD.Connect.Settings;
 
@@ -15,6 +17,11 @@ namespace ICD.Connect.Conferencing.Devices
 		/// Configured information about how the input connectors should be used.
 		/// </summary>
 		public CodecInputTypes InputTypes { get { return m_InputTypes; } }
+
+		/// <summary>
+		/// The default camera used by the conference device.
+		/// </summary>
+		public IDeviceBase DefaultCamera { get; set; }
 
 		/// <summary>
 		/// Constructor.
@@ -35,6 +42,7 @@ namespace ICD.Connect.Conferencing.Devices
 			base.CopySettingsFinal(settings);
 
 			InputTypes.CopySettings(settings);
+			settings.DefaultCameraDevice = DefaultCamera == null ? (int?)null : DefaultCamera.Id;
 		}
 
 		/// <summary>
@@ -45,6 +53,7 @@ namespace ICD.Connect.Conferencing.Devices
 			base.ClearSettingsFinal();
 
 			InputTypes.ClearSettings();
+			DefaultCamera = null;
 		}
 
 		/// <summary>
@@ -57,6 +66,21 @@ namespace ICD.Connect.Conferencing.Devices
 			base.ApplySettingsFinal(settings, factory);
 
 			InputTypes.ApplySettings(settings);
+
+			IDeviceBase defaultCamera = null;
+			if (settings.DefaultCameraDevice != null)
+			{
+				try
+				{
+					defaultCamera = factory.GetOriginatorById(settings.DefaultCameraDevice.Value) as IDeviceBase;
+				}
+				catch (KeyNotFoundException)
+				{
+					Log(eSeverity.Error, "No default camera device with id {0}", settings.DefaultCameraDevice);
+				}
+			}
+
+			DefaultCamera = defaultCamera;
 		}
 
 		#endregion

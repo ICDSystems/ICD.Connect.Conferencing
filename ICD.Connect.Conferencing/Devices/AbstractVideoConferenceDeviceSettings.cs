@@ -1,5 +1,6 @@
 ﻿using ICD.Common.Utils.Xml;
 using ICD.Connect.Devices;
+using ICD.Connect.Settings.Attributes.SettingsProperties;
 
 namespace ICD.Connect.Conferencing.Devices
 {
@@ -11,8 +12,9 @@ namespace ICD.Connect.Conferencing.Devices
 		private const string INPUT_4_ELEMENT = "Input4Type";
 		private const string INPUT_5_ELEMENT = "Input5Type";
 		private const string INPUT_6_ELEMENT = "Input6Type";
+        private const string DEFAULT_CAMERA_ELEMENT = "DefaultCamera";
 
-		#region Inputs
+        #region Inputs
 
 		public eCodecInputType Input1CodecInputType { get; set; }
 		public eCodecInputType Input2CodecInputType { get; set; }
@@ -20,6 +22,9 @@ namespace ICD.Connect.Conferencing.Devices
 		public eCodecInputType Input4CodecInputType { get; set; }
 		public eCodecInputType Input5CodecInputType { get; set; }
 		public eCodecInputType Input6CodecInputType { get; set; }
+
+		[OriginatorIdSettingsProperty(typeof(IDeviceBase))]
+		public int? DefaultCameraDevice { get; set; }
 
 		#endregion
 
@@ -30,6 +35,8 @@ namespace ICD.Connect.Conferencing.Devices
 		protected override void WriteElements(IcdXmlTextWriter writer)
 		{
 			base.WriteElements(writer);
+
+			writer.WriteElementString(DEFAULT_CAMERA_ELEMENT, IcdXmlConvert.ToString(DefaultCameraDevice));
 
 			writer.WriteElementString(INPUT_1_ELEMENT, IcdXmlConvert.ToString(Input1CodecInputType));
 			writer.WriteElementString(INPUT_2_ELEMENT, IcdXmlConvert.ToString(Input2CodecInputType));
@@ -59,6 +66,8 @@ namespace ICD.Connect.Conferencing.Devices
 			                       eCodecInputType.None;
 			Input6CodecInputType = XmlUtils.TryReadChildElementContentAsEnum<eCodecInputType>(xml, INPUT_6_ELEMENT, true) ??
 			                       eCodecInputType.None;
+
+            DefaultCameraDevice = XmlUtils.TryReadChildElementContentAsInt(xml, DEFAULT_CAMERA_ELEMENT);
 		}
 	}
 }

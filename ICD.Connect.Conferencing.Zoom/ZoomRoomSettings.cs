@@ -1,4 +1,6 @@
-﻿using ICD.Common.Utils.Xml;
+﻿using ICD.Common.Properties;
+using ICD.Common.Utils.Xml;
+using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
@@ -19,23 +21,87 @@ namespace ICD.Connect.Conferencing.Zoom
 		public const bool DEFAULT_DIAL_OUT_ENABLED = true;
 		public const bool DEFAULT_RECORD_ENABLED = true;
 
+		private const string DEFAULT_CAMERA_USB_ELEMENT = "DefaultCameraUsb";
+		private const string CAMERA_1_ELEMENT = "Camera1";
+		private const string CAMERA_1_USB_ELEMENT = "Camera1Usb";
+		private const string CAMERA_2_ELEMENT = "Camera2";
+		private const string CAMERA_2_USB_ELEMENT = "Camera2Usb";
+		private const string CAMERA_3_ELEMENT = "Camera3";
+		private const string CAMERA_3_USB_ELEMENT = "Camera3Usb";
+		private const string CAMERA_4_ELEMENT = "Camera4";
+		private const string CAMERA_4_USB_ELEMENT = "Camera4Usb";
+
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		#region Properties
 
+        /// <summary>
+        /// The port id.
+        /// </summary>
+        [OriginatorIdSettingsProperty(typeof(ISerialPort))]
+        public int? Port { get; set; }
+
+        public bool DialOutEnabled { get; set; }
+
+        public bool RecordEnabled { get; set; }
+
+        public bool MuteMyCameraOnStart { get; set; }
+
+        public bool MuteParticipantsOnStart { get; set; }
+
 		/// <summary>
-		/// The port id.
+		/// Camera1 USB ID
 		/// </summary>
-		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
-		public int? Port { get; set; }
+		[CanBeNull]
+		public string DefaultCameraUsb { get; set; }
 
-		public bool DialOutEnabled { get; set; }
+		/// <summary>
+		/// Camera1 Originator ID
+		/// </summary>
+		[OriginatorIdSettingsProperty(typeof(ICameraDevice))]
+		public int? Camera1 { get; set; }
 
-		public bool RecordEnabled { get; set; }
+		/// <summary>
+		/// Camera1 USB ID
+		/// </summary>
+		[CanBeNull]
+		public string Camera1Usb { get; set; }
 
-		public bool MuteMyCameraOnStart { get; set; }
+		/// <summary>
+		/// Camera2 Originator ID
+		/// </summary>
+		[OriginatorIdSettingsProperty(typeof(ICameraDevice))]
+		public int? Camera2 { get; set; }
 
-		public bool MuteParticipantsOnStart { get; set; }
+		/// <summary>
+		/// Camera2 USB ID
+		/// </summary>
+		[CanBeNull]
+		public string Camera2Usb { get; set; }
+
+		/// <summary>
+		/// Camera3 Originator ID
+		/// </summary>
+		[OriginatorIdSettingsProperty(typeof(ICameraDevice))]
+		public int? Camera3 { get; set; }
+
+		/// <summary>
+		/// Camera3 USB ID
+		/// </summary>
+		[CanBeNull]
+		public string Camera3Usb { get; set; }
+
+		/// <summary>
+		/// Camera4 Originator ID
+		/// </summary>
+		[OriginatorIdSettingsProperty(typeof(ICameraDevice))]
+		public int? Camera4 { get; set; }
+
+		/// <summary>
+		/// Camera4 USB ID
+		/// </summary>
+		[CanBeNull]
+        public string Camera4Usb { get; set; }
 
 		#endregion
 
@@ -105,6 +171,16 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int) Port));
 
+			writer.WriteElementString(DEFAULT_CAMERA_USB_ELEMENT, DefaultCameraUsb);
+			writer.WriteElementString(CAMERA_1_ELEMENT, Camera1 == null ? null : IcdXmlConvert.ToString((int) Camera1));
+			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera1Usb);
+			writer.WriteElementString(CAMERA_2_ELEMENT, Camera2 == null ? null : IcdXmlConvert.ToString((int) Camera2));
+			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera2Usb);
+			writer.WriteElementString(CAMERA_3_ELEMENT, Camera3 == null ? null : IcdXmlConvert.ToString((int) Camera3));
+			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera3Usb);
+			writer.WriteElementString(CAMERA_4_ELEMENT, Camera4 == null ? null : IcdXmlConvert.ToString((int) Camera4));
+			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera4Usb);
+
 			m_NetworkProperties.WriteElements(writer);
 
 			writer.WriteElementString(DIAL_OUT_ENABLED_ELEMENT, IcdXmlConvert.ToString(DialOutEnabled));
@@ -122,6 +198,16 @@ namespace ICD.Connect.Conferencing.Zoom
 			base.ParseXml(xml);
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
+
+			DefaultCameraUsb = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_CAMERA_USB_ELEMENT);
+			Camera1 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_1_ELEMENT);
+			Camera1Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_1_USB_ELEMENT);
+			Camera2 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_2_ELEMENT);
+			Camera2Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_2_USB_ELEMENT);
+			Camera3 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_3_ELEMENT);
+			Camera3Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_3_USB_ELEMENT);
+			Camera4 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_4_ELEMENT);
+			Camera4Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_4_USB_ELEMENT);
 
 			m_NetworkProperties.ParseXml(xml);
 
