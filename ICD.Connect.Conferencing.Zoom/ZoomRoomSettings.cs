@@ -11,6 +11,11 @@ namespace ICD.Connect.Conferencing.Zoom
 	public sealed class ZoomRoomSettings : AbstractVideoConferenceDeviceSettings, ISecureNetworkSettings
 	{
 		private const string PORT_ELEMENT = "Port";
+		private const string DIAL_OUT_ENABLED_ELEMENT = "DialOutEnabled";
+		private const string RECORD_ENABLED_ELEMENT = "RecordEnabled";
+
+		public const bool DEFAULT_DIAL_OUT_ENABLED = true;
+		public const bool DEFAULT_RECORD_ENABLED = true;
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
@@ -21,6 +26,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
+
+		public bool DialOutEnabled { get; set; }
+
+		public bool RecordEnabled { get; set; }
 
 		#endregion
 
@@ -91,6 +100,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int) Port));
 
 			m_NetworkProperties.WriteElements(writer);
+
+			writer.WriteElementString(DIAL_OUT_ENABLED_ELEMENT, IcdXmlConvert.ToString(DialOutEnabled));
+			writer.WriteElementString(RECORD_ENABLED_ELEMENT, IcdXmlConvert.ToString(RECORD_ENABLED_ELEMENT));
 		}
 
 		/// <summary>
@@ -104,6 +116,10 @@ namespace ICD.Connect.Conferencing.Zoom
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 
 			m_NetworkProperties.ParseXml(xml);
+
+			DialOutEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, DIAL_OUT_ENABLED_ELEMENT) ?? DEFAULT_DIAL_OUT_ENABLED;
+
+			RecordEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, RECORD_ENABLED_ELEMENT) ?? DEFAULT_RECORD_ENABLED;
 
 			UpdateNetworkDefaults();
 		}

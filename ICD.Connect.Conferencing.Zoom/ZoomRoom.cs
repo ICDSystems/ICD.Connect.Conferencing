@@ -62,6 +62,16 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnInitializedChanged;
 
+		/// <summary>
+		/// Raised when the Dial Out Enabled state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnDialOutEnabledChanged;
+
+		/// <summary>
+		/// Raised when the Record Enabled state changes;
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnRecordEnabledChanged;
+
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly DelimiterSerialBuffer m_SerialBuffer;
 		private readonly Dictionary<Type, List<ResponseCallbackPair>> m_ResponseCallbacks;
@@ -72,7 +82,50 @@ namespace ICD.Connect.Conferencing.Zoom
 		private bool m_Initialized;
 		private bool m_IsConnected;
 
+		private bool m_DialOutEnabled;
+
+		private bool m_RecordEnabled;
+
 		#region Properties
+
+		/// <summary>
+		/// Determines if dial out is enabled for the zoom room
+		/// This is an administrative setting, not a state pulled from the Zoom Room device
+		/// </summary>
+		public bool DialOutEnabled
+		{
+			get
+			{
+				return m_DialOutEnabled;
+			}
+			private set
+			{
+				if (value == m_DialOutEnabled)
+					return;
+
+				m_DialOutEnabled = value;
+
+				OnDialOutEnabledChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
+
+		/// <summary>
+		/// Determines if recording is enabled for the zoom room
+		/// This is an administrative setting, not a state pulled from teh Zoom Room device
+		/// </summary>
+		public bool RecordEnabled
+		{
+			get { return m_RecordEnabled; }
+			private set
+			{
+				if (value == m_RecordEnabled)
+					return;
+
+				m_RecordEnabled = value;
+
+				OnRecordEnabledChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
 
 		/// <summary>
 		/// Device Initialized Status.
@@ -475,6 +528,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 
 			SetPort(port);
+
+			DialOutEnabled = settings.DialOutEnabled;
+			RecordEnabled = settings.RecordEnabled;
 		}
 
 		protected override void ClearSettingsFinal()
@@ -484,6 +540,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_NetworkProperties.ClearNetworkProperties();
 
 			SetPort(null);
+
+			DialOutEnabled = ZoomRoomSettings.DEFAULT_DIAL_OUT_ENABLED;
+			RecordEnabled = ZoomRoomSettings.DEFAULT_RECORD_ENABLED;
 		}
 
 		protected override void CopySettingsFinal(ZoomRoomSettings settings)
@@ -493,6 +552,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			settings.Port = m_ConnectionStateManager.PortNumber;
 
 			settings.Copy(m_NetworkProperties);
+
+			settings.DialOutEnabled = DialOutEnabled;
+			settings.RecordEnabled = RecordEnabled;
 		}
 
 		#endregion
