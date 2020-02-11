@@ -1,5 +1,6 @@
 ﻿using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Controls.Presentation;
 using ICD.Connect.Conferencing.Zoom.Components.Layout;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
@@ -8,22 +9,38 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 {
 	public sealed class ZoomRoomPresentationControl : AbstractPresentationControl<ZoomRoom>
 	{
+		private const long STOP_SHARING_DEBOUNCE_TIME = 5 * 1000;
+
 		[NotNull]
 		private readonly PresentationComponent m_PresentationComponent;
+
+		[NotNull]
 		private readonly LayoutComponent m_LayoutComponent;
 
+		private readonly SafeTimer m_StopSharingDebounceTimer;
+		private bool m_RequestedSharing;
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
 		public ZoomRoomPresentationControl(ZoomRoom parent, int id)
 			: base(parent, id)
 		{
 			m_PresentationComponent = Parent.Components.GetComponent<PresentationComponent>();
 			m_LayoutComponent = Parent.Components.GetComponent<LayoutComponent>();
+
+			m_StopSharingDebounceTimer = SafeTimer.Stopped(SharingDebounceTimeout);
+
 			Subscribe(m_PresentationComponent);
 			Subscribe(m_LayoutComponent);
 		}
 
 		protected override void DisposeFinal(bool disposing)
 		{
+			m_StopSharingDebounceTimer.Dispose();
+
 			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_PresentationComponent);
@@ -41,7 +58,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// <param name="input"></param>
 		public override void StartPresentation(int input)
 		{
+			m_RequestedSharing = true;
 			m_PresentationComponent.StartPresentation();
+
+			m_StopSharingDebounceTimer.Reset(STOP_SHARING_DEBOUNCE_TIME);
 		}
 
 		/// <summary>
@@ -49,14 +69,33 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// </summary>
 		public override void StopPresentation()
 		{
+			m_RequestedSharing = false;
 			m_PresentationComponent.StopPresentation();
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void SharingDebounceTimeout()
+		{
+			UpdatePresentationActive();
 		}
 
 		private void UpdatePresentationActive()
 		{
-			PresentationActive = m_PresentationComponent.Sharing ||
-			                     m_LayoutComponent.ShareThumb ||
-			                     m_PresentationComponent.PresentationOutput != null;
+			bool sharing = m_PresentationComponent.Sharing ||
+			               m_LayoutComponent.ShareThumb ||
+			               m_PresentationComponent.PresentationOutput != null;
+
+			// Force Zoom to match the requested share state
+			if (sharing != m_RequestedSharing)
+				m_PresentationComponent.StartPresentation();
+
+			bool sharingFeedback = sharing || m_RequestedSharing;
+
+			PresentationActive = sharingFeedback;
+			PresentationActiveInput = sharingFeedback ? 1 : (int?)null;
 		}
 
 		#endregion
@@ -77,7 +116,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private void ComponentOnLocalSharingChanged(object sender, BoolEventArgs args)
 		{
-			PresentationActiveInput = m_PresentationComponent.Sharing ? 1 : (int?) null;
 			UpdatePresentationActive();
 		}
 		

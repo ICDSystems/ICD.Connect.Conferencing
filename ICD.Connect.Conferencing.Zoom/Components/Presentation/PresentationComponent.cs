@@ -2,15 +2,12 @@
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 {
 	public sealed class PresentationComponent : AbstractZoomRoomComponent
 	{
-		private const long STOP_SHARING_DEBOUNCE_TIME = 5 * 1000;
-
 		public event EventHandler<BoolEventArgs> OnInputConnectedUpdated;
 		public event EventHandler<BoolEventArgs> OnSignalDetectedUpdated;
 		public event EventHandler<BoolEventArgs> OnLocalSharingChanged;
@@ -19,11 +16,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		private bool m_InputConnected;
 		private bool m_SignalDetected;
 		private bool m_Sharing;
-		private bool m_RequestedSharing;
-
 		private int? m_ShareOutput;
-
-		private readonly SafeTimer m_StopSharingDebounceTimer;
 
 		#region Properties
 
@@ -85,14 +78,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 		#endregion
 
-		public PresentationComponent(ZoomRoom parent) : base(parent)
+		public PresentationComponent(ZoomRoom parent)
+			: base(parent)
 		{
-			m_StopSharingDebounceTimer = SafeTimer.Stopped(() => Sharing = false);
 			Subscribe(parent);
 		}
 
 		protected override void DisposeFinal()
 		{
+			OnInputConnectedUpdated = null;
+			OnSignalDetectedUpdated = null;
+			OnLocalSharingChanged = null;
+			OnPresentationOutputChanged = null;
+
 			base.DisposeFinal();
 
 			Unsubscribe(Parent);
@@ -102,8 +100,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 		public void StartPresentation()
 		{
-			m_RequestedSharing = true;
-
 			if (!InputConnected)
 			{
 				Parent.Log(eSeverity.Error, "Unable to start HDMI share - BlackMagic is not connected");
@@ -116,8 +112,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 		public void StopPresentation()
 		{
-			m_RequestedSharing = false;
-
 			Parent.Log(eSeverity.Informational, "Stopping HDMI share");
 			Parent.SendCommand("zCommand Call Sharing HDMI Stop");
 		}
@@ -152,18 +146,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 			InputConnected = response.Sharing.IsBlackMagicConnected;
 			SignalDetected = response.Sharing.IsBlackMagicDataAvailable;
-
-			// debounce the sharing state when switching sources
-			if (Sharing && m_RequestedSharing)
-			{
-				// start a 1 second timer to make sure it stays at not sharing
-				if (!response.Sharing.IsSharingBlackMagic)
-					m_StopSharingDebounceTimer.Reset(STOP_SHARING_DEBOUNCE_TIME);
-				else
-					m_StopSharingDebounceTimer.Stop();
-			}
-			else
-				Sharing = response.Sharing.IsSharingBlackMagic;
+			Sharing = response.Sharing.IsSharingBlackMagic;
 		}
 
 		private void PinStatusCallback(ZoomRoom zoomRoom, PinStatusOfScreenNotificationResponse response)
