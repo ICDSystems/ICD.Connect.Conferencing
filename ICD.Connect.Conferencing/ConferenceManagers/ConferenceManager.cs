@@ -24,7 +24,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	{
 		private const int RECENT_LENGTH = 100;
 
-		public event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
+		public event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged; 
+		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged; 
+		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
 		public event EventHandler<ConferenceEventArgs> OnRecentConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnActiveConferenceChanged;
 		public event EventHandler<ConferenceEventArgs> OnActiveConferenceEnded;
@@ -56,30 +58,62 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private IDialingDeviceControl m_DefaultDialingControl;
 
 		private eInCall m_IsInCall;
-		private bool m_IsAuthoritative;
+		private bool m_EnforcePrivacyMute;
+		private eEnforceState m_EnforceDoNotDisturb;
+		private eEnforceState m_EnforceAutoAnswer;
 
 		#region Properties
+
+		/// <summary>
+		/// Indicates whether this conference manager should do anything. 
+		/// True normally, false when the room that owns this conference manager has a parent combine room
+		/// </summary>
+		public bool IsActive { get; set; }
 
 		/// <summary>
 		/// Gets the logger.
 		/// </summary>
 		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
 
-		/// <summary>
-		/// When true the conference manager will force registered dialers to match
-		/// the state of the Privacy Mute, Do Not Disturb and Auto Answer properties.
-		/// </summary>
-		public bool IsAuthoritative
+		public bool EnforcePrivacyMute
 		{
-			get { return m_IsAuthoritative; }
+			get { return m_EnforcePrivacyMute; }
 			set
 			{
-				if (value == m_IsAuthoritative)
+				if(value == m_EnforcePrivacyMute)
 					return;
 
-				m_IsAuthoritative = value;
+				m_EnforcePrivacyMute = value;
 
-				OnIsAuthoritativeChanged.Raise(this, new BoolEventArgs(m_IsAuthoritative));
+				OnEnforcePrivacyMuteChanged(this, new BoolEventArgs(m_EnforcePrivacyMute));
+			}
+		}
+
+		public eEnforceState EnforceDoNotDisturb
+		{
+			get { return m_EnforceDoNotDisturb; }
+			set
+			{
+				if (m_EnforceDoNotDisturb == value)
+					return;
+
+				m_EnforceDoNotDisturb = value;
+
+				OnEnforceDoNotDisturbChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceDoNotDisturb));
+			}
+		}
+
+		public eEnforceState EnforceAutoAnswer
+		{
+			get { return m_EnforceAutoAnswer; }
+			set
+			{
+				if(m_EnforceAutoAnswer == value)
+					return;
+
+				m_EnforceAutoAnswer = value;
+
+				OnEnforceAutoAnswerChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceAutoAnswer));
 			}
 		}
 
@@ -182,8 +216,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public ConferenceManager()
 		{
-			m_IsAuthoritative = true;
-
 			m_RecentConferences = new ScrollQueue<IConference>(RECENT_LENGTH);
 			m_RecentSources = new ScrollQueue<IConferenceSource>(RECENT_LENGTH);
 			m_SourceTypeToProvider = new Dictionary<eConferenceSourceType, IDialingDeviceControl>();
@@ -205,7 +237,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Dispose()
 		{
-			OnIsAuthoritativeChanged = null;
+			OnEnforcePrivacyMuteChanged = null;
+			OnEnforceDoNotDisturbChanged = null;
+			OnEnforceAutoAnswerChanged = null;
 			OnRecentConferenceAdded = null;
 			OnActiveConferenceChanged = null;
 			OnActiveConferenceStatusChanged = null;
@@ -511,12 +545,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="dialingControl"></param>
 		private void UpdateFeedbackProvider(IDialingDeviceControl dialingControl)
 		{
-			if (!m_IsAuthoritative)
+			if (!EnforcePrivacyMute || !IsActive)
 				return;
 
-			bool privacyMute = PrivacyMuted;
-			if (dialingControl.PrivacyMuted != privacyMute)
-				dialingControl.SetPrivacyMute(privacyMute);
+			if (dialingControl.PrivacyMuted != PrivacyMuted)
+				dialingControl.SetPrivacyMute(PrivacyMuted);
 		}
 
 		/// <summary>
@@ -525,20 +558,39 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="dialingControl"></param>
 		private void UpdateProvider(IDialingDeviceControl dialingControl)
 		{
-			if (!m_IsAuthoritative)
+			if(!IsActive)
 				return;
 
-			bool autoAnswer = AutoAnswer;
-			if (dialingControl.AutoAnswer != autoAnswer)
-				dialingControl.SetAutoAnswer(autoAnswer);
+			switch (EnforceAutoAnswer)
+			{
+				case eEnforceState.DoNotEnforce:
+					break;
+				case eEnforceState.EnforceOn:
+					dialingControl.SetAutoAnswer(true);
+					break;
+				case eEnforceState.EnforceOff:
+					dialingControl.SetAutoAnswer(false);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 
-			bool doNotDisturb = DoNotDisturb;
-			if (dialingControl.DoNotDisturb != doNotDisturb)
-				dialingControl.SetDoNotDisturb(doNotDisturb);
+			switch (EnforceDoNotDisturb)
+			{
+				case eEnforceState.DoNotEnforce:
+					break;
+				case eEnforceState.EnforceOn:
+					dialingControl.SetDoNotDisturb(true);
+					break;
+				case eEnforceState.EnforceOff:
+					dialingControl.SetDoNotDisturb(false);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 
-			bool privacyMute = PrivacyMuted;
-			if (dialingControl.PrivacyMuted != privacyMute)
-				dialingControl.SetPrivacyMute(privacyMute);
+			if (EnforcePrivacyMute)
+				dialingControl.SetPrivacyMute(PrivacyMuted);
 		}
 
 		/// <summary>

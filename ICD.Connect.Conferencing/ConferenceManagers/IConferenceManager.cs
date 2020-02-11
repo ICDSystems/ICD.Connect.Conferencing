@@ -21,9 +21,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Events
 
 		/// <summary>
-		/// Raised when a new conference is instantiated and becomes active.
+		/// Raised when the enforcement setting for privacy mute changes
 		/// </summary>
-		event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
+		event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged;
+
+		/// <summary>
+		/// Raised when the enforcement setting for do not disturb changes
+		/// </summary>
+		event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged;
+
+		/// <summary>
+		/// Raised when the enforcement setting for auto answer changes
+		/// </summary>
+		event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
 
 		/// <summary>
 		/// Raised when a new conference is instantiated and becomes active.
@@ -79,10 +89,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Properties
 
 		/// <summary>
-		/// When true the conference manager will force registered dialers to match
-		/// the state of the Privacy Mute, Do Not Disturb and Auto Answer properties.
+		/// Indicates whether this conference manager should do anything. 
+		/// True normally, false when the room that owns this conference manager has a parent combine room
 		/// </summary>
-		bool IsAuthoritative { get; set; }
+		bool IsActive { get; set; }
+
+		bool EnforcePrivacyMute { get; set; }
+
+		eEnforceState EnforceDoNotDisturb { get; set; }
+
+		eEnforceState EnforceAutoAnswer { get; set; }
 
 		/// <summary>
 		/// Gets the dialing plan.

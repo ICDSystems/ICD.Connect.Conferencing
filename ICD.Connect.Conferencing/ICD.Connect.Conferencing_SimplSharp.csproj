@@ -78,6 +78,7 @@
     <Compile Include="Cameras\IRemoteCamera.cs" />
     <Compile Include="Comparers\DirectoryFolderNameComparer.cs" />
     <Compile Include="ConferenceManagers\ConferenceManager.cs" />
+    <Compile Include="ConferenceManagers\eEnforceState.cs" />
     <Compile Include="ConferenceManagers\IConferenceManager.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceSnapshot.cs" />
     <Compile Include="ConferenceSources\ConferenceSourceState.cs" />
