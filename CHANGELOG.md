@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom local and far end camera control
  - AbstractParticipant & AbstractTraditionalParticipant
  - Zoom Layout Status querying to determine whether layout controls are available or not.
+ - Zoom now has setting for RecordEnalbed, defualting to true
+ - Zoom now has setting for DialOutEnabled, defaulting to true
 
 ### Changed
  - Cameras are passed to IVideoConferenceRouteControl when setting active camera
