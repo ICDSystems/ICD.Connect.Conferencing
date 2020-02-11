@@ -19,6 +19,7 @@ using ICD.Connect.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Components.Audio;
@@ -576,6 +577,8 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			addRow("Initialized", Initialized);
 			addRow("IsConnected", IsConnected);
+			addRow("RecordEnabled", RecordEnabled);
+			addRow("DialOutEnabled", DialOutEnabled);
 		}
 
 		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
@@ -593,6 +596,26 @@ namespace ICD.Connect.Conferencing.Zoom
 		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
 		{
 			return base.GetConsoleNodes();
+		}
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			yield return new GenericConsoleCommand<bool>("SetRecordEnabled", "SetRecordEnabled {true|false}",
+			                                             e => RecordEnabled = e);
+			yield return new GenericConsoleCommand<bool>("SetDialOutEnabled", "SetDialOutEnabled {true|false}",
+			                                             e => DialOutEnabled = e);
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion
