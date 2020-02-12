@@ -89,7 +89,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			               m_PresentationComponent.PresentationOutput != null;
 
 			// Force Zoom to match the requested share state
-			if (sharing != m_RequestedSharing)
+			if (m_RequestedSharing && !sharing)
 				m_PresentationComponent.StartPresentation();
 
 			bool sharingFeedback = sharing || m_RequestedSharing;
