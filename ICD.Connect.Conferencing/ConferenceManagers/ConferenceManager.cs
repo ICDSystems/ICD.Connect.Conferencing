@@ -786,7 +786,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			Unsubscribe(incomingCall);
 
-			OnIncomingCallAdded.Raise(this, new ConferenceControlIncomingCallEventArgs(control, incomingCall));
+			OnIncomingCallRemoved.Raise(this, new ConferenceControlIncomingCallEventArgs(control, incomingCall));
 		}
 
 		/// <summary>
