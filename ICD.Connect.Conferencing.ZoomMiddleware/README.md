@@ -9,7 +9,7 @@ To uninstall simply run the **Unistall.bat** Windows Batch file as an **administ
 ## Installation
 To begin the installation process run the **Install.bat** Windows Batch file as an **administrator**. The batch file will run throught the following steps and prompt the user for input:
 
-1. The installation process will attempt to uninstall an existing version of the software.
+1. The installation process will attempt to uninstall an existing version of the software. This step will fail if there is no existing version of the software.
 2. The installer will ask the user to specify a number of configuration parameters. Pressing return without specifying a value will set the parameter to its default:
 	* **Zoom Username** - The username configured in the Zoom software (defaults to **zoom**)
 	* **Zoom Password** - The password configured in the Zoom software (defaults to **noth74ing**)
@@ -25,3 +25,5 @@ To begin the installation process run the **Install.bat** Windows Batch file as 
 The Zoom Middleware Service will log any warnings or errors to **C:\ProgramData\ICD Systems\Logs**
 
 **Zoom will reject all connections unless an account has been signed in.**
+
+A TCP console is hosted at the middleware listen port + 1 (defaults to 2246)

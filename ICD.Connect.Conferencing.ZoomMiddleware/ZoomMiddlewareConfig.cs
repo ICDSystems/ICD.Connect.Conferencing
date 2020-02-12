@@ -3,7 +3,7 @@
 	public sealed class ZoomMiddlewareConfig
 	{
 		public string ZoomUsername { get; set; } = "zoom";
-		public string ZoomPassword { get; set; } = "zoomus123";
+		public string ZoomPassword { get; set; } = "noth74ing";
 		public ushort ZoomPort { get; set; } = 2244;
 		public string ListenAddress { get; set; } = "0.0.0.0";
 		public ushort ListenPort { get; set; } = 2245;
