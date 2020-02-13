@@ -103,6 +103,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Properties
 
 		/// <summary>
+		/// Gets the conference manager volume points collection.
+		/// </summary>
+		[NotNull]
+		ConferenceManagerVolumePoints VolumePoints { get; }
+
+		/// <summary>
 		/// Indicates whether this conference manager should do anything. 
 		/// True normally, false when the room that owns this conference manager has a parent combine room
 		/// </summary>
@@ -156,6 +162,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Methods
 
 		/// <summary>
+		/// Resets the conference manager back to its initial state.
+		/// </summary>
+		void Clear();
+
+		/// <summary>
 		/// Dials the given context.
 		/// </summary>
 		/// <param name="context"></param>
@@ -174,15 +185,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		[NotNull]
 		IEnumerable<IRecentCall> GetRecentCalls();
 
+		#endregion
+
+		#region Dialing Providers
+
 		/// <summary>
-		/// Gets the registered conference components.
+		/// Gets the registered conference controls.
 		/// </summary>
 		/// <returns></returns>
 		[NotNull]
 		IEnumerable<IConferenceDeviceControl> GetDialingProviders();
 
 		/// <summary>
-		/// Gets the registered conference components.
+		/// Gets the registered conference controls.
 		/// </summary>
 		/// <param name="callType"></param>
 		/// <returns></returns>
@@ -190,7 +205,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType callType);
 
 		/// <summary>
-		/// Registers the conference component.
+		/// Gets the registered feedback conference providers.
+		/// </summary>
+		/// <returns></returns>
+		[NotNull]
+		IEnumerable<IConferenceDeviceControl> GetFeedbackDialingProviders();
+
+		/// <summary>
+		/// Registers the conference control.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <param name="callType"></param>
@@ -198,28 +220,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		bool RegisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl, eCallType callType);
 
 		/// <summary>
-		/// Registers the conference component, for feedback only.
+		/// Registers the conference control, for feedback only.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
 		bool RegisterFeedbackDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Deregisters the conference component.
+		/// Deregisters the conference control.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
 		bool DeregisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Deregisters the conference component from the feedback only list.
+		/// Deregisters the conference control from the feedback only list.
 		/// </summary>
 		/// <param name="conferenceControl"></param>
 		/// <returns></returns>
 		bool DeregisterFeedbackDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
 
 		/// <summary>
-		/// Deregisters all of the conference components.
+		/// Deregisters all of the conference controls.
 		/// </summary>
 		void ClearDialingProviders();
 

@@ -33,7 +33,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
-		public event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged; 
 		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged; 
 		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
@@ -52,6 +51,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly List<IRecentCall> m_RecentCalls;
 		private readonly Dictionary<IConferenceDeviceControl, eCallType> m_DialingProviders; 
 		private readonly IcdHashSet<IConferenceDeviceControl> m_FeedbackProviders;
+		private readonly ConferenceManagerVolumePoints m_VolumePoints;
 
 		private readonly SafeCriticalSection m_ConferencesSection;
 		private readonly SafeCriticalSection m_RecentCallsSection;
@@ -84,6 +84,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				OnIsActiveChanged.Raise(this, new BoolEventArgs(m_IsActive));
 			}
 		}
+
+		/// <summary>
+		/// Gets the conference manager volume points collection.
+		/// </summary>
+		[NotNull]
+		public ConferenceManagerVolumePoints VolumePoints { get { return m_VolumePoints; } }
 
 		/// <summary>
 		/// Gets the logger.
@@ -186,6 +192,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_RecentCalls = new List<IRecentCall>();
 			m_DialingProviders = new Dictionary<IConferenceDeviceControl, eCallType>();
 			m_FeedbackProviders = new IcdHashSet<IConferenceDeviceControl>();
+			m_VolumePoints = new ConferenceManagerVolumePoints();
 
 			m_ConferencesSection = new SafeCriticalSection();
 			m_RecentCallsSection = new SafeCriticalSection();
@@ -205,7 +212,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnIsActiveChanged = null;
 			OnConferenceAdded = null;
 			OnConferenceRemoved = null;
-			OnEnforcePrivacyMuteChanged = null;
 			OnEnforceDoNotDisturbChanged = null;
 			OnEnforceAutoAnswerChanged = null;
 			OnActiveConferenceStatusChanged = null;
@@ -222,6 +228,17 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			ClearDialingProviders();
 
 			RemoveConferences(m_Conferences.ToList());
+		}
+
+		/// <summary>
+		/// Resets the conference manager back to its initial state.
+		/// </summary>
+		public void Clear()
+		{
+			ClearDialingProviders();
+			Favorites = null;
+			DialingPlan.ClearMatchers();
+			VolumePoints.Clear();
 		}
 
 		/// <summary>
@@ -267,6 +284,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			return m_RecentCallsSection.Execute(() => m_RecentCalls.ToArray());
 		}
+
+		#endregion
+
+		#region Dialing Providers
 
 		/// <summary>
 		/// Gets the registered conference providers.
@@ -461,7 +482,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			{
 				m_FeedbackProviderSection.Leave();
 			}
-
 		}
 
 		#endregion

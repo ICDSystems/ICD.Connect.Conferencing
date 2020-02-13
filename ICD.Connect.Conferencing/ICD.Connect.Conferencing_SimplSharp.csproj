@@ -79,6 +79,7 @@
     <Compile Include="Comparers\DirectoryFolderNameComparer.cs" />
     <Compile Include="ConferenceManagers\ConferenceManager.cs" />
     <Compile Include="ConferenceManagers\eEnforceState.cs" />
+    <Compile Include="ConferenceManagers\ConferenceManagerVolumePoints.cs" />
     <Compile Include="ConferenceManagers\IConferenceManager.cs" />
     <Compile Include="ConferenceManagers\Recents\AbstractRecentCall.cs" />
     <Compile Include="ConferenceManagers\Recents\IRecentCall.cs" />
@@ -229,6 +230,10 @@
     <ProjectReference Include="..\..\ICD.Connect.API\ICD.Connect.API\ICD.Connect.API_SimplSharp.csproj">
       <Project>{727F5820-5A61-440D-8899-E454FE8238D7}</Project>
       <Name>ICD.Connect.API_SimplSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ICD.Connect.Audio\ICD.Connect.Audio\ICD.Connect.Audio_SimplSharp.csproj">
+      <Project>{8ED25D96-E9A5-4E9A-A890-B4EF3AB62041}</Project>
+      <Name>ICD.Connect.Audio_SimplSharp</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ICD.Connect.Cameras\ICD.Connect.Cameras\ICD.Connect.Cameras_SimplSharp.csproj">
       <Project>{B13D593D-8BBF-4E20-ABD8-47C6095E7D3E}</Project>
