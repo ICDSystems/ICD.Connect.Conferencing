@@ -37,6 +37,8 @@ set /p ZoomPort=Zoom Port (Default 2244):
 set /p ListenAddress=Listen Address (Default 0.0.0.0):
 set /p ListenPort=Listen Port (Default 2245):
 
+set /a ConsolePort="%ListenPort%+1"
+
 REM Copying installation files to the install path
 echo --------------------------------------------------------------------------
 echo Copying installation files to the install path
@@ -52,9 +54,10 @@ echo --------------------------------------------------------------------------
 
 REM adding the firewall rule
 echo --------------------------------------------------------------------------
-echo Adding the firewall rule
+echo Adding the firewall rules
 echo --------------------------------------------------------------------------
 netsh advfirewall firewall add rule name="%ServiceName%" dir=in action=allow protocol=TCP localport="%ListenPort%" program="%TargetApplicationPath%"
+netsh advfirewall firewall add rule name="%ServiceName% Console" dir=in action=allow protocol=TCP localport="%ConsolePort%" program="%TargetApplicationPath%"
 
 REM starting the service
 echo --------------------------------------------------------------------------

@@ -27,9 +27,10 @@ rmdir /s /q "%InstallPath%"
 
 REM Removing the existing firewall rule
 echo --------------------------------------------------------------------------
-echo Attempting to delete existing firewall rule
+echo Attempting to delete existing firewall rules
 echo NOTE - Deletion step will FAIL if there is no existing firewall rule.
 echo --------------------------------------------------------------------------
 netsh advfirewall firewall delete rule name="%ServiceName%"
+netsh advfirewall firewall delete rule name="%ServiceName% Console"
 
 PAUSE
