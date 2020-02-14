@@ -8,7 +8,13 @@ namespace ICD.Connect.Conferencing.Cameras
 		/// Starts the camera moving.
 		/// </summary>
 		/// <param name="action"></param>
-		void PanTilt(eCameraPanTiltAction action);
+		void Pan(eCameraPanAction action);
+
+		/// <summary>
+		/// Starts the camera moving.
+		/// </summary>
+		/// <param name="action"></param>
+		void Tilt(eCameraTiltAction action);
 
 		/// <summary>
 		/// Stops the camera from moving.
