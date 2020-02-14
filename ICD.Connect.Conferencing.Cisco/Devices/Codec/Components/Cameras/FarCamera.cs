@@ -12,15 +12,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 	public sealed class FarCamera : AbstractCiscoCamera, IRemoteCamera
 	{
 		/// <summary>
-		/// Mapping of eCameraPanTiltAction to cisco command text
+		/// Mapping of eCameraPanAction to cisco command text
 		/// </summary>
-		private static readonly Dictionary<eCameraPanTiltAction, string> s_PanTiltActionToCisco = new Dictionary
-			<eCameraPanTiltAction, string>
+		private static readonly Dictionary<eCameraPanAction, string> s_PanActionToCisco = new Dictionary
+			<eCameraPanAction, string>
 		{
-			{eCameraPanTiltAction.Up, "Up"},
-			{eCameraPanTiltAction.Down, "Down"},
-			{eCameraPanTiltAction.Left, "Left"},
-			{eCameraPanTiltAction.Right, "Right"}
+			{eCameraPanAction.Left, "Left"},
+			{eCameraPanAction.Right, "Right"}
+		};
+
+		/// <summary>
+		/// Mapping of eCameraTiltAction to cisco command text
+		/// </summary>
+		private static readonly Dictionary<eCameraTiltAction, string> s_TiltActionToCisco = new Dictionary
+			<eCameraTiltAction, string>
+		{
+			{eCameraTiltAction.Up, "Up"},
+			{eCameraTiltAction.Down, "Down"}
 		};
 
 		/// <summary>
@@ -68,15 +76,31 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// Moves the camera.
 		/// </summary>
 		/// <param name="action"></param>
-		public override void PanTilt(eCameraPanTiltAction action)
+		public override void Pan(eCameraPanAction action)
 		{
-			if (action == eCameraPanTiltAction.Stop)
+			if (action == eCameraPanAction.Stop)
 			{
 				StopPanTilt();
 				return;
 			}
 
-			SendMoveCommand(s_PanTiltActionToCisco[action]);
+			SendMoveCommand(s_PanActionToCisco[action]);
+			Codec.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
+		}
+
+		/// <summary>
+		/// Moves the camera.
+		/// </summary>
+		/// <param name="action"></param>
+		public override void Tilt(eCameraTiltAction action)
+		{
+			if (action == eCameraTiltAction.Stop)
+			{
+				StopPanTilt();
+				return;
+			}
+
+			SendMoveCommand(s_TiltActionToCisco[action]);
 			Codec.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
 		}
 

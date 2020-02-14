@@ -1,15 +1,30 @@
-﻿using System.Collections.Generic;
-using ICD.Connect.API.Commands;
-using ICD.Connect.API.Nodes;
+﻿using System;
+using System.Collections.Generic;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 {
-	public sealed class ZoomRoomCameraControl : AbstractCameraDeviceControl<ZoomRoom>, IPanTiltControl, IZoomControl
+	public sealed class ZoomRoomCameraControl : AbstractCameraDeviceControl<ZoomRoom>
 	{
+		public override event EventHandler<CameraControlPresetsChangedApiEventArgs> OnPresetsChanged;
+		public override event EventHandler<CameraControlFeaturesChangedApiEventArgs> OnSupportedCameraFeaturesChanged;
+		public override event EventHandler<CameraControlMuteChangedApiEventArgs> OnCameraMuteStateChanged;
+
 		private readonly ZoomRoomCameraRepeater m_CameraRepeater;
+
+		public override eCameraFeatures SupportedCameraFeatures { get { return eCameraFeatures.PanTiltZoom; } }
+
+		/// <summary>
+		/// Gets the maximum number of presets this camera can support.
+		/// </summary>
+		public override int MaxPresets { get { return 0; } }
+
+		/// <summary>
+		/// Gets whether the camera is currently muted
+		/// </summary>
+		public override bool IsCameraMuted { get { return false; } }
 
 		public ZoomRoomCameraControl(ZoomRoom parent, int id)
 			: base(parent, id)
@@ -23,50 +38,49 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 		/// <summary>
 		/// Stops the camera from moving.
 		/// </summary>
-		void IPanTiltControl.Stop()
+		public override void PanStop()
 		{
-			m_CameraRepeater.StopPanTilt();
+			m_CameraRepeater.Pan(eCameraPanAction.Stop);
 		}
 
 		/// <summary>
 		/// Begin panning the camera to the left.
 		/// </summary>
-		public void PanLeft()
+		public override void PanLeft()
 		{
-			PanTilt(eCameraPanTiltAction.Left);
+			m_CameraRepeater.Pan(eCameraPanAction.Left);
 		}
 
 		/// <summary>
 		/// Begin panning the camera to the right.
 		/// </summary>
-		public void PanRight()
+		public override void PanRight()
 		{
-			PanTilt(eCameraPanTiltAction.Right);
+			m_CameraRepeater.Pan(eCameraPanAction.Right);
+		}
+
+		/// <summary>
+		/// Stops the camera from moving.
+		/// </summary>
+		public override void TiltStop()
+		{
+			m_CameraRepeater.Tilt(eCameraTiltAction.Stop);
 		}
 
 		/// <summary>
 		/// Begin tilting the camera up.
 		/// </summary>
-		public void TiltUp()
+		public override void TiltUp()
 		{
-			PanTilt(eCameraPanTiltAction.Up);
+			m_CameraRepeater.Tilt(eCameraTiltAction.Up);
 		}
 
 		/// <summary>
 		/// Begin tilting the camera down.
 		/// </summary>
-		public void TiltDown()
+		public override void TiltDown()
 		{
-			PanTilt(eCameraPanTiltAction.Down);
-		}
-
-		/// <summary>
-		/// Performs the given pan/tilt action.
-		/// </summary>
-		/// <param name="action"></param>
-		public void PanTilt(eCameraPanTiltAction action)
-		{
-			m_CameraRepeater.PanTilt(action);
+			m_CameraRepeater.Tilt(eCameraTiltAction.Down);
 		}
 
 		#endregion
@@ -74,103 +88,76 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 		#region Zoom
 
 		/// <summary>
-		/// Stops the camera from moving.
-		/// </summary>
-		void IZoomControl.Stop()
-		{
-			m_CameraRepeater.StopZoom();
-		}
-
-		/// <summary>
 		/// Begin zooming the camera in.
 		/// </summary>
-		public void ZoomIn()
+		public override void ZoomIn()
 		{
-			Zoom(eCameraZoomAction.ZoomIn);
+			m_CameraRepeater.Zoom(eCameraZoomAction.ZoomIn);
 		}
 
 		/// <summary>
 		/// Begin zooming the camera out.
 		/// </summary>
-		public void ZoomOut()
+		public override void ZoomOut()
 		{
-			Zoom(eCameraZoomAction.ZoomOut);
+			m_CameraRepeater.Zoom(eCameraZoomAction.ZoomOut);
 		}
 
 		/// <summary>
-		/// Performs the given zoom action.
+		/// Stops the camera from moving.
 		/// </summary>
-		public void Zoom(eCameraZoomAction action)
+		public override void ZoomStop()
 		{
-			m_CameraRepeater.Zoom(action);
+			m_CameraRepeater.Zoom(eCameraZoomAction.Stop);
 		}
 
 		#endregion
 
-		#region Console
+		#region Presets
 
 		/// <summary>
-		/// Gets the child console nodes.
+		/// Gets the stored camera presets.
 		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		public override IEnumerable<CameraPreset> GetPresets()
 		{
-			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-				yield return node;
-
-			foreach (IConsoleNodeBase node in PanTiltControlConsole.GetConsoleNodes(this))
-				yield return node;
-
-			foreach (IConsoleNodeBase node in ZoomControlConsole.GetConsoleNodes(this))
-				yield return node;
+			yield break;
 		}
 
 		/// <summary>
-		/// Workaround for "unverifiable code" warning.
+		/// Tells the camera to change its position to the given preset.
 		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
+		/// <param name="presetId">The id of the preset to position to.</param>
+		public override void ActivatePreset(int presetId)
 		{
-			return base.GetConsoleNodes();
+			throw new NotSupportedException();
 		}
 
 		/// <summary>
-		/// Calls the delegate for each console status item.
+		/// Stores the cameras current position in the given preset index.
 		/// </summary>
-		/// <param name="addRow"></param>
-		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		/// <param name="presetId">The index to store the preset at.</param>
+		public override void StorePreset(int presetId)
 		{
-			base.BuildConsoleStatus(addRow);
-
-			PanTiltControlConsole.BuildConsoleStatus(this, addRow);
-			ZoomControlConsole.BuildConsoleStatus(this, addRow);
-		}
-
-		/// <summary>
-		/// Gets the child console commands.
-		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
-		{
-			foreach (IConsoleCommand command in GetBaseConsoleCommands())
-				yield return command;
-
-			foreach (IConsoleCommand command in PanTiltControlConsole.GetConsoleCommands(this))
-				yield return command;
-
-			foreach (IConsoleCommand command in ZoomControlConsole.GetConsoleCommands(this))
-				yield return command;
-		}
-
-		/// <summary>
-		/// Workaround for "unverifiable code" warning.
-		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
-		{
-			return base.GetConsoleCommands();
+			throw new NotSupportedException();
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Sets if the camera mute state should be active
+		/// </summary>
+		/// <param name="enable"></param>
+		public override void MuteCamera(bool enable)
+		{
+			throw new NotSupportedException();
+		}
+
+		/// <summary>
+		/// Resets camera to its predefined home position
+		/// </summary>
+		public override void SendCameraHome()
+		{
+			throw new NotSupportedException();
+		}
 	}
 }

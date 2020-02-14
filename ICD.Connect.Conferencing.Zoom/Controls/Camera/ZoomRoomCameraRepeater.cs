@@ -16,16 +16,25 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 		private readonly CameraComponent m_CameraComponent;
 
 		/// <summary>
-		/// Mapping of eCameraPanTiltAction to Zoom zCommand text
+		/// Mapping of eCameraPanAction to Zoom zCommand text
 		/// </summary>
-		private static readonly BiDictionary<eCameraPanTiltAction, eCameraControlAction> s_PanTiltActionToZoom =
+		private static readonly BiDictionary<eCameraPanAction, eCameraControlAction> s_PanActionToZoom =
 			new BiDictionary
-				<eCameraPanTiltAction, eCameraControlAction>
+				<eCameraPanAction, eCameraControlAction>
 				{
-					{eCameraPanTiltAction.Up, eCameraControlAction.Up},
-					{eCameraPanTiltAction.Down, eCameraControlAction.Down},
-					{eCameraPanTiltAction.Left, eCameraControlAction.Left},
-					{eCameraPanTiltAction.Right, eCameraControlAction.Right},
+					{eCameraPanAction.Left, eCameraControlAction.Left},
+					{eCameraPanAction.Right, eCameraControlAction.Right}
+				};
+
+		/// <summary>
+		/// Mapping of eCameraTiltAction to Zoom zCommand text
+		/// </summary>
+		private static readonly BiDictionary<eCameraTiltAction, eCameraControlAction> s_TiltActionToZoom =
+			new BiDictionary
+				<eCameraTiltAction, eCameraControlAction>
+				{
+					{eCameraTiltAction.Up, eCameraControlAction.Up},
+					{eCameraTiltAction.Down, eCameraControlAction.Down}
 				};
 
 		/// <summary>
@@ -81,9 +90,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 
 		#region Control Methods
 
-		public void PanTilt(eCameraPanTiltAction action)
+		public void Pan(eCameraPanAction action)
 		{
-			if (action == eCameraPanTiltAction.Stop)
+			if (action == eCameraPanAction.Stop)
 			{
 				StopPanTilt();
 				return;
@@ -96,9 +105,30 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 			}
 
 			m_CameraComponent.ControlCamera(m_UserId, eCameraControlState.Start,
-			                                s_PanTiltActionToZoom.GetValue(action));
+			                                s_PanActionToZoom.GetValue(action));
 			m_PanTiltContinueTimer.Reset(500);
-			UpdateLastCommand(eCameraControlState.Start, s_PanTiltActionToZoom.GetValue(action));
+			UpdateLastCommand(eCameraControlState.Start, s_PanActionToZoom.GetValue(action));
+		}
+
+
+		public void Tilt(eCameraTiltAction action)
+		{
+			if (action == eCameraTiltAction.Stop)
+			{
+				StopPanTilt();
+				return;
+			}
+
+			if (!m_HaveControl)
+			{
+				RequestControl();
+				return;
+			}
+
+			m_CameraComponent.ControlCamera(m_UserId, eCameraControlState.Start,
+											s_TiltActionToZoom.GetValue(action));
+			m_PanTiltContinueTimer.Reset(500);
+			UpdateLastCommand(eCameraControlState.Start, s_TiltActionToZoom.GetValue(action));
 		}
 
 		public void StopPanTilt()

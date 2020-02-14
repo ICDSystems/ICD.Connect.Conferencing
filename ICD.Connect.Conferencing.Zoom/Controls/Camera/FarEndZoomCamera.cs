@@ -16,9 +16,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 			m_CameraRepeater = new ZoomRoomCameraRepeater(cameraComponent, user);
 		}
 
-		public void PanTilt(eCameraPanTiltAction action)
+		public void Pan(eCameraPanAction action)
 		{
-			m_CameraRepeater.PanTilt(action);
+			m_CameraRepeater.Pan(action);
+		}
+
+		public void Tilt(eCameraTiltAction action)
+		{
+			m_CameraRepeater.Tilt(action);
 		}
 
 		public void StopPanTilt()
@@ -70,10 +75,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Camera
 			yield return new ConsoleCommand("ZoomIn", "Zooms the camera in.", () => Zoom(eCameraZoomAction.ZoomIn));
 			yield return new ConsoleCommand("ZoomOut", "Zooms the camera out", () => Zoom(eCameraZoomAction.ZoomOut));
 			yield return new ConsoleCommand("StopZoom", "Stops the current zoom action", () => StopZoom());
-			yield return new ConsoleCommand("PTUp", "Moves the camera up", () => PanTilt(eCameraPanTiltAction.Up));
-			yield return new ConsoleCommand("PTDown", "Moves the camera down", () => PanTilt(eCameraPanTiltAction.Down));
-			yield return new ConsoleCommand("PTLeft", "Moves the camera left", () => PanTilt(eCameraPanTiltAction.Left));
-			yield return new ConsoleCommand("PTRight", "Moves the camera right", () => PanTilt(eCameraPanTiltAction.Right));
+			yield return new ConsoleCommand("TiltUp", "Moves the camera up", () => Tilt(eCameraTiltAction.Up));
+			yield return new ConsoleCommand("TiltDown", "Moves the camera down", () => Tilt(eCameraTiltAction.Down));
+			yield return new ConsoleCommand("PanLeft", "Moves the camera left", () => Pan(eCameraPanAction.Left));
+			yield return new ConsoleCommand("PanRight", "Moves the camera right", () => Pan(eCameraPanAction.Right));
 			yield return new ConsoleCommand("StopPT", "Stops the current Pan Tilt movement", () => StopPanTilt());
 		}
 

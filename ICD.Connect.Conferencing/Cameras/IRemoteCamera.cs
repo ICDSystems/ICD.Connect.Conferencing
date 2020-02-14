@@ -1,15 +1,21 @@
 ﻿using ICD.Connect.API.Nodes;
-using ICD.Connect.Cameras;
+﻿using ICD.Connect.Cameras;
 
 namespace ICD.Connect.Conferencing.Cameras
 {
-	public interface IRemoteCamera : IConsoleNode
+	public interface IRemoteCamera : IConsoleNodeBase
 	{
 		/// <summary>
 		/// Starts the camera moving.
 		/// </summary>
 		/// <param name="action"></param>
-		void PanTilt(eCameraPanTiltAction action);
+		void Pan(eCameraPanAction action);
+
+		/// <summary>
+		/// Starts the camera moving.
+		/// </summary>
+		/// <param name="action"></param>
+		void Tilt(eCameraTiltAction action);
 
 		/// <summary>
 		/// Stops the camera from moving.
