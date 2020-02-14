@@ -212,6 +212,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public ConferenceManager()
 		{
+			// Enforce Privacy Mute By Default
+			m_EnforcePrivacyMute = true;
+
 			m_RecentConferences = new ScrollQueue<IConference>(RECENT_LENGTH);
 			m_RecentSources = new ScrollQueue<IConferenceSource>(RECENT_LENGTH);
 			m_SourceTypeToProvider = new Dictionary<eConferenceSourceType, IDialingDeviceControl>();
