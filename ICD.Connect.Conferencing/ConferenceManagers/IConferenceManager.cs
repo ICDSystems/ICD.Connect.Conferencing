@@ -94,8 +94,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		bool IsActive { get; set; }
 
-		bool EnforcePrivacyMute { get; set; }
-
 		eEnforceState EnforceDoNotDisturb { get; set; }
 
 		eEnforceState EnforceAutoAnswer { get; set; }

@@ -58,7 +58,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private IDialingDeviceControl m_DefaultDialingControl;
 
 		private eInCall m_IsInCall;
-		private bool m_EnforcePrivacyMute;
 		private eEnforceState m_EnforceDoNotDisturb;
 		private eEnforceState m_EnforceAutoAnswer;
 
@@ -74,20 +73,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Gets the logger.
 		/// </summary>
 		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
-
-		public bool EnforcePrivacyMute
-		{
-			get { return m_EnforcePrivacyMute; }
-			set
-			{
-				if(value == m_EnforcePrivacyMute)
-					return;
-
-				m_EnforcePrivacyMute = value;
-
-				OnEnforcePrivacyMuteChanged(this, new BoolEventArgs(m_EnforcePrivacyMute));
-			}
-		}
 
 		public eEnforceState EnforceDoNotDisturb
 		{
@@ -212,9 +197,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public ConferenceManager()
 		{
-			// Enforce Privacy Mute By Default
-			m_EnforcePrivacyMute = true;
-
 			m_RecentConferences = new ScrollQueue<IConference>(RECENT_LENGTH);
 			m_RecentSources = new ScrollQueue<IConferenceSource>(RECENT_LENGTH);
 			m_SourceTypeToProvider = new Dictionary<eConferenceSourceType, IDialingDeviceControl>();
@@ -516,7 +498,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="dialingControl"></param>
 		private void UpdateFeedbackProvider(IDialingDeviceControl dialingControl)
 		{
-			if (!EnforcePrivacyMute || !IsActive)
+			if (!IsActive)
 				return;
 
 			if (dialingControl.PrivacyMuted != PrivacyMuted)
@@ -560,8 +542,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					throw new ArgumentOutOfRangeException();
 			}
 
-			if (EnforcePrivacyMute)
-				dialingControl.SetPrivacyMute(PrivacyMuted);
+			dialingControl.SetPrivacyMute(PrivacyMuted);
 		}
 
 		/// <summary>
