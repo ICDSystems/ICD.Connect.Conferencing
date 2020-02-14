@@ -24,6 +24,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	{
 		private const int RECENT_LENGTH = 100;
 
+		public event EventHandler<BoolEventArgs> OnIsActiveChanged; 
+
 		public event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged; 
 		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged; 
 		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
@@ -60,6 +62,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private eInCall m_IsInCall;
 		private eEnforceState m_EnforceDoNotDisturb;
 		private eEnforceState m_EnforceAutoAnswer;
+		private bool m_IsActive;
 
 		#region Properties
 
@@ -67,7 +70,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Indicates whether this conference manager should do anything. 
 		/// True normally, false when the room that owns this conference manager has a parent combine room
 		/// </summary>
-		public bool IsActive { get; set; }
+		public bool IsActive
+		{
+			get { return m_IsActive; }
+			set
+			{
+				if (value == m_IsActive)
+					return;
+
+				m_IsActive = value;
+
+				OnIsActiveChanged.Raise(this, new BoolEventArgs(m_IsActive));
+			}
+		}
 
 		/// <summary>
 		/// Gets the logger.
@@ -197,6 +212,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public ConferenceManager()
 		{
+			IsActive = true;
+
 			m_RecentConferences = new ScrollQueue<IConference>(RECENT_LENGTH);
 			m_RecentSources = new ScrollQueue<IConferenceSource>(RECENT_LENGTH);
 			m_SourceTypeToProvider = new Dictionary<eConferenceSourceType, IDialingDeviceControl>();
@@ -218,6 +235,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Dispose()
 		{
+			OnIsActiveChanged = null;
 			OnEnforcePrivacyMuteChanged = null;
 			OnEnforceDoNotDisturbChanged = null;
 			OnEnforceAutoAnswerChanged = null;

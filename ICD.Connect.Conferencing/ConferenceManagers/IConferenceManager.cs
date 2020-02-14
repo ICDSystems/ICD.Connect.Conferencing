@@ -21,6 +21,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Events
 
 		/// <summary>
+		/// Raised when the Is Active state changes.
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnIsActiveChanged; 
+
+		/// <summary>
 		/// Raised when the enforcement setting for privacy mute changes
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged;
