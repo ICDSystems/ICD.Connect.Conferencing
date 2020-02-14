@@ -25,11 +25,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	{
 		private const int RECENT_LENGTH = 100;
 
-		public event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
+		public event EventHandler<BoolEventArgs> OnIsActiveChanged;
 
 		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
+		public event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged; 
+		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged; 
+		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
 		public event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
 		public event EventHandler OnConferenceSourceAddedOrRemoved;
 		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
@@ -53,30 +56,66 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly DialingPlan m_DialingPlan;
 
 		private eInCall m_IsInCall;
-		private bool m_IsAuthoritative;
+		private eEnforceState m_EnforceDoNotDisturb;
+		private eEnforceState m_EnforceAutoAnswer;
+		private bool m_IsActive;
 
 		#region Properties
+
+		/// <summary>
+		/// Indicates whether this conference manager should do anything. 
+		/// True normally, false when the room that owns this conference manager has a parent combine room
+		/// </summary>
+		public bool IsActive
+		{
+			get { return m_IsActive; }
+			set
+			{
+				if (value == m_IsActive)
+					return;
+
+				m_IsActive = value;
+
+				OnIsActiveChanged.Raise(this, new BoolEventArgs(m_IsActive));
+			}
+		}
 
 		/// <summary>
 		/// Gets the logger.
 		/// </summary>
 		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
 
-		/// <summary>
-		/// When true the conference manager will force registered dialers to match
-		/// the state of the Privacy Mute, Do Not Disturb and Auto Answer properties.
-		/// </summary>
-		public bool IsAuthoritative
+		public eEnforceState EnforceDoNotDisturb
 		{
-			get { return m_IsAuthoritative; }
+			get { return m_EnforceDoNotDisturb; }
 			set
 			{
-				if (value == m_IsAuthoritative)
+				if (m_EnforceDoNotDisturb == value)
 					return;
 
-				m_IsAuthoritative = value;
+				m_EnforceDoNotDisturb = value;
 
-				OnIsAuthoritativeChanged.Raise(this, new BoolEventArgs(m_IsAuthoritative));
+				OnEnforceDoNotDisturbChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceDoNotDisturb));
+
+				if (m_EnforceDoNotDisturb != eEnforceState.DoNotEnforce)
+					UpdateProviders();
+			}
+		}
+
+		public eEnforceState EnforceAutoAnswer
+		{
+			get { return m_EnforceAutoAnswer; }
+			set
+			{
+				if(m_EnforceAutoAnswer == value)
+					return;
+
+				m_EnforceAutoAnswer = value;
+
+				OnEnforceAutoAnswerChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceAutoAnswer));
+
+				if (m_EnforceAutoAnswer != eEnforceState.DoNotEnforce)
+					UpdateProviders();
 			}
 		}
 
@@ -101,19 +140,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public IEnumerable<IConference> OnlineConferences { get { return m_Conferences.Where(c => c.IsOnline()); } }
 
 		/// <summary>
-		/// Gets the AutoAnswer state.
-		/// </summary>
-		public bool AutoAnswer { get; private set; }
-
-		/// <summary>
 		/// Gets the current microphone mute state.
 		/// </summary>
 		public bool PrivacyMuted { get; private set; }
-
-		/// <summary>
-		/// Gets the DoNotDisturb state.
-		/// </summary>
-		public bool DoNotDisturb { get; private set; }
 
 		/// <summary>
 		/// Returns true if actively in a call.
@@ -146,7 +175,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public ConferenceManager()
 		{
-			m_IsAuthoritative = true;
+			IsActive = true;
 
 			m_Conferences = new IcdHashSet<IConference>();
 			m_RecentParticipants = new ScrollQueue<IParticipant>(RECENT_LENGTH);
@@ -169,8 +198,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Dispose()
 		{
-			OnIsAuthoritativeChanged = null;
+			OnIsActiveChanged = null;
 			OnConferenceAdded = null;
+			OnConferenceRemoved = null;
+			OnEnforcePrivacyMuteChanged = null;
+			OnEnforceDoNotDisturbChanged = null;
+			OnEnforceAutoAnswerChanged = null;
 			OnActiveConferenceStatusChanged = null;
 			OnRecentSourceAdded = null;
 			OnActiveSourceStatusChanged = null;
@@ -199,34 +232,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			conferenceControl.Dial(dialContext);
-		}
-
-		/// <summary>
-		/// Enables DoNotDisturb.
-		/// </summary>
-		/// <param name="state"></param>
-		public void EnableDoNotDisturb(bool state)
-		{
-			if (state == DoNotDisturb)
-				return;
-
-			DoNotDisturb = state;
-
-			UpdateProviders();
-		}
-
-		/// <summary>
-		/// Enables AutoAnswer.
-		/// </summary>
-		/// <param name="state"></param>
-		public void EnableAutoAnswer(bool state)
-		{
-			if (state == AutoAnswer)
-				return;
-
-			AutoAnswer = state;
-
-			UpdateProviders();
 		}
 
 		/// <summary>
@@ -549,7 +554,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="conferenceControl"></param>
 		private void UpdateFeedbackProvider(IConferenceDeviceControl conferenceControl)
 		{
-			if (!m_IsAuthoritative)
+			if (!IsActive)
 				return;
 
 			bool privacyMute = PrivacyMuted;
@@ -563,16 +568,36 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="conferenceControl"></param>
 		private void UpdateProvider(IConferenceDeviceControl conferenceControl)
 		{
-			if (!m_IsAuthoritative)
+			if(!IsActive)
 				return;
 
-			bool autoAnswer = AutoAnswer;
-			if (conferenceControl.AutoAnswer != autoAnswer)
-				conferenceControl.SetAutoAnswer(autoAnswer);
+			switch (EnforceAutoAnswer)
+			{
+				case eEnforceState.DoNotEnforce:
+					break;
+				case eEnforceState.EnforceOn:
+					conferenceControl.SetAutoAnswer(true);
+					break;
+				case eEnforceState.EnforceOff:
+					conferenceControl.SetAutoAnswer(false);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 
-			bool doNotDisturb = DoNotDisturb;
-			if (conferenceControl.DoNotDisturb != doNotDisturb)
-				conferenceControl.SetDoNotDisturb(doNotDisturb);
+			switch (EnforceDoNotDisturb)
+			{
+				case eEnforceState.DoNotEnforce:
+					break;
+				case eEnforceState.EnforceOn:
+					conferenceControl.SetDoNotDisturb(true);
+					break;
+				case eEnforceState.EnforceOff:
+					conferenceControl.SetDoNotDisturb(false);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 
 			bool privacyMute = PrivacyMuted;
 			if (conferenceControl.PrivacyMuted != privacyMute)

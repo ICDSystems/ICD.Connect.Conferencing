@@ -5,7 +5,6 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
@@ -17,18 +16,18 @@ using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 {
-	public sealed class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>,
-	                                             ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
+	public sealed class CiscoCodecCameraDevice : AbstractCameraDevice<CiscoCodecCameraDeviceSettings>
 	{
+		#region Events
+
 		/// <summary>
 		/// Raised when the parent codec changes.
 		/// </summary>
 		public event EventHandler OnCodecChanged;
 
-		/// <summary>
-		/// Raised when the presets are changed.
-		/// </summary>
-		public event EventHandler OnPresetsChanged;
+        #endregion
+
+		#region Private Members
 
 		[CanBeNull]
 		private CiscoCodecDevice m_Codec;
@@ -41,6 +40,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		private int? m_PanTiltSpeed;
 		private int? m_ZoomSpeed;
+
+		#endregion
 
 		#region Properties
 
@@ -59,7 +60,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <summary>
 		/// Gets the maximum number of presets this camera can support.
 		/// </summary>
-		public int MaxPresets { get { return 35; } }
+		public override int MaxPresets { get { return 35; } }
 
 		private int PanSpeed { get { return m_PanTiltSpeed ?? (m_Camera == null ? 0 : m_Camera.PanSpeed); } }
 
@@ -75,10 +76,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		public CiscoCodecCameraDevice()
 		{
 			Controls.Add(new GenericCameraRouteSourceControl<CiscoCodecCameraDevice>(this, 0));
-			Controls.Add(new PanTiltControl<CiscoCodecCameraDevice>(this, 1));
-			Controls.Add(new ZoomControl<CiscoCodecCameraDevice>(this, 2));
-			Controls.Add(new PresetControl<CiscoCodecCameraDevice>(this, 3));
-			Controls.Add(new CiscoCodecCameraDevicePowerControl(this, 4));
+			Controls.Add(new CameraDeviceControl(this, 1));
+			Controls.Add(new CiscoCodecCameraDevicePowerControl(this, 2));
 		}
 
 		/// <summary>
@@ -87,12 +86,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnCodecChanged = null;
-			OnPresetsChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
 
-		#region ICameraWithPresets
+		#region Methods
 
 		[PublicAPI]
 		public void SetCodec(CiscoCodecDevice codec)
@@ -116,33 +114,53 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		}
 
 		/// <summary>
-		/// Starts rotating the camera with the given action.
+		/// Starts panning the camera with the given action.
 		/// </summary>
 		/// <param name="action"></param>
-		public void PanTilt(eCameraPanTiltAction action)
+		public override void Pan(eCameraPanAction action)
 		{
 			if (m_Camera == null)
 				return;
 
 			switch (action)
 			{
-				case eCameraPanTiltAction.Left:
+				case eCameraPanAction.Left:
 					m_Camera.Pan(eCameraPan.Left, PanSpeed);
 					break;
 
-				case eCameraPanTiltAction.Right:
+				case eCameraPanAction.Right:
 					m_Camera.Pan(eCameraPan.Right, PanSpeed);
 					break;
 
-				case eCameraPanTiltAction.Up:
+				case eCameraPanAction.Stop:
+					m_Camera.StopPanTilt();
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException("action");
+			}
+		}
+
+		/// <summary>
+		/// Starts tilting the camera with the given action.
+		/// </summary>
+		/// <param name="action"></param>
+		public override void Tilt(eCameraTiltAction action)
+		{
+			if (m_Camera == null)
+				return;
+
+			switch (action)
+			{
+				case eCameraTiltAction.Up:
 					m_Camera.Tilt(eCameraTilt.Up, TiltSpeed);
 					break;
 
-				case eCameraPanTiltAction.Down:
+				case eCameraTiltAction.Down:
 					m_Camera.Tilt(eCameraTilt.Down, TiltSpeed);
 					break;
 
-				case eCameraPanTiltAction.Stop:
+				case eCameraTiltAction.Stop:
 					m_Camera.StopPanTilt();
 					break;
 
@@ -155,7 +173,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// Starts zooming the camera with the given action.
 		/// </summary>
 		/// <param name="action"></param>
-		public void Zoom(eCameraZoomAction action)
+		public override void Zoom(eCameraZoomAction action)
 		{
 			if (m_Camera == null)
 				return;
@@ -182,7 +200,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <summary>
 		/// Gets the stored camera presets.
 		/// </summary>
-		public IEnumerable<CameraPreset> GetPresets()
+		public override IEnumerable<CameraPreset> GetPresets()
 		{
 			return m_CamerasComponent == null
 				       ? Enumerable.Empty<CameraPreset>()
@@ -193,7 +211,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// Tells the camera to change its position to the given preset.
 		/// </summary>
 		/// <param name="presetId">The id of the preset to position to.</param>
-		public void ActivatePreset(int presetId)
+		public override void ActivatePreset(int presetId)
 		{
 			if (m_Camera == null)
 				return;
@@ -211,7 +229,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// Stores the cameras current position in the given preset index.
 		/// </summary>
 		/// <param name="presetId">The index to store the preset at.</param>
-		public void StorePreset(int presetId)
+		public override void StorePreset(int presetId)
 		{
 			if (m_Camera == null)
 				return;
@@ -226,6 +244,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		}
 
 		/// <summary>
+		/// Sets if the camera mute state should be active
+		/// </summary>
+		/// <param name="enable"></param>
+		public override void MuteCamera(bool enable)
+		{
+			throw new NotSupportedException();
+		}
+
+		/// <summary>
+		/// Resets camera to its predefined home position
+		/// </summary>
+		public override void SendCameraHome()
+		{
+			if(m_Camera == null)
+				return;
+
+			m_Camera.Reset();
+		}
+
+		/// <summary>
 		/// Gets the current online status of the device.
 		/// </summary>
 		/// <returns></returns>
@@ -233,7 +271,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		{
 			return m_Codec != null && m_Codec.IsOnline;
 		}
-
 		#endregion
 
 		#region Codec Callbacks
@@ -307,10 +344,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <param name="eventArgs"></param>
 		private void CamerasComponentOnPresetsChanged(object sender, IntEventArgs eventArgs)
 		{
-			if (eventArgs.Data != CameraId)
-				return;
-
-			OnPresetsChanged.Raise(this);
+			if (eventArgs.Data == CameraId)
+				RaisePresetsChanged();
 		}
 
 		#endregion
@@ -326,6 +361,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			m_PanTiltSpeed = null;
 			m_ZoomSpeed = null;
+
+			SupportedCameraFeatures = eCameraFeatures.None;
 
 			CameraId = 0;
 			SetCodec(null);
@@ -360,6 +397,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			}
 
 			SetCodec(codec);
+
+			SupportedCameraFeatures =
+				m_Camera == null
+					? eCameraFeatures.None
+					: eCameraFeatures.PanTiltZoom |
+					  eCameraFeatures.Presets |
+					  eCameraFeatures.Home;
 
 			m_PanTiltSpeed = settings.PanTiltSpeed;
 			m_ZoomSpeed = settings.ZoomSpeed;
@@ -397,66 +441,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			addRow("Pan Speed", PanSpeed);
 			addRow("Tilt Speed", TiltSpeed);
 			addRow("Zoom Speed", ZoomSpeed);
-
-			CameraWithPanTiltConsole.BuildConsoleStatus(this, addRow);
-			CameraWithZoomConsole.BuildConsoleStatus(this, addRow);
-			CameraWithPresetsConsole.BuildConsoleStatus(this, addRow);
-		}
-
-		/// <summary>
-		/// Gets the child console commands.
-		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
-		{
-			foreach (IConsoleCommand command in GetBaseConsoleCommands())
-				yield return command;
-
-			foreach (IConsoleCommand command in CameraWithPanTiltConsole.GetConsoleCommands(this))
-				yield return command;
-
-			foreach (IConsoleCommand command in CameraWithZoomConsole.GetConsoleCommands(this))
-				yield return command;
-
-			foreach (IConsoleCommand command in CameraWithPresetsConsole.GetConsoleCommands(this))
-				yield return command;
-		}
-
-		/// <summary>
-		/// Workaround for "unverifiable code" warning.
-		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
-		{
-			return base.GetConsoleCommands();
-		}
-
-		/// <summary>
-		/// Gets the child console nodes.
-		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
-			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-				yield return node;
-
-			foreach (IConsoleNodeBase node in CameraWithPanTiltConsole.GetConsoleNodes(this))
-				yield return node;
-
-			foreach (IConsoleNodeBase node in CameraWithZoomConsole.GetConsoleNodes(this))
-				yield return node;
-
-			foreach (IConsoleNodeBase node in CameraWithPresetsConsole.GetConsoleNodes(this))
-				yield return node;
-		}
-
-		/// <summary>
-		/// Workaround for "unverifiable code" warning.
-		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
-		{
-			return base.GetConsoleNodes();
 		}
 
 		#endregion
