@@ -76,22 +76,37 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public event EventHandler<VideoConnectionStateEventArgs> OnVideoInputConnectorConnectionStateChanged;
 
 		/// <summary>
+		/// Raised when the main video (camera) mute state changes.
+		/// </summary>
+		[PublicAPI]
+		public event EventHandler<BoolEventArgs> OnMainVideoMuteChanged;
+
+		/// <summary>
 		/// Called when the number of monitors changes.
 		/// </summary>
 		[PublicAPI]
 		public event EventHandler<MonitorsEventArgs> OnMonitorsChanged;
 
+		/// <summary>
+		/// Raised when the camera mute status changes
+		/// </summary>
+		[PublicAPI]
+		public event EventHandler<BoolEventArgs> OnCamerasMutedChanged; 
+
 		private bool m_SelfViewEnabled;
 		private bool m_SelfViewFullScreenEnabled;
+		private bool m_CamerasMuted;
 		private ePipPosition m_SelfViewPosition;
 		private eSelfViewMonitorRole m_SelfViewMonitor;
 		private ePipPosition m_ActiveSpeakerPosition;
 		private int m_MainVideoSource;
 		private eMonitors m_Monitors;
+		private bool m_MainVideoMute;
 
 		private readonly Dictionary<int, VideoSource> m_VideoSources;
 		private readonly Dictionary<int, VideoInputConnector> m_VideoInputConnectors;
 		private readonly Dictionary<int, VideoOutputConnector> m_VideoOutputConnectors;
+		
 
 		#region Properties
 
@@ -140,6 +155,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 				Codec.Log(eSeverity.Informational, "Selfview Fullscreen is {0}", m_SelfViewFullScreenEnabled ? "On" : "Off");
 
 				OnSelfViewFullScreenEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewFullScreenEnabled));
+			}
+		}
+
+		/// <summary>
+		/// Gets the current camera mute state
+		/// </summary>
+		[PublicAPI]
+		public bool CamerasMuted
+		{
+			get { return m_CamerasMuted; }
+			private set
+			{
+				if (value == m_CamerasMuted)
+					return;
+
+				m_CamerasMuted = value;
+
+				Codec.Log(eSeverity.Informational, "Cameras Mute is {0}", m_CamerasMuted ? "On" : "Off");
+
+				OnCamerasMutedChanged.Raise(this, new BoolEventArgs(m_CamerasMuted));
 			}
 		}
 
@@ -220,6 +255,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 				Codec.Log(eSeverity.Informational, "Near End Input {0} is Selected", m_MainVideoSource);
 
 				OnMainVideoSourceChanged.Raise(this, new IntEventArgs(m_MainVideoSource));
+			}
+		}
+
+		/// <summary>
+		/// Gets if the main video source is muted (camera mute)
+		/// </summary>
+		[PublicAPI]
+		public bool MainVideoMute
+		{
+			get { return m_MainVideoMute; }
+			private set
+			{
+				if (value == m_MainVideoMute)
+					return;
+
+				m_MainVideoMute = value;
+
+				Codec.Log(eSeverity.Informational, "Main video mute set to {0}", m_MainVideoMute);
+
+				OnMainVideoMuteChanged.Raise(this, new BoolEventArgs(m_MainVideoMute));
 			}
 		}
 
@@ -388,6 +443,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		}
 
 		/// <summary>
+		/// Sets the state of the main input (Camera) video mute.
+		/// </summary>
+		/// <param name="mute"></param>
+		[PublicAPI]
+		public void SetMainVideoMute(bool mute)
+		{
+			string state = mute ? "Mute" : "Unmute";
+			Codec.SendCommand("xCommand Video Input MainVideo {0}", state);
+			Codec.Log(eSeverity.Informational, "Setting Main Video Mute: {0}", state);
+		}
+
+		/// <summary>
 		/// Gets an array of video input connectors for the given connector type.
 		/// </summary>
 		/// <param name="type"></param>
@@ -517,6 +584,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 										 "PIPPosition");
 			codec.RegisterParserCallback(ParseSelfViewFullscreenStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										 "FullscreenMode");
+			codec.RegisterParserCallback(ParseCameraMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "MainVideoMute");
 			codec.RegisterParserCallback(ParseSelfViewMonitorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										 "OnMonitorRole");
 			codec.RegisterParserCallback(ParseActiveSpeakerPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video",
@@ -528,6 +596,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 										 "Connector");
 			codec.RegisterParserCallback(ParseMainVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										 "MainVideoSource");
+			codec.RegisterParserCallback(ParseMainVideoMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "MainVideoMute");
 			codec.RegisterParserCallback(ParseMonitors, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Monitors");
 		}
 
@@ -547,6 +616,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 										   "PIPPosition");
 			codec.UnregisterParserCallback(ParseSelfViewFullscreenStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										   "FullscreenMode");
+			codec.UnregisterParserCallback(ParseCameraMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "MainVideoMute");
 			codec.UnregisterParserCallback(ParseSelfViewMonitorStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Selfview",
 										   "OnMonitorRole");
 			codec.UnregisterParserCallback(ParseActiveSpeakerPositionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video",
@@ -558,6 +628,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 										   "Connector");
 			codec.UnregisterParserCallback(ParseMainVideoSourceStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input",
 										   "MainVideoSource");
+			codec.UnregisterParserCallback(ParseMainVideoMuteStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Input", "MainVideoMute");
 			codec.UnregisterParserCallback(ParseMonitors, CiscoCodecDevice.XSTATUS_ELEMENT, "Video", "Monitors");
 		}
 
@@ -583,6 +654,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			SelfViewFullScreenEnabled = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
+		private void ParseCameraMuteStatus(CiscoCodecDevice sender, string resultId, string xml)
+		{
+			CamerasMuted = XmlUtils.GetInnerXml(xml) == "On";
+		}
+
 		private void ParseSelfViewMonitorStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
@@ -604,6 +680,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 				m_VideoSources[sourceId].UpdateFromXml(xml);
 			else
 				m_VideoSources[sourceId] = source;
+		}
+
+		private void ParseMainVideoMuteStatus(CiscoCodecDevice sender, string resultid, string xml)
+		{
+			MainVideoMute = XmlUtils.GetInnerXml(xml) == "On";
 		}
 
 		private void ParseVideoInputConnectorStatus(CiscoCodecDevice sender, string resultId, string xml)
@@ -713,6 +794,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			addRow("Input Count", VideoInputConnectorCount);
 			addRow("Output Count", VideoOutputConnectorCount);
 			addRow("SelfView Enabled", SelfViewEnabled);
+			addRow("Camera Mute Enabled", CamerasMuted);
 			addRow("SelfView Fullscreen", SelfViewFullScreenEnabled);
 			addRow("SelfView Position", SelfViewPosition);
 			addRow("SelfView Monitor", SelfViewMonitor);

@@ -238,23 +238,39 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// Starts the camera moving.
 		/// </summary>
 		/// <param name="action"></param>
-		public override void PanTilt(eCameraPanTiltAction action)
+		public override void Pan(eCameraPanAction action)
 		{
 			switch (action)
 			{
-				case eCameraPanTiltAction.Left:
+				case eCameraPanAction.Left:
 					Pan(eCameraPan.Left);
 					break;
-				case eCameraPanTiltAction.Right:
+				case eCameraPanAction.Right:
 					Pan(eCameraPan.Right);
 					break;
-				case eCameraPanTiltAction.Up:
+				case eCameraPanAction.Stop:
+					StopPanTilt();
+					break;
+				default:
+					throw new ArgumentOutOfRangeException("action");
+			}
+		}
+
+		/// <summary>
+		/// Starts the camera moving.
+		/// </summary>
+		/// <param name="action"></param>
+		public override void Tilt(eCameraTiltAction action)
+		{
+			switch (action)
+			{
+				case eCameraTiltAction.Up:
 					Tilt(eCameraTilt.Up);
 					break;
-				case eCameraPanTiltAction.Down:
+				case eCameraTiltAction.Down:
 					Tilt(eCameraTilt.Down);
 					break;
-				case eCameraPanTiltAction.Stop:
+				case eCameraTiltAction.Stop:
 					StopPanTilt();
 					break;
 				default:

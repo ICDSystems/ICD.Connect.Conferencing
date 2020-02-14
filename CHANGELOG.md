@@ -68,6 +68,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.9.0] - 2020-02-14
+### Added
+ - ConferenceManager-Added new options for EnforceAutoAnswer and EnforceDoNotDisturb, with new option for DoNotEnforce
+ - Codec settings have properties for up to 6 inputs
+ - Cisco codec now supports MainVideo (camera) mute on the Video Component
+
+### Changed
+ - ConferenceManager-Removed the previous AutoAnswer and DoNotDisturb properties/methods, use the new enforce options
+ - ConferenceManager-Changed IsAuthoratative functionality to live under IsActive
+
 ## [11.8.0] - 2019-11-18
 ### Added
  - Cisco Codec now has a volume control (id 8) for the main volume level/mute
