@@ -5,16 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
  - ConferenceManager-Added new options for EnforceAutoAnswer and EnforceDoNotDisturb, with new option for DoNotEnforce
+ - Codec settings have properties for up to 6 inputs
+ - Cisco codec now supports MainVideo (camera) mute on the Video Component
 
 ### Changed
  - ConferenceManager-Removed the previous AutoAnswer and DoNotDisturb properties/methods, use the new enforce options
  - ConferenceManager-Changed IsAuthoratative functionality to live under IsActive
-
-### Added
- - Codec settings have properties for up to 6 inputs
- - Cisco codec now supports MainVideo (camera) mute on the Video Component
 
 ## [11.8.0] - 2019-11-18
 ### Added

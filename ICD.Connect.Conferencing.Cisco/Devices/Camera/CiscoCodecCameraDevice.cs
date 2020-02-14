@@ -11,7 +11,6 @@ using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings.Core;
 
@@ -26,17 +25,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public event EventHandler OnCodecChanged;
 
-		/// <summary>
-		/// Raised when the presets are changed.
-		/// </summary>
-		public override event EventHandler<GenericEventArgs<IEnumerable<CameraPreset>>> OnPresetsChanged;
-
-		/// <summary>
-		/// Raised when the mute state changes on the camera.
-		/// </summary>
-		public override event EventHandler<BoolEventArgs> OnCameraMuteStateChanged;
-		
-		#endregion
+        #endregion
 
 		#region Private Members
 
@@ -49,12 +38,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		[CanBeNull]
 		private NearCamera m_Camera;
 
-		[CanBeNull]
-		private VideoComponent m_VideoComponent;
-
 		private int? m_PanTiltSpeed;
 		private int? m_ZoomSpeed;
-		private bool m_CameraMuted;
 
 		#endregion
 
@@ -67,11 +52,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		[CanBeNull]
 		public NearCamera Camera { get { return m_Camera; } }
-
-		/// <summary>
-		/// Gets whether the camera is currently muted
-		/// </summary>
-		public override bool IsCameraMuted { get { return m_CameraMuted; } }
 
 		/// <summary>
 		/// Gets the maximum number of presets this camera can support.
@@ -102,7 +82,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnCodecChanged = null;
-			OnPresetsChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -117,16 +96,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			Unsubscribe(m_Codec);
 			Unsubscribe(m_CamerasComponent);
-			Unsubscribe(m_VideoComponent);
 
 			m_Codec = codec;
 			m_CamerasComponent = m_Codec == null ? null : m_Codec.Components.GetComponent<NearCamerasComponent>();
 			m_Camera = m_CamerasComponent == null ? null : m_CamerasComponent.GetCamera(CameraId);
-			m_VideoComponent = m_Codec == null ? null : m_Codec.Components.GetComponent<VideoComponent>();
 
 			Subscribe(m_Codec);
 			Subscribe(m_CamerasComponent);
-			Subscribe(m_VideoComponent);
 
 			UpdateCachedOnlineStatus();
 
@@ -269,10 +245,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <param name="enable"></param>
 		public override void MuteCamera(bool enable)
 		{
-			if(m_VideoComponent == null || m_CameraMuted == enable)
-				return;
-
-			m_VideoComponent.SetCameraMute(enable);
+			throw new NotSupportedException();
 		}
 
 		/// <summary>
@@ -367,48 +340,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <param name="eventArgs"></param>
 		private void CamerasComponentOnPresetsChanged(object sender, IntEventArgs eventArgs)
 		{
-			if (eventArgs.Data != CameraId)
-				return;
-
-			OnPresetsChanged.Raise(this, new GenericEventArgs<IEnumerable<CameraPreset>>(GetPresets()));
-		}
-
-		#endregion
-
-		#region Video Component Callbacks
-
-		/// <summary>
-		/// Subscribe to the video component events
-		/// </summary>
-		/// <param name="videoComponent"></param>
-		private void Subscribe(VideoComponent videoComponent)
-		{
-			if (videoComponent == null)
-				return;
-
-			videoComponent.OnCamerasMutedChanged += VideoComponentOnCamerasMutedChanged;
-		}
-
-		/// <summary>
-		/// Unsubscribe to the video component events
-		/// </summary>
-		/// <param name="videoComponent"></param>
-		private void Unsubscribe(VideoComponent videoComponent)
-		{
-			if (videoComponent == null)
-				return;
-
-			videoComponent.OnCamerasMutedChanged -= VideoComponentOnCamerasMutedChanged;
-		}
-
-		private void VideoComponentOnCamerasMutedChanged(object sender, BoolEventArgs args)
-		{
-			if(m_CameraMuted == args.Data)
-				return;
-
-			m_CameraMuted = args.Data;
-
-			OnCameraMuteStateChanged.Raise(this, new BoolEventArgs(m_CameraMuted));
+			if (eventArgs.Data == CameraId)
+				RaisePresetsChanged();
 		}
 
 		#endregion
@@ -461,11 +394,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			SetCodec(codec);
 
-			SupportedCameraFeatures = m_Camera == null ? eCameraFeatures.None :
-						 eCameraFeatures.PanTiltZoom
-					   | eCameraFeatures.Presets
-					   | eCameraFeatures.Mute
-					   | eCameraFeatures.Home;
+			SupportedCameraFeatures =
+				m_Camera == null
+					? eCameraFeatures.None
+					: eCameraFeatures.PanTiltZoom |
+					  eCameraFeatures.Presets |
+					  eCameraFeatures.Home;
 
 			m_PanTiltSpeed = settings.PanTiltSpeed;
 			m_ZoomSpeed = settings.ZoomSpeed;

@@ -4,8 +4,6 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.API.Commands;
-using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
@@ -16,18 +14,12 @@ using ICD.Connect.Settings.Core;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 {
-	public sealed class PolycomGroupSeriesCameraDevice : AbstractCameraDevice<PolycomGroupSeriesCameraSettings>,
-	                                                     ICameraWithPanTilt, ICameraWithZoom, ICameraWithPresets
+	public sealed class PolycomGroupSeriesCameraDevice : AbstractCameraDevice<PolycomGroupSeriesCameraSettings>
 	{
 		/// <summary>
 		/// Raised when the parent codec device changes.
 		/// </summary>
 		public event EventHandler OnCodecChanged;
-
-		/// <summary>
-		/// Polycom provides no feedback for preset change.
-		/// </summary>
-		public event EventHandler OnPresetsChanged;
 
 		private PolycomGroupSeriesDevice m_Codec;
 		private CameraComponent m_CameraComponent;
@@ -37,7 +29,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// <summary>
 		/// Gets the maximum number of presets this camera can support.
 		/// </summary>
-		public int MaxPresets
+		public override int MaxPresets
 		{
 			get
 			{
@@ -58,11 +50,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// </summary>
 		public PolycomGroupSeriesCameraDevice()
 		{
+			SupportedCameraFeatures =
+				eCameraFeatures.PanTiltZoom |
+				eCameraFeatures.Presets;
+
 			Controls.Add(new GenericCameraRouteSourceControl<PolycomGroupSeriesCameraDevice>(this, 0));
-			Controls.Add(new PanTiltControl<PolycomGroupSeriesCameraDevice>(this, 1));
-			Controls.Add(new ZoomControl<PolycomGroupSeriesCameraDevice>(this, 2));
-			Controls.Add(new PresetControl<PolycomGroupSeriesCameraDevice>(this, 3));
-			Controls.Add(new PolycomGroupSeriesCameraDevicePowerControl(this, 4));
+			Controls.Add(new CameraDeviceControl(this, 1));
+			Controls.Add(new PolycomGroupSeriesCameraDevicePowerControl(this, 2));
 		}
 
 		/// <summary>
@@ -71,7 +65,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnCodecChanged = null;
-			OnPresetsChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -111,29 +104,47 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		}
 
 		/// <summary>
-		/// Starts rotating the camera with the given action.
+		/// Begins panning the camera
 		/// </summary>
 		/// <param name="action"></param>
-		public void PanTilt(eCameraPanTiltAction action)
+		public override void Pan(eCameraPanAction action)
 		{
 			if (m_CameraComponent == null)
 				return;
 
 			switch (action)
 			{
-				case eCameraPanTiltAction.Left:
+				case eCameraPanAction.Left:
 					m_CameraComponent.MoveNear(CameraId, eCameraAction.Left);
 					break;
-				case eCameraPanTiltAction.Right:
+				case eCameraPanAction.Right:
 					m_CameraComponent.MoveNear(CameraId, eCameraAction.Right);
 					break;
-				case eCameraPanTiltAction.Up:
+				case eCameraPanAction.Stop:
+					m_CameraComponent.MoveNear(CameraId, eCameraAction.Stop);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException("action");
+			}
+		}
+
+		/// <summary>
+		/// Begin tilting the camera.
+		/// </summary>
+		public override void Tilt(eCameraTiltAction action)
+		{
+			if (m_CameraComponent == null)
+				return;
+
+			switch (action)
+			{
+				case eCameraTiltAction.Up:
 					m_CameraComponent.MoveNear(CameraId, eCameraAction.Up);
 					break;
-				case eCameraPanTiltAction.Down:
+				case eCameraTiltAction.Down:
 					m_CameraComponent.MoveNear(CameraId, eCameraAction.Down);
 					break;
-				case eCameraPanTiltAction.Stop:
+				case eCameraTiltAction.Stop:
 					m_CameraComponent.MoveNear(CameraId, eCameraAction.Stop);
 					break;
 				default:
@@ -145,7 +156,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// Starts zooming the camera with the given action.
 		/// </summary>
 		/// <param name="action"></param>
-		public void Zoom(eCameraZoomAction action)
+		public override void Zoom(eCameraZoomAction action)
 		{
 			if (m_CameraComponent == null)
 				return;
@@ -169,7 +180,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// <summary>
 		/// Gets the stored camera presets.
 		/// </summary>
-		public IEnumerable<CameraPreset> GetPresets()
+		public override IEnumerable<CameraPreset> GetPresets()
 		{
 			return Enumerable.Range(0, 100).Select(i => new CameraPreset(i, string.Format("Preset {0}", i)));
 		}
@@ -178,7 +189,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// Tells the camera to change its position to the given preset.
 		/// </summary>
 		/// <param name="presetId">The id of the preset to position to.</param>
-		public void ActivatePreset(int presetId)
+		public override void ActivatePreset(int presetId)
 		{
 			m_CameraComponent.GoNearCameraPreset(CameraId, presetId);
 		}
@@ -187,9 +198,26 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		/// Stores the cameras current position in the given preset index.
 		/// </summary>
 		/// <param name="presetId">The index to store the preset at.</param>
-		public void StorePreset(int presetId)
+		public override void StorePreset(int presetId)
 		{
 			m_CameraComponent.SetNearCameraPreset(CameraId, presetId);
+		}
+
+		/// <summary>
+		/// Sets if the camera mute state should be active
+		/// </summary>
+		/// <param name="enable"></param>
+		public override void MuteCamera(bool enable)
+		{
+			throw new NotSupportedException();
+		}
+
+		/// <summary>
+		/// Resets camera to its predefined home position
+		/// </summary>
+		public override void SendCameraHome()
+		{
+			throw new NotSupportedException();
 		}
 
 		#endregion
@@ -292,79 +320,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 		private void CodecOnIsOnlineStateChanged(object sender, DeviceBaseOnlineStateApiEventArgs args)
 		{
 			UpdateCachedOnlineStatus();
-		}
-
-		#endregion
-
-		#region Console
-
-		/// <summary>
-		/// Calls the delegate for each console status item.
-		/// </summary>
-		/// <param name="addRow"></param>
-		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-			base.BuildConsoleStatus(addRow);
-
-			CameraWithPanTiltConsole.BuildConsoleStatus(this, addRow);
-			CameraWithZoomConsole.BuildConsoleStatus(this, addRow);
-			CameraWithPresetsConsole.BuildConsoleStatus(this, addRow);
-		}
-
-		/// <summary>
-		/// Gets the child console commands.
-		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
-		{
-			foreach (IConsoleCommand command in GetBaseConsoleCommands())
-				yield return command;
-
-			foreach (IConsoleCommand command in CameraWithPanTiltConsole.GetConsoleCommands(this))
-				yield return command;
-
-			foreach (IConsoleCommand command in CameraWithZoomConsole.GetConsoleCommands(this))
-				yield return command;
-
-			foreach (IConsoleCommand command in CameraWithPresetsConsole.GetConsoleCommands(this))
-				yield return command;
-		}
-
-		/// <summary>
-		/// Workaround for "unverifiable code" warning.
-		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
-		{
-			return base.GetConsoleCommands();
-		}
-
-		/// <summary>
-		/// Gets the child console nodes.
-		/// </summary>
-		/// <returns></returns>
-		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
-		{
-			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
-				yield return node;
-
-			foreach (IConsoleNodeBase node in CameraWithPanTiltConsole.GetConsoleNodes(this))
-				yield return node;
-
-			foreach (IConsoleNodeBase node in CameraWithZoomConsole.GetConsoleNodes(this))
-				yield return node;
-
-			foreach (IConsoleNodeBase node in CameraWithPresetsConsole.GetConsoleNodes(this))
-				yield return node;
-		}
-
-		/// <summary>
-		/// Workaround for "unverifiable code" warning.
-		/// </summary>
-		/// <returns></returns>
-		private IEnumerable<IConsoleNodeBase> GetBaseConsoleNodes()
-		{
-			return base.GetConsoleNodes();
 		}
 
 		#endregion
