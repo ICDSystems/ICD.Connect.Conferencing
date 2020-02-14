@@ -28,7 +28,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// Starts the camera moving.
 		/// </summary>
 		/// <param name="action"></param>
-		public abstract void PanTilt(eCameraPanTiltAction action);
+		public abstract void Pan(eCameraPanAction action);
+
+		/// <summary>
+		/// Starts the camera moving
+		/// </summary>
+		/// <param name="action"></param>
+		public abstract void Tilt(eCameraTiltAction action);
 
 		/// <summary>
 		/// Stops the camera from moving.
@@ -48,7 +54,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new EnumConsoleCommand<eCameraPanTiltAction>("PanTilt", e => PanTilt(e));
+			yield return new EnumConsoleCommand<eCameraPanAction>("Pan", e => Pan(e));
+			yield return new EnumConsoleCommand<eCameraTiltAction>("Tilt", e => Tilt(e));
 			yield return new ConsoleCommand("StopPanTilt", "Stops moving the camera", () => StopPanTilt());
 		}
 

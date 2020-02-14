@@ -25,9 +25,24 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Events
 
 		/// <summary>
-		/// Raised when a new conference is instantiated and becomes active.
+		/// Raised when the Is Active state changes.
 		/// </summary>
-		event EventHandler<BoolEventArgs> OnIsAuthoritativeChanged;
+		event EventHandler<BoolEventArgs> OnIsActiveChanged; 
+
+		/// <summary>
+		/// Raised when the enforcement setting for privacy mute changes
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged;
+
+		/// <summary>
+		/// Raised when the enforcement setting for do not disturb changes
+		/// </summary>
+		event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged;
+
+		/// <summary>
+		/// Raised when the enforcement setting for auto answer changes
+		/// </summary>
+		event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
 
 		/// <summary>
 		/// Raised when a source is added to the current active conference.
@@ -78,10 +93,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		#region Properties
 
 		/// <summary>
-		/// When true the conference manager will force registered dialers to match
-		/// the state of the Privacy Mute, Do Not Disturb and Auto Answer properties.
+		/// Indicates whether this conference manager should do anything. 
+		/// True normally, false when the room that owns this conference manager has a parent combine room
 		/// </summary>
-		bool IsAuthoritative { get; set; }
+		bool IsActive { get; set; }
+
+		eEnforceState EnforceDoNotDisturb { get; set; }
+
+		eEnforceState EnforceAutoAnswer { get; set; }
 
 		/// <summary>
 		/// Gets the dialing plan.
@@ -101,19 +120,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IEnumerable<IConference> OnlineConferences { get; }
 
 		/// <summary>
-		/// Gets the AutoAnswer state.
-		/// </summary>
-		bool AutoAnswer { get; }
-
-		/// <summary>
 		/// Gets the current microphone mute state.
 		/// </summary>
 		bool PrivacyMuted { get; }
-
-		/// <summary>
-		/// Gets the DoNotDisturb state.
-		/// </summary>
-		bool DoNotDisturb { get; }
 
 		/// <summary>
 		/// Returns the current call state.
@@ -134,18 +143,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="context"></param>
 		void Dial(IDialContext context);
-
-		/// <summary>
-		/// Enables DoNotDisturb.
-		/// </summary>
-		/// <param name="state"></param>
-		void EnableDoNotDisturb(bool state);
-
-		/// <summary>
-		/// Enables AutoAnswer.
-		/// </summary>
-		/// <param name="state"></param>
-		void EnableAutoAnswer(bool state);
 
 		/// <summary>
 		/// Enabled privacy mute.
