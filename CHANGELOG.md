@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
  - ConferenceManager-Removed the previous AutoAnswer and DoNotDisturb properties/methods, use the new enforce options
+ - ConferenceManager-Changed IsAuthoratative functionality to live under IsActive
 
 ### Added
  - Codec settings have properties for up to 6 inputs
