@@ -100,6 +100,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_EnforceDoNotDisturb = value;
 
 				OnEnforceDoNotDisturbChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceDoNotDisturb));
+
+				if (m_EnforceDoNotDisturb != eEnforceState.DoNotEnforce)
+					UpdateProviders();
 			}
 		}
 
@@ -114,6 +117,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_EnforceAutoAnswer = value;
 
 				OnEnforceAutoAnswerChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceAutoAnswer));
+
+				if (m_EnforceAutoAnswer != eEnforceState.DoNotEnforce)
+					UpdateProviders();
 			}
 		}
 
@@ -154,19 +160,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
-		/// Gets the AutoAnswer state.
-		/// </summary>
-		public bool AutoAnswer { get; private set; }
-
-		/// <summary>
 		/// Gets the current microphone mute state.
 		/// </summary>
 		public bool PrivacyMuted { get; private set; }
-
-		/// <summary>
-		/// Gets the DoNotDisturb state.
-		/// </summary>
-		public bool DoNotDisturb { get; private set; }
 
 		/// <summary>
 		/// Returns true if actively in a call.
@@ -279,34 +275,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				mode = dialingControl.Supports;
 
 			dialingControl.Dial(number, mode);
-		}
-
-		/// <summary>
-		/// Enables DoNotDisturb.
-		/// </summary>
-		/// <param name="state"></param>
-		public void EnableDoNotDisturb(bool state)
-		{
-			if (state == DoNotDisturb)
-				return;
-
-			DoNotDisturb = state;
-
-			UpdateProviders();
-		}
-
-		/// <summary>
-		/// Enables AutoAnswer.
-		/// </summary>
-		/// <param name="state"></param>
-		public void EnableAutoAnswer(bool state)
-		{
-			if (state == AutoAnswer)
-				return;
-
-			AutoAnswer = state;
-
-			UpdateProviders();
 		}
 
 		/// <summary>

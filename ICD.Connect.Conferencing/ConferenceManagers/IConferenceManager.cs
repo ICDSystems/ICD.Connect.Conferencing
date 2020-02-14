@@ -116,19 +116,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IConference ActiveConference { get; }
 
 		/// <summary>
-		/// Gets the AutoAnswer state.
-		/// </summary>
-		bool AutoAnswer { get; }
-
-		/// <summary>
 		/// Gets the current microphone mute state.
 		/// </summary>
 		bool PrivacyMuted { get; }
-
-		/// <summary>
-		/// Gets the DoNotDisturb state.
-		/// </summary>
-		bool DoNotDisturb { get; }
 
 		/// <summary>
 		/// Returns the current call state.
@@ -150,18 +140,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="number"></param>
 		/// <param name="mode"></param>
 		void Dial(string number, eConferenceSourceType mode);
-
-		/// <summary>
-		/// Enables DoNotDisturb.
-		/// </summary>
-		/// <param name="state"></param>
-		void EnableDoNotDisturb(bool state);
-
-		/// <summary>
-		/// Enables AutoAnswer.
-		/// </summary>
-		/// <param name="state"></param>
-		void EnableAutoAnswer(bool state);
 
 		/// <summary>
 		/// Enabled privacy mute.
