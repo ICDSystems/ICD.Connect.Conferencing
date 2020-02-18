@@ -111,6 +111,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.9.1] - 2020-02-18
+### Changed
+ - Removed "CamerasMuted" property and assciated method/event - functionality duplicated by MainVideoMuted
+ - Changed "MainVideoMute" to "MainVideoMuted" in various places for consistency
+
 ## [11.9.0] - 2020-02-14
 ### Added
  - ConferenceManager-Added new options for EnforceAutoAnswer and EnforceDoNotDisturb, with new option for DoNotEnforce
