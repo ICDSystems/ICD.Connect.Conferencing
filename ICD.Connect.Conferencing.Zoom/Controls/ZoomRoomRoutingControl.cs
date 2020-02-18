@@ -239,10 +239,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private string GetZoomUsbIdForOriginator([NotNull] IOriginator camera)
 		{
 			// Is the camera part of the USB table?
-			ICameraDevice device = camera as ICameraDevice;
-			WindowsDevicePathInfo? usbId;
-			if (device != null && Parent.UsbCameras.TryGetValue(device, out usbId))
-				return GetUsbId(usbId);
+			IDeviceBase device = camera as IDeviceBase;
+            if (device != null && Parent.GetUsbIdForCamera(device).HasValue)
+                return GetUsbId(Parent.GetUsbIdForCamera(device));
 
 			// Does the camera give us USB information?
 			IWindowsDevice windowsCamera = camera as IWindowsDevice;
