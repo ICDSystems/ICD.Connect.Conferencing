@@ -26,11 +26,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<BoolEventArgs> OnIsActiveChanged; 
 
 		/// <summary>
-		/// Raised when the enforcement setting for privacy mute changes
-		/// </summary>
-		event EventHandler<BoolEventArgs> OnEnforcePrivacyMuteChanged;
-
-		/// <summary>
 		/// Raised when the enforcement setting for do not disturb changes
 		/// </summary>
 		event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged;
