@@ -146,6 +146,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_RecentCallsSection = new SafeCriticalSection();
 			m_DialingProviderSection = new SafeCriticalSection();
 			m_FeedbackProviderSection = new SafeCriticalSection();
+
+			Subscribe(m_ConferenceManager);
 		}
 
 		#region Methods
@@ -579,6 +581,36 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				IsInCall = eInCall.None;
 			else
 				IsInCall = (eInCall)OnlineConferences.Max(c => (int)c.CallType);
+		}
+
+		#endregion
+
+		#region Conference Manager Callbacks
+
+		/// <summary>
+		/// Subscribe to the conference manager events.
+		/// </summary>
+		/// <param name="conferenceManager"></param>
+		private void Subscribe(IConferenceManager conferenceManager)
+		{
+			conferenceManager.OnEnforceAutoAnswerChanged += ConferenceManagerOnEnforceAutoAnswerChanged;
+			conferenceManager.OnEnforceDoNotDisturbChanged += ConferenceManagerOnEnforceDoNotDisturbChanged;
+			conferenceManager.OnPrivacyMuteStatusChange += ConferenceManagerOnPrivacyMuteStatusChange;
+		}
+
+		private void ConferenceManagerOnPrivacyMuteStatusChange(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateProviders();
+		}
+
+		private void ConferenceManagerOnEnforceDoNotDisturbChanged(object sender, GenericEventArgs<eEnforceState> genericEventArgs)
+		{
+			UpdateProviders();
+		}
+
+		private void ConferenceManagerOnEnforceAutoAnswerChanged(object sender, GenericEventArgs<eEnforceState> genericEventArgs)
+		{
+			UpdateProviders();
 		}
 
 		#endregion

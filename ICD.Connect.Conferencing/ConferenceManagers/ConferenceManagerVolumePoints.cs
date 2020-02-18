@@ -34,6 +34,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			m_PointsSection = new SafeCriticalSection();
 			m_Points = new Dictionary<IVolumePoint, VolumePointHelper>();
+
+			Subscribe(m_ConferenceManager);
 		}
 
 		#region Methods
@@ -187,6 +189,24 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		#endregion
+
+		#region Conference Manager Callbacks
+
+		/// <summary>
+		/// Subscribe to the conference manager events.
+		/// </summary>
+		/// <param name="conferenceManager"></param>
+		private void Subscribe(IConferenceManager conferenceManager)
+		{
+			conferenceManager.OnPrivacyMuteStatusChange += ConferenceManagerOnPrivacyMuteStatusChange;
+		}
+
+		private void ConferenceManagerOnPrivacyMuteStatusChange(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateVolumePoints();
 		}
 
 		#endregion

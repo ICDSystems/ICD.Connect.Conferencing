@@ -17,6 +17,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	/// </summary>
 	public sealed class ConferenceManager : IConferenceManager, IDisposable
 	{
+		/// <summary>
+		/// Raised when the Is Active state changes.
+		/// </summary>
 		public event EventHandler<BoolEventArgs> OnIsActiveChanged;
 
 		/// <summary>
@@ -24,7 +27,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 
-		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged; 
+		/// <summary>
+		/// Raised when the enforcement setting for do not disturb changes
+		/// </summary>
+		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged;
+
+		/// <summary>
+		/// Raised when the enforcement setting for auto answer changes
+		/// </summary>
 		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
 		
         private readonly ConferenceManagerDialers m_Dialers;
@@ -83,6 +93,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
 
+		/// <summary>
+		/// Gets/sets the enforce do-not-disturb mode.
+		/// </summary>
 		public eEnforceState EnforceDoNotDisturb
 		{
 			get { return m_EnforceDoNotDisturb; }
@@ -93,12 +106,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 				m_EnforceDoNotDisturb = value;
 
-				Dialers.UpdateProviders();
-
 				OnEnforceDoNotDisturbChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceDoNotDisturb));
 			}
 		}
 
+		/// <summary>
+		/// Gets/sets the enforce auto answer mode.
+		/// </summary>
 		public eEnforceState EnforceAutoAnswer
 		{
 			get { return m_EnforceAutoAnswer; }
@@ -108,8 +122,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					return;
 
 				m_EnforceAutoAnswer = value;
-
-				Dialers.UpdateProviders();
 
 				OnEnforceAutoAnswerChanged.Raise(this, new GenericEventArgs<eEnforceState>(m_EnforceAutoAnswer));
 			}
@@ -127,8 +139,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 					return;
 
 				m_PrivacyMuted = value;
-
-				Dialers.UpdateProviders();
 
 				OnPrivacyMuteStatusChange.Raise(this, new BoolEventArgs(m_PrivacyMuted));
 			}

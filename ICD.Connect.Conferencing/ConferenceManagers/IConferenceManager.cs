@@ -60,8 +60,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		bool IsActive { get; set; }
 
+		/// <summary>
+		/// Gets/sets the enforce do-not-disturb mode.
+		/// </summary>
 		eEnforceState EnforceDoNotDisturb { get; set; }
 
+		/// <summary>
+		/// Gets/sets the enforce auto answer mode.
+		/// </summary>
 		eEnforceState EnforceAutoAnswer { get; set; }
 
 		/// <summary>
