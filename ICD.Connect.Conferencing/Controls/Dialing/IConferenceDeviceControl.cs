@@ -10,7 +10,6 @@ using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Proxies.Controls.Dialing;
 using ICD.Connect.Devices.Controls;
 using ICD.Connect.Telemetry.Attributes;
@@ -149,7 +148,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		#endregion
 	}
 
-	public static class DialingDeviceControlExtensions
+	public static class ConferenceDeviceControlExtensions
 	{
 		public static void Dial(this IConferenceDeviceControl control, IContact contact)
 		{
@@ -160,33 +159,22 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			if (!contactDialContexts.Any())
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0}", contact.Name));
 
-			var groupedAndSorted = contactDialContexts.ToLookup(dc => control.CanDial(dc))
-				.Where(g => g.Key != eDialContextSupport.Unsupported)
-				.OrderByDescending(g => g.Key);
-			if(!groupedAndSorted.Any())
+			IOrderedEnumerable<IGrouping<eDialContextSupport, IDialContext>> groupedAndSorted =
+				contactDialContexts.ToLookup(dc => control.CanDial(dc))
+				                   .Where(g => g.Key != eDialContextSupport.Unsupported)
+				                   .OrderByDescending(g => g.Key);
+
+			IGrouping<eDialContextSupport, IDialContext> group;
+			if (!groupedAndSorted.TryFirst(out group))
 				throw new InvalidOperationException(string.Format("No contact methods for contact {0} that this control supports dialing", contact.Name));
 
-			var dialContext = groupedAndSorted.First().First();
+			IDialContext dialContext = group.First();
 			control.Dial(dialContext);
 		}
 
 		public static IConference GetActiveConference(this IConferenceDeviceControl extends)
 		{
 			return extends.GetConferences().FirstOrDefault(c => c.IsActive());
-		}
-
-		public static T GetBestDialer<T>(this IEnumerable<T> dialers, IDialContext dialContext) where T : IConferenceDeviceControl
-		{
-			if (dialers == null)
-				throw new ArgumentNullException("dialers");
-
-			IGrouping<eDialContextSupport, T> bestGroup =
-				dialers.Where(c => c.Supports.HasFlags(dialContext.CallType))
-					   .GroupBy(d => d.CanDial(dialContext))
-				       .Where(g => g.Key != eDialContextSupport.Unsupported)
-				       .OrderByDescending(g => g.Key).FirstOrDefault();
-
-			return bestGroup == null ? default(T) : bestGroup.FirstOrDefault();
 		}
 	}
 }

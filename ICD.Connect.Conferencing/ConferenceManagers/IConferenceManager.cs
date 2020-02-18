@@ -1,12 +1,7 @@
 using System;
-using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
-using ICD.Connect.Conferencing.ConferenceManagers.Recents;
-using ICD.Connect.Conferencing.ConferencePoints;
-using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Contacts;
-using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
@@ -39,68 +34,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceAutoAnswerChanged; 
 
 		/// <summary>
-		/// Raised when the active conference changes.
-		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnConferenceAdded;
-
-		/// <summary>
-		/// Raised when the active conference ends.
-		/// </summary>
-		event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
-
-		/// <summary>
-		/// Called when the active conference status changes.
-		/// </summary>
-		event EventHandler<ConferenceStatusEventArgs> OnActiveConferenceStatusChanged;
-
-		/// <summary>
-		/// Called when an active participant status changes.
-		/// </summary>
-		event EventHandler<ParticipantStatusEventArgs> OnActiveParticipantStatusChanged;
-
-		/// <summary>
 		/// Raised when the privacy mute status changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 
-		/// <summary>
-		/// Raises when the in call state changes.
-		/// </summary>
-		event EventHandler<InCallEventArgs> OnInCallChanged;
-
-		/// <summary>
-		/// Raises when the conference adds or removes a participant.
-		/// </summary>
-		event EventHandler OnConferenceParticipantAddedOrRemoved;
-
-		/// <summary>
-		/// Raised when a conference control is added to the manager.
-		/// </summary>
-		event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
-
-		/// <summary>
-		/// Raised when a conference control is removed from the manager.
-		/// </summary>
-		event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
-
-		/// <summary>
-		/// Called when an incoming call is added by a conference control.
- 		/// </summary>
-		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
-
-		/// <summary>
-		/// Called when an incoming call is removed by a conference control.
-		/// </summary>
-		event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
-
-		/// <summary>
-		/// Raised when a recent call is added to or removed from the recent calls collection.
-		/// </summary>
-		event EventHandler<RecentCallEventArgs> OnRecentCallsChanged;
-
 		#endregion
 
 		#region Properties
+
+		/// <summary>
+		/// Gets the conference manager dialers collection.
+		/// </summary>
+		[NotNull]
+		ConferenceManagerDialers Dialers { get; }
 
 		/// <summary>
 		/// Gets the conference manager volume points collection.
@@ -131,31 +77,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		IFavorites Favorites { get; set; }
 
 		/// <summary>
-		/// Gets the active conferences.
+		/// Gets/sets the privacy mute state.
 		/// </summary>
-		[NotNull]
-		IEnumerable<IConference> ActiveConferences { get; }
-
-		/// <summary>
-		/// Gets the online conferences.
-		/// </summary>
-		[NotNull]
-		IEnumerable<IConference> OnlineConferences { get; }
-
-		/// <summary>
-		/// Gets the current microphone mute state.
-		/// </summary>
-		bool PrivacyMuted { get; }
-
-		/// <summary>
-		/// Returns the current call state.
-		/// </summary>
-		eInCall IsInCall { get; }
-
-		/// <summary>
-		/// Gets the number of registered dialing providers.
-		/// </summary>
-		int DialingProvidersCount { get; }
+		bool PrivacyMuted { get; set; }
 
 		#endregion
 
@@ -172,79 +96,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="context"></param>
 		void Dial([NotNull] IDialContext context);
 
-		/// <summary>
-		/// Enabled privacy mute.
-		/// </summary>
-		/// <param name="state"></param>
-		void EnablePrivacyMute(bool state);
-
-		/// <summary>
-		/// Gets the recent calls in order of time.
-		/// </summary>
-		/// <returns></returns>
-		[NotNull]
-		IEnumerable<IRecentCall> GetRecentCalls();
-
-		#endregion
-
-		#region Dialing Providers
-
-		/// <summary>
-		/// Gets the registered conference controls.
-		/// </summary>
-		/// <returns></returns>
-		[NotNull]
-		IEnumerable<IConferenceDeviceControl> GetDialingProviders();
-
-		/// <summary>
-		/// Gets the registered conference controls.
-		/// </summary>
-		/// <param name="callType"></param>
-		/// <returns></returns>
-		[NotNull]
-		IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType callType);
-
-		/// <summary>
-		/// Gets the registered feedback conference providers.
-		/// </summary>
-		/// <returns></returns>
-		[NotNull]
-		IEnumerable<IConferenceDeviceControl> GetFeedbackDialingProviders();
-
-		/// <summary>
-		/// Registers the conference control.
-		/// </summary>
-		/// <param name="conferenceControl"></param>
-		/// <param name="callType"></param>
-		/// <returns></returns>
-		bool RegisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl, eCallType callType);
-
-		/// <summary>
-		/// Registers the conference control, for feedback only.
-		/// </summary>
-		/// <param name="conferenceControl"></param>
-		/// <returns></returns>
-		bool RegisterFeedbackDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
-
-		/// <summary>
-		/// Deregisters the conference control.
-		/// </summary>
-		/// <param name="conferenceControl"></param>
-		/// <returns></returns>
-		bool DeregisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
-
-		/// <summary>
-		/// Deregisters the conference control from the feedback only list.
-		/// </summary>
-		/// <param name="conferenceControl"></param>
-		/// <returns></returns>
-		bool DeregisterFeedbackDialingProvider([NotNull] IConferenceDeviceControl conferenceControl);
-
-		/// <summary>
-		/// Deregisters all of the conference controls.
-		/// </summary>
-		void ClearDialingProviders();
-
 		#endregion
 	}
 
@@ -253,25 +104,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	/// </summary>
 	public static class ConferenceManagerExtensions
 	{
-		/// <summary>
-		/// Registers the dialing provider at the given conference point.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="conferencePoint"></param>
-		public static void RegisterDialingProvider([NotNull] this IConferenceManager extends, [NotNull] IConferencePoint conferencePoint)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			if (conferencePoint == null)
-				throw new ArgumentNullException("conferencePoint");
-
-			if (conferencePoint.Control == null)
-				throw new ArgumentException("Conference point does not have a conference control");
-
-			extends.RegisterDialingProvider(conferencePoint.Control, conferencePoint.Type);
-		}
-
 		/// <summary>
 		/// Dials the given contact. Call type is taken from the dialing plan.
 		/// </summary>
@@ -337,7 +169,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			extends.EnablePrivacyMute(!extends.PrivacyMuted);
+			extends.PrivacyMuted = !extends.PrivacyMuted;
 		}
 	}
 }
