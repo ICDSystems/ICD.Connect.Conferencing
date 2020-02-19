@@ -88,6 +88,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_IncomingCalls = new BiDictionary<CallComponent, TraditionalIncomingCall>();
 			m_CriticalSection = new SafeCriticalSection();
 
+			SupportedConferenceFeatures =
+				eConferenceFeatures.AutoAnswer |
+				eConferenceFeatures.DoNotDisturb |
+				eConferenceFeatures.PrivacyMute;
+
 			Subscribe(m_DialingComponent);
 			Subscribe(m_SystemComponent);
 

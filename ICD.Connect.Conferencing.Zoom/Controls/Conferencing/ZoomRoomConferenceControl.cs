@@ -90,6 +90,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_Conference = new ZoomWebConference(m_CallComponent);
 			m_Conference.OnStatusChanged += ConferenceOnStatusChanged;
 
+			SupportedConferenceFeatures |= eConferenceFeatures.AutoAnswer;
+			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;
+			SupportedConferenceFeatures |= eConferenceFeatures.PrivacyMute;
+
 			Subscribe(m_CallComponent);
 		}
 

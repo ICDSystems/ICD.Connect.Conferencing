@@ -59,6 +59,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
 			m_MuteComponent = parent.Components.GetComponent<MuteComponent>();
 
+			SupportedConferenceFeatures =
+				eConferenceFeatures.AutoAnswer |
+				eConferenceFeatures.DoNotDisturb |
+				eConferenceFeatures.PrivacyMute;
+
 			Subscribe(m_DialComponent);
 			Subscribe(m_AutoAnswerComponent);
 			Subscribe(m_MuteComponent);

@@ -19,6 +19,10 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public DialerDeviceDialerControl(IDialerDevice parent, int id)
 			: base(parent, id)
 		{
+			SupportedConferenceFeatures =
+				eConferenceFeatures.AutoAnswer |
+				eConferenceFeatures.DoNotDisturb |
+				eConferenceFeatures.PrivacyMute;
 		}
 
 		protected override void Subscribe(IDialerDevice parent)

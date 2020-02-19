@@ -60,6 +60,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_CallIdToParticipant = new IcdOrderedDictionary<string, ThinTraditionalParticipant>();
 			m_ParticipantSection = new SafeCriticalSection();
 
+			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;
+
 			Subscribe(m_CallComponent);
 			Subscribe(m_TraditionalCallComponent);
 		}
@@ -121,12 +123,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override void SetAutoAnswer(bool enabled)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room does not support setting auto-answer through the SSH API");
+			Parent.Log(eSeverity.Error, "Zoom Room does not support answering incoming calls through the SSH API");
 		}
 
 		public override void SetPrivacyMute(bool enabled)
 		{
-			m_CallComponent.MuteMicrophone(enabled);
+			Parent.Log(eSeverity.Error, "Zoom Room does not support setting privacy mute through the SSH API");
 		}
 
 		#endregion

@@ -16,6 +16,27 @@ using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
+	[Flags]
+	public enum eConferenceFeatures
+	{
+		None = 0,
+
+		/// <summary>
+		/// Supports setting auto-answer.
+		/// </summary>
+		AutoAnswer = 1,
+
+		/// <summary>
+		/// Supports setting privacy mute.
+		/// </summary>
+		PrivacyMute = 2,
+
+		/// <summary>
+		/// Supports setting do-not-disturb.
+		/// </summary>
+		DoNotDisturb = 4
+	}
+
 	/// <summary>
 	/// IDialingProvider provides an interface for managing conferences.
 	/// </summary>
@@ -72,6 +93,30 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
+		/// <summary>
+		/// Raised when the supported conference features change.
+		/// </summary>
+		[ApiEvent(ConferenceDeviceControlApi.EVENT_SUPPORTED_CONFERENCE_FEATURES_CHANGED,
+			ConferenceDeviceControlApi.HELP_EVENT_SUPPORTED_CONFERENCE_FEATURES_CHANGED)]
+		event EventHandler<ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs> OnSupportedConferenceFeaturesChanged; 
+
+		#region Support
+
+		/// <summary>
+		/// Returns the features that are supported by this conference control.
+		/// </summary>
+		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_SUPPORTED_CONFERENCE_FEATURES,
+			ConferenceDeviceControlApi.HELP_PROPERTY_SUPPORTED_CONFERENCE_FEATURES)]
+		eConferenceFeatures SupportedConferenceFeatures { get; }
+
+		/// <summary>
+		/// Gets the type of conference this dialer supports.
+		/// </summary>
+		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_SUPPORTS, ConferenceDeviceControlApi.HELP_PROPERTY_SUPPORTS)]
+		eCallType Supports { get; }
+
+		#endregion
+
 		#region Properties
 
 		/// <summary>
@@ -91,12 +136,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_DO_NOT_DISTURB, ConferenceDeviceControlApi.HELP_PROPERTY_DO_NOT_DISTURB)]
 		bool DoNotDisturb { get; }
-
-		/// <summary>
-		/// Gets the type of conference this dialer supports.
-		/// </summary>
-		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_SUPPORTS, ConferenceDeviceControlApi.HELP_PROPERTY_SUPPORTS)]
-		eCallType Supports { get; }
 
 		#endregion
 

@@ -19,6 +19,11 @@ namespace ICD.Connect.Conferencing.Mock
 		public MockTraditionalConferenceDeviceControl(IMockConferencingDevice parent, int id)
 			: base(parent, id)
 		{
+			SupportedConferenceFeatures =
+				eConferenceFeatures.AutoAnswer |
+				eConferenceFeatures.DoNotDisturb |
+				eConferenceFeatures.PrivacyMute;
+
 			parent.OnParticipantAdded += ParentOnParticipantAdded;
 			parent.OnParticipantRemoved += ParentOnParticipantRemoved;
 			parent.OnIncomingCallAdded += ParentOnIncomingCallAdded;
