@@ -4,8 +4,10 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Audio.Utils;
 using ICD.Connect.Audio.VolumePoints;
+using ICD.Connect.Conferencing.Controls.Dialing;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {
@@ -172,6 +174,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
                        
 			switch (volumePoint.MuteType)
 			{
+				case eMuteType.None:
 				case eMuteType.RoomAudio:
 					return;
 
@@ -182,13 +185,38 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 				// Only mute microphones as a last resort
 				case eMuteType.MicPrivacyMute:
-					// TODO - Determine if we need to mute mics
-					throw new NotImplementedException();
+					bool micMute = m_ConferenceManager.PrivacyMuted && PrivacyMuteMics();
+					helper.SetIsMuted(micMute);
 					break;
 
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		/// <summary>
+		/// Returns true if microphones should be privacy muted.
+		/// Due to AEC we only want to mute mics if we are unable to mute the active
+		/// conference endpoint or mute input audio at the DSP level.
+		/// </summary>
+		/// <returns></returns>
+		private bool PrivacyMuteMics()
+		{
+			// Easy - Are there any DSP mute volume points?
+			if (GetVolumePoints().Any(p => p.MuteType == eMuteType.DspPrivacyMute))
+				return false;
+
+			// Hard - Do the active conference endpoints support privacy mute?
+			IEnumerable<IConferenceDeviceControl> endpoints = m_ConferenceManager.Dialers.GetDialingProviders();
+			endpoints = endpoints.Concat(m_ConferenceManager.Dialers.GetFeedbackDialingProviders());
+
+			bool supportsPrivacyMute = endpoints.Where(e => e.GetActiveConference() != null)
+			                                    .AnyAndAll(e =>
+			                                               e.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute));
+			if (supportsPrivacyMute)
+				return false;
+
+			return true;
 		}
 
 		#endregion
