@@ -95,6 +95,7 @@
     <Compile Include="Conferences\AbstractConference.cs" />
     <Compile Include="Conferences\AbstractWebConference.cs" />
     <Compile Include="Conferences\TraditionalConference.cs" />
+    <Compile Include="Controls\Dialing\AbstractConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\AbstractTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\AbstractWebConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\ITraditionalConferenceDeviceControl.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="DialContexts\ZoomDialContext.cs" />
     <Compile Include="EventArguments\CallTypeEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceControlIncomingCallEventArgs.cs" />
+    <Compile Include="EventArguments\ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
     <Compile Include="EventArguments\PresentationActiveApiEventArgs.cs" />
     <Compile Include="EventArguments\RecentCallEventArgs.cs" />
@@ -200,7 +202,9 @@
     <Compile Include="Participants\ThinTraditionalParticipant.cs" />
     <Compile Include="Participants\EventHelpers\TraditionalParticipantEventHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Proxies\Controls\Dialing\AbstractProxyConferenceDeviceControl.cs" />
     <Compile Include="Proxies\Controls\Dialing\AbstractProxyTraditionalConferenceDeviceControl.cs" />
+    <Compile Include="Proxies\Controls\Dialing\IProxyConferenceDeviceControl.cs" />
     <Compile Include="Proxies\Controls\Directory\AbstractProxyDirectoryControl.cs" />
     <Compile Include="Proxies\Controls\Directory\DirectoryControlApi.cs" />
     <Compile Include="Proxies\Controls\Directory\IProxyDirectoryControl.cs" />
