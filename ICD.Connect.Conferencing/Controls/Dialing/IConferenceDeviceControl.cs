@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Contacts;
@@ -180,7 +181,8 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 				throw new ArgumentNullException("dialers");
 
 			IGrouping<eDialContextSupport, T> bestGroup =
-				dialers.GroupBy(d => d.CanDial(dialContext))
+				dialers.Where(c => c.Supports.HasFlags(dialContext.CallType))
+					   .GroupBy(d => d.CanDial(dialContext))
 				       .Where(g => g.Key != eDialContextSupport.Unsupported)
 				       .OrderByDescending(g => g.Key).FirstOrDefault();
 
