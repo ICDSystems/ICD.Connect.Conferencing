@@ -26,8 +26,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		{
 			m_Timer = SafeTimer.Stopped(KeepAwakeTimerExpired);
 
-			Subscribe(parent);
-
 			SetCodec(parent.Codec);
 		}
 
@@ -37,8 +35,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			Unsubscribe(Parent);
-
 			base.DisposeFinal(disposing);
 
 			m_SystemComponent = null;
@@ -97,8 +93,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// Subscribe to the camera events.
 		/// </summary>
 		/// <param name="parent"></param>
-		private void Subscribe(CiscoCodecCameraDevice parent)
+		protected override void Subscribe(CiscoCodecCameraDevice parent)
 		{
+			base.Subscribe(parent);
+
 			parent.OnCodecChanged += ParentOnCodecChanged;
 		}
 
@@ -106,8 +104,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// Unsubscribe from the camera events.
 		/// </summary>
 		/// <param name="parent"></param>
-		private void Unsubscribe(CiscoCodecCameraDevice parent)
+		protected override void Unsubscribe(CiscoCodecCameraDevice parent)
 		{
+			base.Unsubscribe(parent);
+
 			parent.OnCodecChanged -= ParentOnCodecChanged;
 		}
 

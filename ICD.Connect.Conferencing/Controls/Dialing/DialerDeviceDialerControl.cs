@@ -19,11 +19,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public DialerDeviceDialerControl(IDialerDevice parent, int id)
 			: base(parent, id)
 		{
-			Subscribe(parent);
 		}
 
-		private void Subscribe(IDialerDevice parent)
+		protected override void Subscribe(IDialerDevice parent)
 		{
+			base.Subscribe(parent);
+
 			parent.OnAutoAnswerChanged += ParentOnAutoAnswerChanged;
 			parent.OnDoNotDisturbChanged += ParentOnDoNotDisturbChanged;
 			parent.OnPrivacyMuteChanged += ParentOnPrivacyMuteChanged;
@@ -31,6 +32,19 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			parent.OnParticipantRemoved += ParentOnParticipantRemoved;
 			parent.OnIncomingCallAdded += ParentOnIncomingCallAdded;
 			parent.OnIncomingCallRemoved += ParentOnIncomingCallRemoved;
+		}
+
+		protected override void Unsubscribe(IDialerDevice parent)
+		{
+			base.Unsubscribe(parent);
+
+			parent.OnAutoAnswerChanged -= ParentOnAutoAnswerChanged;
+			parent.OnDoNotDisturbChanged -= ParentOnDoNotDisturbChanged;
+			parent.OnPrivacyMuteChanged -= ParentOnPrivacyMuteChanged;
+			parent.OnParticipantAdded -= ParentOnParticipantAdded;
+			parent.OnParticipantRemoved -= ParentOnParticipantRemoved;
+			parent.OnIncomingCallAdded -= ParentOnIncomingCallAdded;
+			parent.OnIncomingCallRemoved -= ParentOnIncomingCallRemoved;
 		}
 
 		private void ParentOnParticipantAdded(object sender, ParticipantEventArgs eventArgs)
