@@ -255,12 +255,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <summary>
 		/// Resets camera to its predefined home position
 		/// </summary>
-		public override void SendCameraHome()
+		public override void ActivateHome()
 		{
-			if(m_Camera == null)
+			if (m_Camera == null)
 				return;
 
 			m_Camera.Reset();
+		}
+
+		/// <summary>
+		/// Stores the current position as the home position.
+		/// </summary>
+		public override void StoreHome()
+		{
+			if (m_Camera == null)
+				return;
+
+			// TODO - No way to store home position?
 		}
 
 		/// <summary>
@@ -271,6 +282,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		{
 			return m_Codec != null && m_Codec.IsOnline;
 		}
+
 		#endregion
 
 		#region Codec Callbacks
