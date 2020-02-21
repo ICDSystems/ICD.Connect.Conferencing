@@ -113,7 +113,6 @@
     <Compile Include="EventArguments\RecentCallEventArgs.cs" />
     <Compile Include="IncomingCalls\AbstractIncomingCall.cs" />
     <Compile Include="IncomingCalls\IIncomingCall.cs" />
-    <Compile Include="IncomingCalls\ThinIncomingCall.cs" />
     <Compile Include="IncomingCalls\TraditionalIncomingCall.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Participants\AbstractParticipant.cs" />
