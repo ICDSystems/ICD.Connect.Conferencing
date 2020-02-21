@@ -142,7 +142,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		public bool MuteMyCameraOnStart
 		{
 			get { return m_MuteMyCameraOnStart; }
-			private set
+			set
 			{
 				if (value == m_MuteMyCameraOnStart)
 					return;
@@ -156,7 +156,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		public bool MuteParticipantsOnStart
 		{
 			get { return m_MuteMyCameraOnStart; }
-			private set
+			set
 			{
 				if (value == m_MuteParticipantsOnStart)
 					return;
