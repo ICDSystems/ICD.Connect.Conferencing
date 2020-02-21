@@ -108,7 +108,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_NetworkProperties.WriteElements(writer);
 
 			writer.WriteElementString(DIAL_OUT_ENABLED_ELEMENT, IcdXmlConvert.ToString(DialOutEnabled));
-			writer.WriteElementString(RECORD_ENABLED_ELEMENT, IcdXmlConvert.ToString(RECORD_ENABLED_ELEMENT));
+			writer.WriteElementString(RECORD_ENABLED_ELEMENT, IcdXmlConvert.ToString(RecordEnabled));
 			writer.WriteElementString(MUTE_MY_CAMERA_ON_START_ELEMENT, IcdXmlConvert.ToString(MuteMyCameraOnStart));
 			writer.WriteElementString(MUTE_PARTICIPANTS_ON_START_ELEMENT, IcdXmlConvert.ToString(MuteParticipantsOnStart));
 		}
