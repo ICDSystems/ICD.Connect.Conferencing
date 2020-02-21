@@ -69,9 +69,19 @@ namespace ICD.Connect.Conferencing.Zoom
 		public event EventHandler<BoolEventArgs> OnDialOutEnabledChanged;
 
 		/// <summary>
-		/// Raised when the Record Enabled state changes;
+		/// Raised when the Record Enabled state changes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnRecordEnabledChanged;
+
+		/// <summary>
+		/// Raised when the MuteMyCameraOnStart state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteMyCameraOnStartChanged;
+
+		/// <summary>
+		/// Raised when the MuteParticipantsOnStart state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteParticipantsOnStartChanged;
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly DelimiterSerialBuffer m_SerialBuffer;
@@ -84,8 +94,9 @@ namespace ICD.Connect.Conferencing.Zoom
 		private bool m_IsConnected;
 
 		private bool m_DialOutEnabled;
-
 		private bool m_RecordEnabled;
+		private bool m_MuteMyCameraOnStart;
+		private bool m_MuteParticipantsOnStart;
 
 		#region Properties
 
@@ -125,6 +136,34 @@ namespace ICD.Connect.Conferencing.Zoom
 				m_RecordEnabled = value;
 
 				OnRecordEnabledChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
+
+		public bool MuteMyCameraOnStart
+		{
+			get { return m_MuteMyCameraOnStart; }
+			private set
+			{
+				if (value == m_MuteMyCameraOnStart)
+					return;
+
+				m_MuteMyCameraOnStart = value;
+
+				OnMuteMyCameraOnStartChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
+
+		public bool MuteParticipantsOnStart
+		{
+			get { return m_MuteMyCameraOnStart; }
+			private set
+			{
+				if (value == m_MuteParticipantsOnStart)
+					return;
+
+				m_MuteParticipantsOnStart = value;
+
+				OnMuteParticipantsOnStartChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
 
@@ -532,6 +571,8 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			DialOutEnabled = settings.DialOutEnabled;
 			RecordEnabled = settings.RecordEnabled;
+			MuteMyCameraOnStart = settings.MuteMyCameraOnStart;
+			MuteParticipantsOnStart = settings.MuteParticipantsOnStart;
 		}
 
 		protected override void ClearSettingsFinal()
@@ -544,6 +585,8 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			DialOutEnabled = ZoomRoomSettings.DEFAULT_DIAL_OUT_ENABLED;
 			RecordEnabled = ZoomRoomSettings.DEFAULT_RECORD_ENABLED;
+			MuteMyCameraOnStart = false;
+			MuteParticipantsOnStart = false;
 		}
 
 		protected override void CopySettingsFinal(ZoomRoomSettings settings)
@@ -556,6 +599,8 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			settings.DialOutEnabled = DialOutEnabled;
 			settings.RecordEnabled = RecordEnabled;
+			settings.MuteMyCameraOnStart = MuteMyCameraOnStart;
+			settings.MuteParticipantsOnStart = MuteParticipantsOnStart;
 		}
 
 		#endregion

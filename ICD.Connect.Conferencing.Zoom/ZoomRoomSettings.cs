@@ -13,6 +13,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		private const string PORT_ELEMENT = "Port";
 		private const string DIAL_OUT_ENABLED_ELEMENT = "DialOutEnabled";
 		private const string RECORD_ENABLED_ELEMENT = "RecordEnabled";
+		private const string MUTE_MY_CAMERA_ON_START_ELEMENT = "MuteMyCameraOnStart";
+		private const string MUTE_PARTICIPANTS_ON_START_ELEMENT = "MuteParticipantsOnStart";
 
 		public const bool DEFAULT_DIAL_OUT_ENABLED = true;
 		public const bool DEFAULT_RECORD_ENABLED = true;
@@ -30,6 +32,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		public bool DialOutEnabled { get; set; }
 
 		public bool RecordEnabled { get; set; }
+
+		public bool MuteMyCameraOnStart { get; set; }
+
+		public bool MuteParticipantsOnStart { get; set; }
 
 		#endregion
 
@@ -103,6 +109,8 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			writer.WriteElementString(DIAL_OUT_ENABLED_ELEMENT, IcdXmlConvert.ToString(DialOutEnabled));
 			writer.WriteElementString(RECORD_ENABLED_ELEMENT, IcdXmlConvert.ToString(RECORD_ENABLED_ELEMENT));
+			writer.WriteElementString(MUTE_MY_CAMERA_ON_START_ELEMENT, IcdXmlConvert.ToString(MuteMyCameraOnStart));
+			writer.WriteElementString(MUTE_PARTICIPANTS_ON_START_ELEMENT, IcdXmlConvert.ToString(MuteParticipantsOnStart));
 		}
 
 		/// <summary>
@@ -120,6 +128,10 @@ namespace ICD.Connect.Conferencing.Zoom
 			DialOutEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, DIAL_OUT_ENABLED_ELEMENT) ?? DEFAULT_DIAL_OUT_ENABLED;
 
 			RecordEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, RECORD_ENABLED_ELEMENT) ?? DEFAULT_RECORD_ENABLED;
+
+			MuteMyCameraOnStart = XmlUtils.TryReadChildElementContentAsBoolean(xml, MUTE_MY_CAMERA_ON_START_ELEMENT) ?? false;
+
+			MuteParticipantsOnStart = XmlUtils.TryReadChildElementContentAsBoolean(xml, MUTE_PARTICIPANTS_ON_START_ELEMENT) ?? false;
 
 			UpdateNetworkDefaults();
 		}
