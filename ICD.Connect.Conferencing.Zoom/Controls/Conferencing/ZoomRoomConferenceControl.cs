@@ -44,6 +44,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnMuteUserOnEntryChanged;
 
+		/// <summary>
+		/// Raised when the MuteMyCameraOnStart state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteMyCameraOnStartChanged;
+
 		private readonly CallComponent m_CallComponent;
 		private readonly ZoomWebConference m_Conference;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
@@ -52,6 +57,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private readonly SafeCriticalSection m_InviteSection;
 
 		private bool m_MuteUserOnEntry;
+		private bool m_MuteMyCameraOnStart;
 
 		#region Properties
 
@@ -78,6 +84,22 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				UpdateMuteUserOnEntry();
 
 				OnMuteUserOnEntryChanged.Raise(this, new BoolEventArgs(m_MuteUserOnEntry));
+			}
+		}
+
+		public bool MuteMyCameraOnStart
+		{
+			get { return m_MuteMyCameraOnStart; }
+			set
+			{
+				if (value == m_MuteMyCameraOnStart)
+					return;
+
+				m_MuteMyCameraOnStart = value;
+
+				OnMuteMyCameraOnStartChanged.Raise(this, new BoolEventArgs(m_MuteMyCameraOnStart));
+
+				//todo: make this value actually do something
 			}
 		}
 
