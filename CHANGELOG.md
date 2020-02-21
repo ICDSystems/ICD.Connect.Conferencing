@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Fixed a bug where Zoom would stop presentations while swapping sources
  - Clarified ZoomMiddleware installation steps
 
+## [14.1.1] - 2020-02-21
+### Changed
+ - Cameras implement StoreHome method
+
 ## [14.1.0] - 2019-12-03
 ### Added
  - Implemented Zoom event for call-out failing to be placed
