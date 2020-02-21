@@ -109,7 +109,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			{
 				return m_DialOutEnabled;
 			}
-			private set
+			set
 			{
 				if (value == m_DialOutEnabled)
 					return;
@@ -127,7 +127,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		public bool RecordEnabled
 		{
 			get { return m_RecordEnabled; }
-			private set
+			set
 			{
 				if (value == m_RecordEnabled)
 					return;
