@@ -39,16 +39,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
-		/// <summary>
-		/// Raised when the MuteUserOnEntry state changes.
-		/// </summary>
-		public event EventHandler<BoolEventArgs> OnMuteUserOnEntryChanged;
-
-		/// <summary>
-		/// Raised when the MuteMyCameraOnStart state changes.
-		/// </summary>
-		public event EventHandler<BoolEventArgs> OnMuteMyCameraOnStartChanged;
-
 		private readonly CallComponent m_CallComponent;
 		private readonly ZoomWebConference m_Conference;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
@@ -56,52 +46,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
 		private readonly SafeCriticalSection m_InviteSection;
 
-		private bool m_MuteUserOnEntry;
-		private bool m_MuteMyCameraOnStart;
-
 		#region Properties
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public override eCallType Supports { get { return eCallType.Video; } }
-
-		/// <summary>
-		/// When true this control will enable the MuteUserOnEntry feature for the current meeting
-		/// and when new meetings are started.
-		/// </summary>
-		/// <value></value>
-		public bool MuteUserOnEntry
-		{
-			get { return m_MuteUserOnEntry; }
-			set
-			{
-				if (value == m_MuteUserOnEntry)
-					return;
-
-				m_MuteUserOnEntry = value;
-
-				UpdateMuteUserOnEntry();
-
-				OnMuteUserOnEntryChanged.Raise(this, new BoolEventArgs(m_MuteUserOnEntry));
-			}
-		}
-
-		public bool MuteMyCameraOnStart
-		{
-			get { return m_MuteMyCameraOnStart; }
-			set
-			{
-				if (value == m_MuteMyCameraOnStart)
-					return;
-
-				m_MuteMyCameraOnStart = value;
-
-				OnMuteMyCameraOnStartChanged.Raise(this, new BoolEventArgs(m_MuteMyCameraOnStart));
-
-				//todo: make this value actually do something
-			}
-		}
 
 		#endregion
 
@@ -135,11 +85,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			OnConferenceRemoved = null;
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
-			OnMuteUserOnEntryChanged = null;
 
 			base.DisposeFinal(disposing);
 
 			m_Conference.OnStatusChanged -= ConferenceOnStatusChanged;
+
+			Parent.OnMuteParticipantsOnStartChanged -= ParentOnMuteParticipantsOnStartChanged;
 
 			Unsubscribe(m_CallComponent);
 		}
@@ -273,6 +224,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			{
 				case eConferenceStatus.Connected:
 					UpdateMuteUserOnEntry();
+					MuteCameraOnEntry();
 					InviteContacts();
 					break;
 
@@ -322,16 +274,24 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			if (!m_CallComponent.AmIHost)
 				return;
 
-			m_CallComponent.EnableMuteUserOnEntry(m_MuteUserOnEntry);
+			m_CallComponent.EnableMuteUserOnEntry(Parent.MuteParticipantsOnStart);
 			
 			// If the setting is enabled & the host joins and there are other participants, mute them.
-			if (!m_MuteUserOnEntry)
+			if (Parent.MuteParticipantsOnStart)
 				return;
 
 			IEnumerable<ParticipantInfo> participants =
 				m_CallComponent.GetParticipants().Where(p => !p.IsMyself);
 			foreach (ParticipantInfo participant in participants)
 				m_CallComponent.MuteParticipant(participant.UserId, true);
+		}
+
+		private void MuteCameraOnEntry()
+		{
+			if (!Parent.MuteMyCameraOnStart)
+				return;
+
+			m_CallComponent.MuteCamera(true);
 		}
 
 		#endregion
@@ -494,6 +454,29 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		{
 			// This accounts for being late to an existing meeting that we are the
 			// host of, and "discovering" the participants on entry.
+			UpdateMuteUserOnEntry();
+		}
+
+		#endregion
+
+		#region Parent Callbacks
+
+		protected override void Subscribe(ZoomRoom parent)
+		{
+			base.Subscribe(parent);
+
+			parent.OnMuteParticipantsOnStartChanged += ParentOnMuteParticipantsOnStartChanged;
+		}
+
+		protected override void Unsubscribe(ZoomRoom parent)
+		{
+			base.Unsubscribe(parent);
+
+			parent.OnMuteParticipantsOnStartChanged -= ParentOnMuteParticipantsOnStartChanged;
+		}
+
+		private void ParentOnMuteParticipantsOnStartChanged(object sender, BoolEventArgs boolEventArgs)
+		{
 			UpdateMuteUserOnEntry();
 		}
 
