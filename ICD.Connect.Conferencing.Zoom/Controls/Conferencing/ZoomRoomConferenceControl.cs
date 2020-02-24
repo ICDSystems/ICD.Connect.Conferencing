@@ -20,6 +20,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 	public sealed class ZoomRoomConferenceControl : AbstractWebConferenceDeviceControl<ZoomRoom>
 	{
 		/// <summary>
+		/// How long to force the camera to stay muted after a meeting starts
+		/// </summary>
+		private const long KEEP_CAMERA_MUTED_DUE_TIME = 10 * 1000;
+
+		/// <summary>
 		/// Raised when a source is added to the conference component.
 		/// </summary>
 		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
@@ -46,6 +51,18 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
 		private readonly SafeCriticalSection m_InviteSection;
 
+		/// <summary>
+		/// If true, if camera is enabled/unmuted, it will be forced back to disabled
+		/// This is used when "Keep Camera Muted On Entry" is enabled
+		/// Since zoom tries to re-enable it after the call connects
+		/// </summary>
+		private bool m_KeepCameraMuted;
+
+		/// <summary>
+		/// Timer to clear "Keep Camera Muted" after the meeting is fully started
+		/// </summary>
+		private readonly SafeTimer m_KeepCameraMutedResetTimer;
+
 		#region Properties
 
 		/// <summary>
@@ -68,6 +85,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_IncomingCallsSection = new SafeCriticalSection();
 			m_InviteOnMeetingStart = new IcdHashSet<string>();
 			m_InviteSection = new SafeCriticalSection();
+			m_KeepCameraMutedResetTimer = SafeTimer.Stopped(ResetKeepCameraMuted);
 
 			m_Conference = new ZoomWebConference(m_CallComponent);
 			m_Conference.OnStatusChanged += ConferenceOnStatusChanged;
@@ -190,6 +208,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		public override void SetCameraEnabled(bool enabled)
 		{
 			m_CallComponent.MuteCamera(!enabled);
+			
+			// If the user explicitly requests to turn on the camera, turn off KeepCameraMuted
+			if (enabled && m_KeepCameraMuted)
+			{
+				m_KeepCameraMuted = false;
+				m_KeepCameraMutedResetTimer.Stop();
+			}
 		}
 
 		/// <summary>
@@ -291,7 +316,21 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			if (!Parent.MuteMyCameraOnStart)
 				return;
 
+			SetKeepCameraMuted();
 			m_CallComponent.MuteCamera(true);
+			
+
+		}
+
+		private void SetKeepCameraMuted()
+		{
+			m_KeepCameraMuted = true;
+			m_KeepCameraMutedResetTimer.Reset(KEEP_CAMERA_MUTED_DUE_TIME);
+		}
+
+		private void ResetKeepCameraMuted()
+		{
+			m_KeepCameraMuted = false;
 		}
 
 		#endregion
@@ -423,6 +462,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private void CallComponentOnCameraMuteChanged(object sender, BoolEventArgs boolEventArgs)
 		{
 			CameraEnabled = !m_CallComponent.CameraMute;
+
+			// If KeepCameraMuted is set and camera mute is enabled, disable the camera again
+			if (m_KeepCameraMuted && !boolEventArgs.Data)
+				SetCameraEnabled(false);
 		}
 
 		/// <summary>
