@@ -154,7 +154,7 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		public bool MuteParticipantsOnStart
 		{
-			get { return m_MuteMyCameraOnStart; }
+			get { return m_MuteParticipantsOnStart; }
 			set
 			{
 				if (value == m_MuteParticipantsOnStart)
