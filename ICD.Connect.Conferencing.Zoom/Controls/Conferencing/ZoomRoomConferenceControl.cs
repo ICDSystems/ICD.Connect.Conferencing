@@ -316,9 +316,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		#region Incoming Calls
 
-		private ThinIncomingCall CreateThinIncomingCall(IncomingCall call)
+		private WebIncomingCall CreateThinIncomingCall(IncomingCall call)
 		{
-			return new ThinIncomingCall
+			return new WebIncomingCall
 			{
 				Name = call.CallerName,
 				Number = call.MeetingNumber,
@@ -429,7 +429,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				return;
 			}
 
-			ThinIncomingCall incomingCall = CreateThinIncomingCall(eventArgs.Data);
+			WebIncomingCall incomingCall = CreateThinIncomingCall(eventArgs.Data);
 			AddIncomingCall(incomingCall);
 		}
 

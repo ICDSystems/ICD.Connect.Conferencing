@@ -24,7 +24,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		private readonly BiDictionary<int, ThinTraditionalParticipant> m_Participants;
-		private readonly BiDictionary<int, ThinIncomingCall> m_IncomingCalls;
+		private readonly BiDictionary<int, TraditionalIncomingCall> m_IncomingCalls;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private readonly DialComponent m_DialComponent;
@@ -52,7 +52,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			: base(parent, id)
 		{
 			m_Participants = new BiDictionary<int, ThinTraditionalParticipant>();
-			m_IncomingCalls = new BiDictionary<int, ThinIncomingCall>();
+			m_IncomingCalls = new BiDictionary<int, TraditionalIncomingCall>();
 			m_ParticipantsSection = new SafeCriticalSection();
 
 			m_DialComponent = parent.Components.GetComponent<DialComponent>();
@@ -434,7 +434,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="id"></param>
 		private void RemoveIncomingCall(int id)
 		{
-			ThinIncomingCall call;
+			TraditionalIncomingCall call;
 
 			m_ParticipantsSection.Enter();
 
@@ -464,7 +464,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinIncomingCall call;
+			TraditionalIncomingCall call;
 
 			m_ParticipantsSection.Enter();
 
@@ -473,7 +473,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				if (m_IncomingCalls.ContainsKey(callStatus.CallId))
 					return;
 
-				call = new ThinIncomingCall { AnswerState = eCallAnswerState.Unanswered };
+				call = new TraditionalIncomingCall(eCallType.Video) { AnswerState = eCallAnswerState.Unanswered };
 				m_IncomingCalls.Add(callStatus.CallId, call);
 
 				UpdateIncomingCall(callStatus);
@@ -496,7 +496,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinIncomingCall call = m_ParticipantsSection.Execute(() => m_IncomingCalls.GetDefault(callStatus.CallId, null));
+			TraditionalIncomingCall call = m_ParticipantsSection.Execute(() => m_IncomingCalls.GetDefault(callStatus.CallId, null));
 			if (call == null)
 				return;
 
@@ -588,13 +588,13 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		#region Incoming Call Callbacks
 
-		private void Subscribe(ThinIncomingCall call)
+		private void Subscribe(TraditionalIncomingCall call)
 		{
 			call.AnswerCallback = AnswerCallback;
 			call.RejectCallback = RejectCallback;
 		}
 
-		private void Unsubscribe(ThinIncomingCall call)
+		private void Unsubscribe(TraditionalIncomingCall call)
 		{
 			call.AnswerCallback = null;
 			call.RejectCallback = null;
@@ -602,7 +602,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		private void RejectCallback(IIncomingCall sender)
 		{
-			int id = GetIdForIncomingCall(sender as ThinIncomingCall);
+			int id = GetIdForIncomingCall(sender as TraditionalIncomingCall);
 
 			m_DialComponent.HangupVideo(id);
 		}
@@ -612,7 +612,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			m_DialComponent.AnswerVideo();
 		}
 
-		private int GetIdForIncomingCall(ThinIncomingCall call)
+		private int GetIdForIncomingCall(TraditionalIncomingCall call)
 		{
 			return m_ParticipantsSection.Execute(() => m_IncomingCalls.GetKey(call));
 		}
