@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom now has setting for RecordEnalbed, defualting to true
  - Zoom now has setting for DialOutEnabled, defaulting to true
  - ZoomMiddleware exposes a TCP console at listen port + 1 (default 2246)
+ - Zoom now has a MuteMyCameraOnStart option, to keep the room's camera disabled when joining a meeting.
 
 ### Changed
  - Cameras are passed to IVideoConferenceRouteControl when setting active camera
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Fixed IndexOutOfBoundsException in ConferenceManager.RemoveRecentCall(IIncomingCall)
  - Fixed a bug where Zoom would stop presentations while swapping sources
  - Clarified ZoomMiddleware installation steps
+ - Zoom now saves MuteParticipantsOnStart setting to XML to persits through program restarts
 
 ## [14.1.1] - 2020-02-21
 ### Changed
