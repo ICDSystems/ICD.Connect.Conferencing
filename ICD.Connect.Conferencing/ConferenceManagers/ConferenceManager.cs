@@ -970,6 +970,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 		private void Unsubscribe(IIncomingCall call)
 		{
+			if (call == null)
+				return;
+
 			call.OnAnswerStateChanged -= CallOnAnswerStateChanged;
 		}
 

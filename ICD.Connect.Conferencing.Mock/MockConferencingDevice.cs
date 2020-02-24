@@ -177,7 +177,8 @@ namespace ICD.Connect.Conferencing.Mock
 
 		private void MockIncomingCall()
 		{
-			var incomingCall = new ThinIncomingCall();
+// ReSharper disable once PossibleNullReferenceException
+			var incomingCall = new TraditionalIncomingCall(Controls.GetControl<IConferenceDeviceControl>().Supports);
 			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(incomingCall));
 		}
 	}
