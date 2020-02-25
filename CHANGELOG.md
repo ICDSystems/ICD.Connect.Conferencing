@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom now has setting for DialOutEnabled, defaulting to true
  - ZoomMiddleware exposes a TCP console at listen port + 1 (default 2246)
  - Zoom now has a MuteMyCameraOnStart option, to keep the room's camera disabled when joining a meeting.
+ - Zoom now has settings for four originator camera devices and associated USB IDs
 
 ### Changed
  - Cameras are passed to IVideoConferenceRouteControl when setting active camera
