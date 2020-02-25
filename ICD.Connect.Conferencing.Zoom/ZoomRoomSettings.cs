@@ -175,11 +175,11 @@ namespace ICD.Connect.Conferencing.Zoom
 			writer.WriteElementString(CAMERA_1_ELEMENT, Camera1 == null ? null : IcdXmlConvert.ToString((int) Camera1));
 			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera1Usb);
 			writer.WriteElementString(CAMERA_2_ELEMENT, Camera2 == null ? null : IcdXmlConvert.ToString((int) Camera2));
-			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera2Usb);
+			writer.WriteElementString(CAMERA_2_USB_ELEMENT, Camera2Usb);
 			writer.WriteElementString(CAMERA_3_ELEMENT, Camera3 == null ? null : IcdXmlConvert.ToString((int) Camera3));
-			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera3Usb);
+			writer.WriteElementString(CAMERA_3_USB_ELEMENT, Camera3Usb);
 			writer.WriteElementString(CAMERA_4_ELEMENT, Camera4 == null ? null : IcdXmlConvert.ToString((int) Camera4));
-			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera4Usb);
+			writer.WriteElementString(CAMERA_4_USB_ELEMENT, Camera4Usb);
 
 			m_NetworkProperties.WriteElements(writer);
 
