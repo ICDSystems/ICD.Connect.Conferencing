@@ -137,8 +137,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 			if (dialContext == null)
 				throw new ArgumentNullException("dialContext");
 
-			// TODO: parse string maybe if call type is unknown?
-			return dialContext.CallType;
+			return dialContext.CallType != eCallType.Unknown ? dialContext.CallType : GetCallType(dialContext.DialString);
 		}
 
 		/// <summary>
