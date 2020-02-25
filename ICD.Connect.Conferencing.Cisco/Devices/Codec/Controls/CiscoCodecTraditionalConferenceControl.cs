@@ -280,7 +280,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				if (m_IncomingCalls.ContainsKey(source))
 					return;
 
-				incoming = new TraditionalIncomingCall(source.CallType);
+				incoming = new TraditionalIncomingCall(source.CallType)
+				{
+					Name = source.Name, 
+					Number = source.Number ?? source.RemoteNumber,
+					Direction = eCallDirection.Incoming                    
+				};
 				m_IncomingCalls.Add(source, incoming);
 
 				Subscribe(source);
