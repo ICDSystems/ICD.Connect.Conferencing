@@ -99,7 +99,7 @@ namespace ICD.Connect.Conferencing.DialingPlans
 				return eCallType.Unknown;
 
 			IPlanMatcher matcher = GetMatcher(number);
-			return matcher == null ? eCallType.Unknown : matcher.SourceType;
+			return matcher == null ? DefaultCallType : matcher.SourceType;
 		}
 
 		/// <summary>
