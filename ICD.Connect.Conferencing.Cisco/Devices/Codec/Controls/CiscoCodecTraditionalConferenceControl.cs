@@ -230,7 +230,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 					break;
 
 				case eCallDirection.Incoming:
-					AddParticipant(source);
+					//AddParticipant(source);
 					if (source.AnswerState == eCallAnswerState.Unanswered)
 						AddIncomingCall(source);
 					break;
@@ -404,6 +404,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				case eCallAnswerState.Ignored:
 				case eCallAnswerState.Autoanswered:
 				case eCallAnswerState.Answered:
+					AddParticipant(m_IncomingCalls.GetKey(incomingCall));
 					RemoveIncomingCall(source);
 					break;
 			}
