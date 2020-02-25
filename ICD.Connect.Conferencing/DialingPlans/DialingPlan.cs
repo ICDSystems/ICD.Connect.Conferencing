@@ -166,7 +166,19 @@ namespace ICD.Connect.Conferencing.DialingPlans
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
-			IDialContext[] dialContexts = contact.GetDialContexts().ToArray();
+			IDialContext[] dialContexts =
+				contact.GetDialContexts()
+				       .Select(c =>
+					               c.CallType == eCallType.Unknown
+						               ? new ThinDialContext(c.Protocol)
+						               {
+							               CallType = GetCallType(c),
+							               DialString = c.DialString,
+							               Password = c.Password
+						               }
+						               : c)
+				       .ToArray();
+
 			return dialContexts.FirstOrDefault(m => m.CallType == mode) ?? dialContexts.FirstOrDefault();
 		}
 
