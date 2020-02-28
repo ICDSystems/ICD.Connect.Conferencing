@@ -56,6 +56,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 			Subscribe(m_LayoutComponent);
 			Subscribe(m_CallComponent);
+
+			LayoutAvailable = true;
 		}
 
 		/// <summary>
@@ -141,7 +143,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			layoutComponent.OnSizeChanged += LayoutComponentOnSizeChanged;
 			layoutComponent.OnSelfViewEnabledChanged += LayoutComponentOnSelfViewEnabledChanged;
 			layoutComponent.OnShareThumbChanged += LayoutComponentOnShareThumbChanged;
-			layoutComponent.OnCallLayoutAvailabilityChanged += LayoutComponentOnCallLayoutAvailabilityChanged;
 		}
 
 		private void Unsubscribe(LayoutComponent layoutComponent)
@@ -149,7 +150,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			layoutComponent.OnSizeChanged -= LayoutComponentOnSizeChanged;
 			layoutComponent.OnSelfViewEnabledChanged -= LayoutComponentOnSelfViewEnabledChanged;
 			layoutComponent.OnShareThumbChanged -= LayoutComponentOnShareThumbChanged;
-			layoutComponent.OnCallLayoutAvailabilityChanged -= LayoutComponentOnCallLayoutAvailabilityChanged;
 		}
 
 		private void LayoutComponentOnShareThumbChanged(object sender, BoolEventArgs eventArgs)
@@ -172,15 +172,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			SelfViewEnabled =
 				m_LayoutComponent.SelfViewEnabled &&
 				m_LayoutComponent.LayoutSize != eZoomLayoutSize.Off;
-		}
-
-		private void LayoutComponentOnCallLayoutAvailabilityChanged(object sender, GenericEventArgs<ZoomLayoutAvailability> e)
-		{
-			var availability = e.Data;
-			if (availability.Equals(null))
-				return;
-
-			LayoutAvailable = availability.IsSupported;
 		}
 
 		#endregion

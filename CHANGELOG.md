@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Clarified ZoomMiddleware installation steps
  - Zoom now saves MuteParticipantsOnStart setting to XML to persits through program restarts
  - Fixed bugs where the DialingPlan was not correctly resolving call types
+ - Fixed a bug where the Zoom layout control was incorrectly determining global layout availability
 
 ## [14.1.1] - 2020-02-21
 ### Changed
