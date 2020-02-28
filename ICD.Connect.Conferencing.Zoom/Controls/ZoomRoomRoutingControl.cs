@@ -5,7 +5,6 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Controls.Routing;
 using ICD.Connect.Conferencing.Zoom.Components.Camera;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
@@ -351,7 +350,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			// Make sure the best available camera is selected
 			foreach (string usbId in bestCameraUsbIds)
 			{
-				bool connected = m_CameraComponent.GetCameras().Select(c => c.UsbId).Any(u => u == usbId);
+				string usbIdClosure = usbId;
+				bool connected = m_CameraComponent.GetCameras().Select(c => c.UsbId).Any(u => u == usbIdClosure);
 				if (!connected)
 					continue;
 
