@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - ZoomMiddleware exposes a TCP console at listen port + 1 (default 2246)
  - Zoom now has a MuteMyCameraOnStart option, to keep the room's camera disabled when joining a meeting.
  - Zoom now has settings for four originator camera devices and associated USB IDs
+ - VolumePoints can be registered with the ConferenceManager for privacy mute
+ - ConferenceManager will enforce privacy mute on DSP and Microphone volume points
+ - Added common abstractions for web and traditional conferencing
+ - IConferenceDeviceControl exposes a SupportedConferenceFeatures property for determining if privacy mute is supported
+ - Microphone privacy is enforced as a last resort to avoid complicating AEC
+ - Added methods to ConferenceManager for determining if privacy mute is currently available
 
 ### Changed
  - Cameras are passed to IVideoConferenceRouteControl when setting active camera
@@ -28,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Zoom now saves MuteParticipantsOnStart setting to XML to persits through program restarts
  - Fixed bugs where the DialingPlan was not correctly resolving call types
  - Fixed a bug where the Zoom layout control was incorrectly determining global layout availability
+ - Substantial refactoring of ConferenceManager to split into multiple child classes
 
 ## [14.1.1] - 2020-02-21
 ### Changed
