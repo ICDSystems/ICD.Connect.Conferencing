@@ -260,6 +260,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			}
 		}
 
+		/// <summary>
+		/// Zoom doesn't give connection feedback upon joining a call lobby,
+		/// but we do get feedback when we need to wait for the host to start the call.
+		/// So when we are waiting for the host in the lobby change the conference status to connected.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void CallComponentOnOnNeedWaitForHost(object sender, BoolEventArgs e)
 		{
 			if (e.Data)
