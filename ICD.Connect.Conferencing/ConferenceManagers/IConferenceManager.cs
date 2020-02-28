@@ -102,6 +102,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="context"></param>
 		void Dial([NotNull] IDialContext context);
 
+		/// <summary>
+		/// Returns true if:
+		/// All of the active conferences can be privacy muted
+		/// Or
+		/// There are DSP or microphone privacy volume points.
+		/// </summary>
+		/// <returns></returns>
+		bool CanPrivacyMute();
+
 		#endregion
 	}
 

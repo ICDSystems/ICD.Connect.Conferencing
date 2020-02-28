@@ -266,6 +266,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Gets the registered conference providers that are currently in an active conference.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConferenceDeviceControl> GetActiveDialers()
+		{
+			return GetDialingProviders().Concat(GetFeedbackDialingProviders())
+			                            .Where(d => d.GetActiveConference() != null);
+		}
+
+		/// <summary>
 		/// Registers the dialing provider at the given conference point.
 		/// </summary>
 		/// <param name="conferencePoint"></param>

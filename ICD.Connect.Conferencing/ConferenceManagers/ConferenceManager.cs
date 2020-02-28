@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.Audio.VolumePoints;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
@@ -201,6 +203,29 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			conferenceControl.Dial(dialContext);
+		}
+
+		/// <summary>
+		/// Returns true if:
+		/// All of the active conferences can be privacy muted
+		/// Or
+		/// There are DSP or microphone privacy volume points.
+		/// </summary>
+		/// <returns></returns>
+		public bool CanPrivacyMute()
+		{
+			// Can we mute at the DSP/Microphone level?
+			bool anyVolumePoints =
+				m_VolumePoints.GetVolumePoints()
+				              .Any(v => v.MuteType == eMuteType.DspPrivacyMute ||
+				                        v.MuteType == eMuteType.MicPrivacyMute);
+			if (anyVolumePoints)
+				return true;
+
+			// Can we mute the active conference controls?
+			return m_Dialers.GetActiveDialers()
+			                .AnyAndAll(d =>
+			                           d.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute));
 		}
 
 		#endregion

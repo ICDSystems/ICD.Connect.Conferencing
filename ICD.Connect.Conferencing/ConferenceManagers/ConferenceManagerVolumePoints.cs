@@ -207,16 +207,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return false;
 
 			// Hard - Do the active conference endpoints support privacy mute?
-			IEnumerable<IConferenceDeviceControl> endpoints = m_ConferenceManager.Dialers.GetDialingProviders();
-			endpoints = endpoints.Concat(m_ConferenceManager.Dialers.GetFeedbackDialingProviders());
-
-			bool supportsPrivacyMute = endpoints.Where(e => e.GetActiveConference() != null)
-			                                    .AnyAndAll(e =>
-			                                               e.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute));
-			if (supportsPrivacyMute)
-				return false;
-
-			return true;
+			return m_ConferenceManager.Dialers.GetActiveDialers()
+			                          .AnyAndAll(d =>
+			                                     d.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute));
 		}
 
 		#endregion
