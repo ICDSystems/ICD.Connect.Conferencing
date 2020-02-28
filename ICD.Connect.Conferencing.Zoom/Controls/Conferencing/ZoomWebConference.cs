@@ -182,6 +182,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			callComponent.OnStatusChanged += CallComponentOnStatusChanged;
 			callComponent.OnParticipantAdded += CallComponentOnParticipantAdded;
 			callComponent.OnParticipantRemoved += CallComponentOnParticipantRemoved;
+			callComponent.OnNeedWaitForHost += CallComponentOnOnNeedWaitForHost;
 		}
 
 		/// <summary>
@@ -257,6 +258,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 					Status = eConferenceStatus.Undefined;
 					break;
 			}
+		}
+
+		private void CallComponentOnOnNeedWaitForHost(object sender, BoolEventArgs e)
+		{
+			if (e.Data)
+				Status = eConferenceStatus.Connected;
 		}
 
 		#endregion

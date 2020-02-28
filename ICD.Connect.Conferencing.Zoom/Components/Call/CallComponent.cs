@@ -100,7 +100,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <summary>
 		/// Raised when the Call Record info updates.
 		/// </summary>
-		public event EventHandler<GenericEventArgs<UpdateCallRecordInfoEvent>> OnUpdatedCallRecordInfo; 
+		public event EventHandler<GenericEventArgs<UpdateCallRecordInfoEvent>> OnUpdatedCallRecordInfo;
+
+		/// <summary>
+		/// Raised when joining a call lobby that requires the host to start the call.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnNeedWaitForHost;
 
 		#endregion
 
@@ -585,6 +590,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.RegisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			zoomRoom.RegisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
 			zoomRoom.RegisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
+			zoomRoom.RegisterResponseCallback<NeedWaitForHostResponse>(NeedWaitForHostCallback);
 		}
 
 		/// <summary>
@@ -604,6 +610,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			zoomRoom.UnregisterResponseCallback<IncomingCallResponse>(IncomingCallCallback);
 			zoomRoom.UnregisterResponseCallback<CallConnectErrorResponse>(CallConnectErrorCallback);
 			zoomRoom.UnregisterResponseCallback<MeetingNeedsPasswordResponse>(MeetingNeedsPasswordCallback);
+			zoomRoom.UnregisterResponseCallback<NeedWaitForHostResponse>(NeedWaitForHostCallback);
 		}
 
 		/// <summary>
@@ -732,6 +739,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		private void VideoUnMuteRequestCallback(ZoomRoom zoomroom, VideoUnMuteRequestResponse response)
 		{
 			OnFarEndRequestedVideoUnMute.Raise(this);
+		}
+
+		private void NeedWaitForHostCallback(ZoomRoom zoomroom, NeedWaitForHostResponse response)
+		{
+			if (response.Response == null)
+				return;
+
+			OnNeedWaitForHost.Raise(this, new BoolEventArgs(response.Response.Wait));
 		}
 
 		#endregion
