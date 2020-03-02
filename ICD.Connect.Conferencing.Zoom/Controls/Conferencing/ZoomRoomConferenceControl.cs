@@ -112,8 +112,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 			m_Conference.OnStatusChanged -= ConferenceOnStatusChanged;
 
-			Parent.OnMuteParticipantsOnStartChanged -= ParentOnMuteParticipantsOnStartChanged;
-
 			Unsubscribe(m_CallComponent);
 		}
 
@@ -322,8 +320,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 			SetKeepCameraMuted();
 			m_CallComponent.MuteCamera(true);
-			
-
 		}
 
 		private void SetKeepCameraMuted()
