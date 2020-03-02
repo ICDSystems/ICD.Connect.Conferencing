@@ -747,6 +747,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			addRow("IsConnected", IsConnected);
 			addRow("RecordEnabled", RecordEnabled);
 			addRow("DialOutEnabled", DialOutEnabled);
+			addRow("MuteMyCameraOnStart", MuteMyCameraOnStart);
+			addRow("MuteParticipantsOnStart", MuteParticipantsOnStart);
 		}
 
 		public override IEnumerable<IConsoleNodeBase> GetConsoleNodes()
@@ -775,10 +777,14 @@ namespace ICD.Connect.Conferencing.Zoom
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<bool>("SetRecordEnabled", "SetRecordEnabled {true|false}",
+			yield return new GenericConsoleCommand<bool>("SetRecordEnabled", "SetRecordEnabled <True/False>",
 			                                             e => RecordEnabled = e);
-			yield return new GenericConsoleCommand<bool>("SetDialOutEnabled", "SetDialOutEnabled {true|false}",
+			yield return new GenericConsoleCommand<bool>("SetDialOutEnabled", "SetDialOutEnabled <True/False>",
 			                                             e => DialOutEnabled = e);
+			yield return new GenericConsoleCommand<bool>("SetMuteMyCameraOnStart", "SetMuteMyCameraOnStart <True/False>",
+														 e => MuteMyCameraOnStart = e);
+			yield return new GenericConsoleCommand<bool>("SetMuteParticipantsOnStart", "SetMuteParticipantsOnStart <True/False>",
+														 e => MuteParticipantsOnStart = e);
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
