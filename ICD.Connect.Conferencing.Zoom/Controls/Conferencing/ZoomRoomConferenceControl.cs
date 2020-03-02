@@ -304,7 +304,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_CallComponent.EnableMuteUserOnEntry(Parent.MuteParticipantsOnStart);
 			
 			// If the setting is enabled & the host joins and there are other participants, mute them.
-			if (Parent.MuteParticipantsOnStart)
+			if (!Parent.MuteParticipantsOnStart)
 				return;
 
 			IEnumerable<ParticipantInfo> participants =
