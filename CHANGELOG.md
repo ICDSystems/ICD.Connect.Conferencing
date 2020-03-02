@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Fixed a bug where the Zoom layout control was incorrectly determining global layout availability
  - Substantial refactoring of ConferenceManager to split into multiple child classes
  - When Zoom connects to a call lobby that requires a host to start the call, the conference status now properly changes to connected.
+ - Splitting Zoom participant added/updated events, fixing bad MuteOnEntry logic
 
 ## [14.1.1] - 2020-02-21
 ### Changed

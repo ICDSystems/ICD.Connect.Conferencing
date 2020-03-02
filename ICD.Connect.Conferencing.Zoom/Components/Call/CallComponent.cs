@@ -28,6 +28,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantAdded;
 
 		/// <summary>
+		/// Raised when a participant is updated.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<ParticipantInfo>> OnParticipantUpdated;
+
+		/// <summary>
 		/// Raised when the conference status changes.
 		/// </summary>
 		public event EventHandler<GenericEventArgs<eCallStatus>> OnStatusChanged;
@@ -308,6 +313,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			OnParticipantRemoved = null;
 			OnParticipantAdded = null;
+			OnParticipantUpdated = null;
 			OnStatusChanged = null;
 			OnCallLockChanged = null;
 			OnCallRecordChanged = null;
@@ -547,9 +553,24 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			if (info == null)
 				throw new ArgumentNullException("info");
 
-			m_ParticipantsSection.Execute(() => m_Participants[info.UserId] = info);
+			bool added;
 
-			OnParticipantAdded.Raise(this, new GenericEventArgs<ParticipantInfo>(info));
+			m_ParticipantsSection.Enter();
+
+			try
+			{
+				added = !m_Participants.ContainsKey(info.UserId);
+				m_Participants[info.UserId] = info;
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+
+			if (added)
+				OnParticipantAdded.Raise(this, new GenericEventArgs<ParticipantInfo>(info));
+			else
+				OnParticipantUpdated.Raise(this, new GenericEventArgs<ParticipantInfo>(info));
 		}
 
 		private void RemoveParticipant(ParticipantInfo info)

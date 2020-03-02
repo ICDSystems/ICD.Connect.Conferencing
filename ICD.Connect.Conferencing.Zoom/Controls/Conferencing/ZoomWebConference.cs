@@ -181,6 +181,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		{
 			callComponent.OnStatusChanged += CallComponentOnStatusChanged;
 			callComponent.OnParticipantAdded += CallComponentOnParticipantAdded;
+			callComponent.OnParticipantUpdated += CallComponentOnParticipantUpdated;
 			callComponent.OnParticipantRemoved += CallComponentOnParticipantRemoved;
 			callComponent.OnNeedWaitForHost += CallComponentOnOnNeedWaitForHost;
 		}
@@ -212,11 +213,30 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		}
 
 		/// <summary>
-		/// Called when a participant is removed from the room.
+		/// Called when a participant is added to the room.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="eventArgs"></param>
 		private void CallComponentOnParticipantAdded(object sender, GenericEventArgs<ParticipantInfo> eventArgs)
+		{
+			ZoomWebParticipant participant =
+				m_ParticipantsSection.Execute(() => m_Participants.GetDefault(eventArgs.Data.UserId));
+
+			if (participant == null)
+			{
+				participant = new ZoomWebParticipant(m_CallComponent, eventArgs.Data);
+				AddParticipant(participant);
+			}
+			else
+				participant.Update(eventArgs.Data);
+		}
+
+		/// <summary>
+		/// Called when a participant is updated in the room.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void CallComponentOnParticipantUpdated(object sender, GenericEventArgs<ParticipantInfo> eventArgs)
 		{
 			ZoomWebParticipant participant =
 				m_ParticipantsSection.Execute(() => m_Participants.GetDefault(eventArgs.Data.UserId));
