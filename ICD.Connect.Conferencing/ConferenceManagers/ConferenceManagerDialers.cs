@@ -533,7 +533,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			bool privacyMute = m_ConferenceManager.PrivacyMuted;
-			if (conferenceControl.PrivacyMuted != privacyMute)
+			if (conferenceControl.PrivacyMuted != privacyMute && conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute))
 				conferenceControl.SetPrivacyMute(privacyMute);
 		}
 
@@ -549,36 +549,42 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (!m_ConferenceManager.IsActive)
 				return;
 
-			switch (m_ConferenceManager.EnforceAutoAnswer)
+			if (conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.AutoAnswer))
 			{
-				case eEnforceState.DoNotEnforce:
-					break;
-				case eEnforceState.EnforceOn:
-					conferenceControl.SetAutoAnswer(true);
-					break;
-				case eEnforceState.EnforceOff:
-					conferenceControl.SetAutoAnswer(false);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
+				switch (m_ConferenceManager.EnforceAutoAnswer)
+				{
+					case eEnforceState.DoNotEnforce:
+						break;
+					case eEnforceState.EnforceOn:
+						conferenceControl.SetAutoAnswer(true);
+						break;
+					case eEnforceState.EnforceOff:
+						conferenceControl.SetAutoAnswer(false);
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
 			}
 
-			switch (m_ConferenceManager.EnforceDoNotDisturb)
+			if (conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.DoNotDisturb))
 			{
-				case eEnforceState.DoNotEnforce:
-					break;
-				case eEnforceState.EnforceOn:
-					conferenceControl.SetDoNotDisturb(true);
-					break;
-				case eEnforceState.EnforceOff:
-					conferenceControl.SetDoNotDisturb(false);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
+				switch (m_ConferenceManager.EnforceDoNotDisturb)
+				{
+					case eEnforceState.DoNotEnforce:
+						break;
+					case eEnforceState.EnforceOn:
+						conferenceControl.SetDoNotDisturb(true);
+						break;
+					case eEnforceState.EnforceOff:
+						conferenceControl.SetDoNotDisturb(false);
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
+				}
 			}
 
 			bool privacyMute = m_ConferenceManager.PrivacyMuted;
-			if (conferenceControl.PrivacyMuted != privacyMute)
+			if (conferenceControl.PrivacyMuted != privacyMute && conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute))
 				conferenceControl.SetPrivacyMute(privacyMute);
 		}
 

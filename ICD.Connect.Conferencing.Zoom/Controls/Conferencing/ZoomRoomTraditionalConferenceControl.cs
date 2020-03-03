@@ -123,12 +123,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override void SetAutoAnswer(bool enabled)
 		{
-			Parent.Log(eSeverity.Error, "Zoom Room does not support answering incoming calls through the SSH API");
+			throw new NotSupportedException();
 		}
 
 		public override void SetPrivacyMute(bool enabled)
 		{
-			Parent.Log(eSeverity.Error, "Zoom Room does not support setting privacy mute through the SSH API");
+			throw new NotSupportedException();
 		}
 
 		#endregion
