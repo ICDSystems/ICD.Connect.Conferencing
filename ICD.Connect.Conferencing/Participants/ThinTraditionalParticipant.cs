@@ -134,6 +134,11 @@ namespace ICD.Connect.Conferencing.Participants
 			DialTime = dialTime;
 		}
 
+		public void SetAnswerState(eCallAnswerState answerState)
+		{
+			AnswerState = answerState;
+		}
+
 		#endregion
 	}
 }
