@@ -2,7 +2,7 @@
 {
 	public sealed class ThinDialContext : AbstractDialContext
 	{
-		private eDialProtocol m_Protocol;
+		private readonly eDialProtocol m_Protocol;
 
 		public override eDialProtocol Protocol { get { return m_Protocol; } }
 

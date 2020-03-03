@@ -178,12 +178,17 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
-			foreach (IConsoleCommand command in base.GetConsoleCommands())
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
 			yield return new GenericConsoleCommand<bool>("AllowRecord",
 														 "Allows a participant to record <true/false>",
 														 b => AllowParticipantRecord(b));
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion
