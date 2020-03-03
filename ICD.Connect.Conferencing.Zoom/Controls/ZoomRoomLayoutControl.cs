@@ -93,12 +93,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		public override void SetSelfViewFullScreenEnabled(bool enabled)
 		{
-			throw new System.NotSupportedException();
+			throw new NotSupportedException();
 		}
 
 		public override void SetLayoutMode(eLayoutMode mode)
 		{
-			throw new System.NotSupportedException();
+			throw new NotSupportedException();
 		}
 
 		public void SetShareThumbnailEnabled(bool enabled)
