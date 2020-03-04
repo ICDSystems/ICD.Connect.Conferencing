@@ -1,7 +1,6 @@
 ﻿using System;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.EventArguments
 {

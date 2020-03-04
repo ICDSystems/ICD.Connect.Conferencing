@@ -2,9 +2,6 @@
 using ICD.Common.Utils.Json;
 using ICD.Connect.Conferencing.Zoom.Components.Presentation;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
@@ -18,7 +15,6 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_PINNED_SHARE_SOURCE_ID = "pinned_share_source_id";
 		private const string ATTR_SHARE_SOURCE_TYPE = "share_source_type";
 		private const string ATTR_WHY_CANNOT_PIN_SHARE = "why_cannot_pin_share";
-
 
 		/// <summary>
 		/// Override to write properties to the writer.

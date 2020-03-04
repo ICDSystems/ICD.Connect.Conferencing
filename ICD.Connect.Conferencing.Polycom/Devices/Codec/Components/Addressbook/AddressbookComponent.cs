@@ -353,12 +353,11 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (string.IsNullOrEmpty(contact.Name))
 				return;
 
-			char letter = contact.Name.First();
-			letter = char.ToUpper(letter);
-
 			RootFolder root = GetRoot(addressbookType);
 
-			/*
+			/*char letter = contact.Name.First();
+			letter = char.ToUpper(letter);
+			
 			IDirectoryFolder folder = root.GetFolders().FirstOrDefault(f => f.Name == letter.ToString());
 
 			if (folder == null)

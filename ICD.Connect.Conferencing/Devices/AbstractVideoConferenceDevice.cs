@@ -2,7 +2,6 @@
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Devices;
 using ICD.Connect.Settings;
 

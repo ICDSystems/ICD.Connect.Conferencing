@@ -1,9 +1,5 @@
-﻿using ICD.Common.Utils.Json;
-using ICD.Connect.Conferencing.Zoom.Components.Presentation;
+﻿using ICD.Connect.Conferencing.Zoom.Components.Presentation;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {

@@ -1,8 +1,6 @@
-﻿using ICD.Common.Utils.Json;
-
-namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
+﻿namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 {
-	public class BookingsUpdatedEventResponseConverter : AbstractZoomRoomResponseConverter<BookingsUpdatedEventResponse>
+	public sealed class BookingsUpdatedEventResponseConverter : AbstractZoomRoomResponseConverter<BookingsUpdatedEventResponse>
 	{
 	}
 }
