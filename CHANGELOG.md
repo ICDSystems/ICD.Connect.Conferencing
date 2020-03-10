@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
+ - Zoom settings can now take the Vendor and Product ID of a USB ID and insert them into a new USB ID.
  - Zoom will attempt to set the active USB camera when a camera is routed
  - Zoom volume component and control for output devices
  - Zoom local and far end camera control
