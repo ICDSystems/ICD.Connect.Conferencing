@@ -649,7 +649,7 @@ namespace ICD.Connect.Conferencing.Zoom
             SetUsbIdForCamera(factory, settings.Camera4, settings.Camera4Usb);
 		}
 
-        private void SetUsbIdForCamera([NotNull] IDeviceFactory factory, int? cameraId, string usbInfo)
+        private void SetUsbIdForCamera([NotNull] IDeviceFactory factory, int? cameraId, WindowsDevicePathInfo usbInfo)
         {
             if (cameraId == null)
                 return;
@@ -657,12 +657,7 @@ namespace ICD.Connect.Conferencing.Zoom
             try
             {
                 IDeviceBase camera = factory.GetDeviceById((int)cameraId);
-                WindowsDevicePathInfo? usbPathInfo =
-                    usbInfo == null
-                        ? (WindowsDevicePathInfo?)null
-                        : new WindowsDevicePathInfo(usbInfo);
-
-                SetUsbIdForCamera(camera, usbPathInfo);
+                SetUsbIdForCamera(camera, usbInfo);
             }
             catch (KeyNotFoundException)
             {
@@ -706,19 +701,19 @@ namespace ICD.Connect.Conferencing.Zoom
                 {
                     case 1:
                         settings.Camera1 = usbCamera.Key.Id;
-                        settings.Camera1Usb = usbCamera.Value.ToString();
+                        settings.Camera1Usb = usbCamera.Value;
                         break;
                     case 2:
                         settings.Camera2 = usbCamera.Key.Id;
-                        settings.Camera2Usb = usbCamera.Value.ToString();
+                        settings.Camera2Usb = usbCamera.Value;
                         break;
                     case 3:
                         settings.Camera3 = usbCamera.Key.Id;
-                        settings.Camera3Usb = usbCamera.Value.ToString();
+                        settings.Camera3Usb = usbCamera.Value;
                         break;
                     case 4:
                         settings.Camera4 = usbCamera.Key.Id;
-                        settings.Camera4Usb = usbCamera.Value.ToString();
+                        settings.Camera4Usb = usbCamera.Value;
                         break;
                 }
 

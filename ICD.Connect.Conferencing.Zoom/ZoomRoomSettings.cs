@@ -1,7 +1,9 @@
 ﻿using ICD.Common.Properties;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Devices.Windows;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Settings.Attributes;
@@ -64,8 +66,17 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Camera1 USB ID
 		/// </summary>
-		[CanBeNull]
-		public string Camera1Usb { get; set; }
+		public WindowsDevicePathInfo Camera1Usb { get; set; }
+
+		/// <summary>
+		/// Mutates Camera1Usb by editing the Vendor ID section of the USB ID
+		/// </summary>
+		public string Camera1UsbVendorId { set { Camera1Usb = WindowsDevicePathInfo.SetVendorId(Camera1Usb, value); } }
+
+		/// <summary>
+		/// Mutates Camera1Usb by editing the Product ID section of the USB ID
+		/// </summary>
+		public string Camera1UsbProductId { set { Camera1Usb = WindowsDevicePathInfo.SetProductId(Camera1Usb, value); } }
 
 		/// <summary>
 		/// Camera2 Originator ID
@@ -76,8 +87,17 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Camera2 USB ID
 		/// </summary>
-		[CanBeNull]
-		public string Camera2Usb { get; set; }
+		public WindowsDevicePathInfo Camera2Usb { get; set; }
+
+		/// <summary>
+		/// Mutates Camera2Usb by editing the Vendor ID section of the USB ID
+		/// </summary>
+		public string Camera2VendorId { set { Camera2Usb = WindowsDevicePathInfo.SetVendorId(Camera2Usb, value); } }
+
+		/// <summary>
+		/// Mutates Camera2Usb by editing the Product ID section of the USB ID
+		/// </summary>
+		public string Camera2ProductId { set { Camera2Usb = WindowsDevicePathInfo.SetProductId(Camera2Usb, value); } }
 
 		/// <summary>
 		/// Camera3 Originator ID
@@ -88,8 +108,17 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Camera3 USB ID
 		/// </summary>
-		[CanBeNull]
-		public string Camera3Usb { get; set; }
+		public WindowsDevicePathInfo Camera3Usb { get; set; }
+
+		/// <summary>
+		/// Mutates Camera3Usb by editing the Vendor ID section of the USB ID
+		/// </summary>
+		public string Camera3VendorId { set { Camera3Usb = WindowsDevicePathInfo.SetVendorId(Camera3Usb, value); } }
+
+		/// <summary>
+		/// Mutates Camera3Usb by editing the Product ID section of the USB ID
+		/// </summary>
+		public string Camera3ProductId { set { Camera3Usb = WindowsDevicePathInfo.SetProductId(Camera3Usb, value); } }
 
 		/// <summary>
 		/// Camera4 Originator ID
@@ -100,8 +129,17 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Camera4 USB ID
 		/// </summary>
-		[CanBeNull]
-        public string Camera4Usb { get; set; }
+        public WindowsDevicePathInfo Camera4Usb { get; set; }
+
+		/// <summary>
+		/// Mutates Camera4Usb by editing the Vendor ID section of the USB ID
+		/// </summary>
+		public string Camera4VendorId { set { Camera4Usb = WindowsDevicePathInfo.SetVendorId(Camera4Usb, value); } }
+
+		/// <summary>
+		/// Mutates Camera4Usb by editing the Product ID section of the USB ID
+		/// </summary>
+		public string Camera4ProductId { set { Camera4Usb = WindowsDevicePathInfo.SetProductId(Camera4Usb, value); } }
 
 		#endregion
 
@@ -173,13 +211,13 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			writer.WriteElementString(DEFAULT_CAMERA_USB_ELEMENT, DefaultCameraUsb);
 			writer.WriteElementString(CAMERA_1_ELEMENT, Camera1 == null ? null : IcdXmlConvert.ToString((int) Camera1));
-			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera1Usb);
+			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera1Usb.ToString());
 			writer.WriteElementString(CAMERA_2_ELEMENT, Camera2 == null ? null : IcdXmlConvert.ToString((int) Camera2));
-			writer.WriteElementString(CAMERA_2_USB_ELEMENT, Camera2Usb);
+			writer.WriteElementString(CAMERA_2_USB_ELEMENT, Camera2Usb.ToString());
 			writer.WriteElementString(CAMERA_3_ELEMENT, Camera3 == null ? null : IcdXmlConvert.ToString((int) Camera3));
-			writer.WriteElementString(CAMERA_3_USB_ELEMENT, Camera3Usb);
+			writer.WriteElementString(CAMERA_3_USB_ELEMENT, Camera3Usb.ToString());
 			writer.WriteElementString(CAMERA_4_ELEMENT, Camera4 == null ? null : IcdXmlConvert.ToString((int) Camera4));
-			writer.WriteElementString(CAMERA_4_USB_ELEMENT, Camera4Usb);
+			writer.WriteElementString(CAMERA_4_USB_ELEMENT, Camera4Usb.ToString());
 
 			m_NetworkProperties.WriteElements(writer);
 
@@ -201,13 +239,13 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			DefaultCameraUsb = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_CAMERA_USB_ELEMENT);
 			Camera1 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_1_ELEMENT);
-			Camera1Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_1_USB_ELEMENT);
+			Camera1Usb = ReadUsbInfoFromXml(xml, CAMERA_1_USB_ELEMENT);
 			Camera2 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_2_ELEMENT);
-			Camera2Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_2_USB_ELEMENT);
+			Camera2Usb = ReadUsbInfoFromXml(xml, CAMERA_2_USB_ELEMENT);
 			Camera3 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_3_ELEMENT);
-			Camera3Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_3_USB_ELEMENT);
+			Camera3Usb = ReadUsbInfoFromXml(xml, CAMERA_3_USB_ELEMENT);
 			Camera4 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_4_ELEMENT);
-			Camera4Usb = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_4_USB_ELEMENT);
+			Camera4Usb = ReadUsbInfoFromXml(xml, CAMERA_4_USB_ELEMENT);
 
 			m_NetworkProperties.ParseXml(xml);
 
@@ -220,6 +258,21 @@ namespace ICD.Connect.Conferencing.Zoom
 			MuteParticipantsOnStart = XmlUtils.TryReadChildElementContentAsBoolean(xml, MUTE_PARTICIPANTS_ON_START_ELEMENT) ?? false;
 
 			UpdateNetworkDefaults();
+		}
+
+		private WindowsDevicePathInfo ReadUsbInfoFromXml(string xml, string element)
+		{
+			string innerXml = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_1_USB_ELEMENT);
+			if (string.IsNullOrEmpty(innerXml))
+				return default(WindowsDevicePathInfo);
+
+			WindowsDevicePathInfo pathInfo;
+			if (WindowsDevicePathInfo.TryParse(innerXml, out pathInfo))
+				return pathInfo;
+
+			Logger.AddEntry(eSeverity.Error, string.Format("{0} - Failed to parse USB ID - {1}", this, innerXml));
+
+			return default(WindowsDevicePathInfo);
 		}
 
 		/// <summary>
