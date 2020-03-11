@@ -69,14 +69,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		public WindowsDevicePathInfo Camera1Usb { get; set; }
 
 		/// <summary>
-		/// Mutates Camera1Usb by editing the Vendor ID section of the USB ID
+		/// Mutates Camera1Usb by editing the Device ID section of the USB ID
 		/// </summary>
-		public string Camera1UsbVendorId { set { Camera1Usb = WindowsDevicePathInfo.SetVendorId(Camera1Usb, value); } }
-
-		/// <summary>
-		/// Mutates Camera1Usb by editing the Product ID section of the USB ID
-		/// </summary>
-		public string Camera1UsbProductId { set { Camera1Usb = WindowsDevicePathInfo.SetProductId(Camera1Usb, value); } }
+		[UsedImplicitly]
+		public string Camera1UsbDeviceId { set { Camera1Usb = WindowsDevicePathInfo.SetDeviceId(Camera1Usb, value); } }
 
 		/// <summary>
 		/// Camera2 Originator ID
@@ -90,14 +86,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		public WindowsDevicePathInfo Camera2Usb { get; set; }
 
 		/// <summary>
-		/// Mutates Camera2Usb by editing the Vendor ID section of the USB ID
+		/// Mutates Camera1Usb by editing the Device ID section of the USB ID
 		/// </summary>
-		public string Camera2VendorId { set { Camera2Usb = WindowsDevicePathInfo.SetVendorId(Camera2Usb, value); } }
-
-		/// <summary>
-		/// Mutates Camera2Usb by editing the Product ID section of the USB ID
-		/// </summary>
-		public string Camera2ProductId { set { Camera2Usb = WindowsDevicePathInfo.SetProductId(Camera2Usb, value); } }
+		[UsedImplicitly]
+		public string Camera2UsbDeviceId { set { Camera2Usb = WindowsDevicePathInfo.SetDeviceId(Camera2Usb, value); } }
 
 		/// <summary>
 		/// Camera3 Originator ID
@@ -111,14 +103,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		public WindowsDevicePathInfo Camera3Usb { get; set; }
 
 		/// <summary>
-		/// Mutates Camera3Usb by editing the Vendor ID section of the USB ID
+		/// Mutates Camera1Usb by editing the Device ID section of the USB ID
 		/// </summary>
-		public string Camera3VendorId { set { Camera3Usb = WindowsDevicePathInfo.SetVendorId(Camera3Usb, value); } }
-
-		/// <summary>
-		/// Mutates Camera3Usb by editing the Product ID section of the USB ID
-		/// </summary>
-		public string Camera3ProductId { set { Camera3Usb = WindowsDevicePathInfo.SetProductId(Camera3Usb, value); } }
+		[UsedImplicitly]
+		public string Camera3UsbDeviceId { set { Camera3Usb = WindowsDevicePathInfo.SetDeviceId(Camera3Usb, value); } }
 
 		/// <summary>
 		/// Camera4 Originator ID
@@ -132,14 +120,10 @@ namespace ICD.Connect.Conferencing.Zoom
         public WindowsDevicePathInfo Camera4Usb { get; set; }
 
 		/// <summary>
-		/// Mutates Camera4Usb by editing the Vendor ID section of the USB ID
+		/// Mutates Camera1Usb by editing the Device ID section of the USB ID
 		/// </summary>
-		public string Camera4VendorId { set { Camera4Usb = WindowsDevicePathInfo.SetVendorId(Camera4Usb, value); } }
-
-		/// <summary>
-		/// Mutates Camera4Usb by editing the Product ID section of the USB ID
-		/// </summary>
-		public string Camera4ProductId { set { Camera4Usb = WindowsDevicePathInfo.SetProductId(Camera4Usb, value); } }
+		[UsedImplicitly]
+		public string Camera4UsbDeviceId { set { Camera4Usb = WindowsDevicePathInfo.SetDeviceId(Camera4Usb, value); } }
 
 		#endregion
 
@@ -197,6 +181,14 @@ namespace ICD.Connect.Conferencing.Zoom
 		public ZoomRoomSettings()
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
+
+			WindowsDevicePathInfo defaultPathInfo =
+				new WindowsDevicePathInfo("USB", WindowsDevicePathInfo.DEFAULT_DEVICE_ID, WindowsDevicePathInfo.DEFAULT_INSTANCE_ID);
+
+			Camera1Usb = defaultPathInfo;
+			Camera2Usb = defaultPathInfo;
+			Camera3Usb = defaultPathInfo;
+			Camera4Usb = defaultPathInfo;
 		}
 
 		/// <summary>
@@ -262,7 +254,7 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		private WindowsDevicePathInfo ReadUsbInfoFromXml(string xml, string element)
 		{
-			string innerXml = XmlUtils.TryReadChildElementContentAsString(xml, CAMERA_1_USB_ELEMENT);
+			string innerXml = XmlUtils.TryReadChildElementContentAsString(xml, element);
 			if (string.IsNullOrEmpty(innerXml))
 				return default(WindowsDevicePathInfo);
 
