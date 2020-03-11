@@ -307,7 +307,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (Codec.Initialized)
 				Initialize();
 
-			DialTime = IcdEnvironment.GetLocalTime();
+			DialTime = IcdEnvironment.GetUtcTime();
 		}
 
 		#endregion
@@ -477,7 +477,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (!m_FirstOnline && isOnline)
 			{
 				if (Start == null)
-					Start = IcdEnvironment.GetLocalTime();
+					Start = IcdEnvironment.GetUtcTime();
 				m_FirstOnline = true;
 			}
 
@@ -485,7 +485,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (m_FirstOnline && !m_FirstOffline && !isOnline)
 			{
 				if (End == null)
-					End = IcdEnvironment.GetLocalTime();
+					End = IcdEnvironment.GetUtcTime();
 				m_FirstOffline = true;
 			}
 		}
@@ -588,7 +588,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="duration"></param>
 		private void SetDuration(int duration)
 		{
-			DateTime end = End ?? IcdEnvironment.GetLocalTime();
+			DateTime end = End ?? IcdEnvironment.GetUtcTime();
 			Start = end - TimeSpan.FromSeconds(duration);
 		}
 

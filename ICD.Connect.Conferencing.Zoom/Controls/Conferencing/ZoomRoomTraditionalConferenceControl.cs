@@ -206,7 +206,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				if (!m_CallIdToParticipant.TryGetValue(info.CallId, out value))
 					return;
 
-				value.SetEnd(value.End ?? IcdEnvironment.GetLocalTime());
+				value.SetEnd(value.End ?? IcdEnvironment.GetUtcTime());
 				value.SetStatus(eParticipantStatus.Disconnected);
 
 				Unsubscribe(value);
@@ -241,7 +241,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			value.SetCallType(Supports);
 
 			if (value.GetIsOnline())
-				value.SetStart(value.Start ?? IcdEnvironment.GetLocalTime());
+				value.SetStart(value.Start ?? IcdEnvironment.GetUtcTime());
 		}
 
 		/// <summary>

@@ -156,7 +156,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    /// <param name="bookings"></param>
 	    private void Subscribe(BookingsComponent bookings)
 	    {
-		    bookings.OnBookingsUpdated += BookingsOnOnBookingsUpdated;
+		    bookings.OnBookingsUpdated += BookingsOnBookingsUpdated;
 	    }
 
 	    /// <summary>
@@ -165,7 +165,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    /// <param name="bookings"></param>
 	    private void Unsubscribe(BookingsComponent bookings)
 	    {
-		    bookings.OnBookingsUpdated -= BookingsOnOnBookingsUpdated;
+		    bookings.OnBookingsUpdated -= BookingsOnBookingsUpdated;
 	    }
 
 	    /// <summary>
@@ -173,12 +173,12 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    /// </summary>
 	    /// <param name="sender"></param>
 	    /// <param name="e"></param>
-	    private void BookingsOnOnBookingsUpdated(object sender, EventArgs e)
+	    private void BookingsOnBookingsUpdated(object sender, EventArgs e)
 	    {
 		    bool change = false;
 
 		    Booking[] bookings = m_BookingsComponent.GetBookings()
-		                                            .Where(b => b.EndTime > IcdEnvironment.GetLocalTime())
+		                                            .Where(b => b.EndTime > IcdEnvironment.GetUtcTime())
 		                                            .Distinct()
 		                                            .ToArray();
 

@@ -60,10 +60,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 					instance.MeetingName = reader.GetValueAsString();
 					break;
 				case ATTR_START_TIME:
-					instance.StartTime = GetValueAsDateTime(reader, IcdEnvironment.GetLocalTime().Date);
+					instance.StartTime = GetValueAsDateTime(reader, IcdEnvironment.GetLocalTime().Date).ToUniversalTime();
 					break;
 				case ATTR_END_TIME:
-					instance.EndTime = GetValueAsDateTime(reader, IcdEnvironment.GetLocalTime().Date + TimeSpan.FromDays(1));
+					instance.EndTime = GetValueAsDateTime(reader, (IcdEnvironment.GetLocalTime().Date + TimeSpan.FromDays(1))).ToUniversalTime();
 					break;
 				case ATTR_CREATOR_NAME:
 					instance.OrganizerName = reader.GetValueAsString();

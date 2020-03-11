@@ -56,7 +56,7 @@ namespace ICD.Connect.Conferencing.Conferences
 			if (extends.Start == null)
 				return new TimeSpan();
 
-			DateTime end = (extends.End != null) ? (DateTime)extends.End : IcdEnvironment.GetLocalTime();
+			DateTime end = (extends.End != null) ? (DateTime)extends.End : IcdEnvironment.GetUtcTime();
 
 			return end - (DateTime)extends.Start;
 		}

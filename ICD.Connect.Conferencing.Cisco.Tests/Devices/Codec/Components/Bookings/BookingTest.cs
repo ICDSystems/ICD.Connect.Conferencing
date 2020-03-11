@@ -69,8 +69,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 			Assert.AreEqual("rgonzalez@firstrepublic.com", booking.OrganizerEmail);
 			Assert.AreEqual("testid", booking.OrganizerId);
 
-			Assert.AreEqual(new DateTime(2018, 9, 4, 21, 30, 0), booking.StartTime);
-			Assert.AreEqual(new DateTime(2018, 9, 4, 22, 30, 0), booking.EndTime);
+			Assert.AreEqual(new DateTime(2018, 9, 5, 1, 30, 0), booking.StartTime);
+			Assert.AreEqual(new DateTime(2018, 9, 5, 2, 30, 0), booking.EndTime);
 
 			Assert.AreEqual("testmessage", booking.BookingStatusMessage);
 
@@ -137,8 +137,8 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 			Assert.AreEqual("madison.wydysh@metlife.com", booking.OrganizerEmail);
 			Assert.AreEqual(null, booking.OrganizerId);
 
-			Assert.AreEqual(new DateTime(2019, 5, 15, 15, 10, 0), booking.StartTime);
-			Assert.AreEqual(new DateTime(2019, 5, 15, 15, 20, 0), booking.EndTime);
+			Assert.AreEqual(new DateTime(2019, 5, 15, 19, 10, 0), booking.StartTime);
+			Assert.AreEqual(new DateTime(2019, 5, 15, 19, 20, 0), booking.EndTime);
 
 			Assert.AreEqual(string.Empty, booking.BookingStatusMessage);
 

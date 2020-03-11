@@ -111,7 +111,7 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 				Log(eSeverity.Informational, "AnswerState set to {0}", m_AnswerState);
 
 				if (m_AnswerState != eCallAnswerState.Unanswered && m_AnswerState != eCallAnswerState.Unknown)
-					EndTime = IcdEnvironment.GetLocalTime();
+					EndTime = IcdEnvironment.GetUtcTime();
 
 				OnAnswerStateChanged.Raise(this, new IncomingCallAnswerStateEventArgs(m_AnswerState));
 			}
@@ -133,7 +133,7 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		protected AbstractIncomingCall()
 		{
 			Direction = eCallDirection.Incoming;
-			StartTime = IcdEnvironment.GetLocalTime();
+			StartTime = IcdEnvironment.GetUtcTime();
 		}
 
 		public void Dispose()

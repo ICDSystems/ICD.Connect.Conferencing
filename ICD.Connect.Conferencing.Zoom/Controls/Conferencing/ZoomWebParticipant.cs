@@ -71,7 +71,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_CallComponent = callComponent;
 
 			UserId = info.UserId;
-			Start = IcdEnvironment.GetLocalTime();
+			Start = IcdEnvironment.GetUtcTime();
 			Update(info);
 
 			Subscribe(m_CallComponent);

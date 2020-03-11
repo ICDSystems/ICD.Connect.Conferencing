@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
@@ -146,7 +147,7 @@ namespace ICD.Connect.Conferencing.Mock
 					HangupCallback = HangupCallback
 				};
 
-			participant.SetDialTime(DateTime.Now);
+			participant.SetDialTime(IcdEnvironment.GetUtcTime());
 			participant.SetDirection(eCallDirection.Outgoing);
 			participant.SetNumber(number);
 			participant.SetName("Mock Call To: " + number);

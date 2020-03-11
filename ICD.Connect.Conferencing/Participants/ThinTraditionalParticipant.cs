@@ -31,7 +31,7 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		public ThinTraditionalParticipant()
 		{
-			DialTime = IcdEnvironment.GetLocalTime();
+			DialTime = IcdEnvironment.GetUtcTime();
 		}
 
 		/// <summary>

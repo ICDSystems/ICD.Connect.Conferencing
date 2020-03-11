@@ -170,7 +170,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 			bool change = false;
 
 			Booking[] bookings = m_BookingsComponent.GetBookings()
-			                                        .Where(b => b.EndTime > IcdEnvironment.GetLocalTime())
+			                                        .Where(b => b.EndTime > IcdEnvironment.GetUtcTime())
 			                                        .Distinct()
 			                                        .ToArray();
 

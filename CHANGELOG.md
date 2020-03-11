@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Substantial refactoring of ConferenceManager to split into multiple child classes
  - When Zoom connects to a call lobby that requires a host to start the call, the conference status now properly changes to connected.
  - Splitting Zoom participant added/updated events, fixing bad MuteOnEntry logic
+ - Using UTC for times
 
 ## [14.1.1] - 2020-02-21
 ### Changed

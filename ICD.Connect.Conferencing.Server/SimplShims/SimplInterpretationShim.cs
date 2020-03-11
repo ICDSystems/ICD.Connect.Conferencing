@@ -281,7 +281,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					m_Source.SetNumber(number);
 					m_Source.SetDirection((eCallDirection)direction);
 					m_Source.SetStatus((eParticipantStatus)status);
-					m_Source.SetStart(IcdEnvironment.GetLocalTime());
+					m_Source.SetStart(IcdEnvironment.GetUtcTime());
 					m_Source.SetCallType(eCallType.Audio);
 
 					Subscribe(m_Source);
@@ -383,7 +383,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					m_Source.SetNumber(m_CallNumber);
 					m_Source.SetDirection(m_CallDirection);
 					m_Source.SetStatus(m_CallStatus);
-					m_Source.SetStart(IcdEnvironment.GetLocalTime());
+					m_Source.SetStart(IcdEnvironment.GetUtcTime());
 					m_Source.SetCallType(eCallType.Audio);
 					Subscribe(m_Source);
 

@@ -265,7 +265,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 				case eCallStatus.IN_MEETING:
 					Status = eConferenceStatus.Connected;
-					Start = IcdEnvironment.GetLocalTime();
+					Start = IcdEnvironment.GetUtcTime();
 					break;
 
 				case eCallStatus.NOT_IN_MEETING:
