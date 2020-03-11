@@ -239,23 +239,44 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			// Is the camera part of the USB table?
 			IDeviceBase device = camera as IDeviceBase;
-            if (device != null && Parent.GetUsbIdForCamera(device).HasValue)
-                return GetUsbId(Parent.GetUsbIdForCamera(device));
+			if (device != null && Parent.GetUsbIdForCamera(device).HasValue)
+			{
+				string usbId = GetBestUsbId(Parent.GetUsbIdForCamera(device));
+				if (usbId != null)
+					Parent.SetUsbIdForCamera(device, new WindowsDevicePathInfo(usbId));
+				return usbId;
+			}
 
 			// Does the camera give us USB information?
 			IWindowsDevice windowsCamera = camera as IWindowsDevice;
 			if (windowsCamera != null)
-				return GetUsbId(windowsCamera.DevicePath);
+				return GetBestUsbId(windowsCamera.DevicePath);
 
 			return null;
 		}
 
 		[CanBeNull]
-		private string GetUsbId(WindowsDevicePathInfo? windowsDeviceInfo)
+		private string GetBestUsbId(WindowsDevicePathInfo? windowsDeviceInfo)
 		{
-			return m_CameraComponent.GetCameras()
-			                        .Select(c => c.UsbId)
-			                        .FirstOrDefault(u => new WindowsDevicePathInfo(u) == windowsDeviceInfo);
+			if (windowsDeviceInfo == null)
+				return null;
+
+			// First try to find the USB ID that matches perfectly
+			string output;
+			bool found =
+				m_CameraComponent.GetCameras()
+				                 .Select(c => c.UsbId)
+				                 .TryFirst(u => new WindowsDevicePathInfo(u) == windowsDeviceInfo, out output);
+			if (found)
+				return output;
+
+			// Now try matching on the DeviceID portion
+			return
+				m_CameraComponent.GetCameras()
+				                 .Select(c => c.UsbId)
+				                 .FirstOrDefault(u => string.Equals(new WindowsDevicePathInfo(u).DeviceId,
+				                                                    windowsDeviceInfo.Value.DeviceId,
+				                                                    StringComparison.OrdinalIgnoreCase));
 		}
 
 		#endregion
