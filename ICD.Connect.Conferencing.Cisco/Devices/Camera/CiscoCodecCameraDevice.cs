@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
 using ICD.Connect.Cameras.Controls;
@@ -453,6 +454,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			addRow("Pan Speed", PanSpeed);
 			addRow("Tilt Speed", TiltSpeed);
 			addRow("Zoom Speed", ZoomSpeed);
+		}
+
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			yield return new GenericConsoleCommand<int>("SetPanSpeed", "SetPanSpeed <1-15>", i => Camera.PanSpeed = i);
+			yield return new GenericConsoleCommand<int>("SetTiltSpeed", "SetTiltSpeed <1-15>", i => Camera.TiltSpeed = i);
+			yield return new GenericConsoleCommand<int>("SetZoomSpeed", "SetZoomSpeed <1-15>", i => Camera.ZoomSpeed = i);
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion
