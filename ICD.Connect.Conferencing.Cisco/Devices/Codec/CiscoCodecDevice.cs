@@ -746,6 +746,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
+			if (m_ConnectionStateManager != null)
+				yield return m_ConnectionStateManager.Port;
+
 			yield return ConsoleNodeGroup.IndexNodeMap("Components", m_Components.GetComponents()
 			                                                                     .OrderBy(c => c.GetType().Name)
 			                                                                     .Cast<IConsoleNodeBase>());

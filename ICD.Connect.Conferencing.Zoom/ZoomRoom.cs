@@ -751,6 +751,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
+			if (m_ConnectionStateManager != null)
+				yield return m_ConnectionStateManager.Port;
+
 			yield return Components;
 		}
 
