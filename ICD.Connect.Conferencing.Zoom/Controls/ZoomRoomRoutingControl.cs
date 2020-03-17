@@ -122,7 +122,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
 			if (input == 1)
-				return m_PresentationComponent != null && m_PresentationComponent.InputConnected && m_PresentationComponent.Sharing;
+				return m_PresentationComponent != null &&
+				       m_PresentationComponent.InputConnected &&
+				       m_PresentationComponent.SharingState == eSharingState.Sending;
+
 			return true;
 		}
 

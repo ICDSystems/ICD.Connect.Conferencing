@@ -10,12 +10,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 	{
 		public event EventHandler<BoolEventArgs> OnInputConnectedUpdated;
 		public event EventHandler<BoolEventArgs> OnSignalDetectedUpdated;
-		public event EventHandler<BoolEventArgs> OnLocalSharingChanged;
+		public event EventHandler<GenericEventArgs<eSharingState>> OnSharingStateChanged;
 		public event EventHandler<PresentationOutputEventArgs> OnPresentationOutputChanged;
 
 		private bool m_InputConnected;
 		private bool m_SignalDetected;
-		private bool m_Sharing;
+		private eSharingState m_SharingState;
 		private int? m_ShareOutput;
 
 		#region Properties
@@ -48,17 +48,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 			}
 		}
 
-		public bool Sharing
+		public eSharingState SharingState
 		{
-			get { return m_Sharing; }
+			get { return m_SharingState; }
 			private set
 			{
-				if (m_Sharing == value)
+				if (m_SharingState == value)
 					return;
 
-				m_Sharing = value;
-				Parent.Log(eSeverity.Informational, "Sharing changed to: {0}", m_Sharing);
-				OnLocalSharingChanged.Raise(this, new BoolEventArgs(m_Sharing));
+				m_SharingState = value;
+				Parent.Log(eSeverity.Informational, "Sharing State changed to: {0}", m_SharingState);
+				OnSharingStateChanged.Raise(this, new GenericEventArgs<eSharingState>(m_SharingState));
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		{
 			OnInputConnectedUpdated = null;
 			OnSignalDetectedUpdated = null;
-			OnLocalSharingChanged = null;
+			OnSharingStateChanged = null;
 			OnPresentationOutputChanged = null;
 
 			base.DisposeFinal();
@@ -130,12 +130,14 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		private void Subscribe(ZoomRoom parent)
 		{
 			parent.RegisterResponseCallback<SharingResponse>(SharingResponseCallback);
+			parent.RegisterResponseCallback<SharingStateResponse>(SharingStateResponseCallback);
 			parent.RegisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
 			parent.UnregisterResponseCallback<SharingResponse>(SharingResponseCallback);
+			parent.UnregisterResponseCallback<SharingStateResponse>(SharingStateResponseCallback);
 			parent.UnregisterResponseCallback<PinStatusOfScreenNotificationResponse>(PinStatusCallback);
 		}
 
@@ -146,12 +148,22 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 
 			InputConnected = response.Sharing.IsBlackMagicConnected;
 			SignalDetected = response.Sharing.IsBlackMagicDataAvailable;
-			Sharing = response.Sharing.IsSharingBlackMagic;
+		}
+
+		private void SharingStateResponseCallback(ZoomRoom zoomroom, SharingStateResponse response)
+		{
+			if (response.SharingState == null)
+				return;
+
+			SharingState = response.SharingState.State;
 		}
 
 		private void PinStatusCallback(ZoomRoom zoomRoom, PinStatusOfScreenNotificationResponse response)
 		{
-			var data = response.PinStatusOfScreenNotification;
+			PinStatusOfScreenNotification data = response.PinStatusOfScreenNotification;
+			if (data == null)
+				return;
+
 			if (data.ScreenLayout == eZoomScreenLayout.ShareContent)
 				PresentationOutput = data.ScreenIndex;
 			else if (m_ShareOutput == data.ScreenIndex)

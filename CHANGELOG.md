@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - When Zoom connects to a call lobby that requires a host to start the call, the conference status now properly changes to connected.
  - Splitting Zoom participant added/updated events, fixing bad MuteOnEntry logic
  - Using UTC for times
+ - Fixed a bug where Zoom presentation sharing did not properly account for remote participant sharing
 
 ## [14.1.1] - 2020-02-21
 ### Changed
