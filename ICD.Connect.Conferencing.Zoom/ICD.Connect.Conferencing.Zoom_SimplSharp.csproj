@@ -78,6 +78,7 @@
     <Compile Include="Components\Camera\eCameraControlAction.cs" />
     <Compile Include="Components\Camera\eCameraControlState.cs" />
     <Compile Include="Components\Layout\ZoomLayoutAvailability.cs" />
+    <Compile Include="Components\Presentation\SharingStateInfo.cs" />
     <Compile Include="Components\Volume\VolumeComponent.cs" />
     <Compile Include="Controls\Camera\FarEndZoomCamera.cs" />
     <Compile Include="Controls\Camera\ZoomRoomCameraControl.cs" />
@@ -140,6 +141,8 @@
     <Compile Include="Responses\Converters\CallStatusResponseConverter.cs" />
     <Compile Include="Responses\Converters\CameraControlNotificationResponseConverter.cs" />
     <Compile Include="Responses\Converters\CameraInfoConverter.cs" />
+    <Compile Include="Responses\Converters\SharingStateResponseConverter.cs" />
+    <Compile Include="Responses\Converters\SharingStateInfoConverter.cs" />
     <Compile Include="Responses\Converters\IncomingCallConverter.cs" />
     <Compile Include="Responses\Converters\IncomingCallResponseConverter.cs" />
     <Compile Include="Responses\Converters\InfoResultResponseConverter.cs" />
@@ -161,6 +164,7 @@
     <Compile Include="Responses\Converters\ZoomContactConverter.cs" />
     <Compile Include="Responses\Converters\AbstractZoomRoomResponseConverter.cs" />
     <Compile Include="Responses\Converters\ZoomRoomResponseStatusConverter.cs" />
+    <Compile Include="Responses\SharingStateResponse.cs" />
     <Compile Include="Responses\eAudioState.cs" />
     <Compile Include="Responses\eAudioType.cs" />
     <Compile Include="Components\Call\eCalloutType.cs" />
