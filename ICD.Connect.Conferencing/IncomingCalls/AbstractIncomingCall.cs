@@ -175,6 +175,19 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 				handler(this);
 		}
 
+		/// <summary>
+		/// Gets the string representation for this instance.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			ReprBuilder builder = new ReprBuilder(this);
+
+			builder.AppendProperty("Name", Name);
+
+			return builder.ToString();
+		}
+
 		#endregion
 
 		#region Private Methods
