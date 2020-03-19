@@ -27,6 +27,8 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		private eCallAnswerState m_AnswerState;
 		private eCallDirection m_Direction;
 
+		#region Properties
+
 		public IncomingCallAnswerCallback AnswerCallback { get; set; }
 		public IncomingCallRejectCallback RejectCallback { get; set; }
 
@@ -127,6 +129,8 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		/// </summary>
 		public string ConsoleHelp { get { return string.Empty; } }
 
+		#endregion
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -136,8 +140,17 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 			StartTime = IcdEnvironment.GetUtcTime();
 		}
 
+		#region Methods
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		public void Dispose()
 		{
+			OnNameChanged = null;
+			OnNumberChanged = null;
+			OnAnswerStateChanged = null;
+
 			AnswerCallback = null;
 			RejectCallback = null;
 		}
@@ -162,11 +175,19 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 				handler(this);
 		}
 
+		#endregion
+
+		#region Private Methods
+
 		private void Log(eSeverity severity, string message, params object[] args)
 		{
 			message = string.Format("{0} - {1}", this, message);
 			ServiceProvider.GetService<ILoggerService>().AddEntry(severity, message, args);
 		}
+
+		#endregion
+
+		#region Console
 
 		/// <summary>
 		/// Gets the child console nodes.
@@ -198,5 +219,7 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 			yield return new ConsoleCommand("Answer", "Answers the incoming call", () => Answer());
 			yield return new ConsoleCommand("Reject", "Rejects the incoming call", () => Reject());
 		}
+
+		#endregion
 	}
 }

@@ -115,6 +115,11 @@ namespace ICD.Connect.Conferencing.Participants
 
 		#endregion
 
+		#region Methods
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		public void Dispose()
 		{
 			OnStatusChanged = null;
@@ -124,6 +129,9 @@ namespace ICD.Connect.Conferencing.Participants
 			DisposeFinal();
 		}
 
+		/// <summary>
+		/// Release resources.
+		/// </summary>
 		protected virtual void DisposeFinal()
 		{
 		}
@@ -151,6 +159,7 @@ namespace ICD.Connect.Conferencing.Participants
 			logger.AddEntry(severity, message, args);
 		}
 
+		#endregion
 
 		#region Console
 
