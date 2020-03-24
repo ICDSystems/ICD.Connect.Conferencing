@@ -23,7 +23,6 @@ namespace ICD.Connect.Conferencing.Zoom
 		public const bool DEFAULT_DIAL_OUT_ENABLED = true;
 		public const bool DEFAULT_RECORD_ENABLED = true;
 
-		private const string DEFAULT_CAMERA_USB_ELEMENT = "DefaultCameraUsb";
 		private const string CAMERA_1_ELEMENT = "Camera1";
 		private const string CAMERA_1_USB_ELEMENT = "Camera1Usb";
 		private const string CAMERA_2_ELEMENT = "Camera2";
@@ -37,25 +36,19 @@ namespace ICD.Connect.Conferencing.Zoom
 
 		#region Properties
 
-        /// <summary>
-        /// The port id.
-        /// </summary>
-        [OriginatorIdSettingsProperty(typeof(ISerialPort))]
-        public int? Port { get; set; }
-
-        public bool DialOutEnabled { get; set; }
-
-        public bool RecordEnabled { get; set; }
-
-        public bool MuteMyCameraOnStart { get; set; }
-
-        public bool MuteParticipantsOnStart { get; set; }
-
 		/// <summary>
-		/// Camera1 USB ID
+		/// The port id.
 		/// </summary>
-		[CanBeNull]
-		public string DefaultCameraUsb { get; set; }
+		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
+		public int? Port { get; set; }
+
+		public bool DialOutEnabled { get; set; }
+
+		public bool RecordEnabled { get; set; }
+
+		public bool MuteMyCameraOnStart { get; set; }
+
+		public bool MuteParticipantsOnStart { get; set; }
 
 		/// <summary>
 		/// Camera1 Originator ID
@@ -117,7 +110,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Camera4 USB ID
 		/// </summary>
-        public WindowsDevicePathInfo Camera4Usb { get; set; }
+		public WindowsDevicePathInfo Camera4Usb { get; set; }
 
 		/// <summary>
 		/// Mutates Camera1Usb by editing the Device ID section of the USB ID
@@ -183,7 +176,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_NetworkProperties = new SecureNetworkProperties();
 
 			WindowsDevicePathInfo defaultPathInfo =
-				new WindowsDevicePathInfo("USB", WindowsDevicePathInfo.DEFAULT_DEVICE_ID, WindowsDevicePathInfo.DEFAULT_INSTANCE_ID);
+				new WindowsDevicePathInfo("USB", WindowsDevicePathInfo.DEFAULT_DEVICE_ID,
+				                          WindowsDevicePathInfo.DEFAULT_INSTANCE_ID);
 
 			Camera1Usb = defaultPathInfo;
 			Camera2Usb = defaultPathInfo;
@@ -199,16 +193,15 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			base.WriteElements(writer);
 
-			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int) Port));
+			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
 
-			writer.WriteElementString(DEFAULT_CAMERA_USB_ELEMENT, DefaultCameraUsb);
-			writer.WriteElementString(CAMERA_1_ELEMENT, Camera1 == null ? null : IcdXmlConvert.ToString((int) Camera1));
+			writer.WriteElementString(CAMERA_1_ELEMENT, Camera1 == null ? null : IcdXmlConvert.ToString((int)Camera1));
 			writer.WriteElementString(CAMERA_1_USB_ELEMENT, Camera1Usb.ToString());
-			writer.WriteElementString(CAMERA_2_ELEMENT, Camera2 == null ? null : IcdXmlConvert.ToString((int) Camera2));
+			writer.WriteElementString(CAMERA_2_ELEMENT, Camera2 == null ? null : IcdXmlConvert.ToString((int)Camera2));
 			writer.WriteElementString(CAMERA_2_USB_ELEMENT, Camera2Usb.ToString());
-			writer.WriteElementString(CAMERA_3_ELEMENT, Camera3 == null ? null : IcdXmlConvert.ToString((int) Camera3));
+			writer.WriteElementString(CAMERA_3_ELEMENT, Camera3 == null ? null : IcdXmlConvert.ToString((int)Camera3));
 			writer.WriteElementString(CAMERA_3_USB_ELEMENT, Camera3Usb.ToString());
-			writer.WriteElementString(CAMERA_4_ELEMENT, Camera4 == null ? null : IcdXmlConvert.ToString((int) Camera4));
+			writer.WriteElementString(CAMERA_4_ELEMENT, Camera4 == null ? null : IcdXmlConvert.ToString((int)Camera4));
 			writer.WriteElementString(CAMERA_4_USB_ELEMENT, Camera4Usb.ToString());
 
 			m_NetworkProperties.WriteElements(writer);
@@ -216,7 +209,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			writer.WriteElementString(DIAL_OUT_ENABLED_ELEMENT, IcdXmlConvert.ToString(DialOutEnabled));
 			writer.WriteElementString(RECORD_ENABLED_ELEMENT, IcdXmlConvert.ToString(RecordEnabled));
 			writer.WriteElementString(MUTE_MY_CAMERA_ON_START_ELEMENT, IcdXmlConvert.ToString(MuteMyCameraOnStart));
-			writer.WriteElementString(MUTE_PARTICIPANTS_ON_START_ELEMENT, IcdXmlConvert.ToString(MuteParticipantsOnStart));
+			writer.WriteElementString(MUTE_PARTICIPANTS_ON_START_ELEMENT,
+			                          IcdXmlConvert.ToString(MuteParticipantsOnStart));
 		}
 
 		/// <summary>
@@ -229,7 +223,6 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
 
-			DefaultCameraUsb = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_CAMERA_USB_ELEMENT);
 			Camera1 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_1_ELEMENT);
 			Camera1Usb = ReadUsbInfoFromXml(xml, CAMERA_1_USB_ELEMENT);
 			Camera2 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_2_ELEMENT);
@@ -241,13 +234,17 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			m_NetworkProperties.ParseXml(xml);
 
-			DialOutEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, DIAL_OUT_ENABLED_ELEMENT) ?? DEFAULT_DIAL_OUT_ENABLED;
+			DialOutEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, DIAL_OUT_ENABLED_ELEMENT) ??
+			                 DEFAULT_DIAL_OUT_ENABLED;
 
-			RecordEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, RECORD_ENABLED_ELEMENT) ?? DEFAULT_RECORD_ENABLED;
+			RecordEnabled = XmlUtils.TryReadChildElementContentAsBoolean(xml, RECORD_ENABLED_ELEMENT) ??
+			                DEFAULT_RECORD_ENABLED;
 
-			MuteMyCameraOnStart = XmlUtils.TryReadChildElementContentAsBoolean(xml, MUTE_MY_CAMERA_ON_START_ELEMENT) ?? false;
+			MuteMyCameraOnStart = XmlUtils.TryReadChildElementContentAsBoolean(xml, MUTE_MY_CAMERA_ON_START_ELEMENT) ??
+			                      false;
 
-			MuteParticipantsOnStart = XmlUtils.TryReadChildElementContentAsBoolean(xml, MUTE_PARTICIPANTS_ON_START_ELEMENT) ?? false;
+			MuteParticipantsOnStart =
+				XmlUtils.TryReadChildElementContentAsBoolean(xml, MUTE_PARTICIPANTS_ON_START_ELEMENT) ?? false;
 
 			UpdateNetworkDefaults();
 		}
