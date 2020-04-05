@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+ - Added features for getting Zoom meeting IDs in human readable format
+
 ## [15.0.0] - 2020-03-20
 ### Added
  - Zoom can now take the Device ID of a USB ID and match them with a USB IDs on the camera component

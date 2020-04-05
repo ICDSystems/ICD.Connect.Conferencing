@@ -154,6 +154,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		}
 
 		/// <summary>
+		/// Returns the meeting ID in the formatted, human readable structure XXX-XXX-XXXX
+		/// </summary>
+		public string MeetingIdFormatted { get { return FormatMeetingId(MeetingId); } }
+
+		/// <summary>
 		/// Gets the camera mute state.
 		/// </summary>
 		public bool CameraMute
@@ -524,6 +529,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			Parent.SendCommand("zCommand Call Info");
 		}
 
+		/// <summary>
+		/// Formats the meeting ID into a human readable structure XXX-XXX-XXXX
+		/// </summary>
+		private static string FormatMeetingId(string meetingId)
+		{
+			if (string.IsNullOrEmpty(meetingId))
+				return meetingId;
+
+			if (meetingId.Length != 10 || !meetingId.IsNumeric())
+				return meetingId;
+
+			return string.Format("{0:###-###-####}", long.Parse(meetingId));
+		}
+
 		#endregion
 
 		#region Participants
@@ -698,9 +717,10 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 						   meetingNeedsPasswordData.NeedsPassword, meetingNeedsPasswordData.WrongAndRetry);
 
 			OnPasswordRequired.Raise(this,
-									 new MeetingNeedsPasswordEventArgs(m_LastJoinNumber,
-																	   meetingNeedsPasswordData.NeedsPassword,
-																	   meetingNeedsPasswordData.WrongAndRetry));
+			                         new MeetingNeedsPasswordEventArgs(m_LastJoinNumber,
+			                                                           FormatMeetingId(m_LastJoinNumber),
+			                                                           meetingNeedsPasswordData.NeedsPassword,
+			                                                           meetingNeedsPasswordData.WrongAndRetry));
 		}
 
 		private void ListParticipantsCallback(ZoomRoom zoomRoom, ListParticipantsResponse response)
