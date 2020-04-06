@@ -5,11 +5,11 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Connect.Devices;
+using ICD.Connect.Devices.Mock;
 
 namespace ICD.Connect.Conferencing.Mock
 {
-	public interface IMockConferencingDevice : IDevice
+	public interface IMockConferencingDevice : IMockDevice
 	{
 		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantAdded;
 		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantRemoved;

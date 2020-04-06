@@ -1,8 +1,8 @@
-﻿using ICD.Connect.Devices;
+﻿using ICD.Connect.Devices.Mock;
 
 namespace ICD.Connect.Conferencing.Mock
 {
-	public interface IMockConferencingDeviceSettings : IDeviceSettings
+	public interface IMockConferencingDeviceSettings : IMockDeviceSettings
 	{
 
 	}

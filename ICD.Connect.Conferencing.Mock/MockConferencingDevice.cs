@@ -11,11 +11,11 @@ using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Connect.Devices;
+using ICD.Connect.Devices.Mock;
 
 namespace ICD.Connect.Conferencing.Mock
 {
-	public sealed class MockConferencingDevice : AbstractDevice<MockConferencingDeviceSettings>, IMockConferencingDevice
+	public sealed class MockConferencingDevice : AbstractMockDevice<MockConferencingDeviceSettings>, IMockConferencingDevice
 	{
 		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantAdded;
 		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantRemoved;
@@ -24,7 +24,6 @@ namespace ICD.Connect.Conferencing.Mock
 
 		#region Private Memebers
 
-		private bool m_Online;
 		private readonly List<ITraditionalParticipant> m_Sources;
 
 		#endregion
@@ -35,7 +34,6 @@ namespace ICD.Connect.Conferencing.Mock
 		public MockConferencingDevice()
 		{
 			m_Sources = new List<ITraditionalParticipant>();
-			m_Online = true;
 
 			Controls.Add(new MockTraditionalConferenceDeviceControl(this, 0));
 			Controls.Add(new MockDirectoryControl(this, 1));
@@ -106,7 +104,6 @@ namespace ICD.Connect.Conferencing.Mock
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<bool>("SetOnline", "Sets the online state of this device", val => m_Online = val);
 			yield return new ConsoleCommand("MockIncomingCall", "Generates a mock incoming call", () => MockIncomingCall());
 		}
 
@@ -117,19 +114,6 @@ namespace ICD.Connect.Conferencing.Mock
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
 		{
 			return base.GetConsoleCommands();
-		}
-
-		#endregion
-
-		#region IDevice
-
-		/// <summary>
-		/// Gets the current online status of the device.
-		/// </summary>
-		/// <returns></returns>
-		protected override bool GetIsOnlineStatus()
-		{
-			return m_Online;
 		}
 
 		#endregion
