@@ -70,7 +70,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 
 				m_PipPosition = value;
 
-				Codec.Log(eSeverity.Informational, "PipPosition set to {0}", m_PipPosition);
+				Codec.Logger.Set("PIP Position", eSeverity.Informational, m_PipPosition);
 
 				OnPipPositionChanged.Raise(this, new PipPositionEventArgs(m_PipPosition));
 			}
@@ -92,7 +92,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 
 				m_SelfView = value;
 
-				Codec.Log(eSeverity.Informational, "SelfView set to {0}", m_SelfView);
+				Codec.Logger.Set("Self View", eSeverity.Informational, m_SelfView);
 
 				OnSelfViewChanged.Raise(this, new SelfViewEventArgs(m_SelfView));
 			}
@@ -148,7 +148,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			string pip = s_SerialMap.GetValue(position);
 
 			Codec.EnqueueCommand("configlayout {0} {1}", MONITOR, pip);
-			Codec.Log(eSeverity.Informational, "Setting PIP position {0}", pip);
+			Codec.Logger.Log(eSeverity.Informational, "Setting PIP position {0}", pip);
 		}
 
 		/// <summary>
@@ -160,7 +160,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			string name = s_SelfViewMap.GetValue(selfView);
 
 			Codec.EnqueueCommand("systemsetting selfview {0}", name);
-			Codec.Log(eSeverity.Informational, "Setting SelfView {0}", name);
+			Codec.Logger.Log(eSeverity.Informational, "Setting SelfView {0}", name);
 		}
 
 		#endregion

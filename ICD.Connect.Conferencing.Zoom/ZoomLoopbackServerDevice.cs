@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Devices;
 using ICD.Connect.Protocol;
@@ -246,7 +245,7 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			if (!args.Data)
 			{
-				Log(eSeverity.Critical, "Lost connection");
+				Logger.Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
 			}
 		}
@@ -416,7 +415,7 @@ namespace ICD.Connect.Conferencing.Zoom
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
+					Logger.Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 				}
 			}
 

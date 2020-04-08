@@ -85,7 +85,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			}
 
 			SendMoveCommand(s_PanActionToCisco[action]);
-			Codec.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
+			Codec.Logger.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
 		}
 
 		/// <summary>
@@ -101,7 +101,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			}
 
 			SendMoveCommand(s_TiltActionToCisco[action]);
-			Codec.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
+			Codec.Logger.Log(eSeverity.Informational, "Moving Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
 		}
 
 		/// <summary>
@@ -125,7 +125,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			}
 
 			SendMoveCommand(s_ZoomActionToCisco[action]);
-			Codec.Log(eSeverity.Informational, "Zooming Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
+			Codec.Logger.Log(eSeverity.Informational, "Zooming Far End Camera CallId: {0}, Direction: {1}", m_CallId, action);
 		}
 
 		/// <summary>
@@ -144,7 +144,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		private void StopMove()
 		{
 			Codec.SendCommand("xCommand Call FarEndControl Camera Stop CallId: {0}", m_CallId);
-			Codec.Log(eSeverity.Informational, "Stop Moving Far End Camera CallId: {0}", m_CallId);
+			Codec.Logger.Log(eSeverity.Informational, "Stop Moving Far End Camera CallId: {0}", m_CallId);
 		}
 
 		#endregion

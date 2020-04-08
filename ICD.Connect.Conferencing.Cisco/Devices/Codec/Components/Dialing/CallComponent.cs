@@ -215,7 +215,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 					return;
 
 				m_Status = value;
-				Codec.Log(eSeverity.Informational, "Call {0} status changed: {1}", CallId, StringUtils.NiceName(m_Status));
+				Codec.Logger.Log(eSeverity.Informational, "Call {0} status changed: {1}", CallId, StringUtils.NiceName(m_Status));
 
 				UpdateIsOnlineStatus();
 
@@ -397,7 +397,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public void Answer()
 		{
 			Codec.SendCommand("xCommand Call Accept CallId: {0}", CallId);
-			Codec.Log(eSeverity.Debug, "Answering Incoming Call {0}", CallId);
+			Codec.Logger.Log(eSeverity.Debug, "Answering Incoming Call {0}", CallId);
 		}
 
 		/// <summary>
@@ -406,7 +406,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public void Reject()
 		{
 			Codec.SendCommand("xCommand Call Reject CallId: {0}", CallId);
-			Codec.Log(eSeverity.Debug, "Rejecting Incoming Call {0}", CallId);
+			Codec.Logger.Log(eSeverity.Debug, "Rejecting Incoming Call {0}", CallId);
 		}
 
 		/// <summary>
@@ -418,7 +418,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				return;
 
 			Codec.SendCommand("xCommand Call Hold CallId: {0}", CallId);
-			Codec.Log(eSeverity.Debug, "Placing Call {0} on hold", CallId);
+			Codec.Logger.Log(eSeverity.Debug, "Placing Call {0} on hold", CallId);
 		}
 
 		/// <summary>
@@ -430,7 +430,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				return;
 
 			Codec.SendCommand("xCommand Call Resume CallId: {0}", CallId);
-			Codec.Log(eSeverity.Debug, "Resuming Call {0}", CallId);
+			Codec.Logger.Log(eSeverity.Debug, "Resuming Call {0}", CallId);
 		}
 
 		/// <summary>
@@ -439,7 +439,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public void Hangup()
 		{
 			Codec.SendCommand("xCommand Call Disconnect CallId: {0}", CallId);
-			Codec.Log(eSeverity.Debug, "Disconnecting Call {0}", CallId);
+			Codec.Logger.Log(eSeverity.Debug, "Disconnecting Call {0}", CallId);
 		}
 
 		/// <summary>
@@ -449,7 +449,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public void Join(int other)
 		{
 			Codec.SendCommand("xCommand Call Join CallId: {0} CallId: {1}", CallId, other);
-			Codec.Log(eSeverity.Debug, "Joining Call {0} with {1}", CallId, other);
+			Codec.Logger.Log(eSeverity.Debug, "Joining Call {0} with {1}", CallId, other);
 		}
 
 		/// <summary>
@@ -459,7 +459,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public void SendDtmf(string data)
 		{
 			Codec.SendCommand("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", CallId, data);
-			Codec.Log(eSeverity.Debug, "Sending DTMF tone {0} to call {1}", data, CallId);
+			Codec.Logger.Log(eSeverity.Debug, "Sending DTMF tone {0} to call {1}", data, CallId);
 		}
 
 		#endregion

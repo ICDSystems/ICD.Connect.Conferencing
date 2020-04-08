@@ -126,7 +126,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewEnabled = value;
 
-				Codec.Log(eSeverity.Informational, "Selfview is {0}", m_SelfViewEnabled ? "On" : "Off");
+				Codec.Logger.Set("Self View Enabled", eSeverity.Informational, m_SelfViewEnabled);
 
 				OnSelfViewEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewEnabled));
 			}
@@ -145,7 +145,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewFullScreenEnabled = value;
 
-				Codec.Log(eSeverity.Informational, "Selfview Fullscreen is {0}", m_SelfViewFullScreenEnabled ? "On" : "Off");
+				Codec.Logger.Set("Self View Fullscreen Enabled", eSeverity.Informational, m_SelfViewFullScreenEnabled);
 
 				OnSelfViewFullScreenEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewFullScreenEnabled));
 			}
@@ -165,7 +165,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewPosition = value;
 
-				Codec.Log(eSeverity.Informational, "Selfview PIP Position is {0}", StringUtils.NiceName(m_SelfViewPosition));
+				Codec.Logger.Set("Self View Position", eSeverity.Informational, m_SelfViewPosition);
 
 				OnSelfViewPositionChanged.Raise(null, new PipPositionEventArgs(m_SelfViewPosition));
 			}
@@ -185,7 +185,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewMonitor = value;
 
-				Codec.Log(eSeverity.Informational, "Selfview is on Monitor {0}", m_SelfViewMonitor);
+				Codec.Logger.Set("Self View Monitor", eSeverity.Informational, m_SelfViewMonitor);
 
 				OnSelfViewMonitorChanged.Raise(this, new SelfViewMonitorRoleEventArgs(m_SelfViewMonitor));
 			}
@@ -205,7 +205,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_ActiveSpeakerPosition = value;
 
-				Codec.Log(eSeverity.Informational, "Active Speaker Position is {0}", StringUtils.NiceName(m_ActiveSpeakerPosition));
+				Codec.Logger.Set("Active Speaker Position", eSeverity.Informational, m_ActiveSpeakerPosition);
 
 				OnActiveSpeakerPositionChanged.Raise(this, new PipPositionEventArgs(m_ActiveSpeakerPosition));
 			}
@@ -225,7 +225,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_MainVideoSource = value;
 
-				Codec.Log(eSeverity.Informational, "Near End Input {0} is Selected", m_MainVideoSource);
+				Codec.Logger.Set("Main Video Source", eSeverity.Informational, m_MainVideoSource);
 
 				OnMainVideoSourceChanged.Raise(this, new IntEventArgs(m_MainVideoSource));
 			}
@@ -245,7 +245,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_MainVideoMuted = value;
 
-				Codec.Log(eSeverity.Informational, "Main video mute set to {0}", m_MainVideoMuted);
+				Codec.Logger.Set("Main Video Muted", eSeverity.Informational, m_MainVideoMuted);
 
 				OnMainVideoMutedChanged.Raise(this, new BoolEventArgs(m_MainVideoMuted));
 			}
@@ -265,7 +265,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_Monitors = value;
 
-				Codec.Log(eSeverity.Informational, "Monitors are in {0} configuration", StringUtils.NiceName(m_Monitors));
+				Codec.Logger.Set("Monitors", eSeverity.Informational, m_Monitors);
 
 				OnMonitorsChanged.Raise(this, new MonitorsEventArgs(m_Monitors));
 			}
@@ -323,7 +323,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetLayout(eLayoutTarget target, eLayoutFamily layout)
 		{
 			Codec.SendCommand("xCommand Video Layout LayoutFamily Set Target: {0} LayoutFamily: {1}", target, layout);
-			Codec.Log(eSeverity.Informational, "Setting {0} Layout to {1}", target, layout);
+			Codec.Logger.Log(eSeverity.Informational, "Setting {0} Layout to {1}", target, layout);
 		}
 
 		/// <summary>
@@ -333,7 +333,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetMonitors(eMonitors monitors)
 		{
 			Codec.SendCommand("xConfiguration Video Monitors: {0}", monitors);
-			Codec.Log(eSeverity.Informational, "Setting monitors to {0}", monitors);
+			Codec.Logger.Log(eSeverity.Informational, "Setting monitors to {0}", monitors);
 		}
 
 		/// <summary>
@@ -344,7 +344,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			string on = (state) ? "On" : "Off";
 
 			Codec.SendCommand("xCommand Video Selfview Set Mode: {0}", on);
-			Codec.Log(eSeverity.Informational, "Setting Selfview " + on);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Selfview " + on);
 		}
 
 		/// <summary>
@@ -355,7 +355,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetSelfViewPosition(ePipPosition position)
 		{
 			Codec.SendCommand("xCommand Video Selfview Set PIPPosition: {0}", position);
-			Codec.Log(eSeverity.Informational, "Setting Selfview PIP to {0}", StringUtils.NiceName(position));
+			Codec.Logger.Log(eSeverity.Informational, "Setting Selfview PIP to {0}", StringUtils.NiceName(position));
 		}
 
 		/// <summary>
@@ -367,7 +367,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			string on = (state) ? "On" : "Off";
 
 			Codec.SendCommand("xCommand Video Selfview Set FullscreenMode: {0}", on);
-			Codec.Log(eSeverity.Informational, "Setting Selfview Fullscreen {0}", on);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Selfview Fullscreen {0}", on);
 		}
 
 		/// <summary>
@@ -378,7 +378,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetSelfViewMonitor(eSelfViewMonitorRole monitor)
 		{
 			Codec.SendCommand("xCommand Video Selfview Set OnMonitorRole: {0}", monitor);
-			Codec.Log(eSeverity.Informational, "Setting Selfview to show on Monitor {0}", (int)monitor);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Selfview to show on Monitor {0}", (int)monitor);
 		}
 
 		/// <summary>
@@ -389,7 +389,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetActiveSpeakerPosition(ePipPosition position)
 		{
 			Codec.SendCommand("xCommand Video PIP ActiveSpeaker Set Position: {0}", position);
-			Codec.Log(eSeverity.Informational, "Setting Active Speaker PIP to {0}", StringUtils.NiceName(position));
+			Codec.Logger.Log(eSeverity.Informational, "Setting Active Speaker PIP to {0}", StringUtils.NiceName(position));
 		}
 
 		/// <summary>
@@ -400,7 +400,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetMainVideoSourceBySourceId(int sourceId)
 		{
 			Codec.SendCommand("xCommand Video Input SetMainVideoSource SourceId: {0}", sourceId);
-			Codec.Log(eSeverity.Informational, "Setting Main Video Source SourceId: {0}", sourceId);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Main Video Source SourceId: {0}", sourceId);
 		}
 
 		/// <summary>
@@ -411,7 +411,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetMainVideoSourceByConnectorId(int connectorId)
 		{
 			Codec.SendCommand("xCommand Video Input SetMainVideoSource ConnectorId: {0}", connectorId);
-			Codec.Log(eSeverity.Informational, "Setting Main Video Source ConnectorId: {0}", connectorId);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Main Video Source ConnectorId: {0}", connectorId);
 		}
 
 		/// <summary>
@@ -422,7 +422,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		public void SetActiveVideoConnector(int connectorId)
 		{
 			Codec.SendCommand("xCommand Video Input Source SetActiveConnector ConnectorId: {0}", connectorId);
-			Codec.Log(eSeverity.Informational, "Setting Active Video Input Connector: {0}", connectorId);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Active Video Input Connector: {0}", connectorId);
 		}
 
 		/// <summary>
@@ -434,7 +434,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		{
 			string state = mute ? "Mute" : "Unmute";
 			Codec.SendCommand("xCommand Video Input MainVideo {0}", state);
-			Codec.Log(eSeverity.Informational, "Setting Main Video Mute: {0}", state);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Main Video Mute: {0}", state);
 		}
 
 		/// <summary>
@@ -679,7 +679,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			// Create the new connector.
 			if (connector == null)
 			{
-				connector = new VideoInputConnector();
+				connector = new VideoInputConnector(Codec);
 				m_VideoInputConnectors[connectorId] = connector;
 				Subscribe(connector);
 			}
@@ -694,7 +694,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			// Create the new connector.
 			if (connector == null)
 			{
-				connector = new VideoOutputConnector();
+				connector = new VideoOutputConnector(Codec);
 				m_VideoOutputConnectors[connectorId] = connector;
 			}
 
@@ -750,7 +750,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 			int id = connector.ConnectorId;
 			bool state = boolEventArgs.Data;
 
-			Codec.Log(eSeverity.Informational, "Video input connector {0} detection state changed to {1}", id, state);
+			Codec.Logger.Log(eSeverity.Informational, "Video input connector {0} detection state changed to {1}", id, state);
 
 			OnVideoInputConnectorConnectionStateChanged.Raise(this, new VideoConnectionStateEventArgs(id, state));
 		}

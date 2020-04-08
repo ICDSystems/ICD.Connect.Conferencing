@@ -61,19 +61,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Bookings
 		/// </remarks>
 		public void UpdateBookings()
 		{
-			Parent.Log(eSeverity.Informational, "Updating bookings");
+			Parent.Logger.Log(eSeverity.Informational, "Updating bookings");
 			Parent.SendCommand("zCommand Bookings Update");
 		}
 
 		public void ListBookings()
 		{
-			Parent.Log(eSeverity.Informational, "Listing bookings");
+			Parent.Logger.Log(eSeverity.Informational, "Listing bookings");
 			Parent.SendCommand("zCommand Bookings List");
 		}
 
 		public void CheckIn(string meetingNumber)
 		{
-			Parent.Log(eSeverity.Informational, "Checking into meeting: {0}", meetingNumber);
+			Parent.Logger.Log(eSeverity.Informational, "Checking into meeting: {0}", meetingNumber);
 			Parent.SendCommand("zCommand Dial CheckIn MeetingNumber: {0}", meetingNumber);
 		}
 

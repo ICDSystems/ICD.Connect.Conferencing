@@ -3,7 +3,6 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Routing.Connections;
@@ -43,6 +42,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connecto
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
+		private readonly CiscoCodecDevice m_Parent;
 		private bool m_Connected;
 
 		#region Properties
@@ -118,6 +118,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connecto
 
 		#endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		protected AbstractVideoConnector(CiscoCodecDevice parent)
+		{
+			m_Parent = parent;
+		}
+
 		#region Methods
 
 		/// <summary>
@@ -139,8 +148,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connecto
 				SignalState = signalStateEnum;
 			else if (!string.IsNullOrEmpty(signalState))
 			{
-				ServiceProvider.GetService<ILoggerService>()
-				               .AddEntry(eSeverity.Warning, "{0} - Unknown signal state {1}", GetType().Name, signalState);
+				m_Parent.Logger.Log(eSeverity.Warning, "{0} - Unknown signal state {1}", GetType().Name, signalState);
 				SignalState = eSignalState.Unknown;
 			}
 
@@ -155,8 +163,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connecto
 				ConnectorType = connectorType;
 			else if (!string.IsNullOrEmpty(type))
 			{
-				ServiceProvider.GetService<ILoggerService>()
-				               .AddEntry(eSeverity.Warning, "{0} - Unknown connector type {1}", GetType().Name, connectorType);
+				m_Parent.Logger.Log(eSeverity.Warning, "{0} - Unknown connector type {1}", GetType().Name, connectorType);
 				ConnectorType = eConnectorType.Unknown;
 			}
 		}

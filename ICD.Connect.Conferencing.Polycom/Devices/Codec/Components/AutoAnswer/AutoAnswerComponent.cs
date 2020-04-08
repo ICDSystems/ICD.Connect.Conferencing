@@ -42,7 +42,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 
 				m_AutoAnswer = value;
 
-				Codec.Log(eSeverity.Informational, "AutoAnswer set to {0}", m_AutoAnswer);
+				Codec.Logger.Set("Auto Answer", eSeverity.Informational, m_AutoAnswer);
 
 				OnAutoAnswerChanged.Raise(this, new PolycomAutoAnswerEventArgs(m_AutoAnswer));
 			}
@@ -83,7 +83,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer
 			string name = s_AutoAnswerNames.GetValue(mode);
 
 			Codec.EnqueueCommand("autoanswer {0}", name);
-			Codec.Log(eSeverity.Informational, "Setting Auto Answer {0}", name);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Auto Answer {0}", name);
 		}
 
 		/// <summary>

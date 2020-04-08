@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Platform = value;
 
-				Codec.Log(eSeverity.Informational, "Codec platform is {0}", m_Platform);
+				Codec.Logger.Set("Platform", eSeverity.Informational, m_Platform);
 				OnPlatformChanged.Raise(this, new StringEventArgs(m_Platform));
 			}
 		}
@@ -132,7 +132,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Name = value;
 
-				Codec.Log(eSeverity.Informational, "Codec name is {0}", m_Name);
+				Codec.Logger.Set("Name", eSeverity.Informational, m_Name);
 				OnNameChanged.Raise(this, new StringEventArgs(m_Name));
 			}
 		}
@@ -151,7 +151,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Address = value;
 
-				Codec.Log(eSeverity.Informational, "Codec address is {0}", m_Address);
+				Codec.Logger.Set("Address", eSeverity.Informational, m_Address);
 				OnAddressChanged.Raise(this, new StringEventArgs(m_Address));
 			}
 		}
@@ -170,7 +170,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Gateway = value;
 
-				Codec.Log(eSeverity.Informational, "Codec gateway is {0}", m_Gateway);
+				Codec.Logger.Set("Gateway", eSeverity.Informational, m_Gateway);
 				OnGatewayChanged.Raise(this, new StringEventArgs(m_Gateway));
 			}
 		}
@@ -189,7 +189,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SubnetMask = value;
 
-				Codec.Log(eSeverity.Informational, "Codec subnet mask is {0}", m_SubnetMask);
+				Codec.Logger.Set("Subnet Mask", eSeverity.Informational, m_SubnetMask);
 				OnSubnetMaskChanged.Raise(this, new StringEventArgs(m_SubnetMask));
 			}
 		}
@@ -208,7 +208,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Awake = value;
 
-				Codec.Log(eSeverity.Informational, m_Awake ? "VTC is Active" : "VTC is in Standby Mode");
+				Codec.Logger.Set("Awake", eSeverity.Informational, m_Awake);
 				OnAwakeStateChanged.Raise(this, new BoolEventArgs(m_Awake));
 			}
 		}
@@ -227,7 +227,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SoftwareVersion = value;
 
-				Codec.Log(eSeverity.Informational, "Codec software version is {0}", m_SoftwareVersion);
+				Codec.Logger.Set("Software Version", eSeverity.Informational, m_SoftwareVersion);
 				OnSoftwareVersionChanged.Raise(this, new StringEventArgs(m_SoftwareVersion));
 			}
 		}
@@ -246,7 +246,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_H323Enabled = value;
 
-				Codec.Log(eSeverity.Informational, "H323 is {0}", m_H323Enabled ? "On" : "Off");
+				Codec.Logger.Set("H323 Enabled", eSeverity.Informational, m_H323Enabled);
 				OnH323EnabledStateChanged.Raise(this, new BoolEventArgs(m_H323Enabled));
 			}
 		}
@@ -265,7 +265,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_H323GatekeeperStatus = value;
 
-				Codec.Log(eSeverity.Informational, "Gatekeeper status is {0}", m_H323GatekeeperStatus);
+				Codec.Logger.Set("H323 Gatekeeper Status", eSeverity.Informational, m_H323GatekeeperStatus);
 				OnGatekeeperStatusChanged.Raise(this, new GatekeeperStatusArgs(m_H323GatekeeperStatus));
 			}
 		}
@@ -284,7 +284,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_H323GatekeeperAddress = value;
 
-				Codec.Log(eSeverity.Informational, "Gatekeeper address is {0}", m_H323GatekeeperAddress);
+				Codec.Logger.Set("H323 Gatekeeper Address", eSeverity.Informational, m_H323GatekeeperAddress);
 				OnGatekeeperAddressChanged.Raise(this, new StringEventArgs(m_H323GatekeeperAddress));
 			}
 		}
@@ -319,7 +319,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		public void Standby()
 		{
 			Codec.SendCommand("xCommand Standby Activate");
-			Codec.Log(eSeverity.Informational, "Putting VTC into Standby");
+			Codec.Logger.Log(eSeverity.Informational, "Putting VTC into Standby");
 		}
 
 		/// <summary>
@@ -329,14 +329,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		public void Wake()
 		{
 			Codec.SendCommand("xCommand Standby Deactivate");
-			Codec.Log(eSeverity.Informational, "Activating VTC");
+			Codec.Logger.Log(eSeverity.Informational, "Activating VTC");
 		}
 
 		[PublicAPI]
 		public void ResetSleepTimer(int minutes)
 		{
 			Codec.SendCommand("xCommand Standby ResetTimer Delay:{0}", minutes);
-			Codec.Log(eSeverity.Informational, "Resetting standby timer to {0} minutes", minutes);
+			Codec.Logger.Log(eSeverity.Informational, "Resetting standby timer to {0} minutes", minutes);
 		}
 
 		/// <summary>

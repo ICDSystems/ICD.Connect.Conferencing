@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 				m_MutedNear = value;
 
-				Codec.Log(eSeverity.Informational, "MutedNear set to {0}", m_MutedNear);
+				Codec.Logger.Set("Muted Near", eSeverity.Informational, m_MutedNear);
 
 				OnMutedNearChanged.Raise(this, new BoolEventArgs(m_MutedNear));
 			}
@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 				m_MutedFar = value;
 
-				Codec.Log(eSeverity.Informational, "MutedFar set to {0}", m_MutedFar);
+				Codec.Logger.Set("Muted Far", eSeverity.Informational, m_MutedFar);
 
 				OnMutedFarChanged.Raise(this, new BoolEventArgs(m_MutedFar));
 			}
@@ -86,7 +86,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 				m_VideoMuted = value;
 
-				Codec.Log(eSeverity.Informational, "VideoMuted set to {0}", m_VideoMuted);
+				Codec.Logger.Set("Video Muted", eSeverity.Informational, m_VideoMuted);
 
 				OnVideoMutedChanged.Raise(this, new BoolEventArgs(m_VideoMuted));
 			}
@@ -193,7 +193,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		public void MuteNear(bool mute)
 		{
 			Codec.EnqueueCommand("mute near {0}", mute ? "on" : "off");
-			Codec.Log(eSeverity.Informational, "Setting near mute {0}", mute ? "on" : "off");
+			Codec.Logger.Log(eSeverity.Informational, "Setting near mute {0}", mute ? "on" : "off");
 		}
 
 		/// <summary>
@@ -203,7 +203,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		public void MuteVideo(bool mute)
 		{
 			Codec.EnqueueCommand("videomute near {0}", mute ? "on" : "off");
-			Codec.Log(eSeverity.Informational, "Setting near video mute {0}", mute ? "on" : "off");
+			Codec.Logger.Log(eSeverity.Informational, "Setting near video mute {0}", mute ? "on" : "off");
 		}
 
 		/// <summary>
@@ -212,7 +212,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		public void ToggleMuteNear()
 		{
 			Codec.EnqueueCommand("mute near toggle");
-			Codec.Log(eSeverity.Informational, "Toggling near mute");
+			Codec.Logger.Log(eSeverity.Informational, "Toggling near mute");
 		}
 
 		/// <summary>
@@ -221,7 +221,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 		public void ToggleMuteFar()
 		{
 			Codec.EnqueueCommand("mute far toggle");
-			Codec.Log(eSeverity.Informational, "Toggling far mute");
+			Codec.Logger.Log(eSeverity.Informational, "Toggling far mute");
 		}
 
 		#endregion

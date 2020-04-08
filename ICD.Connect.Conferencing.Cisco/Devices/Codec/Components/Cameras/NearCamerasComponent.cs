@@ -104,7 +104,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_PresenterTrackAvailability = value;
 
-				Codec.Log(eSeverity.Informational, "PresenterTrack availability is {0}", m_PresenterTrackAvailability);
+				Codec.Logger.Set("Presenter Track Availability", eSeverity.Informational, m_PresenterTrackAvailability);
 
 				OnPresenterTrackAvailabilityChanged.Raise(this,
 				                                          new PresenterTrackAvailabilityEventArgs(m_PresenterTrackAvailability));
@@ -125,7 +125,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_PresenterDetected = value;
 
-				Codec.Log(eSeverity.Informational, "PresenterTrack detected is {0}", m_PresenterDetected);
+				Codec.Logger.Set("Presenter Detected", eSeverity.Informational, m_PresenterDetected);
 
 				OnPresenterDetectedStateChanged.Raise(this, new BoolEventArgs(m_PresenterDetected));
 			}
@@ -145,7 +145,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 				
 				m_PresenterTrackMode = value;
 
-				Codec.Log(eSeverity.Informational, "PresenterTrack mode is {0}", m_PresenterTrackMode);
+				Codec.Logger.Set("Presenter Track Mode", eSeverity.Informational, m_PresenterTrackMode);
 
 				OnPresenterTrackModeChanged.Raise(this, new PresenterTrackModeEventArgs(m_PresenterTrackMode));
 			}
@@ -170,7 +170,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 				
 				m_SpeakerTrackAvailability = value;
 
-				Codec.Log(eSeverity.Informational, "SpeakerTrack availability is {0}", m_SpeakerTrackAvailability);
+				Codec.Logger.Set("Speaker Track Availability", eSeverity.Informational, m_SpeakerTrackAvailability);
 
 				OnSpeakerTrackAvailabilityChanged.Raise(this, new SpeakerTrackAvailabilityEventArgs(m_SpeakerTrackAvailability));
 			}
@@ -190,7 +190,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_SpeakerTrackStatus = value;
 
-				Codec.Log(eSeverity.Informational, "SpeakerTrack status is {0}", m_SpeakerTrackStatus);
+				Codec.Logger.Set("Speaker Track Status", eSeverity.Informational,  m_SpeakerTrackStatus);
 
 				OnSpeakerTrackStatusChanged.Raise(this, new SpeakerTrackStatusEventArgs(m_SpeakerTrackStatus));
 			}
@@ -210,7 +210,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_SpeakerTrackWhiteboardMode = value;
 
-				Codec.Log(eSeverity.Informational, "SpeakerTrack Whiteboard Mode is {0}", m_SpeakerTrackWhiteboardMode);
+				Codec.Logger.Set("Speaker Track Whiteboard Mode", eSeverity.Informational, m_SpeakerTrackWhiteboardMode);
 
 				OnSpeakerTrackWhiteboardModeChanged.Raise(this, new SpeakerTrackWhiteboardModeEventArgs(m_SpeakerTrackWhiteboardMode));
 			}
@@ -230,7 +230,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_SpeakerTrackWhiteboardDistance = value;
 
-				Codec.Log(eSeverity.Informational, "SpeakerTrack Whiteboard Distance is {0}", m_SpeakerTrackWhiteboardDistance);
+				Codec.Logger.Log(eSeverity.Informational, "SpeakerTrack Whiteboard Distance is {0}", m_SpeakerTrackWhiteboardDistance);
 
 				OnSpeakerTrackWhiteboardDistanceChanged.Raise(this, new IntEventArgs(m_SpeakerTrackWhiteboardDistance));
 			}
@@ -392,7 +392,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void ActivatePresetById(int presetId)
 		{
 			Codec.SendCommand("xCommand Camera Preset Activate PresetId: {0}", presetId);
-			Codec.Log(eSeverity.Informational, "Activating Preset {0}", presetId);
+			Codec.Logger.Log(eSeverity.Informational, "Activating Preset {0}", presetId);
 		}
 
 		/// <summary>
@@ -414,7 +414,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void StorePresetById(int cameraId, int presetId)
 		{
 			Codec.SendCommand("xCommand Camera Preset Store CameraId: {0} PresetId: \"{1}\"", cameraId, presetId);
-			Codec.Log(eSeverity.Informational, "Storing preset {0} for Camera {1}", presetId, cameraId);
+			Codec.Logger.Log(eSeverity.Informational, "Storing preset {0} for Camera {1}", presetId, cameraId);
 
 			// Updates the presets
 			Codec.SendCommand("xCommand Camera Preset List");
@@ -428,7 +428,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void SetPresenterTrackMode(ePresenterTrackMode mode)
 		{
 			Codec.SendCommand("xCommand Cameras PresenterTrack Set Mode: {0}", mode);
-			Codec.Log(eSeverity.Informational, "Setting PresenterTrack mode to {0}", mode);
+			Codec.Logger.Log(eSeverity.Informational, "Setting PresenterTrack mode to {0}", mode);
 		}
 
 		/// <summary>
@@ -438,7 +438,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void ActivateSpeakerTrack()
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Activate");
-			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack active");
+			Codec.Logger.Log(eSeverity.Informational, "Setting SpeakerTrack active");
 		}
 
 		/// <summary>
@@ -448,7 +448,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void DeactivateSpeakerTrack()
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Deactivate");
-			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack inactive");
+			Codec.Logger.Log(eSeverity.Informational, "Setting SpeakerTrack inactive");
 		}
 
 		/// <summary>
@@ -459,7 +459,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void SetSpeakerTrackWhiteboardMode(eSpeakerTrackWhiteboardMode mode)
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard Mode: {0}", mode);
-			Codec.Log(eSeverity.Informational, "Setting SpeakerTrack Whiteboard Mode to {0}", mode);
+			Codec.Logger.Log(eSeverity.Informational, "Setting SpeakerTrack Whiteboard Mode to {0}", mode);
 		}
 
 		/// <summary>
@@ -483,7 +483,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard SetDistance Distance: {0} WhiteboardId: {1}",
 							  centimeters, whiteboardId);
-			Codec.Log(eSeverity.Informational,
+			Codec.Logger.Log(eSeverity.Informational,
 					  "Setting SpeakerTrack Whiteboard Distance of {0}cm for WhiteboardId {1}",
 					  centimeters, whiteboardId);
 		}
@@ -498,7 +498,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard AlignPosition CameraId: {0} Distance: {1}",
 			                  cameraId, centimeters);
-			Codec.Log(eSeverity.Informational,
+			Codec.Logger.Log(eSeverity.Informational,
 			          "Aligning SpeakerTrack Whiteboard Position for CameraId {0} with Distance {1}cm",
 			          cameraId, centimeters);
 		}
@@ -524,7 +524,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard ActivatePosition CameraId: {0} WhiteboardId: {1}",
 			                  cameraId, whiteboardId);
-			Codec.Log(eSeverity.Informational,
+			Codec.Logger.Log(eSeverity.Informational,
 			          "Activating SpeakerTrack Whiteboard Position for CameraId {0} and WhiteboardId {1}",
 			          cameraId, whiteboardId);
 		}
@@ -550,7 +550,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			Codec.SendCommand("xCommand Cameras SpeakerTrack Whiteboard StorePosition CameraId: {0} WhiteboardId: {1}",
 							  cameraId, whiteboardId);
-			Codec.Log(eSeverity.Informational,
+			Codec.Logger.Log(eSeverity.Informational,
 					  "Storing SpeakerTrack Whiteboard Position for CameraId {0} and WhiteboardId {1}",
 					  cameraId, whiteboardId);
 		}

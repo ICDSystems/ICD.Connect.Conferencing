@@ -84,7 +84,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		{
 			if (m_CallComponent.GetParticipants().Count() <= 1)
 			{
-				Parent.Log(eSeverity.Error, "Can not hide self view with 1 or less participants");
+				Parent.Logger.Log(eSeverity.Error, "Can not hide self view with 1 or less participants");
 				return;
 			}
 

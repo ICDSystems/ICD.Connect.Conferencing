@@ -329,7 +329,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 					break;
 
 				case eZoomPhoneCallStatus.CallOutFailed:
-					Parent.Log(eSeverity.Warning, "ZoomRoom PSTN Call Out Failed!");
+					Parent.Logger.Log(eSeverity.Warning, "ZoomRoom PSTN Call Out Failed!");
 					OnCallOutFailed.Raise(this, new GenericEventArgs<TraditionalZoomPhoneCallInfo>(data));
 					break;
 
@@ -405,13 +405,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 		private void HoldCallback(ThinTraditionalParticipant sender)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
+			Parent.Logger.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
 
 		}
 
 		private void ResumeCallback(ThinTraditionalParticipant sender)
 		{
-			Parent.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
+			Parent.Logger.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
 		}
 
 		#endregion

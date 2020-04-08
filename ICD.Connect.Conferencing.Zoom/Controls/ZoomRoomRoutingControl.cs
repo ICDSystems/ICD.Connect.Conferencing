@@ -162,14 +162,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			IOriginator camera;
 			if (!Core.Originators.TryGetChild(cameraDeviceId, out camera))
 			{
-				Log(eSeverity.Error, "Failed to find device for camera ID {0}", cameraDeviceId);
+				Logger.Log(eSeverity.Error, "Failed to find device for camera ID {0}", cameraDeviceId);
 				return;
 			}
 
 			string zoomUsbId = GetZoomUsbIdForOriginator(camera);
 			if (string.IsNullOrEmpty(zoomUsbId))
 			{
-				Log(eSeverity.Error, "Failed to find USB ID for {0}", camera);
+				Logger.Log(eSeverity.Error, "Failed to find USB ID for {0}", camera);
 				return;
 			}
 

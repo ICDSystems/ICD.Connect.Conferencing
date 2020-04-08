@@ -113,7 +113,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public void AnswerVideo()
 		{
 			Codec.EnqueueCommand("answer video");
-			Codec.Log(eSeverity.Informational, "Answering incoming video call");
+			Codec.Logger.Log(eSeverity.Informational, "Answering incoming video call");
 		}
 
 		/// <summary>
@@ -123,7 +123,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public void HangupVideo(int callId)
 		{
 			Codec.EnqueueCommand("hangup video {0}", callId);
-			Codec.Log(eSeverity.Informational, "Disconnecting video call {0}", callId);
+			Codec.Logger.Log(eSeverity.Informational, "Disconnecting video call {0}", callId);
 		}
 
 		/// <summary>
@@ -132,7 +132,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public void HangupAll()
 		{
 			Codec.EnqueueCommand("hangup all");
-			Codec.Log(eSeverity.Informational, "Disconnecting all active calls");
+			Codec.Logger.Log(eSeverity.Informational, "Disconnecting all active calls");
 		}
 
 		/// <summary>
@@ -141,7 +141,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public void HangupAllVideo()
 		{
 			Codec.EnqueueCommand("hangup video");
-			Codec.Log(eSeverity.Informational, "Disconnecting all active video calls");
+			Codec.Logger.Log(eSeverity.Informational, "Disconnecting all active video calls");
 		}
 
 		/// <summary>
@@ -156,7 +156,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			contactName = StringUtils.Enquote(contactName);
 
 			Codec.EnqueueCommand("dial addressbook {0}", contactName);
-			Codec.Log(eSeverity.Informational, "Dialing addressbook contact {0}", contactName);
+			Codec.Logger.Log(eSeverity.Informational, "Dialing addressbook contact {0}", contactName);
 		}
 
 		/// <summary>
@@ -171,7 +171,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			number = StringUtils.Enquote(number);
 
 			Codec.EnqueueCommand("dial auto {0}", number);
-			Codec.Log(eSeverity.Informational, "Dialing auto number {0}", number);
+			Codec.Logger.Log(eSeverity.Informational, "Dialing auto number {0}", number);
 		}
 
 		/// <summary>
@@ -188,7 +188,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			number = StringUtils.Enquote(number);
 
 			Codec.EnqueueCommand("dial manual {0}", number);
-			Codec.Log(eSeverity.Informational, "Dialing manual number {0}", number);
+			Codec.Logger.Log(eSeverity.Informational, "Dialing manual number {0}", number);
 		}
 
 		/// <summary>
@@ -208,7 +208,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			string typeName = s_TypeNames.GetValue(type);
 
 			Codec.EnqueueCommand("dial manual {0} {1}", number, typeName);
-			Codec.Log(eSeverity.Informational, "Dialing manual number {0} type {1}", number, typeName);
+			Codec.Logger.Log(eSeverity.Informational, "Dialing manual number {0} type {1}", number, typeName);
 		}
 
 		/// <summary>
@@ -226,7 +226,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 			string protocolName = s_ProtocolNames.GetValue(protocol);
 
 			Codec.EnqueueCommand("dial phone {0} {1}", protocolName, number);
-			Codec.Log(eSeverity.Informational, "Dialing phone number {0} {1}", protocolName, number);
+			Codec.Logger.Log(eSeverity.Informational, "Dialing phone number {0} {1}", protocolName, number);
 		}
 
 		/// <summary>
@@ -236,7 +236,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public void Gendial(char tone)
 		{
 			Codec.EnqueueCommand("gendial {0}", tone);
-			Codec.Log(eSeverity.Informational, "Sending DTMF {0}", tone);
+			Codec.Logger.Log(eSeverity.Informational, "Sending DTMF {0}", tone);
 		}
 
 		#endregion

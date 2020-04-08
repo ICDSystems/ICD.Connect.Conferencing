@@ -22,7 +22,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot begin interpretation.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot begin interpretation.");
 				return;
 			}
 			Originator.BeginInterpretation(roomId, boothId);
@@ -33,7 +33,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot end interpretation.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot end interpretation.");
 				return;
 			}
 			Originator.EndInterpretation(roomId, boothId);
@@ -44,7 +44,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot get booth ids.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot get booth ids.");
 				return new ushort[0];
 			}
 			return Originator.GetAvailableBoothIds().ToArray();
@@ -55,7 +55,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot get room ids.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot get room ids.");
 				return new ushort[0];
 			}
 			int[] available = Originator.GetAvailableRoomIds().ToArray();
@@ -70,7 +70,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot get room name.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot get room name.");
 				return string.Empty;
 			}
 			return Originator.GetRoomName(roomId);
@@ -81,7 +81,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot get room prefix.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot get room prefix.");
 				return string.Empty;
 			}
 			return Originator.GetRoomPrefix(roomId);
@@ -92,7 +92,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot get booth id.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot get booth id.");
 				return 0;
 			}
 			return Originator.GetBoothId(roomId);
@@ -103,7 +103,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (Originator == null)
 			{
-				Log(eSeverity.Error, "Originator Is Null, cannot get room existance status.");
+				Logger.Log(eSeverity.Error, "Originator Is Null, cannot get room existance status.");
 				return 0;
 			}
 			return Originator.GetRoomExists(roomId);

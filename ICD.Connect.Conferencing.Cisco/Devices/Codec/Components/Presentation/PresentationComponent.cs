@@ -68,7 +68,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 
 				m_PresentationPosition = value;
 
-				Codec.Log(eSeverity.Informational, "Presentation position set to: {0}", StringUtils.NiceName(m_PresentationPosition));
+				Codec.Logger.Set("Presentation Position", eSeverity.Informational, m_PresentationPosition);
 
 				OnPresentationPositionChanged.Raise(this, new PipPositionEventArgs(m_PresentationPosition));
 			}
@@ -88,7 +88,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 
 				m_PresentationView = value;
 
-				Codec.Log(eSeverity.Informational, "Presentation view set to: {0}", StringUtils.NiceName(m_PresentationView));
+				Codec.Logger.Set("Presentation View", eSeverity.Informational, m_PresentationView);
 
 				OnPresentationViewChanged.Raise(this, new LayoutEventArgs(m_PresentationView));
 			}
@@ -108,7 +108,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 
 				m_PresentationMode = value;
 
-				Codec.Log(eSeverity.Informational, "Presentation mode set to: {0}", StringUtils.NiceName(m_PresentationMode));
+				Codec.Logger.Set("Presentation Mode", eSeverity.Informational, m_PresentationMode);
 
 				OnPresentationModeChanged.Raise(this, new PresentationModeEventArgs(m_PresentationMode));
 			}
@@ -176,7 +176,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 			}
 
 			Codec.SendCommand("xCommand Presentation Start PresentationSource: {0} SendingMode: {1}", sourceId, mode);
-			Codec.Log(eSeverity.Informational, "Starting {0} Presentation from Input {1}", StringUtils.NiceName(mode), sourceId);
+			Codec.Logger.Log(eSeverity.Informational, "Starting {0} Presentation from Input {1}", StringUtils.NiceName(mode), sourceId);
 		}
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 		public void StopPresentation(int sourceId)
 		{
 			Codec.SendCommand("xCommand Presentation Stop PresentationSource: {0}", sourceId);
-			Codec.Log(eSeverity.Informational, "End Presentation");
+			Codec.Logger.Log(eSeverity.Informational, "End Presentation");
 		}
 
 		/// <summary>
@@ -208,7 +208,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 		public void SetPresentationPosition(ePipPosition position)
 		{
 			Codec.SendCommand("xCommand Video PresentationPIP Set Position: {0}", position);
-			Codec.Log(eSeverity.Informational, "Setting presentation PIP Position: {0}", position);
+			Codec.Logger.Log(eSeverity.Informational, "Setting presentation PIP Position: {0}", position);
 		}
 
 		/// <summary>
@@ -219,7 +219,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 		public void SetPresentationView(eLayout layout)
 		{
 			Codec.SendCommand("xCommand Video Layout SetPresentationView View: {0}", layout);
-			Codec.Log(eSeverity.Informational, "Setting presentation View: {0}", layout);
+			Codec.Logger.Log(eSeverity.Informational, "Setting presentation View: {0}", layout);
 		}
 
 		/// <summary>
@@ -341,7 +341,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 
-			Codec.Log(eSeverity.Informational, "Presentation stopped: {0}", content);
+			Codec.Logger.Log(eSeverity.Informational, "Presentation stopped: {0}", content);
 
 			OnPresentationStopped.Raise(this, new StringEventArgs(content));
 		}

@@ -58,19 +58,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 
 		public void PhoneCallOut(string dialString)
 		{
-			Parent.Log(eSeverity.Informational, "PSTN Dialing out to: {0}", dialString);
+			Parent.Logger.Log(eSeverity.Informational, "PSTN Dialing out to: {0}", dialString);
 			Parent.SendCommand("zCommand Dial PhoneCallOut Number: {0}", dialString);
 		}
 
 		public void Hangup(string callId)
 		{
-			Parent.Log(eSeverity.Informational, "Hanging up call with ID: {0}", callId);
+			Parent.Logger.Log(eSeverity.Informational, "Hanging up call with ID: {0}", callId);
 			Parent.SendCommand("zCommand Dial PhoneHangUp CallId: {0}", callId);
 		}
 
 		public void SendDtmf(string callId, char data)
 		{
-			Parent.Log(eSeverity.Informational, "Sending Call with ID: {0} DTMF character: {1}", callId, data);
+			Parent.Logger.Log(eSeverity.Informational, "Sending Call with ID: {0} DTMF character: {1}", callId, data);
 			Parent.SendCommand("zCommand SendSIPDTMF CallID: {0} Key: {1}", callId, data);
 		}
 
@@ -144,7 +144,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.TraditionalCall
 			// There is currently no way for a ZoomRoom to answer an incoming call, so we reject the call.
 			if (data.IsIncomingCall)
 			{
-				Parent.Log(eSeverity.Warning, "Unable to answer incoming call via Zoom API. Rejecting.");
+				Parent.Logger.Log(eSeverity.Warning, "Unable to answer incoming call via Zoom API. Rejecting.");
 				Hangup(data.CallId);
 				return;
 			}

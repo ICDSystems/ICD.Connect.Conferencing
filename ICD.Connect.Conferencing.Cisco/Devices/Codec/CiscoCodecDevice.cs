@@ -470,7 +470,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				}
 			}
 
-			Log(eSeverity.Error, message);
+			Logger.Log(eSeverity.Error, message);
 		}
 
 		/// <summary>
@@ -497,7 +497,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			foreach (string item in missing)
 			{
-				Log(eSeverity.Warning, "Lost feedback on {0}, re-registering.", item);
+				Logger.Log(eSeverity.Warning, "Lost feedback on {0}, re-registering.", item);
 				RegisterFeedback(item);
 			}
 		}
@@ -529,7 +529,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				Initialize();
 			else
 			{
-				Log(eSeverity.Critical, "Lost connection");
+				Logger.Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
 			}
 
@@ -605,7 +605,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 			catch (IcdXmlException e)
 			{
-				Log(eSeverity.Error, "Failed to parse XML - {0} - {1}", e.Message, innerXml);
+				Logger.Log(eSeverity.Error, "Failed to parse XML - {0} - {1}", e.Message, innerXml);
 			}
 		}
 
@@ -726,7 +726,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
+					Logger.Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 				}
 			}
 

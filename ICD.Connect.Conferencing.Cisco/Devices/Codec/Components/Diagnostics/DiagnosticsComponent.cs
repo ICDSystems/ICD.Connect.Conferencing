@@ -169,7 +169,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Diagnostics
 				return;
 
 			eSeverity severity = GetSeverity(message.Level);
-			Codec.Log(severity, "{0} - {1} ({2})", message.Type, message.Description, message.References);
+			Codec.Logger.Log(severity, "{0} - {1} ({2})", message.Type, message.Description, message.References);
 		}
 
 		/// <summary>

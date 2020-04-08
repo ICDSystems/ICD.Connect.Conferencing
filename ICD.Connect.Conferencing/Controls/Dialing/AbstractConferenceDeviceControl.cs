@@ -92,7 +92,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_AutoAnswer = value;
 
-					Log(eSeverity.Informational, "AutoAnswer set to {0}", m_AutoAnswer);
+					Logger.Set("Auto Answer", eSeverity.Informational, m_AutoAnswer);
 				}
 				finally
 				{
@@ -121,7 +121,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_PrivacyMuted = value;
 
-					Log(eSeverity.Informational, "PrivacyMuted set to {0}", m_PrivacyMuted);
+					Logger.Set("Privacy Muted", eSeverity.Informational, m_PrivacyMuted);
 				}
 				finally
 				{
@@ -150,7 +150,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_DoNotDisturb = value;
 
-					Log(eSeverity.Informational, "DoNotDisturb set to {0}", m_DoNotDisturb);
+					Logger.Set("Do Not Disturb", eSeverity.Informational, m_DoNotDisturb);
 				}
 				finally
 				{

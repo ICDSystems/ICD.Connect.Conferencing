@@ -267,7 +267,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 
 			if (settings.CameraId == null)
 			{
-				Log(eSeverity.Error, "No camera id set for camera: {0}", Name);
+				Logger.Log(eSeverity.Error, "No camera id set for camera: {0}", Name);
 				return;
 			}
 
@@ -282,7 +282,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No codec with id {0}", settings.CodecId);
+					Logger.Log(eSeverity.Error, "No codec with id {0}", settings.CodecId);
 				}
 			}
 

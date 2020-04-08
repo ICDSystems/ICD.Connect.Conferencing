@@ -33,7 +33,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 
 				m_ContentVideoSource = value;
 
-				Codec.Log(eSeverity.Informational, "ContentVideoSource set to {0}", m_ContentVideoSource);
+				Codec.Logger.Set("Content Video Source", eSeverity.Informational, m_ContentVideoSource);
 
 				OnContentVideoSourceChanged.Raise(this, new ContentVideoSourceEventArgs(m_ContentVideoSource));
 			}
@@ -49,7 +49,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 
 				m_PresentationActive = value;
 
-				Codec.Log(eSeverity.Informational, "PresentationActive set to {0}", m_PresentationActive);
+				Codec.Logger.Set("Presentation Active", eSeverity.Informational, m_PresentationActive);
 
 				OnPresentationActiveChanged.Raise(this, new PresentationActiveEventArgs(m_PresentationActive));
 			}
@@ -112,8 +112,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		/// <param name="videoSource"></param>
 		public void Play(int videoSource)
 		{
+			Codec.Logger.Log(eSeverity.Informational, "Sharing content from video source {0}", videoSource);
 			Codec.EnqueueCommand("vcbutton play {0}", videoSource);
-			Codec.Log(eSeverity.Informational, "Sharing content from video source {0}", videoSource);
 		}
 
 		/// <summary>
@@ -121,8 +121,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 		/// </summary>
 		public void Stop()
 		{
+			Codec.Logger.Log(eSeverity.Informational, "Stopping sharing content");
 			Codec.EnqueueCommand("vcbutton stop");
-			Codec.Log(eSeverity.Informational, "Stopping sharing content");
 		}
 
 		#endregion

@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 					return;
 
 				m_AudioInputVolume = value;
-				Parent.Log(eSeverity.Informational, "Audio Input Volume changed to: {0}", m_AudioInputVolume);
+				Parent.Logger.Set("Audio Input Volume", eSeverity.Informational, m_AudioInputVolume);
 				OnInputVolumeChanged.Raise(this, new IntEventArgs(m_AudioInputVolume));
 			}
 		}
@@ -63,7 +63,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 					return;
 
 				m_AudioOutputVolume = value;
-				Parent.Log(eSeverity.Informational, "Audio Output Volume changed to: {0}", m_AudioOutputVolume);
+				Parent.Logger.Set("Audio Output Volume", eSeverity.Informational, m_AudioOutputVolume);
 				OnOutputVolumeChanged.Raise(this, new IntEventArgs(m_AudioOutputVolume));
 			}
 		}
@@ -106,11 +106,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 		{
 			if (volume < 0 || volume > 100)
 			{
-				Parent.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
+				Parent.Logger.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
 				return;
 			}
 
-			Parent.Log(eSeverity.Informational, "Setting Audio Input Volume to: {0}", volume);
+			Parent.Logger.Log(eSeverity.Informational, "Setting Audio Input Volume to: {0}", volume);
 			Parent.SendCommand("zConfiguration Audio Input volume: {0}", volume);
 		}
 
@@ -122,11 +122,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 		{
 			if (volume < 0 || volume > 100)
 			{
-				Parent.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
+				Parent.Logger.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
 				return;
 			}
 
-			Parent.Log(eSeverity.Informational, "Setting Audio Output Volume to: {0}", volume);
+			Parent.Logger.Log(eSeverity.Informational, "Setting Audio Output Volume to: {0}", volume);
 			Parent.SendCommand("zConfiguration Audio Output volume: {0}", volume);
 		}
 

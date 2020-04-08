@@ -219,7 +219,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			if (presetId < 1 || presetId > MaxPresets)
 			{
-				Log(eSeverity.Error, "Camera preset must be between 1 and {0}, preset was not activated.", MaxPresets);
+				Logger.Log(eSeverity.Error, "Camera preset must be between 1 and {0}, preset was not activated.", MaxPresets);
 				return;
 			}
 
@@ -237,7 +237,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			if (presetId < 1 || presetId > MaxPresets)
 			{
-				Log(eSeverity.Error, "Camera preset must be between 1 and {0}, preset was not stored.", MaxPresets);
+				Logger.Log(eSeverity.Error, "Camera preset must be between 1 and {0}, preset was not stored.", MaxPresets);
 				return;
 			}
 
@@ -391,7 +391,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			base.ApplySettingsFinal(settings, factory);
 
 			if (settings.CameraId == null)
-				Log(eSeverity.Error, "No Camera Id");
+				Logger.Log(eSeverity.Error, "No Camera Id");
 
 			CameraId = settings.CameraId ?? 0;
 
@@ -405,7 +405,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No Cisco Codec Device with id {0}", settings.CodecId.Value);
+					Logger.Log(eSeverity.Error, "No Cisco Codec Device with id {0}", settings.CodecId.Value);
 				}
 			}
 

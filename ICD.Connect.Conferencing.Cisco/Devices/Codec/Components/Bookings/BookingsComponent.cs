@@ -94,7 +94,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 				command += string.Format(" Offset:{0}", offset);
 
 			Codec.SendCommand(command);
-			Codec.Log(eSeverity.Informational, "Listing bookings for Days:{0} DayOffset:{1} Limit:{2} Offset:{3}", days, dayOffset, limit, offset);
+			Codec.Logger.Log(eSeverity.Informational, "Listing bookings for Days:{0} DayOffset:{1} Limit:{2} Offset:{3}", days, dayOffset, limit, offset);
 		}
 
 		#endregion

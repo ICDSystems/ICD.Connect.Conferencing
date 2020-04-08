@@ -29,7 +29,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_InputConnected = value;
-				Parent.Log(eSeverity.Informational, "InputConnected changed to: {0}", m_InputConnected);
+				Parent.Logger.Set("Input Connected", eSeverity.Informational, m_InputConnected);
 				OnInputConnectedUpdated.Raise(this, new BoolEventArgs(m_InputConnected));
 			}
 		}
@@ -43,7 +43,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_SignalDetected = value;
-				Parent.Log(eSeverity.Informational, "SignalDetected changed to: {0}", m_SignalDetected);
+				Parent.Logger.Set("Signal Detected", eSeverity.Informational, m_SignalDetected);
 				OnSignalDetectedUpdated.Raise(this, new BoolEventArgs(m_SignalDetected));
 			}
 		}
@@ -57,7 +57,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_SharingState = value;
-				Parent.Log(eSeverity.Informational, "Sharing State changed to: {0}", m_SharingState);
+				Parent.Logger.Set("Sharing State", eSeverity.Informational, m_SharingState);
 				OnSharingStateChanged.Raise(this, new GenericEventArgs<eSharingState>(m_SharingState));
 			}
 		}
@@ -71,7 +71,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 					return;
 
 				m_ShareOutput = value;
-				Parent.Log(eSeverity.Informational, "PresentationOutput changed to: {0}", m_ShareOutput);
+				Parent.Logger.Set("Share Output", eSeverity.Informational, m_ShareOutput);
 				OnPresentationOutputChanged.Raise(this, new PresentationOutputEventArgs(m_ShareOutput));
 			}
 		}
@@ -102,17 +102,17 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Presentation
 		{
 			if (!InputConnected)
 			{
-				Parent.Log(eSeverity.Error, "Unable to start HDMI share - BlackMagic is not connected");
+				Parent.Logger.Log(eSeverity.Error, "Unable to start HDMI share - BlackMagic is not connected");
 				return;
 			}
 
-			Parent.Log(eSeverity.Informational, "Starting HDMI share");
+			Parent.Logger.Log(eSeverity.Informational, "Starting HDMI share");
 			Parent.SendCommand("zCommand Call Sharing HDMI Start");
 		}
 
 		public void StopPresentation()
 		{
-			Parent.Log(eSeverity.Informational, "Stopping HDMI share");
+			Parent.Logger.Log(eSeverity.Informational, "Stopping HDMI share");
 			Parent.SendCommand("zCommand Call Sharing HDMI Stop");
 		}
 

@@ -51,7 +51,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_CameraEnabled = value;
 
-					Log(eSeverity.Informational, "CameraEnabled set to {0}", m_CameraEnabled);
+					Logger.Set("Camera Enabled", eSeverity.Informational, m_CameraEnabled);
 				}
 				finally
 				{
@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_AmIHost = value;
 
-					Log(eSeverity.Informational, "AmIHost set to {0}", m_AmIHost);
+					Logger.Set("Am I Host", eSeverity.Informational, m_AmIHost);
 				}
 				finally
 				{
@@ -107,7 +107,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_CallLock = value;
 
-					Log(eSeverity.Informational, "CallLock set to {0}", m_CallLock);
+					Logger.Set("Call Lock", eSeverity.Informational, m_CallLock);
 				}
 				finally
 				{

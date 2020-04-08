@@ -8,7 +8,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Audio
 {
 	public sealed class AudioComponent : AbstractCiscoComponent
 	{
-
 		private const string AUDIO_PATH = "Audio";
 
 		public event EventHandler<IntEventArgs> OnVolumeChanged;
@@ -63,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Audio
 		{
 			if (volume < 0 || volume > 100)
 			{
-				Codec.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
+				Codec.Logger.Log(eSeverity.Warning, "Volume must be between 0 and 100, level: {0}", volume);
 				return;
 			}
 

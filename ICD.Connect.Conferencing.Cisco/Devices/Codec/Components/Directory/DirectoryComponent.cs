@@ -209,7 +209,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			try
 			{
 				result = IcdXmlConvert.DeserializeObject<PhonebookSearchResult>(xml);
-				Codec.Log(eSeverity.Debug, "Phone Book download complete. {0} entries downloaded.", result.Count);
+				Codec.Logger.Log(eSeverity.Debug, "Phone Book download complete. {0} entries downloaded.", result.Count);
 
 				Insert(resultId, result.GetFolders(), result.GetContacts());
 			}

@@ -75,7 +75,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 
 		public void SetActiveCameraByUsbId(string usbId)
 		{
-			Parent.Log(eSeverity.Informational, "Selecting video camera {0}", usbId);
+			Parent.Logger.Log(eSeverity.Informational, "Selecting video camera {0}", usbId);
 			Parent.SendCommand("zConfiguration Video Camera selectedId: {0}", usbId);
 		}
 
@@ -84,11 +84,11 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		{
 			if (speed < 1 || speed > 100)
 			{
-				Parent.Log(eSeverity.Warning, "Camera Control speed must be between 1 and 100. Speed: {0}", speed);
+				Parent.Logger.Log(eSeverity.Warning, "Camera Control speed must be between 1 and 100. Speed: {0}", speed);
 				return;
 			}
 
-			Parent.Log(eSeverity.Informational, "Setting camera with id {0} control speed to: {1}", cameraId, speed);
+			Parent.Logger.Log(eSeverity.Informational, "Setting camera with id {0} control speed to: {1}", cameraId, speed);
 			Parent.SendCommand("zCommand Call CameraControl Id: {0} Speed: {1}", cameraId, speed);
 		}
 
@@ -96,9 +96,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Camera
 		{
 			// Continues create a lot of log noise so we don't log them.
 			if (state != eCameraControlState.Continue)
-				Parent.Log(eSeverity.Informational,
-				           "Sending camera with id {0} control commands: State: {1} Action: {2}",
-				           cameraId, state, action);
+				Parent.Logger.Log(eSeverity.Informational,
+				                  "Sending camera with id {0} control commands: State: {1} Action: {2}",
+				                  cameraId, state, action);
 			Parent.SendCommand("zCommand Call CameraControl Id: {0} State: {1} Action: {2}", cameraId, state, action);
 
 			if (state == eCameraControlState.GiveUpRemote)

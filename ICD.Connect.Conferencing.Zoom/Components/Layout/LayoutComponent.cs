@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_ShareThumb = value;
 
-				Parent.Log(eSeverity.Informational, "ShareThumb set to: {0}", m_ShareThumb);
+				Parent.Logger.Set("Share Thumb", eSeverity.Informational, m_ShareThumb);
 
 				OnShareThumbChanged.Raise(this, new BoolEventArgs(m_ShareThumb));
 			}
@@ -86,7 +86,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_LayoutStyle = value;
 
-				Parent.Log(eSeverity.Informational, "Layout Style set to {0}", m_LayoutStyle);
+				Parent.Logger.Set("Layout Style", eSeverity.Informational, m_LayoutStyle);
 
 				OnStyleChanged.Raise(this, new ZoomLayoutStyleEventArgs(m_LayoutStyle));
 			}
@@ -105,7 +105,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_LayoutSize = value;
 
-				Parent.Log(eSeverity.Informational, "Layout Size set to {0}", m_LayoutSize);
+				Parent.Logger.Set("Layout Size", eSeverity.Informational, m_LayoutSize);
 				
 				OnSizeChanged.Raise(this, new ZoomLayoutSizeEventArgs(m_LayoutSize));
 			}
@@ -125,7 +125,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_LayoutPosition = value;
 
-				Parent.Log(eSeverity.Informational, "Layout Position set to {0}", m_LayoutPosition);
+				Parent.Logger.Set("Layout Position", eSeverity.Informational, m_LayoutPosition);
 
 				OnPositionChanged.Raise(this, new ZoomLayoutPositionEventArgs(m_LayoutPosition));
 			}
@@ -144,7 +144,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_SelfViewEnabled = value;
 
-				Parent.Log(eSeverity.Informational, "SelfViewEnabled set to {0}", m_SelfViewEnabled);
+				Parent.Logger.Set("Self View Enabled", eSeverity.Informational, m_SelfViewEnabled);
 
 				OnSelfViewEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewEnabled));
 			}
@@ -159,6 +159,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 					return;
 
 				m_LayoutAvailability = value;
+
+				Parent.Logger.Set("Layout Availability", eSeverity.Informational, m_LayoutAvailability);
 
 				OnCallLayoutAvailabilityChanged.Raise(this, new GenericEventArgs<ZoomLayoutAvailability>(m_LayoutAvailability));
 			}
@@ -202,19 +204,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 		public void SetLayoutShareThumb(bool enabled)
 		{
-			Parent.Log(eSeverity.Informational, "Setting ShareThumb to: {0}", enabled);
+			Parent.Logger.Log(eSeverity.Informational, "Setting ShareThumb to: {0}", enabled);
 			Parent.SendCommand("zConfiguration Call Layout ShareThumb: {0}", enabled ? "on" : "off");
 		}
 
 		public void SetLayoutStyle(eZoomLayoutStyle style)
 		{
-			Parent.Log(eSeverity.Informational, "Setting Call Layout Style to: {0}", style.ToString());
+			Parent.Logger.Log(eSeverity.Informational, "Setting Call Layout Style to: {0}", style.ToString());
 			Parent.SendCommand("zConfiguration Call Layout Style: {0}", style.ToString());
 		}
 
 		public void SetLayoutSize(eZoomLayoutSize size)
 		{
-			Parent.Log(eSeverity.Informational, "Setting Call Layout Size to: {0}", size.ToString());
+			Parent.Logger.Log(eSeverity.Informational, "Setting Call Layout Size to: {0}", size.ToString());
 			Parent.SendCommand("zConfiguration Call Layout Size: {0}", size.ToString());
 		}
 
@@ -224,13 +226,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 				throw new ArgumentOutOfRangeException("position",
 				                                      "Currently only UpRight, UpLeft, DownRight, DownLeft are supported by Zoom.");
 
-			Parent.Log(eSeverity.Informational, "Setting Call Layout Position to: {0}", position.ToString());
+			Parent.Logger.Log(eSeverity.Informational, "Setting Call Layout Position to: {0}", position.ToString());
 			Parent.SendCommand("zConfiguration Call Layout Position: {0}", position.ToString());
 		}
 
 		public void HideSelfView(bool enabled)
 		{
-			Parent.Log(eSeverity.Informational, "Setting Hide Self Video to: {0}", enabled);
+			Parent.Logger.Log(eSeverity.Informational, "Setting Hide Self Video to: {0}", enabled);
 			Parent.SendCommand("zConfiguration Video hide_conf_self_video: {0}", enabled ? "on" : "off");
 		}
 

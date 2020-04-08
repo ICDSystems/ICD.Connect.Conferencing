@@ -102,7 +102,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 				m_Initialized = value;
 
-				Log(eSeverity.Informational, "Initialized state changed to {0}", m_Initialized);
+				Logger.Set("Initialized", eSeverity.Informational, m_Initialized);
 
 				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
 			}
@@ -379,7 +379,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 				ClearCurrentMultiLine();
 
-				Log(eSeverity.Critical, "Lost connection");
+				Logger.Log(eSeverity.Critical, "Lost connection");
 				Initialized = false;
 			}
 
@@ -465,7 +465,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				return;
 
 			if (data.StartsWith("error:"))
-				Log(eSeverity.Error, data);
+				Logger.Log(eSeverity.Error, data);
 
 			if (data.StartsWith("Hi, my name is"))
 			{
@@ -528,7 +528,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				}
 				catch (Exception e)
 				{
-					Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", StringUtils.ToRepresentation(data), e.Message);
+					Logger.Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", StringUtils.ToRepresentation(data), e.Message);
 				}
 			}
 		}
@@ -601,7 +601,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				}
 				catch (Exception e)
 				{
-					Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", StringUtils.ToRepresentation(data), e.Message);
+					Logger.Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", StringUtils.ToRepresentation(data), e.Message);
 				}
 			}
 		}
@@ -677,7 +677,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
+					Logger.Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 				}
 			}
 

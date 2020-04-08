@@ -147,7 +147,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_MeetingId = value;
-				Parent.Log(eSeverity.Informational, "MeetingId changed to {0}", m_MeetingId);
+				Parent.Logger.Set("Meeting ID", eSeverity.Informational, m_MeetingId);
 
 				OnMeetingIdChanged.Raise(this, new StringEventArgs(m_MeetingId));
 			}
@@ -170,7 +170,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_CameraMute = value;
-				Parent.Log(eSeverity.Informational, "CameraMute changed to {0}", m_CameraMute);
+				Parent.Logger.Set("Camera Mute", eSeverity.Informational, m_CameraMute);
 
 				OnCameraMuteChanged.Raise(this, new BoolEventArgs(m_CameraMute));
 			}
@@ -188,7 +188,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_MicrophoneMute = value;
-				Parent.Log(eSeverity.Informational, "MicrophoneMute changed to {0}", m_MicrophoneMute);
+				Parent.Logger.Set("Microphone Mute", eSeverity.Informational, m_MicrophoneMute);
 
 				// The far end is trying to mute/unmute us
 				if (m_MicrophoneMute != m_LastMicrophoneMute)
@@ -214,7 +214,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_AmIHost = value;
-				Parent.Log(eSeverity.Informational, "AmIHost changed to {0}", m_AmIHost);
+				Parent.Logger.Set("Am I Host", eSeverity.Informational, m_AmIHost);
 
 				OnAmIHostChanged.Raise(this, new BoolEventArgs(m_AmIHost));
 			}
@@ -232,7 +232,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_CallLock = value;
-				Parent.Log(eSeverity.Informational, "CallLock set to {0}", m_CallLock);
+				Parent.Logger.Set("Call Lock", eSeverity.Informational, m_CallLock);
 
 				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
 			}
@@ -250,7 +250,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_CallRecord = value;
-				Parent.Log(eSeverity.Informational, "CallRecord set to {0}", m_CallRecord);
+				Parent.Logger.Set("Call Record", eSeverity.Informational, m_CallRecord);
 
 				OnCallRecordChanged.Raise(this, new BoolEventArgs(m_CallRecord));
 			}
@@ -268,7 +268,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_Status = value;
-				Parent.Log(eSeverity.Informational, "Status changed to {0}", m_Status);
+				Parent.Logger.Set("Call Status", eSeverity.Informational, m_Status);
 
 				OnStatusChanged.Raise(this, new GenericEventArgs<eCallStatus>(m_Status));
 			}
@@ -286,7 +286,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_MuteUserOnEntry = value;
-				Parent.Log(eSeverity.Informational, "MuteUserOnEntry changed to {0}", m_MuteUserOnEntry);
+				Parent.Logger.Set("Mute User On Entry", eSeverity.Informational, m_MuteUserOnEntry);
 
 				OnMuteUserOnEntryChanged.Raise(this, new BoolEventArgs(m_MuteUserOnEntry));
 			}
@@ -353,7 +353,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public void CallLeave()
 		{
-			Parent.Log(eSeverity.Debug, "Leaving Zoom Meeting {0}", MeetingId);
+			Parent.Logger.Log(eSeverity.Debug, "Leaving Zoom Meeting {0}", MeetingId);
 			Parent.SendCommand("zCommand Call Leave");
 		}
 
@@ -362,7 +362,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public void CallDisconnect()
 		{
-			Parent.Log(eSeverity.Debug, "Ending Zoom Meeting {0}", MeetingId);
+			Parent.Logger.Log(eSeverity.Debug, "Ending Zoom Meeting {0}", MeetingId);
 			Parent.SendCommand("zCommand Call Disconnect");
 		}
 
@@ -372,7 +372,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="joinId"></param>
 		public void CallAccept(string joinId)
 		{
-			Parent.Log(eSeverity.Debug, "Accepting incoming call {0}", joinId);
+			Parent.Logger.Log(eSeverity.Debug, "Accepting incoming call {0}", joinId);
 			Parent.SendCommand("zCommand Call Accept callerJid: {0}", joinId);
 		}
 
@@ -382,7 +382,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="joinId"></param>
 		public void CallReject(string joinId)
 		{
-			Parent.Log(eSeverity.Debug, "Rejecting incoming call {0}", joinId);
+			Parent.Logger.Log(eSeverity.Debug, "Rejecting incoming call {0}", joinId);
 			Parent.SendCommand("zCommand Call Reject callerJid: {0}", joinId);
 		}
 
@@ -392,7 +392,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="joinId"></param>
 		public void InviteUser(string joinId)
 		{
-			Parent.Log(eSeverity.Informational, "Inviting user: {0}", joinId);
+			Parent.Logger.Log(eSeverity.Informational, "Inviting user: {0}", joinId);
 			Parent.SendCommand("zCommand Call Invite user: {0}", joinId);
 		}
 
@@ -402,7 +402,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="userId"></param>
 		public void ExpelParticipant(string userId)
 		{
-			Parent.Log(eSeverity.Informational, "Expelling participant with id: {0}", userId);
+			Parent.Logger.Log(eSeverity.Informational, "Expelling participant with id: {0}", userId);
 			Parent.SendCommand("zCommand Call Expel Id: {0}", userId);
 		}
 
@@ -413,7 +413,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="mute"></param>
 		public void MuteParticipant(string userId, bool mute)
 		{
-			Parent.Log(eSeverity.Informational, "{0} participant with id: {1}", mute ? "Muting" : "Unmuting", userId);
+			Parent.Logger.Log(eSeverity.Informational, "{0} participant with id: {1}", mute ? "Muting" : "Unmuting", userId);
 			Parent.SendCommand("zCommand Call MuteParticipant mute: {0} Id: {1}", mute ? "on" : "off", userId);
 		}
 
@@ -424,7 +424,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="enabled"></param>
 		public void AllowParticipantRecord(string userId, bool enabled)
 		{
-			Parent.Log(eSeverity.Informational, "Setting Call Record Enable to: {0} for participant: {1}", enabled, userId);
+			Parent.Logger.Log(eSeverity.Informational, "Setting Call Record Enable to: {0} for participant: {1}", enabled, userId);
 			Parent.SendCommand("zCommand Call AllowRecord Id: {0} Enable: {1}", userId, enabled ? "on" : "off");
 		}
 
@@ -434,7 +434,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="enabled"></param>
 		public void EnableCallLock(bool enabled)
 		{
-			Parent.Log(eSeverity.Debug, "Setting the Call Lock state to: {0}", enabled);
+			Parent.Logger.Log(eSeverity.Debug, "Setting the Call Lock state to: {0}", enabled);
 			Parent.SendCommand("zConfiguration Call Lock Enable: {0}", enabled ? "on" : "off");
 		}
 
@@ -444,7 +444,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="enabled"></param>
 		public void EnableCallRecord(bool enabled)
 		{
-			Parent.Log(eSeverity.Debug, "Setting the Call Record state to: {0}", enabled);
+			Parent.Logger.Log(eSeverity.Debug, "Setting the Call Record state to: {0}", enabled);
 			Parent.SendCommand("zCommand Call Record Enable: {0}", enabled ? "on" : "off");
 		}
 
@@ -454,7 +454,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="mute"></param>
 		public void MuteCamera(bool mute)
 		{
-			Parent.Log(eSeverity.Debug, "Setting the Call Camera Mute state to: {0}", mute);
+			Parent.Logger.Log(eSeverity.Debug, "Setting the Call Camera Mute state to: {0}", mute);
 			Parent.SendCommand("zConfiguration Call Camera Mute: {0}", mute ? "on" : "off");
 		}
 
@@ -463,7 +463,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// </summary>
 		public void StartPersonalMeeting()
 		{
-			Parent.Log(eSeverity.Debug, "Starting personal Zoom meeting");
+			Parent.Logger.Log(eSeverity.Debug, "Starting personal Zoom meeting");
 			Parent.SendCommand("zCommand Dial StartPmi Duration: 30");
 		}
 
@@ -473,7 +473,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		/// <param name="enabled"></param>
 		public void EnableMuteUserOnEntry(bool enabled)
 		{
-			Parent.Log(eSeverity.Informational, "Setting MuteUserOnEntry to: {0}", enabled);
+			Parent.Logger.Log(eSeverity.Informational, "Setting MuteUserOnEntry to: {0}", enabled);
 			Parent.SendCommand("zConfiguration Call MuteUserOnEntry Enable: {0}", enabled ? "on" : "off");
 		}
 
@@ -485,7 +485,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			m_LastMicrophoneMute = mute;
 
-			Parent.Log(eSeverity.Debug, "Setting the Microphone Mute state to: {0}", mute);
+			Parent.Logger.Log(eSeverity.Debug, "Setting the Microphone Mute state to: {0}", mute);
 			Parent.SendCommand("zConfiguration Call Microphone mute: {0}", mute ? "on" : "off");
 		}
 
@@ -497,7 +497,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			m_LastJoinNumber = meetingNumber;
 
-			Parent.Log(eSeverity.Debug, "Starting a meeting with number: {0}", meetingNumber);
+			Parent.Logger.Log(eSeverity.Debug, "Starting a meeting with number: {0}", meetingNumber);
 			Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", meetingNumber);
 		}
 
@@ -510,7 +510,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		{
 			m_LastJoinNumber = meetingNumber;
 
-			Parent.Log(eSeverity.Debug, "Joining a meeting with number: {0} and password: {1}", meetingNumber, meetingPassword);
+			Parent.Logger.Log(eSeverity.Debug, "Joining a meeting with number: {0} and password: {1}", meetingNumber, meetingPassword);
 			Parent.SendCommand("zCommand Dial Join meetingNumber: {0} password: {1}", meetingNumber, meetingPassword);
 		}
 
@@ -699,7 +699,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			if (incoming == null)
 				return;
 
-			Parent.Log(eSeverity.Informational, "Incoming call: {0}", incoming.CallerName);
+			Parent.Logger.Log(eSeverity.Informational, "Incoming call: {0}", incoming.CallerName);
 			OnIncomingCall.Raise(this, new GenericEventArgs<IncomingCall>(incoming));
 		}
 
@@ -713,7 +713,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 			var meetingNeedsPasswordData = response.MeetingNeedsPassword;
 
 			if (meetingNeedsPasswordData.NeedsPassword)
-				Parent.Log(eSeverity.Informational, "Meeting needs password NeedsPassword: {0} Wrong/Retry: {1}",
+				Parent.Logger.Log(eSeverity.Informational, "Meeting needs password NeedsPassword: {0} Wrong/Retry: {1}",
 						   meetingNeedsPasswordData.NeedsPassword, meetingNeedsPasswordData.WrongAndRetry);
 
 			OnPasswordRequired.Raise(this,

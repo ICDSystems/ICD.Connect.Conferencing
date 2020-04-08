@@ -28,10 +28,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.System
 
 				m_FirmwareVersion = value;
 
-				Codec.Log(eSeverity.Informational, "Firmware version set to {0}", m_FirmwareVersion);
+				Codec.Logger.Set("Firmware Version", eSeverity.Informational, m_FirmwareVersion);
 
 				if (!UndefinedVersionEqualityComparer.Instance.Equals(m_FirmwareVersion, s_ExpectedVersion))
-					Codec.Log(eSeverity.Warning, "Driver is programmed to work with firmware version {0}", s_ExpectedVersion);
+					Codec.Logger.Log(eSeverity.Warning, "Driver is programmed to work with firmware version {0}", s_ExpectedVersion);
 			}
 		}
 

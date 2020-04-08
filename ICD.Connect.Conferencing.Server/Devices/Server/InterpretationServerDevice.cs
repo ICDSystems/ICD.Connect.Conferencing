@@ -300,7 +300,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				ITraditionalParticipant source;
 				if (!GetTargetSource(sourceId, out source))
 				{
-					Log(eSeverity.Error, "No Source with the given key found.");
+					Logger.Log(eSeverity.Error, "No Source with the given key found.");
 					return false;
 				}
 
@@ -311,13 +311,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				int targetRoom;
 				if (!m_RoomToBooth.TryGetKey(targetBooth, out targetRoom))
 				{
-					Log(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
+					Logger.Log(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
 					return false;
 				}
 
 				if (!m_ClientToRoom.TryGetKey(targetRoom, out clientId))
 				{
-					Log(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
+					Logger.Log(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
 					return false;
 				}
 
@@ -339,20 +339,20 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				ushort targetBooth;
 				if (!m_AdapterToBooth.TryGetValue(device, out targetBooth))
 				{
-					Log(eSeverity.Error, "No booth assigned to target device {0}", device.Id);
+					Logger.Log(eSeverity.Error, "No booth assigned to target device {0}", device.Id);
 					return false;
 				}
 
 				int targetRoom;
 				if (!m_RoomToBooth.TryGetKey(targetBooth, out targetRoom))
 				{
-					Log(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
+					Logger.Log(eSeverity.Error, "No room currently assigned to booth {0}", targetBooth);
 					return false;
 				}
 
 				if (!m_ClientToRoom.TryGetKey(targetRoom, out clientId))
 				{
-					Log(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
+					Logger.Log(eSeverity.Error, "No client currently registered to for room {0}", targetRoom);
 					return false;
 				}
 
@@ -374,21 +374,21 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				int room;
 				if (!m_ClientToRoom.TryGetValue(clientId, out room))
 				{
-					Log(eSeverity.Error, "No Room assigned to Client {0}", clientId);
+					Logger.Log(eSeverity.Error, "No Room assigned to Client {0}", clientId);
 					return false;
 				}
 
 				ushort booth;
 				if (!m_RoomToBooth.TryGetValue(room, out booth))
 				{
-					Log(eSeverity.Error, "No Booth assigned to Room {0}", room);
+					Logger.Log(eSeverity.Error, "No Booth assigned to Room {0}", room);
 					return false;
 				}
 
 				ISimplInterpretationDevice device;
 				if (!m_AdapterToBooth.TryGetKey(booth, out device))
 				{
-					Log(eSeverity.Error, "No Adapter is assigned to booth {0}", booth);
+					Logger.Log(eSeverity.Error, "No Adapter is assigned to booth {0}", booth);
 					return false;
 				}
 
@@ -414,13 +414,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				ushort targetBooth;
 				if (!m_RoomToBooth.TryGetValue(roomId, out targetBooth))
 				{
-					Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
+					Logger.Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
 					return false;
 				}
 
 				if (!m_AdapterToBooth.TryGetKey(targetBooth, out device))
 				{
-					Log(eSeverity.Error, "No booth with id {0}", targetBooth);
+					Logger.Log(eSeverity.Error, "No booth with id {0}", targetBooth);
 					return false;
 				}
 
@@ -442,14 +442,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				ushort targetBooth;
 				if (!m_RoomToBooth.TryGetValue(roomId, out targetBooth))
 				{
-					Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
+					Logger.Log(eSeverity.Error, "No booth assigned to room {0}", roomId);
 					return false;
 				}
 
 				ISimplInterpretationDevice device;
 				if (!m_AdapterToBooth.TryGetKey(targetBooth, out device))
 				{
-					Log(eSeverity.Error, "No booth with id {0}", targetBooth);
+					Logger.Log(eSeverity.Error, "No booth with id {0}", targetBooth);
 					return false;
 				}
 
@@ -531,7 +531,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			{
 				if (!m_ClientToRoom.ContainsKey(clientId))
 				{
-					Log(eSeverity.Error, "Failed to unregister room - not registered");
+					Logger.Log(eSeverity.Error, "Failed to unregister room - not registered");
 					return;
 				}
 
@@ -923,7 +923,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				if (!m_Sources.ContainsValue(source))
 				{
-					Log(eSeverity.Error, "Unknown sourceState {0}", source.Name);
+					Logger.Log(eSeverity.Error, "Unknown sourceState {0}", source.Name);
 					return;
 				}
 
@@ -1004,7 +1004,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No Interpretation Adapter found with Id:{0}", adapterId);
+					Logger.Log(eSeverity.Error, "No Interpretation Adapter found with Id:{0}", adapterId);
 				}
 
 				if (device == null)

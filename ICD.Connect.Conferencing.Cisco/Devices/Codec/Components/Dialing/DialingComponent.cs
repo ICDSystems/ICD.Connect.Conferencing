@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_CachedDoNotDisturbState = value;
 
-				Codec.Log(eSeverity.Informational, "DND is {0}", m_CachedDoNotDisturbState ? "On" : "Off");
+				Codec.Logger.Set("Do Not Disturb", eSeverity.Informational, m_CachedDoNotDisturbState);
 
 				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_CachedDoNotDisturbState));
 			}
@@ -98,7 +98,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_CachedAutoAnswerState = value;
 
-				Codec.Log(eSeverity.Informational, "Auto Answer is {0}", m_CachedAutoAnswerState ? "On" : "Off");
+				Codec.Logger.Set("Auto Answer", eSeverity.Informational, m_CachedAutoAnswerState);
 
 				OnAutoAnswerChanged.Raise(this, new BoolEventArgs(m_CachedAutoAnswerState));
 			}
@@ -117,7 +117,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_CachedPrivacyMuteState = value;
 
-				Codec.Log(eSeverity.Informational, "VTC Microphone Mute is {0}", m_CachedPrivacyMuteState ? "On" : "Off");
+				Codec.Logger.Set("Privacy Muted", eSeverity.Informational, m_CachedPrivacyMuteState);
 
 				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_CachedPrivacyMuteState));
 			}
@@ -212,7 +212,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				existing.Hold();
 
 			Codec.SendCommand("xCommand Dial Number: {0} Protocol: {1} CallType: {2}", number, protocol, EnumUtils.GetFlags(callType).Max());
-			Codec.Log(eSeverity.Debug, "Dialing {0} Protocol: {1} CallType: {2}", number, protocol, callType);
+			Codec.Logger.Log(eSeverity.Debug, "Dialing {0} Protocol: {1} CallType: {2}", number, protocol, callType);
 		}
 
 		/// <summary>
@@ -239,7 +239,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			else
 				Codec.SendCommand("xCommand Conference DoNotDisturb Deactivate");
 
-			Codec.Log(eSeverity.Informational, "Setting DND to {0}", state ? "On" : "Off");
+			Codec.Logger.Log(eSeverity.Informational, "Setting DND to {0}", state ? "On" : "Off");
 		}
 
 		/// <summary>
@@ -251,7 +251,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			string value = enabled ? "On" : "Off";
 
 			Codec.SendCommand("xConfiguration Conference AutoAnswer Mode: {0}", value);
-			Codec.Log(eSeverity.Informational, "Setting Auto Answer {0}", value);
+			Codec.Logger.Log(eSeverity.Informational, "Setting Auto Answer {0}", value);
 		}
 
 		/// <summary>
@@ -263,7 +263,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			string value = enabled ? "Mute" : "Unmute";
 
 			Codec.SendCommand("xCommand Audio Microphones {0}", value);
-			Codec.Log(eSeverity.Informational, "Setting VTC Mic Mute {0}", enabled ? "On" : "Off");
+			Codec.Logger.Log(eSeverity.Informational, "Setting VTC Mic Mute {0}", enabled ? "On" : "Off");
 		}
 
 		#endregion
@@ -519,7 +519,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			CallComponent call = LazyLoadCall(id, xml);
 
 			if (!exists && call.Direction == eCallDirection.Incoming)
-				Codec.Log(eSeverity.Informational, "Incoming VTC Call");
+				Codec.Logger.Log(eSeverity.Informational, "Incoming VTC Call");
 		}
 
 		#endregion

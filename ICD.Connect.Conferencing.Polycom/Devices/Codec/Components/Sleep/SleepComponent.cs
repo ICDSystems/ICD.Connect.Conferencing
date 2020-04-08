@@ -27,7 +27,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 
 				m_Awake = value;
 
-				Codec.Log(eSeverity.Informational, "Awake set to {0}", m_Awake);
+				Codec.Logger.Set("Awake", eSeverity.Informational, m_Awake);
 
 				OnAwakeStateChanged.Raise(this, new BoolEventArgs(m_Awake));
 			}
@@ -103,7 +103,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		public void Sleep()
 		{
 			Codec.EnqueueCommand("sleep");
-			Codec.Log(eSeverity.Informational, "Putting device to sleep");
+			Codec.Logger.Log(eSeverity.Informational, "Putting device to sleep");
 		}
 
 		/// <summary>
@@ -112,7 +112,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		public void Wake()
 		{
 			Codec.EnqueueCommand("wake");
-			Codec.Log(eSeverity.Informational, "Waking device");
+			Codec.Logger.Log(eSeverity.Informational, "Waking device");
 		}
 
 		/// <summary>
@@ -122,7 +122,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 		public void SetSleepMute(bool enabled)
 		{
 			Codec.EnqueueCommand("sleep mute {0}", enabled ? "on" : "off");
-			Codec.Log(eSeverity.Informational, "Setting sleep mute {0}", enabled ? "on" : "off");
+			Codec.Logger.Log(eSeverity.Informational, "Setting sleep mute {0}", enabled ? "on" : "off");
 		}
 
 		#endregion

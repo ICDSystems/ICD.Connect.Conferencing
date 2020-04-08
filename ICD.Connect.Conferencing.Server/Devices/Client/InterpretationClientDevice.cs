@@ -92,15 +92,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 				UpdateCachedOnlineStatus();
 
+				eSeverity severity = m_IsConnected ? eSeverity.Informational : eSeverity.Alert;
+				string message = m_IsConnected ? "Connected To Server" : "Lost Connection To Server";
+
+				Logger.Set("Connected", severity, message);
+
 				if (m_IsConnected)
-				{
-					Log(eSeverity.Informational, "Connected To Server");
 					Register();
-				}
-				else
-				{
-					Log(eSeverity.Alert, "Lost Connection To Server");
-				}
 			}
 		}
 
@@ -604,7 +602,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
+					Logger.Log(eSeverity.Error, "No Serial Port with id {0}", settings.Port);
 				}
 			}
 

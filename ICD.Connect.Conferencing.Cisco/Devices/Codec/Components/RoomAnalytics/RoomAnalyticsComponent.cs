@@ -146,7 +146,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 			string value = enable ? "On" : "Off";
 
 			Codec.SendCommand("xConfiguration RoomAnalytics PeopleCountOutOfCall: {0}", value);
-			Codec.Log(eSeverity.Informational, "Setting RoomAnalytics PeopleCountOutOfCall {0}", value);
+			Codec.Logger.Log(eSeverity.Informational, "Setting RoomAnalytics PeopleCountOutOfCall {0}", value);
 		}
 
 		/// <summary>
@@ -158,7 +158,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics
 			string value = enable ? "On" : "Off";
 
 			Codec.SendCommand("xConfiguration RoomAnalytics PeoplePresenceDetector: {0}", value);
-			Codec.Log(eSeverity.Informational, "Setting RoomAnalytics PeoplePresenceDetector {0}", value);
+			Codec.Logger.Log(eSeverity.Informational, "Setting RoomAnalytics PeoplePresenceDetector {0}", value);
 		}
 
 		#endregion

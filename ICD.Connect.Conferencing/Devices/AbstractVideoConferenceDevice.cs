@@ -75,7 +75,7 @@ namespace ICD.Connect.Conferencing.Devices
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No default camera device with id {0}", settings.DefaultCameraDevice);
+					Logger.Log(eSeverity.Error, "No default camera device with id {0}", settings.DefaultCameraDevice);
 				}
 			}
 

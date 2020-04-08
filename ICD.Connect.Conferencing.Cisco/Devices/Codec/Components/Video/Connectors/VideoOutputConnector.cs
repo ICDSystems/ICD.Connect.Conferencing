@@ -17,6 +17,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connecto
 		public eMonitorRole MonitorRole { get; private set; }
 
 		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		public VideoOutputConnector(CiscoCodecDevice parent)
+			: base(parent)
+		{
+		}
+
+		/// <summary>
 		/// Updates to match the xml values.
 		/// </summary>
 		/// <param name="xml"></param>

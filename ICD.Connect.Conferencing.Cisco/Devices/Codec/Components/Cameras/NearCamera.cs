@@ -136,7 +136,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void Pan(eCameraPan action, int speed)
 		{
 			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Pan: {1} PanSpeed: {2}", CameraId, action, speed);
-			Codec.Log(eSeverity.Informational, "Moving Camera {0} - Pan: {1} Speed: {2}", CameraId, action, speed);
+			Codec.Logger.Log(eSeverity.Informational, "Moving Camera {0} - Pan: {1} Speed: {2}", CameraId, action, speed);
 		}
 
 		/// <summary>
@@ -158,7 +158,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void Tilt(eCameraTilt action, int speed)
 		{
 			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Tilt: {1} TiltSpeed: {2}", CameraId, action, speed);
-			Codec.Log(eSeverity.Informational, "Moving Camera {0} - Tilt: {1} Speed: {2}", CameraId, action, speed);
+			Codec.Logger.Log(eSeverity.Informational, "Moving Camera {0} - Tilt: {1} Speed: {2}", CameraId, action, speed);
 		}
 
 		/// <summary>
@@ -180,7 +180,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void Zoom(eCameraZoom action, int speed)
 		{
 			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Zoom: {1} ZoomSpeed: {2}", CameraId, action, speed);
-			Codec.Log(eSeverity.Informational, "Moving Camera {0} - Zoom: {1} Speed: {2}", CameraId, action, speed);
+			Codec.Logger.Log(eSeverity.Informational, "Moving Camera {0} - Zoom: {1} Speed: {2}", CameraId, action, speed);
 		}
 
 		/// <summary>
@@ -191,7 +191,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void Focus(eCameraFocus action)
 		{
 			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Focus: {1}", CameraId, action);
-			Codec.Log(eSeverity.Informational, "Moving Camera {0} - Focus: {1}", CameraId, action);
+			Codec.Logger.Log(eSeverity.Informational, "Moving Camera {0} - Focus: {1}", CameraId, action);
 		}
 
 		/// <summary>
@@ -201,7 +201,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void Default()
 		{
 			Codec.SendCommand("xCommand Camera Preset ActivateDefaultPosition CameraId: {0}", CameraId);
-			Codec.Log(eSeverity.Informational, "Moving Camera {0} to default position", CameraId);
+			Codec.Logger.Log(eSeverity.Informational, "Moving Camera {0} to default position", CameraId);
 		}
 
 		/// <summary>
@@ -211,7 +211,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public void Reset()
 		{
 			Codec.SendCommand("xCommand Camera PositionReset CameraId: {0}", CameraId);
-			Codec.Log(eSeverity.Informational, "Resetting Camera {0}", CameraId);
+			Codec.Logger.Log(eSeverity.Informational, "Resetting Camera {0}", CameraId);
 		}
 
 		/// <summary>
@@ -285,7 +285,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Pan: {1} Tilt: {2}",
 			                  CameraId, eCameraPan.Stop, eCameraTilt.Stop);
-			Codec.Log(eSeverity.Informational, "Stopping Pan/Tilt on Camera {0}", CameraId);
+			Codec.Logger.Log(eSeverity.Informational, "Stopping Pan/Tilt on Camera {0}", CameraId);
 		}
 
 		/// <summary>
@@ -295,7 +295,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		{
 			Codec.SendCommand("xCommand Camera Ramp CameraId: {0} Zoom: {1}",
 							  CameraId, eCameraPan.Stop);
-			Codec.Log(eSeverity.Informational, "Stopping Zoom on Camera {0}", CameraId);
+			Codec.Logger.Log(eSeverity.Informational, "Stopping Zoom on Camera {0}", CameraId);
 		}
 
 		#endregion

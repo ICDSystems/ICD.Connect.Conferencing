@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 
 				m_CameraInput = value;
 
-				Log(eSeverity.Informational, "CameraInput set to {0}", m_CameraInput);
+				Logger.Set("Camera Input", eSeverity.Informational, m_CameraInput);
 
 				OnCameraInputChanged.Raise(this, new ConferenceRouteDestinationCameraInputApiEventArgs(m_CameraInput));
 			}

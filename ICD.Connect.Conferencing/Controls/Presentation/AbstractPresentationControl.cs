@@ -39,8 +39,7 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 
 				m_PresentationActiveInput = value;
 
-				Log(eSeverity.Informational, "PresentationActiveInput set to {0}",
-				    m_PresentationActiveInput == null ? "NULL" : m_PresentationActiveInput.ToString());
+				Logger.Set("Presentation Active Input", eSeverity.Informational, m_PresentationActiveInput);
 
 				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActiveInput));
 			}
@@ -59,7 +58,7 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 
 				m_PresentationActive = value;
 
-				Log(eSeverity.Informational, "PresentationActive set to {0}", m_PresentationActive.ToString());
+				Logger.Set("Presentation Active", eSeverity.Informational, m_PresentationActive);
 
 				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
 			}

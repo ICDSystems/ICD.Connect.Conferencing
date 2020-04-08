@@ -42,7 +42,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_IsSapDisabled = value;
-				Parent.Log(eSeverity.Informational, "IsSapDisabled changed to: {0}", m_IsSapDisabled);
+				Parent.Logger.Set("SAP Disabled", eSeverity.Informational, m_IsSapDisabled);
 				OnSoftwareAudioProcessingChanged.Raise(this, new BoolEventArgs(m_IsSapDisabled));
 			}
 		}
@@ -59,7 +59,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_ReduceReverb = value;
-				Parent.Log(eSeverity.Informational, "ReduceReverb changed to: {0}", m_ReduceReverb);
+				Parent.Logger.Set("Reduce Reverb", eSeverity.Informational, m_ReduceReverb);
 				OnReduceReverbChanged.Raise(this, new BoolEventArgs(m_ReduceReverb));
 			}
 		}
@@ -97,13 +97,13 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 		public void SetSapDisabled(bool disabled)
 		{
-			Parent.Log(eSeverity.Informational, "Setting SAP disabled to: {0}", disabled);
+			Parent.Logger.Log(eSeverity.Informational, "Setting SAP disabled to: {0}", disabled);
 			Parent.SendCommand("zConfiguration Audio Input is_sap_disabled: {0}", disabled ? "on" : "off");
 		}
 
 		public void SetReduceReverb(bool enabled)
 		{
-			Parent.Log(eSeverity.Informational, "Setting Reduce Reverb to: {0}", enabled);
+			Parent.Logger.Log(eSeverity.Informational, "Setting Reduce Reverb to: {0}", enabled);
 			Parent.SendCommand("zConfiguration Audio Input reduce_reverb: {0}", enabled ? "on" : "off");
 		}
 

@@ -1,3 +1,4 @@
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -551,7 +552,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			if (args.Data)
 				return;
 
-			Log(eSeverity.Critical, "Lost connection");
+			Logger.Log(eSeverity.Critical, "Lost connection");
 			Initialized = false;
 		}
 
@@ -604,7 +605,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			catch (Exception ex)
 			{
 				// Zoom gives us bad json (unescaped characters) in some error messages
-				Log(eSeverity.Error, ex, "Failed to deserialize JSON - {0}", args.Data);
+				Logger.Log(eSeverity.Error, ex, "Failed to deserialize JSON - {0}", args.Data);
 			}
 
 			if (response == null)
@@ -633,7 +634,7 @@ namespace ICD.Connect.Conferencing.Zoom
 				}
 				catch (KeyNotFoundException)
 				{
-					Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
+					Logger.Log(eSeverity.Error, "No serial port with id {0}", settings.Port);
 				}
 			}
 			SetPort(port);
@@ -661,7 +662,7 @@ namespace ICD.Connect.Conferencing.Zoom
             }
             catch (KeyNotFoundException)
             {
-                Log(eSeverity.Error, "No camera device with id {0}", cameraId);
+                Logger.Log(eSeverity.Error, "No camera device with id {0}", cameraId);
             }
         }
 
