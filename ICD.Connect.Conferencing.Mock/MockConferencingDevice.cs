@@ -7,10 +7,12 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Controls.Dialing;
+using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Devices;
 using ICD.Connect.Devices.Mock;
 
 namespace ICD.Connect.Conferencing.Mock
@@ -25,8 +27,19 @@ namespace ICD.Connect.Conferencing.Mock
 		#region Private Memebers
 
 		private readonly List<ITraditionalParticipant> m_Sources;
+		private CodecInputTypes m_InputTypes;
 
 		#endregion
+
+		/// <summary>
+		/// Configured information about how the input connectors should be used.
+		/// </summary>
+		public CodecInputTypes InputTypes { get { return m_InputTypes; } }
+
+		/// <summary>
+		/// The default camera used by the conference device.
+		/// </summary>
+		public IDeviceBase DefaultCamera { get; set; }
 
 		/// <summary>
 		/// Constructor.
@@ -35,8 +48,12 @@ namespace ICD.Connect.Conferencing.Mock
 		{
 			m_Sources = new List<ITraditionalParticipant>();
 
-			Controls.Add(new MockTraditionalConferenceDeviceControl(this, 0));
-			Controls.Add(new MockDirectoryControl(this, 1));
+			Controls.Add(new MockVideoConferenceRouteControl(this, 0));
+			Controls.Add(new MockTraditionalConferenceDeviceControl(this, 1));
+			Controls.Add(new MockDirectoryControl(this, 2));
+
+			m_InputTypes = new CodecInputTypes();
+			m_InputTypes.SetInputType(3, eCodecInputType.None);
 		}
 
 		/// <summary>
@@ -117,6 +134,12 @@ namespace ICD.Connect.Conferencing.Mock
 		}
 
 		#endregion
+
+		public void SetInputTypeForInput(int address, eCodecInputType type)
+		{
+			if(address > 0 && address < 4)
+				m_InputTypes.SetInputType(address, type);
+		}
 
 		public IEnumerable<ITraditionalParticipant> GetSources()
 		{
