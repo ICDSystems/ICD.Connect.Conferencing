@@ -1,5 +1,6 @@
 ﻿using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Settings.ORM;
 
 namespace ICD.Connect.Conferencing.Favorites
 {
@@ -8,7 +9,11 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <summary>
 		/// Gets the table id for this instance.
 		/// </summary>
-		public long Id { get; set; }
+		[PrimaryKey]
+		public int Id { get; set; }
+
+		[ForeignKey(typeof(Favorite))]
+		public int FavoriteId { get; set; }
 
 		/// <summary>
 		/// Instantiates the FavoriteContactMethod from the given contact method.
@@ -28,12 +33,16 @@ namespace ICD.Connect.Conferencing.Favorites
 
 		#region IDialContext Members
 
+		[DataField]
 		public eDialProtocol Protocol { get; set; }
 
+		[DataField]
 		public eCallType CallType { get; set; }
 
+		[DataField]
 		public string DialString { get; set; }
 
+		[DataField]
 		public string Password { get; set; }
 
 		#endregion

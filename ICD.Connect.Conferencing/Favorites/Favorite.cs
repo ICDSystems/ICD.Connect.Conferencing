@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
+using ICD.Connect.Settings.ORM;
 
 namespace ICD.Connect.Conferencing.Favorites
 {
@@ -10,16 +12,19 @@ namespace ICD.Connect.Conferencing.Favorites
 	/// </summary>
 	public sealed class Favorite : IContact
 	{
-		private FavoriteDialContext[] m_DialContexts;
-
 		#region Properties
 
-		public long Id { get; set; }
+		[PrimaryKey]
+		public int Id { get; set; }
 
 		/// <summary>
 		/// Gets/sets the name.
 		/// </summary>
+		[DataField]
 		public string Name { get; set; }
+
+		[ForeignKey]
+		public IEnumerable<FavoriteDialContext> DialContexts { get; set; }
 
 		#endregion
 
@@ -30,7 +35,7 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// </summary>
 		public Favorite()
 		{
-			m_DialContexts = new FavoriteDialContext[0];
+			DialContexts = new FavoriteDialContext[0];
 		}
 
 		/// <summary>
@@ -40,22 +45,18 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <returns></returns>
 		public static Favorite FromContact(IContact contact)
 		{
-			Favorite output = new Favorite {Name = contact.Name};
-			output.SetContactMethods(contact.GetDialContexts()
-				.Select(m => FavoriteDialContext.FromDialContext(m)).Where(f => f != null));
-			return output;
+			return new Favorite
+			{
+				Name = contact.Name,
+				DialContexts = contact.GetDialContexts()
+				                      .Select(m => FavoriteDialContext.FromDialContext(m))
+				                      .ToArray()
+			};
 		}
 
 		#endregion
 
-		/// <summary>
-		/// Sets the contact methods.
-		/// </summary>
-		/// <param name="contactMethods"></param>
-		public void SetContactMethods(IEnumerable<FavoriteDialContext> contactMethods)
-		{
-			m_DialContexts = contactMethods.ToArray();
-		}
+		#region Methods
 
 		/// <summary>
 		/// Gets the contact methods.
@@ -63,12 +64,80 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <returns></returns>
 		public IEnumerable<IDialContext> GetDialContexts()
 		{
-			return m_DialContexts;
+			return DialContexts == null
+				? Enumerable.Empty<IDialContext>()
+				: DialContexts.Cast<IDialContext>();
 		}
 
-		public IEnumerable<FavoriteDialContext> GetContactMethods()
+		#endregion
+
+		#region Helpers
+
+		/// <summary>
+		/// Returns true if there is a favorite for the given contact.
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <param name="contact"></param>
+		/// <returns></returns>
+		public static bool Contains(int roomId, [NotNull] IContact contact)
 		{
-			return m_DialContexts;
-		} 
+			return Persistent.Db(eDb.RoomPreferences, roomId.ToString()).Get<Favorite>(new {contact.Name}) != null;
+		}
+
+		/// <summary>
+		/// Returns all of the favorites stored in the given database.
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <returns></returns>
+		public static IEnumerable<Favorite> All(int roomId)
+		{
+			return Persistent.Db(eDb.RoomPreferences, roomId.ToString()).All<Favorite>();
+		}
+
+		/// <summary>
+		/// Removes the contact from the given favorite database.
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <param name="contact"></param>
+		public static void Delete(int roomId, [NotNull] IContact contact)
+		{
+			Persistent.Db(eDb.RoomPreferences, roomId.ToString()).Delete<Favorite>(new {contact.Name});
+		}
+
+		/// <summary>
+		/// Adds the contact to the given database.
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <param name="contact"></param>
+		public static void Insert(int roomId, [NotNull] IContact contact)
+		{
+			Favorite favorite = contact as Favorite ?? FromContact(contact);
+			Persistent.Db(eDb.RoomPreferences, roomId.ToString()).Insert<Favorite>(favorite);
+		}
+
+		/// <summary>
+		/// Updates the given favorite in the database.
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <param name="favorite"></param>
+		public static void Update(int roomId, Favorite favorite)
+		{
+			Persistent.Db(eDb.RoomPreferences, roomId.ToString()).Update<Favorite>(favorite);
+		}
+
+		/// <summary>
+		/// Unfavorites the given contact, otherwise favorites it.
+		/// </summary>
+		/// <param name="roomId"></param>
+		/// <param name="contact"></param>
+		public static void Toggle(int roomId, [NotNull] IContact contact)
+		{
+			if (Contains(roomId, contact))
+				Delete(roomId, contact);
+			else 
+				Insert(roomId, contact);
+		}
+
+		#endregion
 	}
 }
