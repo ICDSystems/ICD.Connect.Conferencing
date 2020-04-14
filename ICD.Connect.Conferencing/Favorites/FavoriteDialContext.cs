@@ -17,7 +17,13 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// <returns></returns>
 		public static FavoriteDialContext FromDialContext(IDialContext dialContext)
 		{
-			return new FavoriteDialContext { Protocol = dialContext.Protocol, DialString = dialContext.DialString, CallType = dialContext.CallType };
+			return new FavoriteDialContext
+			{
+				Protocol = dialContext.Protocol,
+				DialString = dialContext.DialString,
+				CallType = dialContext.CallType,
+				Password = dialContext.Password
+			};
 		}
 
 		#region IDialContext Members
