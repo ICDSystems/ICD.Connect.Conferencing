@@ -194,9 +194,6 @@
     <Compile Include="Favorites\Favorite.cs" />
     <Compile Include="EventArguments\ConferenceEventArgs.cs" />
     <Compile Include="Participants\ITraditionalParticipant.cs" />
-    <Compile Include="Favorites\IFavorites.cs" />
-    <Compile Include="Favorites\SqLite\SqLiteFavoriteContactMethods.cs" />
-    <Compile Include="Favorites\SqLite\SqLiteFavorites.cs" />
     <Compile Include="Controls\Dialing\IConferenceDeviceControl.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Participants\ThinTraditionalParticipant.cs" />

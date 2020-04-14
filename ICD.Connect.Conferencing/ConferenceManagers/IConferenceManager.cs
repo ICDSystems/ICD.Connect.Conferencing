@@ -5,7 +5,6 @@ using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Favorites;
 using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers
@@ -75,12 +74,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		[NotNull]
 		DialingPlan DialingPlan { get; }
-
-		/// <summary>
-		/// Gets the favorites.
-		/// </summary>
-		[CanBeNull]
-		IFavorites Favorites { get; set; }
 
 		/// <summary>
 		/// Gets/sets the privacy mute state.

@@ -86,11 +86,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public DialingPlan DialingPlan { get { return m_DialingPlan; } }
 
 		/// <summary>
-		/// Gets/sets the favorites.
-		/// </summary>
-		public IFavorites Favorites { get; set; }
-
-		/// <summary>
 		/// Gets the logger.
 		/// </summary>
 		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
@@ -180,7 +175,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Clear()
 		{
-			Favorites = null;
 			DialingPlan.ClearMatchers();
 			Dialers.Clear();
 			VolumePoints.Clear();
