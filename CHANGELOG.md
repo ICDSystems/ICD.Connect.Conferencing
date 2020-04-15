@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - MockConferecingDevice now inherits from AbstractMockDevice
  - Using new logging context
+ - Favorites are now managed through Favorite static methods
+ 
+### Removed
+ - Removed IFavorites and SQLiteFavorites implementation
 
 ## [15.0.0] - 2020-03-20
 ### Added
