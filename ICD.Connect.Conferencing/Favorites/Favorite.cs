@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Settings.ORM;
@@ -12,6 +15,11 @@ namespace ICD.Connect.Conferencing.Favorites
 	/// </summary>
 	public sealed class Favorite : IContact
 	{
+		/// <summary>
+		/// Raised when the favorites for a given room change.
+		/// </summary>
+		public static event EventHandler<IntEventArgs> OnFavoritesChanged;
+
 		#region Properties
 
 		[PrimaryKey]
@@ -102,6 +110,8 @@ namespace ICD.Connect.Conferencing.Favorites
 		public static void Delete(int roomId, [NotNull] IContact contact)
 		{
 			Persistent.Db(eDb.RoomPreferences, roomId.ToString()).Delete<Favorite>(new {contact.Name});
+			
+			OnFavoritesChanged.Raise(null, new IntEventArgs(roomId));
 		}
 
 		/// <summary>
@@ -113,6 +123,8 @@ namespace ICD.Connect.Conferencing.Favorites
 		{
 			Favorite favorite = contact as Favorite ?? FromContact(contact);
 			Persistent.Db(eDb.RoomPreferences, roomId.ToString()).Insert<Favorite>(favorite);
+
+			OnFavoritesChanged.Raise(null, new IntEventArgs(roomId));
 		}
 
 		/// <summary>
@@ -123,6 +135,8 @@ namespace ICD.Connect.Conferencing.Favorites
 		public static void Update(int roomId, Favorite favorite)
 		{
 			Persistent.Db(eDb.RoomPreferences, roomId.ToString()).Update<Favorite>(favorite);
+
+			OnFavoritesChanged.Raise(null, new IntEventArgs(roomId));
 		}
 
 		/// <summary>
