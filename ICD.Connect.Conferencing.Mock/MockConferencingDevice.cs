@@ -72,26 +72,6 @@ namespace ICD.Connect.Conferencing.Mock
 		#region Console
 
 		/// <summary>
-		/// Calls the delegate for each console status item.
-		/// </summary>
-		/// <param name="addRow"></param>
-		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
-		{
-			base.BuildConsoleStatus(addRow);
-
-			addRow("Source Count", m_Sources.Count);
-			addRow("-----", "-----");
-			foreach (var source in m_Sources)
-			{
-				addRow("Source", source.Name);
-				addRow("Number", source.Number);
-				addRow("DialTime", source.DialTime);
-				addRow("Status", source.Status);
-				addRow("-----", "-----");
-			}
-		}
-
-		/// <summary>
 		/// Gets the child console nodes.
 		/// </summary>
 		/// <returns></returns>
