@@ -12,6 +12,11 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 		#region Properties
 
 		/// <summary>
+		/// Gets the category for this originator type (e.g. Device, Port, etc)
+		/// </summary>
+		public override string Category { get { return "ConferencePoint"; } }
+
+		/// <summary>
 		/// The type of call to use the conference control for.
 		/// </summary>
 		public eCallType Type { get; set; }
