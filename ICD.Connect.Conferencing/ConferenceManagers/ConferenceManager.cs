@@ -9,7 +9,6 @@ using ICD.Connect.Audio.VolumePoints;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
-using ICD.Connect.Conferencing.Favorites;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers
 {

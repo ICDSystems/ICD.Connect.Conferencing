@@ -41,7 +41,7 @@ namespace ICD.Connect.Conferencing.Mock
 		/// </summary>
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
-			return input < 4 && input > 0;;
+			return input < 4 && input > 0;
 		}
 
 		/// <summary>
