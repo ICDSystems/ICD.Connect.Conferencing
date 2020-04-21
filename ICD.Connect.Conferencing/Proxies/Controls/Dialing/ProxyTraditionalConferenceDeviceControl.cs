@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public ProxyTraditionalConferenceDeviceControl(IProxyDeviceBase parent, int id)
+		public ProxyTraditionalConferenceDeviceControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}

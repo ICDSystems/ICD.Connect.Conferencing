@@ -9,7 +9,7 @@ using ICD.Connect.Devices;
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	public abstract class AbstractWebConferenceDeviceControl<T> : AbstractConferenceDeviceControl<T, IWebConference>, IWebConferenceDeviceControl
-		where T : IDeviceBase
+		where T : IDevice
 	{
 		/// <summary>
 		/// Raised when the camera is enabled/disabled.

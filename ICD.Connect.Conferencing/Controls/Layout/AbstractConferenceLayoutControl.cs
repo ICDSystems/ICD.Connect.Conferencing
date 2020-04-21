@@ -11,7 +11,7 @@ using ICD.Connect.Devices.Controls;
 namespace ICD.Connect.Conferencing.Controls.Layout
 {
 	public abstract class AbstractConferenceLayoutControl<TParent> : AbstractDeviceControl<TParent>, IConferenceLayoutControl
-		where TParent : IDeviceBase
+		where TParent : IDevice
 	{
 		/// <summary>
 		/// Raised when layout control becomes available/unavailable.

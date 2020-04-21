@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public ProxyVideoConferenceRouteControl(IProxyDeviceBase parent, int id)
+		public ProxyVideoConferenceRouteControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}

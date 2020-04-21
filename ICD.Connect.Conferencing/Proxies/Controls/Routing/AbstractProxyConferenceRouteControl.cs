@@ -57,7 +57,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		protected AbstractProxyConferenceRouteControl(IProxyDeviceBase parent, int id)
+		protected AbstractProxyConferenceRouteControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}

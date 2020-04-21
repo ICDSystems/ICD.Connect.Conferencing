@@ -10,7 +10,7 @@ using ICD.Connect.Devices;
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	public abstract class AbstractTraditionalConferenceDeviceControl<T> : AbstractConferenceDeviceControl<T, ITraditionalConference>, ITraditionalConferenceDeviceControl
-		where T : IDeviceBase
+		where T : IDevice
 	{
 		/// <summary>
 		/// Raised when a source is added to the conference component.

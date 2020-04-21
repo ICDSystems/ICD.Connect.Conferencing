@@ -18,7 +18,8 @@ using ICD.Connect.Devices.Controls;
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	public abstract class AbstractConferenceDeviceControl<T, TConference> : AbstractDeviceControl<T>, IConferenceDeviceControl<TConference>
-		where T : IDeviceBase where TConference : IConference
+		where T : IDevice
+		where TConference : IConference
 	{
 		/// <summary>
 		/// Raised when an incoming call is added to the dialing control.

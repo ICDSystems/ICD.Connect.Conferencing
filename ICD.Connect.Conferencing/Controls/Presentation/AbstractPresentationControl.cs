@@ -11,7 +11,7 @@ using ICD.Connect.Devices.Controls;
 namespace ICD.Connect.Conferencing.Controls.Presentation
 {
 	public abstract class AbstractPresentationControl<TDevice> : AbstractDeviceControl<TDevice>, IPresentationControl
-		where TDevice : IDeviceBase
+		where TDevice : IDevice
 	{
 		/// <summary>
 		/// Raised when the presentation active input changes.

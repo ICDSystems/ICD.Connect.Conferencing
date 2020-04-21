@@ -9,7 +9,7 @@ using ICD.Connect.Devices.Controls;
 namespace ICD.Connect.Conferencing.Controls.Directory
 {
 	public abstract class AbstractDirectoryControl<TParent> : AbstractDeviceControl<TParent>, IDirectoryControl
-		where TParent : IDeviceBase
+		where TParent : IDevice
 	{
 		/// <summary>
 		/// Raised when the directory tree is cleared.

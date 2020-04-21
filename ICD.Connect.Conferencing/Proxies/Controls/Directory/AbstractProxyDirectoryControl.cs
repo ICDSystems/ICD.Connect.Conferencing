@@ -17,7 +17,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Directory
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		protected AbstractProxyDirectoryControl(IProxyDeviceBase parent, int id)
+		protected AbstractProxyDirectoryControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}

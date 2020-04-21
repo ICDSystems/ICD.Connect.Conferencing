@@ -121,7 +121,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		protected AbstractProxyConferenceDeviceControl(IProxyDeviceBase parent, int id)
+		protected AbstractProxyConferenceDeviceControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}

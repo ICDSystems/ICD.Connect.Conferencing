@@ -73,7 +73,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		protected AbstractProxyPresentationControl(IProxyDeviceBase parent, int id)
+		protected AbstractProxyPresentationControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}

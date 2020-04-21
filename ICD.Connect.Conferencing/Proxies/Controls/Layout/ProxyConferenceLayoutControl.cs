@@ -9,7 +9,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Layout
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public ProxyConferenceLayoutControl(IProxyDeviceBase parent, int id)
+		public ProxyConferenceLayoutControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}
