@@ -535,7 +535,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// </summary>
 		/// <param name="port"></param>
 		[PublicAPI]
-		public void ConfigurePort(ISerialPort port)
+		public void ConfigurePort(IPort port)
 		{
 			// Network (TCP, UDP, SSH)
 			if (port is ISecureNetworkPort)
@@ -543,7 +543,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			else if (port is INetworkPort)
 				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 
-			m_RpcController.SetPort(port);
+			m_RpcController.SetPort(port as ISerialPort);
 
 			UpdateCachedOnlineStatus();
 

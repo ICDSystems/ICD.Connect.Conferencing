@@ -295,7 +295,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Configures the given port for communication with the device.
 		/// </summary>
 		/// <param name="port"></param>
-		private void ConfigurePort(ISerialPort port)
+		private void ConfigurePort(IPort port)
 		{
 			// SSH
 			if (port is ISecureNetworkPort)

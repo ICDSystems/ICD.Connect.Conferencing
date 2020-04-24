@@ -203,7 +203,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_ConnectionStateManager.SetPort(port);
 		}
 
-		private void ConfigurePort(ISerialPort port)
+		private void ConfigurePort(IPort port)
 		{
 			// Com
 			if (port is IComPort)
@@ -429,9 +429,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="eventArgs"></param>
 		private void BufferOnPasswordPrompt(object sender, EventArgs eventArgs)
 		{
-			ISerialPort port = m_ConnectionStateManager.Port;
-			if (port != null)
-				port.Send(Password + END_OF_LINE);
+			m_ConnectionStateManager.Send(Password + END_OF_LINE);
 		}
 
 		/// <summary>
@@ -441,9 +439,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="eventArgs"></param>
 		private void BufferOnUsernamePrompt(object sender, EventArgs eventArgs)
 		{
-			ISerialPort port = m_ConnectionStateManager.Port;
-			if (port != null)
-				port.Send(Username + END_OF_LINE);
+			m_ConnectionStateManager.Send(Username + END_OF_LINE);
 		}
 
 		/// <summary>
