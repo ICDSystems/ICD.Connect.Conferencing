@@ -11,8 +11,10 @@ using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
+using ICD.Connect.Devices;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings.Core;
+using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 {
@@ -25,9 +27,27 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public event EventHandler OnCodecChanged;
 
+		[EventTelemetry(DeviceTelemetryNames.DEVICE_MODEL_CHANGED)]
+		public event EventHandler<StringEventArgs> OnModelChanged;
+
+		[EventTelemetry(DeviceTelemetryNames.DEVICE_SERIAL_NUMBER_CHANGED)]
+		public event EventHandler<StringEventArgs> OnSerialNumberChanged;
+
+		[EventTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
+		public event EventHandler<StringEventArgs> OnSoftwareIdChanged;
+
+		[EventTelemetry(DeviceTelemetryNames.DEVICE_MAC_ADDRESS_CHANGED)]
+		public event EventHandler<StringEventArgs> OnMacAddressChanged;
+
         #endregion
 
-		#region Private Members
+		#region Fields
+
+		private bool m_IsConnected;
+		private string m_Model;
+		private string m_SerialNumber;
+		private string m_SoftwareId;
+		private string m_MacAddress;
 
 		[CanBeNull]
 		private CiscoCodecDevice m_Codec;
@@ -64,6 +84,66 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		private int ZoomSpeed { get { return m_ZoomSpeed ?? (m_Camera == null ? 0 : m_Camera.ZoomSpeed); } }
 
+		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_MODEL, DeviceTelemetryNames.DEVICE_MODEL_CHANGED)]
+		public string Model
+		{
+			get { return m_Model; }
+			private set
+			{
+				if (m_Model == value)
+					return;
+
+				m_Model = value;
+
+				OnModelChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
+		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_SERIAL_NUMBER, DeviceTelemetryNames.DEVICE_SERIAL_NUMBER_CHANGED)]
+		public string SerialNumber
+		{
+			get { return m_SerialNumber; }
+			private set
+			{
+				if (m_SerialNumber == value)
+					return;
+
+				m_SerialNumber = value;
+
+				OnSerialNumberChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
+		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION, DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
+		public string SoftwareId
+		{
+			get { return m_SoftwareId; }
+			private set
+			{
+				if (m_SoftwareId == value)
+					return;
+
+				m_SoftwareId = value;
+
+				OnSoftwareIdChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
+		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_MAC_ADDRESS, DeviceTelemetryNames.DEVICE_MAC_ADDRESS_CHANGED)]
+		public string MacAddress
+		{
+			get { return m_MacAddress; }
+			private set
+			{
+				if (m_MacAddress == value)
+					return;
+
+				m_MacAddress = value;
+
+				OnMacAddressChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
 		#endregion
 
 		/// <summary>
@@ -96,6 +176,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			Unsubscribe(m_Codec);
 			Unsubscribe(m_CamerasComponent);
+			Unsubscribe(m_Camera);
 
 			m_Codec = codec;
 			m_CamerasComponent = m_Codec == null ? null : m_Codec.Components.GetComponent<NearCamerasComponent>();
@@ -103,6 +184,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 			Subscribe(m_Codec);
 			Subscribe(m_CamerasComponent);
+			Subscribe(m_Camera);
+
+			Update(m_Camera);
 
 			UpdateCachedOnlineStatus();
 
@@ -265,8 +349,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// <returns></returns>
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_Codec != null && m_Codec.IsOnline;
+			return m_IsConnected && m_Codec != null && m_Codec.IsOnline;
 		}
+
 		#endregion
 
 		#region Codec Callbacks
@@ -342,6 +427,80 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		{
 			if (eventArgs.Data == CameraId)
 				RaisePresetsChanged();
+		}
+
+		#endregion
+
+		#region Near Camera  Callbacks
+
+		private void Update(NearCamera camera)
+		{
+			if (camera == null)
+			{
+				m_IsConnected = false;
+				m_Model = null;
+				m_SerialNumber = null;
+				m_SoftwareId = null;
+				m_MacAddress = null;
+				return;
+			}
+
+			m_IsConnected = camera.Connected;
+			m_Model = camera.Model;
+			m_SerialNumber = camera.SerialNumber;
+			m_SoftwareId = camera.SoftwareId;
+			m_MacAddress = camera.MacAddress;
+
+		}
+
+		private void Subscribe(NearCamera camera)
+		{
+			if (camera == null)
+				return;
+
+			camera.OnConnectedChanged += CameraOnOnConnectedChanged;
+			camera.OnModelChanged += CameraOnOnModelChanged;
+			camera.OnSerialNumberChanged += CameraOnOnSerialNumberChanged;
+			camera.OnSoftwareIdChanged += CameraOnOnSoftwareIdChanged;
+			camera.OnMacAddressChanged += CameraOnOnMacAddressChanged;
+		}
+
+		private void Unsubscribe(NearCamera camera)
+		{
+			if (camera == null)
+				return;
+
+			camera.OnConnectedChanged -= CameraOnOnConnectedChanged;
+			camera.OnModelChanged -= CameraOnOnModelChanged;
+			camera.OnSerialNumberChanged -= CameraOnOnSerialNumberChanged;
+			camera.OnSoftwareIdChanged -= CameraOnOnSoftwareIdChanged;
+			camera.OnMacAddressChanged -= CameraOnOnMacAddressChanged;
+		}
+
+		private void CameraOnOnConnectedChanged(object sender, BoolEventArgs e)
+		{
+			m_IsConnected = e.Data;
+			UpdateCachedOnlineStatus();
+		}
+
+		private void CameraOnOnModelChanged(object sender, StringEventArgs e)
+		{
+			Model = e.Data;
+		}
+
+		private void CameraOnOnSerialNumberChanged(object sender, StringEventArgs e)
+		{
+			SerialNumber = e.Data;
+		}
+
+		private void CameraOnOnSoftwareIdChanged(object sender, StringEventArgs e)
+		{
+			SoftwareId = e.Data;
+		}
+
+		private void CameraOnOnMacAddressChanged(object sender, StringEventArgs e)
+		{
+			MacAddress = e.Data;
 		}
 
 		#endregion
