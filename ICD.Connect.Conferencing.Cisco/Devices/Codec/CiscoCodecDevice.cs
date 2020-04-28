@@ -21,12 +21,15 @@ using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Settings.Core;
+using ICD.Connect.Telemetry;
+using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
 	/// <summary>
 	/// Cisco VTC Codec Control
 	/// </summary>
+	[ExternalTelemetry("Cisco", typeof(CiscoCodecExternalTelemetry))]
 	public sealed class CiscoCodecDevice : AbstractVideoConferenceDevice<CiscoCodecSettings>
 	{
 		/// <summary>
