@@ -111,6 +111,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.10.0] - 2020-04-30
+### Added
+ - CiscoCodecDevice - Added properties/parsing for SerialNumber and SoftwareVersionDate
+ - CiscoCodecDevice - Added External Telemetry Provider to provide network info, software info, model, and serial number
+ - CiscoCodecCamera - Added telemetry for model, serial number, firmware, mac address
+ 
+### Changed
+ - CiscoCodecCamera - fixed to show offline if the camera is offline on the Codec
+
 ## [11.9.1] - 2020-02-18
 ### Changed
  - Removed "CamerasMuted" property and assciated method/event - functionality duplicated by MainVideoMuted

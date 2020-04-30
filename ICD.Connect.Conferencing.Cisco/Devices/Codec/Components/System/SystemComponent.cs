@@ -60,6 +60,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		public event EventHandler<StringEventArgs> OnSoftwareVersionChanged;
 
 		/// <summary>
+		/// Raised when the software version date changes.
+		/// </summary>
+		[PublicAPI]
+		public event EventHandler<StringEventArgs> OnSoftwareVerisonDateChanged;
+
+		/// <summary>
 		/// Raised when the H323 enabled state changes.
 		/// </summary>
 		[PublicAPI]
@@ -81,7 +87,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		/// Raised when a new SIP registration is discovered.
 		/// </summary>
 		[PublicAPI]
-		public event EventHandler<IntEventArgs> OnSipRegistrationAdded; 
+		public event EventHandler<IntEventArgs> OnSipRegistrationAdded;
+
+		/// <summary>
+		/// Raised when the serial number changes.
+		/// </summary>
+		[PublicAPI]
+		public event EventHandler<StringEventArgs> OnSerialNumberChanged;
 
 		private readonly IcdOrderedDictionary<int, SipRegistration> m_SipRegistrations;
 		private readonly SafeCriticalSection m_SipRegistrationsSection;
@@ -93,9 +105,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		private string m_Name;
 		private string m_Address;
 		private string m_SoftwareVersion;
+		private string m_SoftwareVersionDate;
 		private string m_Platform;
 		private string m_Gateway;
 		private string m_SubnetMask;
+		private string m_SerialNumber;
 
 		#region Properties
 
@@ -233,6 +247,27 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		}
 
 		/// <summary>
+		/// Gets the date of the current software version
+		/// </summary>
+		public string SoftwareVersionDate
+		{
+			get
+			{
+				return m_SoftwareVersionDate;
+			}
+			private set
+			{
+				if (m_SoftwareVersionDate == value)
+					return;
+
+				m_SoftwareVersionDate = value;
+
+				Codec.Log(eSeverity.Informational, "Codec software version date is {0}", value);
+				OnSoftwareVerisonDateChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
+		/// <summary>
 		/// Gets the H323 enabled state.
 		/// </summary>
 		[PublicAPI]
@@ -286,6 +321,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				Codec.Log(eSeverity.Informational, "Gatekeeper address is {0}", m_H323GatekeeperAddress);
 				OnGatekeeperAddressChanged.Raise(this, new StringEventArgs(m_H323GatekeeperAddress));
+			}
+		}
+
+		/// <summary>
+		/// Gets the serial number.
+		/// </summary>
+		[PublicAPI]
+		public string SerialNumber
+		{
+			get { return m_SerialNumber; }
+			private set
+			{
+				if (m_SerialNumber == value)
+					return;
+
+				m_SerialNumber = value;
+
+				OnSerialNumberChanged.Raise(this, new StringEventArgs(value));
 			}
 		}
 
@@ -411,6 +464,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.RegisterParserCallback(ParseSipProxy, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy");
 			codec.RegisterParserCallback(ParseNameStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
 			codec.RegisterParserCallback(ParseVersionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
+			codec.RegisterParserCallback(ParseVersionDateStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "ReleaseDate");
 			codec.RegisterParserCallback(ParseAddressStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
 			codec.RegisterParserCallback(ParseGatewayStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Gateway");
 			codec.RegisterParserCallback(ParseSubnetMaskStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
@@ -418,6 +472,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.RegisterParserCallback(ParseH323GatekeeperStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Status");
 			codec.RegisterParserCallback(ParseH323GatekeeperAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Address");
 			codec.RegisterParserCallback(ParsePlatformStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
+			codec.RegisterParserCallback(ParseSerialNumber, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Hardware", "Module", "SerialNumber");
 		}
 
 		/// <summary>
@@ -436,6 +491,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.UnregisterParserCallback(ParseSipProxy, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy");
 			codec.UnregisterParserCallback(ParseNameStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
 			codec.UnregisterParserCallback(ParseVersionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
+			codec.UnregisterParserCallback(ParseVersionDateStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit",
+			                               "Software", "ReleaseDate");
 			codec.UnregisterParserCallback(ParseAddressStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
 			codec.UnregisterParserCallback(ParseGatewayStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Gateway");
 			codec.UnregisterParserCallback(ParseSubnetMaskStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
@@ -443,6 +500,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.UnregisterParserCallback(ParseH323GatekeeperStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Status");
 			codec.UnregisterParserCallback(ParseH323GatekeeperAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Address");
 			codec.UnregisterParserCallback(ParsePlatformStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
+			codec.UnregisterParserCallback(ParseSerialNumber, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit",
+			                               "Hardware", "Module", "SerialNumber");
 		}
 
 		private void ParsePlatformStatus(CiscoCodecDevice codec, string resultid, string xml)
@@ -499,6 +558,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			SoftwareVersion = XmlUtils.GetInnerXml(xml);
 		}
 
+		private void ParseVersionDateStatus(CiscoCodecDevice sender, string resultId, string xml)
+		{
+			SoftwareVersionDate = XmlUtils.GetInnerXml(xml);
+		}
+
 		private void ParseH323EnabledStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			H323Enabled = XmlUtils.GetInnerXml(xml) == "Enabled";
@@ -513,6 +577,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		private void ParseH323GatekeeperAddress(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			H323GatekeeperAddress = XmlUtils.GetInnerXml(xml);
+		}
+
+		private void ParseSerialNumber(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			SerialNumber = XmlUtils.GetInnerXml(xml);
 		}
 
 		#endregion
