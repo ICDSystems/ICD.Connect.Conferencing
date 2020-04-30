@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
@@ -52,12 +54,103 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		private int m_TiltSpeed = 7;
 		private int m_ZoomSpeed = 7;
 
+		private bool m_Connected;
+		private string m_Model;
+		private string m_SerialNumber;
+		private string m_SoftwareId;
+		private string m_MacAddress;
+
+		#region Events
+
+		/// <summary>
+		/// Raised when the connected state changes
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnConnectedChanged;
+
+		public event EventHandler<StringEventArgs> OnModelChanged;
+
+		public event EventHandler<StringEventArgs> OnSerialNumberChanged;
+
+		public event EventHandler<StringEventArgs> OnSoftwareIdChanged;
+
+		public event EventHandler<StringEventArgs> OnMacAddressChanged;
+
+		#endregion
+
 		#region Properties
 
 		/// <summary>
 		/// Returns true if this camera is connected to the system.
 		/// </summary>
-		public bool Connected { get; private set; }
+		public bool Connected
+		{
+			get { return m_Connected; }
+			private set
+			{
+				if (m_Connected == value)
+					return;
+
+				m_Connected = value;
+
+				OnConnectedChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
+
+		public string Model
+		{
+			get { return m_Model; }
+			private set
+			{
+				if (m_Model == value)
+					return;
+
+				m_Model = value;
+
+				OnModelChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
+		public string SerialNumber
+		{
+			get { return m_SerialNumber; }
+			private set
+			{
+				if (m_SerialNumber == value)
+					return;
+
+				m_SerialNumber = value;
+
+				OnSerialNumberChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
+		public string SoftwareId
+		{
+			get { return m_SoftwareId; }
+			private set
+			{
+				if (m_SoftwareId == value)
+					return;
+
+				m_SoftwareId = value;
+
+				OnSoftwareIdChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
+
+		public string MacAddress
+		{
+			get { return m_MacAddress; }
+			private set
+			{
+				if (m_MacAddress == value)
+					return;
+
+				m_MacAddress = value;
+
+				OnMacAddressChanged.Raise(this, new StringEventArgs(value));
+			}
+		}
 
 		/// <summary>
 		/// The id of the local camera.
@@ -114,7 +207,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <param name="xml"></param>
 		public void Parse(string xml)
 		{
-			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? Connected;
+			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? false;
+			Model = XmlUtils.TryReadChildElementContentAsString(xml, "Model") ?? string.Empty;
+			SerialNumber = XmlUtils.TryReadChildElementContentAsString(xml, "SerialNumber") ?? string.Empty;
+			SoftwareId = XmlUtils.TryReadChildElementContentAsString(xml, "SoftwareID") ?? string.Empty;
+			MacAddress = XmlUtils.TryReadChildElementContentAsString(xml, "MacAddress") ?? string.Empty;
 		}
 
 		/// <summary>
