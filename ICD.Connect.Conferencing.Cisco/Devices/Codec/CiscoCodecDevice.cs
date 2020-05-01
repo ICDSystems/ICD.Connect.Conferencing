@@ -24,12 +24,14 @@ using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Protocol.Settings;
 using ICD.Connect.Settings;
+using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
 	/// <summary>
 	/// Cisco VTC Codec Control
 	/// </summary>
+	[ExternalTelemetry("Cisco", typeof(CiscoCodecExternalTelemetry))]
 	public sealed class CiscoCodecDevice : AbstractVideoConferenceDevice<CiscoCodecSettings>
 	{
 		/// <summary>
