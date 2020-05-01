@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="Comparers\ContactItemComparer.cs" />
     <Compile Include="Comparers\DirectoryFolderItemComparer.cs" />
+    <Compile Include="Devices\Codec\CiscoCodecExternalTelemetry.cs" />
     <Compile Include="Devices\Codec\CiscoCodecSettings.cs" />
     <Compile Include="Devices\Codec\Components\AbstractCiscoComponent.cs" />
     <Compile Include="Devices\Codec\CiscoCodecDevice.cs" />
