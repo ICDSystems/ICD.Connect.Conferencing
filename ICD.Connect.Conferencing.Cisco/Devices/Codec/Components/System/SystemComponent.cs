@@ -262,7 +262,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SoftwareVersionDate = value;
 
-				Codec.Log(eSeverity.Informational, "Codec software version date is {0}", value);
+				Codec.Logger.Log(eSeverity.Informational, "Codec software version date is {0}", value);
 				OnSoftwareVerisonDateChanged.Raise(this, new StringEventArgs(value));
 			}
 		}
