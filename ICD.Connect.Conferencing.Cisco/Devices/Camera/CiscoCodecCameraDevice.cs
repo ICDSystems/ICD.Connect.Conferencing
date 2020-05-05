@@ -89,7 +89,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		private int ZoomSpeed { get { return m_ZoomSpeed ?? (m_Camera == null ? 0 : m_Camera.ZoomSpeed); } }
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_MODEL, null, DeviceTelemetryNames.DEVICE_MODEL_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_MODEL, null, DeviceTelemetryNames.DEVICE_MODEL_CHANGED)]
 		public string Model
 		{
 			get { return m_Model; }
@@ -104,7 +104,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_SERIAL_NUMBER, null, DeviceTelemetryNames.DEVICE_SERIAL_NUMBER_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_SERIAL_NUMBER, null, DeviceTelemetryNames.DEVICE_SERIAL_NUMBER_CHANGED)]
 		public string SerialNumber
 		{
 			get { return m_SerialNumber; }
@@ -119,7 +119,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION, null, DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION, null, DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
 		public string SoftwareId
 		{
 			get { return m_SoftwareId; }
@@ -134,7 +134,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_MAC_ADDRESS, null, DeviceTelemetryNames.DEVICE_MAC_ADDRESS_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_MAC_ADDRESS, null, DeviceTelemetryNames.DEVICE_MAC_ADDRESS_CHANGED)]
 		public string MacAddress
 		{
 			get { return m_MacAddress; }

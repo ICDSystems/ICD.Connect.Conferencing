@@ -5,6 +5,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Devices;
 using ICD.Connect.Telemetry;
 using ICD.Connect.Telemetry.Attributes;
+using ICD.Connect.Telemetry.Nodes.External;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
@@ -51,7 +52,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 		#region Properties
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_IP_ADDRESS, null, DeviceTelemetryNames.DEVICE_IP_ADDRESS_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_IP_ADDRESS, null, DeviceTelemetryNames.DEVICE_IP_ADDRESS_CHANGED)]
 		public string Address
 		{
 			get { return m_Address; }
@@ -66,7 +67,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_IP_SUBNET, null, DeviceTelemetryNames.DEVICE_IP_SUBNET_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_IP_SUBNET, null, DeviceTelemetryNames.DEVICE_IP_SUBNET_CHANGED)]
 		public string SubnetMask
 		{
 			get
@@ -84,7 +85,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_IP_GATEWAY, null, DeviceTelemetryNames.DEVICE_IP_GATEWAY_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_IP_GATEWAY, null, DeviceTelemetryNames.DEVICE_IP_GATEWAY_CHANGED)]
 		public string Gateway
 		{
 			get
@@ -102,7 +103,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION, null, DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION, null, DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
 		public string SoftwareVersion
 		{
 			get
@@ -120,7 +121,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_DATE, null, DeviceTelemetryNames.DEVICE_FIRMWARE_DATE_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_DATE, null, DeviceTelemetryNames.DEVICE_FIRMWARE_DATE_CHANGED)]
 		public string SoftwareVersionDate
 		{
 			get { return m_SoftwareVersionDate; }
@@ -135,7 +136,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_MODEL, null, DeviceTelemetryNames.DEVICE_MODEL_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_MODEL, null, DeviceTelemetryNames.DEVICE_MODEL_CHANGED)]
 		public string ProductPlatform
 		{
 			get { return m_ProductPlatform; }
@@ -150,7 +151,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 		}
 
-		[DynamicPropertyTelemetry(DeviceTelemetryNames.DEVICE_SERIAL_NUMBER, null, DeviceTelemetryNames.DEVICE_SERIAL_NUMBER_CHANGED)]
+		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_SERIAL_NUMBER, null, DeviceTelemetryNames.DEVICE_SERIAL_NUMBER_CHANGED)]
 		public string SerialNumber
 		{
 			get { return m_SerialNumber; }

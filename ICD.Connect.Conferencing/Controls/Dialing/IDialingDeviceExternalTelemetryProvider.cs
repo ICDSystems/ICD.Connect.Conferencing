@@ -2,6 +2,7 @@
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Telemetry;
 using ICD.Connect.Telemetry.Attributes;
+using ICD.Connect.Telemetry.Nodes.External;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
@@ -34,19 +35,19 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Gets whether the dialing device has a call in progress
 		/// </summary>
-		[DynamicPropertyTelemetry(DialingTelemetryNames.CALL_IN_PROGRESS, null, DialingTelemetryNames.CALL_IN_PROGRESS_CHANGED)]
+		[PropertyTelemetry(DialingTelemetryNames.CALL_IN_PROGRESS, null, DialingTelemetryNames.CALL_IN_PROGRESS_CHANGED)]
 		bool CallInProgress { get; }
 
 		/// <summary>
 		/// Gets a comma separated list of the type of each active call on the dialer.
 		/// </summary>
-		[DynamicPropertyTelemetry(DialingTelemetryNames.CALL_TYPE, null, DialingTelemetryNames.CALL_TYPE_CHANGED)]
+		[PropertyTelemetry(DialingTelemetryNames.CALL_TYPE, null, DialingTelemetryNames.CALL_TYPE_CHANGED)]
 		string CallTypes { get; }
 
 		/// <summary>
 		/// Gets a comma separated list of the type of each active call on the dialer.
 		/// </summary>
-		[DynamicPropertyTelemetry(DialingTelemetryNames.CALL_NUMBER, null, DialingTelemetryNames.CALL_NUMBER_CHANGED)]
+		[PropertyTelemetry(DialingTelemetryNames.CALL_NUMBER, null, DialingTelemetryNames.CALL_NUMBER_CHANGED)]
 		string CallNumbers { get; } 
 
 		#endregion
