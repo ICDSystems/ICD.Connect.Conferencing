@@ -10,6 +10,7 @@ using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Ports;
 using ICD.Connect.Protocol.Network.Ports.Tcp;
+using ICD.Connect.Protocol.Network.Servers;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.SerialBuffers;
@@ -34,7 +35,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly JsonSerialBuffer m_SerialBuffer;
 
 		private readonly IcdTcpServer m_TcpServer;
-		private readonly TcpServerBufferManager m_ClientBuffers;
+		private readonly NetworkServerBufferManager m_ClientBuffers;
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
@@ -67,10 +68,10 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 
-			m_TcpServer = new IcdTcpServer(2245, IcdTcpServer.MAX_NUMBER_OF_CLIENTS_SUPPORTED);
+			m_TcpServer = new IcdTcpServer {Port = 2245};
 			Subscribe(m_TcpServer);
 
-			m_ClientBuffers = new TcpServerBufferManager(() => new DelimiterSerialBuffer('\r'));
+			m_ClientBuffers = new NetworkServerBufferManager(() => new DelimiterSerialBuffer('\r'));
 			m_ClientBuffers.SetServer(m_TcpServer);
 			Subscribe(m_ClientBuffers);
 
@@ -366,7 +367,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Subscribe to the client buffers events.
 		/// </summary>
 		/// <param name="clientBuffers"></param>
-		private void Subscribe(TcpServerBufferManager clientBuffers)
+		private void Subscribe(NetworkServerBufferManager clientBuffers)
 		{
 			clientBuffers.OnClientCompletedSerial += ClientBuffersOnClientCompletedSerial;
 		}
@@ -375,7 +376,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// Subscribe to the client buffers events.
 		/// </summary>
 		/// <param name="clientBuffers"></param>
-		private void Unsubscribe(TcpServerBufferManager clientBuffers)
+		private void Unsubscribe(NetworkServerBufferManager clientBuffers)
 		{
 			clientBuffers.OnClientCompletedSerial -= ClientBuffersOnClientCompletedSerial;
 		}
@@ -386,7 +387,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <param name="sender"></param>
 		/// <param name="clientId"></param>
 		/// <param name="data"></param>
-		private void ClientBuffersOnClientCompletedSerial(TcpServerBufferManager sender, uint clientId, string data)
+		private void ClientBuffersOnClientCompletedSerial(NetworkServerBufferManager sender, uint clientId, string data)
 		{
 			// Pass the command on to the Zoom device.
 			SendCommand(data);
