@@ -31,6 +31,16 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		public event EventHandler<StringEventArgs> OnNameChanged;
 
+		/// <summary>
+		/// Raised when the participant's start time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
+
+		/// <summary>
+		/// Raised when the participant's end time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
+
 		#endregion
 
 		private string m_Name;
@@ -83,7 +93,7 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
-		public DateTime? Start
+		public DateTime? StartTime
 		{
 			get { return m_Start; }
 			protected set
@@ -94,10 +104,12 @@ namespace ICD.Connect.Conferencing.Participants
 				m_Start = value;
 
 				Log(eSeverity.Informational, "Start set to {0}", m_Start);
+
+				OnStartTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
 			}
 		}
 
-		public DateTime? End
+		public DateTime? EndTime
 		{
 			get { return m_End; }
 			protected set
@@ -108,6 +120,8 @@ namespace ICD.Connect.Conferencing.Participants
 				m_End = value;
 
 				Log(eSeverity.Informational, "End set to {0}", m_End);
+
+				OnEndTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
 			}
 		}
 
@@ -192,8 +206,8 @@ namespace ICD.Connect.Conferencing.Participants
 			addRow("Name", Name);
 			addRow("Status", Status);
 			addRow("CallType", CallType);
-			addRow("Start", Start);
-			addRow("End", End);
+			addRow("Start", StartTime);
+			addRow("End", EndTime);
 		}
 
 		/// <summary>

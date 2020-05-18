@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
@@ -24,6 +25,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
+		/// <summary>
+		/// Raised when the start time changes
+		/// </summary>
+		event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
+
+		/// <summary>
+		/// Raised when the end time changes
+		/// </summary>
+		event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
+
 		#region Properties
 
 		/// <summary>
@@ -32,14 +43,14 @@ namespace ICD.Connect.Conferencing.Conferences
 		eConferenceStatus Status { get; }
 
 		/// <summary>
-		/// The time the conference ended.
+		/// The time the conference started.
 		/// </summary>
-		DateTime? Start { get; }
+		DateTime? StartTime { get; }
 
 		/// <summary>
-		/// The time the call ended.
+		/// The time the conference ended.
 		/// </summary>
-		DateTime? End { get; }
+		DateTime? EndTime { get; }
 
 		/// <summary>
 		/// Gets the type of call.
@@ -151,11 +162,11 @@ namespace ICD.Connect.Conferencing.Conferences
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			if (!extends.Start.HasValue)
+			if (!extends.StartTime.HasValue)
 				return TimeSpan.Zero;
 
-			DateTime start = extends.Start.Value;
-			DateTime end = extends.End ?? IcdEnvironment.GetUtcTime();
+			DateTime start = extends.StartTime.Value;
+			DateTime end = extends.EndTime ?? IcdEnvironment.GetUtcTime();
 
 			return end - start;
 		}

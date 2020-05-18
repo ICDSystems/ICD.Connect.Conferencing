@@ -388,9 +388,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			source.SetCallType(callStatus.VideoCall ? eCallType.Video : eCallType.Audio);
 
 			if (source.GetIsOnline())
-				source.SetStart(source.Start ?? IcdEnvironment.GetUtcTime());
-			else if (source.Start != null)
-				source.SetEnd(source.End ?? IcdEnvironment.GetUtcTime());
+				source.SetStart(source.StartTime ?? IcdEnvironment.GetUtcTime());
+			else if (source.StartTime != null)
+				source.SetEnd(source.EndTime ?? IcdEnvironment.GetUtcTime());
 		}
 
 		/// <summary>

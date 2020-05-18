@@ -1,7 +1,9 @@
 ﻿using System;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.IncomingCalls;
 
 namespace ICD.Connect.Conferencing.Participants
 {
@@ -32,6 +34,23 @@ namespace ICD.Connect.Conferencing.Participants
 		public ThinTraditionalParticipant()
 		{
 			DialTime = IcdEnvironment.GetUtcTime();
+		}
+
+		/// <summary>
+		/// Creates a new thin participant based on an incoming call
+		/// </summary>
+		/// <param name="incomingCall"></param>
+		public ThinTraditionalParticipant([NotNull] IIncomingCall incomingCall)
+		{
+			if (incomingCall == null)
+				throw new ArgumentNullException("incomingCall");
+
+			DialTime = incomingCall.StartTime;
+			Name = incomingCall.Name;
+			Number = incomingCall.Number;
+			AnswerState = incomingCall.AnswerState;
+			Direction = eCallDirection.Incoming;
+			DialTime = incomingCall.StartTime;
 		}
 
 		/// <summary>
@@ -121,12 +140,12 @@ namespace ICD.Connect.Conferencing.Participants
 
 		public void SetStart(DateTime start)
 		{
-			Start = start;
+			StartTime = start;
 		}
 
 		public void SetEnd(DateTime end)
 		{
-			End = end;
+			EndTime = end;
 		}
 
 		public void SetDialTime(DateTime dialTime)

@@ -93,7 +93,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Dialing
 			Assert.AreEqual(0, component.GetDuration().Milliseconds);
 
 			Port.Receive(connected);
-			Assert.That(component.Start, Is.EqualTo(IcdEnvironment.GetUtcTime()).Within(1).Seconds);
+			Assert.That(component.StartTime, Is.EqualTo(IcdEnvironment.GetUtcTime()).Within(1).Seconds);
 
 			ThreadingUtils.Sleep(1000);
 
@@ -101,7 +101,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Dialing
 			Assert.That(component.GetDuration().TotalMilliseconds, Is.EqualTo(1000).Within(1000));
 
 			Port.Receive(disconnected);
-			Assert.That(component.End, Is.EqualTo(IcdEnvironment.GetUtcTime()).Within(1).Seconds);
+			Assert.That(component.EndTime, Is.EqualTo(IcdEnvironment.GetUtcTime()).Within(1).Seconds);
 
 			Assert.That(component.GetDuration().TotalMilliseconds, Is.EqualTo(1000).Within(1000));
 		}

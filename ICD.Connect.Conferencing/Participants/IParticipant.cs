@@ -28,6 +28,16 @@ namespace ICD.Connect.Conferencing.Participants
 		event EventHandler<StringEventArgs> OnNameChanged;
 
 		/// <summary>
+		/// Raised when the participant's start time changes
+		/// </summary>
+		event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
+
+		/// <summary>
+		/// Raised when the participant's end time changes
+		/// </summary>
+		event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged; 
+
+		/// <summary>
 		/// Gets the source name.
 		/// </summary>
 		string Name { get; }
@@ -50,12 +60,12 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// The time when participant connected.
 		/// </summary>
-		DateTime? Start { get; }
+		DateTime? StartTime { get; }
 
 		/// <summary>
 		/// The time when participant disconnected.
 		/// </summary>
-		DateTime? End { get; }
+		DateTime? EndTime { get; }
 	}
 
 	public static class ParticipantExtensions
@@ -69,12 +79,12 @@ namespace ICD.Connect.Conferencing.Participants
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			if (extends.Start == null)
+			if (extends.StartTime == null)
 				return new TimeSpan();
 
-			DateTime end = (extends.End != null) ? (DateTime)extends.End : IcdEnvironment.GetUtcTime();
+			DateTime end = (extends.EndTime != null) ? (DateTime)extends.EndTime : IcdEnvironment.GetUtcTime();
 
-			return end - (DateTime)extends.Start;
+			return end - (DateTime)extends.StartTime;
 		}
 
 		/// <summary>

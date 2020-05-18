@@ -46,8 +46,8 @@ namespace ICD.Connect.Conferencing.Server.Devices
 				SourceType = participant.CallType,
 				Status = participant.Status,
 				Direction = participant.Direction,
-				Start = participant.Start,
-				End = participant.End,
+				Start = participant.StartTime,
+				End = participant.EndTime,
 				DialTime = participant.DialTime,
 				StartOrDialTime = participant.GetStartOrDialTime(),
 				Language = language
