@@ -1,5 +1,6 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
+using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
 {
@@ -16,29 +17,39 @@ namespace ICD.Connect.Conferencing.Participants
 	public enum eCallAnswerState
 	{
 		/// <summary>
-		/// No known state 
+		/// No known state
 		/// </summary>
 		Unknown = 0,
 
 		/// <summary>
-		/// No decision has been made.
+		/// Incoming: No decision has been made
+		/// Outgoing: Remote end has not answered call
 		/// </summary>
 		Unanswered = 1,
 
 		/// <summary>
-		/// Actively rejected or timed out.
+		/// Incoming: Call stopped without user action
+		/// Outgoing: N/A
 		/// </summary>
 		Ignored = 2,
 
 		/// <summary>
-		/// Automatically answered by the software.
+		/// Incoming: When a call is actively rejected by the user, or DND setting
+		/// Outgoing: Call was rejected by far end - busy signal, DND, Error, etc
 		/// </summary>
-		Autoanswered = 3,
+		Rejected = 3,
 
 		/// <summary>
-		/// Actively answered by the user.
+		/// Incoming: Automatically answered by the software
+		/// Outgoing: N/A
 		/// </summary>
-		Answered = 4
+		AutoAnswered = 4,
+
+		/// <summary>
+		/// Incoming: Actively answered by the user
+		/// Outgoing: Call connected to far end
+		/// </summary>
+		Answered = 5
 	}
 
 	/// <summary>
