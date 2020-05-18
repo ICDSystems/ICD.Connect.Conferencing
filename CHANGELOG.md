@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - Added ConferenceHistory to the ConfernceManager, replacing recent calls
+ - Added OnStartTimeChanged, OnEndTimeChanged to IConference and IParticipant
+ - Added eCallAnswerState Rejected state
+
+### Changed
+ - Changed IConference/IParticipant Start/End to StartTime/EndTime for consistency
+ - Changed IIncomingCall OnAnswerStateChanged event args to be more generic
+ - Changed eCallAnswerState Autoanswer to AutoAnswer
+
+### Removed
+ - Removed the call direction from IIncomingCall
+ - Removed ConferenceManager Recent Calls
 
 ## [15.0.0] - 2020-03-20
 ### Added
