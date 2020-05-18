@@ -62,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Raised when the answer state changes.
 		/// </summary>
-		public event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
+		public event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
 
 		/// <summary>
 		/// Raised when the call status changes.
@@ -128,7 +128,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_AnswerState = value;
 
-				OnAnswerStateChanged.Raise(this, new IncomingCallAnswerStateEventArgs(m_AnswerState));
+				OnAnswerStateChanged.Raise(this, new CallAnswerStateEventArgs(m_AnswerState));
 			}
 		}
 

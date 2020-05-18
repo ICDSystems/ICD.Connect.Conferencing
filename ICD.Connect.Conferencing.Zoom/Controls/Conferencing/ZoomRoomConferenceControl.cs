@@ -352,7 +352,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 				Name = call.CallerName,
 				Number = call.MeetingNumber,
 				AnswerState = eCallAnswerState.Unanswered,
-				Direction = eCallDirection.Incoming,
 				AnswerCallback = IncomingCallAnswerCallback(call),
 				RejectCallback = IncomingCallRejectCallback(call)
 			};

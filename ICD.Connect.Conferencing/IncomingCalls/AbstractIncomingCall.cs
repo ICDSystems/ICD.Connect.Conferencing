@@ -20,12 +20,11 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 	{
 		public event EventHandler<StringEventArgs> OnNameChanged;
 		public event EventHandler<StringEventArgs> OnNumberChanged;
-		public event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
+		public event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
 
 		private string m_Name;
 		private string m_Number;
 		private eCallAnswerState m_AnswerState;
-		private eCallDirection m_Direction;
 
 		#region Properties
 
@@ -81,23 +80,6 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		}
 
 		/// <summary>
-		/// Source direction (Incoming, Outgoing, etc)
-		/// </summary>
-		public eCallDirection Direction
-		{
-			get { return m_Direction; }
-			set
-			{
-				if (value == m_Direction)
-					return;
-
-				m_Direction = value;
-
-				Log(eSeverity.Informational, "Direction set to {0}", m_Direction);
-			}
-		}
-
-		/// <summary>
 		/// Source Answer State (Ignored, Answered, etc)
 		/// </summary>
 		public eCallAnswerState AnswerState
@@ -115,7 +97,7 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 				if (m_AnswerState != eCallAnswerState.Unanswered && m_AnswerState != eCallAnswerState.Unknown)
 					EndTime = IcdEnvironment.GetUtcTime();
 
-				OnAnswerStateChanged.Raise(this, new IncomingCallAnswerStateEventArgs(m_AnswerState));
+				OnAnswerStateChanged.Raise(this, new CallAnswerStateEventArgs(m_AnswerState));
 			}
 		}
 
@@ -136,7 +118,6 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		/// </summary>
 		protected AbstractIncomingCall()
 		{
-			Direction = eCallDirection.Incoming;
 			StartTime = IcdEnvironment.GetUtcTime();
 		}
 
@@ -219,7 +200,6 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		{
 			addRow("Name", Name);
 			addRow("Number", Number);
-			addRow("Direction", Direction);
 			addRow("AnswerState", AnswerState);
 		}
 

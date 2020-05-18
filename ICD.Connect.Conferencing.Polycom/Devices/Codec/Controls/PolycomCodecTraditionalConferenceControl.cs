@@ -511,12 +511,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			call.Number = callStatus.FarSiteNumber;
 
-			bool? outgoing = callStatus.Outgoing;
-			if (outgoing == null)
-				call.Direction = eCallDirection.Incoming;
-			else
-				call.Direction = (bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming;
-
 			if (callStatus.ConnectionState == eConnectionState.Connected)
 			{
 				call.AnswerState = eCallAnswerState.Answered;

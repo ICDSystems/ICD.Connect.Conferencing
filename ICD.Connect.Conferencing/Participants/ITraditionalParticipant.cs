@@ -52,6 +52,8 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		event EventHandler<StringEventArgs> OnNumberChanged;
 
+		event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
+
 		#region Properties
 
 		/// <summary>
@@ -128,7 +130,7 @@ namespace ICD.Connect.Conferencing.Participants
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			return extends.Start ?? extends.DialTime;
+			return extends.StartTime ?? extends.DialTime;
 		}
 	}
 }

@@ -5,12 +5,14 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
 {
 	public abstract class AbstractTraditionalParticipant : AbstractParticipant, ITraditionalParticipant
 	{
 		public event EventHandler<StringEventArgs> OnNumberChanged;
+		public event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
 
 		private string m_Number;
 		private DateTime m_DialTime;
@@ -81,6 +83,8 @@ namespace ICD.Connect.Conferencing.Participants
 				m_AnswerState = value;
 
 				Log(eSeverity.Informational, "AnswerState set to {0}", m_AnswerState);
+
+				OnAnswerStateChanged.Raise(this, new CallAnswerStateEventArgs(value));
 			}
 		}
 

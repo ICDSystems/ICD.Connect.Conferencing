@@ -283,8 +283,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				incoming = new TraditionalIncomingCall(source.CallType)
 				{
 					Name = source.Name, 
-					Number = source.Number ?? source.RemoteNumber,
-					Direction = eCallDirection.Incoming                    
+					Number = source.Number ?? source.RemoteNumber
 				};
 				m_IncomingCalls.Add(source, incoming);
 
@@ -375,7 +374,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			source.OnAnswerStateChanged -= SourceOnAnswerStateChanged;
 		}
 
-		private void SourceOnAnswerStateChanged(object sender, IncomingCallAnswerStateEventArgs args)
+		private void SourceOnAnswerStateChanged(object sender, CallAnswerStateEventArgs args)
 		{
 			UpdateIncomingCall(sender as CallComponent);
 		}
@@ -397,12 +396,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			incomingCall.Name = source.Name;
 			incomingCall.Number = source.Number;
 			incomingCall.AnswerState = source.AnswerState;
-			incomingCall.Direction = eCallDirection.Incoming;
 
 			switch (incomingCall.AnswerState)
 			{
 				case eCallAnswerState.Ignored:
-				case eCallAnswerState.Autoanswered:
+				case eCallAnswerState.AutoAnswered:
 				case eCallAnswerState.Answered:
 					AddParticipant(m_IncomingCalls.GetKey(incomingCall));
 					RemoveIncomingCall(source);

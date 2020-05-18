@@ -12,7 +12,7 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		/// <summary>
 		/// Raised when the answer state changes.
 		/// </summary>
-		event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
+		event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
 
 		/// <summary>
 		/// Raised when the name changes.
@@ -28,11 +28,6 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 		/// Source Answer State (Ignored, Answered, etc)
 		/// </summary>
 		eCallAnswerState AnswerState { get; set; }
-
-		/// <summary>
-		/// Source direction (Incoming, Outgoing, etc)
-		/// </summary>
-		eCallDirection Direction { get; set; }
 
 		/// <summary>
 		/// Gets the number of the incoming call
@@ -82,9 +77,10 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 				case eCallAnswerState.Unknown:
 				case eCallAnswerState.Unanswered:
 				case eCallAnswerState.Ignored:
+				case eCallAnswerState.Rejected:
 					return false;
 
-				case eCallAnswerState.Autoanswered:
+				case eCallAnswerState.AutoAnswered:
 				case eCallAnswerState.Answered:
 					return true;
 
@@ -104,24 +100,12 @@ namespace ICD.Connect.Conferencing.IncomingCalls
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			switch (extends.Direction)
-			{
-				case eCallDirection.Undefined:
-				case eCallDirection.Outgoing:
-					return false;
-
-				case eCallDirection.Incoming:
-					break;
-
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-
 			switch (extends.AnswerState)
 			{
 				case eCallAnswerState.Answered:
-				case eCallAnswerState.Autoanswered:
+				case eCallAnswerState.AutoAnswered:
 				case eCallAnswerState.Ignored:
+				case eCallAnswerState.Rejected:
 					return false;
 
 				case eCallAnswerState.Unknown:
