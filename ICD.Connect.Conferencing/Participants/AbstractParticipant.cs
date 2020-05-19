@@ -103,7 +103,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 				m_Start = value;
 
-				Log(eSeverity.Informational, "Start set to {0}", m_Start);
+				Log(eSeverity.Informational, "StartTime set to {0}", m_Start);
 
 				OnStartTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
 			}
@@ -119,7 +119,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 				m_End = value;
 
-				Log(eSeverity.Informational, "End set to {0}", m_End);
+				Log(eSeverity.Informational, "EndTime set to {0}", m_End);
 
 				OnEndTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
 			}
@@ -206,8 +206,8 @@ namespace ICD.Connect.Conferencing.Participants
 			addRow("Name", Name);
 			addRow("Status", Status);
 			addRow("CallType", CallType);
-			addRow("Start", StartTime);
-			addRow("End", EndTime);
+			addRow("StartTime", StartTime);
+			addRow("EndTime", EndTime);
 		}
 
 		/// <summary>
