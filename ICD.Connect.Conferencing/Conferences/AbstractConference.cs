@@ -12,7 +12,8 @@ using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Conferences
 {
-	public abstract class AbstractConference<T> : IConference<T> where T: class, IParticipant
+	public abstract class AbstractConference<T> : IConference<T>
+		where T: class, IParticipant
 	{
 		/// <summary>
 		/// Raised when the conference status changes.

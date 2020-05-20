@@ -13,6 +13,7 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
+using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
@@ -45,6 +46,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		private readonly CallComponent m_CallComponent;
+		private readonly SystemComponent m_SystemComponent;
+
 		private readonly ZoomWebConference m_Conference;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
 		private readonly Dictionary<IIncomingCall, SafeTimer> m_IncomingCalls;
@@ -81,6 +84,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			: base(parent, id)
 		{
 			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
+			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
+
 			m_IncomingCalls = new Dictionary<IIncomingCall, SafeTimer>();
 			m_IncomingCallsSection = new SafeCriticalSection();
 			m_InviteOnMeetingStart = new IcdHashSet<string>();
@@ -95,6 +100,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			SupportedConferenceFeatures |= eConferenceFeatures.PrivacyMute;
 
 			Subscribe(m_CallComponent);
+			Subscribe(m_SystemComponent);
 		}
 
 		/// <summary>
@@ -113,6 +119,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_Conference.OnStatusChanged -= ConferenceOnStatusChanged;
 
 			Unsubscribe(m_CallComponent);
+			Unsubscribe(m_SystemComponent);
 		}
 
 		#region Methods
@@ -506,6 +513,49 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			// This accounts for being late to an existing meeting that we are the
 			// host of, and "discovering" the participants on entry.
 			UpdateMuteUserOnEntry(genericEventArgs.Data);
+		}
+
+		#endregion
+
+		#region SystemComponent Callbacks
+
+		/// <summary>
+		/// Subscribe to the system component events.
+		/// </summary>
+		/// <param name="systemComponent"></param>
+		private void Subscribe(SystemComponent systemComponent)
+		{
+			systemComponent.OnSystemInfoChanged += SystemComponentOnSystemInfoChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the system component events.
+		/// </summary>
+		/// <param name="systemComponent"></param>
+		private void Unsubscribe(SystemComponent systemComponent)
+		{
+			systemComponent.OnSystemInfoChanged -= SystemComponentOnSystemInfoChanged;
+		}
+
+		/// <summary>
+		/// Called when the system info changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventArgs"></param>
+		private void SystemComponentOnSystemInfoChanged(object sender, EventArgs eventArgs)
+		{
+			SystemInfo info = m_SystemComponent.SystemInfo;
+			string meetingNumber = info == null ? null : info.MeetingNumber;
+
+			CallInInfo =
+				meetingNumber == null
+					? null
+					: new DialContext
+					{
+						Protocol = eDialProtocol.Zoom,
+						CallType = eCallType.Video,
+						DialString = meetingNumber
+					};
 		}
 
 		#endregion

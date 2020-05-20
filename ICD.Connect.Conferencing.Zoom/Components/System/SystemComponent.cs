@@ -1,4 +1,6 @@
-﻿using ICD.Common.Utils.Extensions;
+﻿using System;
+using ICD.Common.Properties;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Responses;
 
@@ -6,11 +8,26 @@ namespace ICD.Connect.Conferencing.Zoom.Components.System
 {
 	public sealed class SystemComponent : AbstractZoomRoomComponent
 	{
+		/// <summary>
+		/// Raised when the system info changes.
+		/// </summary>
+		public event EventHandler OnSystemInfoChanged;
+
+		[CanBeNull]
 		private SystemInfo m_SystemInfo;
 
+		/// <summary>
+		/// Gets the system info.
+		/// </summary>
+		[CanBeNull]
 		public SystemInfo SystemInfo { get { return m_SystemInfo; } }
 
-		public SystemComponent(ZoomRoom zoomRoom) : base(zoomRoom)
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		public SystemComponent(ZoomRoom zoomRoom)
+			: base(zoomRoom)
 		{
 			Subscribe(zoomRoom);
 		}
@@ -20,9 +37,16 @@ namespace ICD.Connect.Conferencing.Zoom.Components.System
 			zoomRoom.RegisterResponseCallback<SystemUnitResponse>(SystemInfoCallback);
 		}
 
+		/// <summary>
+		/// Called when we get a system info response from the device.
+		/// </summary>
+		/// <param name="zoomRoom"></param>
+		/// <param name="response"></param>
 		private void SystemInfoCallback(ZoomRoom zoomRoom, SystemUnitResponse response)
 		{
 			m_SystemInfo = response.SystemInfo;
+
+			OnSystemInfoChanged.Raise(this);
 		}
 
 		protected override void Initialize()

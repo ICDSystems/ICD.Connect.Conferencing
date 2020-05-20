@@ -164,14 +164,14 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <param name="dialContext"></param>
 		/// <returns></returns>
 		[ApiMethod(ConferenceDeviceControlApi.METHOD_CAN_DIAL, ConferenceDeviceControlApi.HELP_METHOD_CAN_DIAL)]
-		eDialContextSupport CanDial(IDialContext dialContext);
+		eDialContextSupport CanDial([NotNull] IDialContext dialContext);
 
 		/// <summary>
 		/// Dials the given context.
 		/// </summary>
 		/// <param name="dialContext"></param>
 		[ApiMethod(ConferenceDeviceControlApi.METHOD_DIAL_CONTEXT, ConferenceDeviceControlApi.HELP_METHOD_DIAL_CONTEXT)]
-		void Dial(IDialContext dialContext);
+		void Dial([NotNull] IDialContext dialContext);
 
 		/// <summary>
 		/// Sets the do-not-disturb enabled state.
@@ -199,8 +199,16 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 	public static class ConferenceDeviceControlExtensions
 	{
-		public static void Dial(this IConferenceDeviceControl control, IContact contact)
+		/// <summary>
+		/// Dials the given contact.
+		/// </summary>
+		/// <param name="control"></param>
+		/// <param name="contact"></param>
+		public static void Dial([NotNull] this IConferenceDeviceControl control, [NotNull] IContact contact)
 		{
+			if (control == null)
+				throw new ArgumentNullException("control");
+
 			if (contact == null)
 				throw new ArgumentNullException("contact");
 
@@ -221,8 +229,17 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			control.Dial(dialContext);
 		}
 
-		public static IConference GetActiveConference(this IConferenceDeviceControl extends)
+		/// <summary>
+		/// Gets the first active conference.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		[CanBeNull]
+		public static IConference GetActiveConference([NotNull] this IConferenceDeviceControl extends)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
 			return extends.GetConferences().FirstOrDefault(c => c.IsActive());
 		}
 	}

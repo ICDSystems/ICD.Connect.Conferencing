@@ -13,6 +13,7 @@ using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute;
+using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.System;
 using ICD.Connect.Conferencing.Utils;
 using eDialProtocol = ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial.eDialProtocol;
 
@@ -30,6 +31,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		private readonly DialComponent m_DialComponent;
 		private readonly AutoAnswerComponent m_AutoAnswerComponent;
 		private readonly MuteComponent m_MuteComponent;
+		private readonly SystemSettingComponent m_SystemSettingComponent;
 
 		private bool m_RequestedPrivacyMute;
 		private bool m_RequestedHold;
@@ -58,6 +60,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			m_DialComponent = parent.Components.GetComponent<DialComponent>();
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
 			m_MuteComponent = parent.Components.GetComponent<MuteComponent>();
+			m_SystemSettingComponent = parent.Components.GetComponent<SystemSettingComponent>();
 
 			SupportedConferenceFeatures =
 				eConferenceFeatures.AutoAnswer |
@@ -67,6 +70,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			Subscribe(m_DialComponent);
 			Subscribe(m_AutoAnswerComponent);
 			Subscribe(m_MuteComponent);
+			Subscribe(m_SystemSettingComponent);
 		}
 
 		/// <summary>
@@ -83,6 +87,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			Unsubscribe(m_DialComponent);
 			Unsubscribe(m_AutoAnswerComponent);
 			Unsubscribe(m_MuteComponent);
+			Unsubscribe(m_SystemSettingComponent);
 
 			RemoveSources();
 		}
@@ -701,6 +706,44 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			PrivacyMuted = m_MuteComponent.MutedNear;
 
 			UpdateMute();
+		}
+
+		#endregion
+
+		#region System Setting Component Callbacks
+
+		/// <summary>
+		/// Subscribe to the system setting component events.
+		/// </summary>
+		/// <param name="systemSettingComponent"></param>
+		private void Subscribe(SystemSettingComponent systemSettingComponent)
+		{
+			systemSettingComponent.OnSipAccountNameChanged += SystemSettingComponentOnSipAccountNameChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the system setting component events.
+		/// </summary>
+		/// <param name="systemSettingComponent"></param>
+		private void Unsubscribe(SystemSettingComponent systemSettingComponent)
+		{
+			systemSettingComponent.OnSipAccountNameChanged -= SystemSettingComponentOnSipAccountNameChanged;
+		}
+
+		/// <summary>
+		/// Called when the sip account name changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="stringEventArgs"></param>
+		private void SystemSettingComponentOnSipAccountNameChanged(object sender, StringEventArgs stringEventArgs)
+		{
+			CallInInfo =
+				new DialContext
+				{
+					Protocol = DialContexts.eDialProtocol.Sip,
+					CallType = eCallType.Audio | eCallType.Video,
+					DialString = m_SystemSettingComponent.SipAccountName
+				};
 		}
 
 		#endregion

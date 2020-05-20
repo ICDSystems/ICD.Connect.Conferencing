@@ -134,7 +134,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 			base.Initialize();
 
 			Codec.EnqueueCommand("configlayout {0} get", MONITOR);
-			Codec.EnqueueCommand("systemsetting get selfview", MONITOR);
+			Codec.EnqueueCommand("systemsetting get selfview");
 		}
 
 		#region Methods

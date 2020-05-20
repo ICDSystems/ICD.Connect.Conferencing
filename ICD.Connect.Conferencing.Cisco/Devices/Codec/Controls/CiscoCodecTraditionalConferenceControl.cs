@@ -435,6 +435,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			SipRegistration registration = m_SystemComponent.GetSipRegistration(args.Data);
 			Subscribe(registration);
 
+			SipRegistration first = m_SystemComponent.GetSipRegistrations().FirstOrDefault();
+
+			CallInInfo =
+				first == null
+					? null
+					: new DialContext
+					{
+						Protocol = eDialProtocol.Sip,
+						CallType = eCallType.Audio | eCallType.Video,
+						DialString = first.Uri
+					};
+
 			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
 			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
 			OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(SipRegistrationStatus));

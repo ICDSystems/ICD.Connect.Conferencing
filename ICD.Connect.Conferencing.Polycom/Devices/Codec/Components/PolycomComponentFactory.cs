@@ -36,7 +36,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components
 				{typeof(MuteComponent), codec => new MuteComponent(codec)},
 				{typeof(PresentationComponent), codec => new PresentationComponent(codec)},
 				{typeof(SleepComponent), codec => new SleepComponent(codec)},
-				{typeof(SystemComponent), codec => new SystemComponent(codec)}
+				{typeof(SystemComponent), codec => new SystemComponent(codec)},
+				{typeof(SystemSettingComponent), codec => new SystemSettingComponent(codec)}
 			};
 
 		private readonly PolycomGroupSeriesDevice m_Codec;

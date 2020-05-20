@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
@@ -19,6 +20,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Raised when a participant is removed from the conference.
 		/// </summary>
 		event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
+
 		/// <summary>
 		/// Raised when the conference status changes.
 		/// </summary>
@@ -79,7 +81,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static IEnumerable<IParticipant> GetOnlineParticipants(this IConference extends)
+		public static IEnumerable<IParticipant> GetOnlineParticipants([NotNull] this IConference extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -92,7 +94,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static bool IsOnline(this IConference extends)
+		public static bool IsOnline([NotNull] this IConference extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -119,7 +121,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static bool IsActive(this IConference extends)
+		public static bool IsActive([NotNull] this IConference extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -146,7 +148,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static TimeSpan GetDuration(this IConference extends)
+		public static TimeSpan GetDuration([NotNull] this IConference extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
