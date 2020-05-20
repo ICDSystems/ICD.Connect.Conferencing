@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Calendaring.Booking;
+using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Calendar;
 
