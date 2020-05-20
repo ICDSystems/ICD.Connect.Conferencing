@@ -103,13 +103,7 @@
     <Compile Include="DialContexts\AbstractDialContext.cs" />
     <Compile Include="DialContexts\DialContext.cs" />
     <Compile Include="DialContexts\eDialProtocol.cs" />
-    <Compile Include="DialContexts\TraditionalDialContext.cs" />
     <Compile Include="DialContexts\IDialContext.cs" />
-    <Compile Include="DialContexts\PstnDialContext.cs" />
-    <Compile Include="DialContexts\SipDialContext.cs" />
-    <Compile Include="DialContexts\ThinDialContext.cs" />
-    <Compile Include="DialContexts\ZoomContactDialContext.cs" />
-    <Compile Include="DialContexts\ZoomDialContext.cs" />
     <Compile Include="EventArguments\CallTypeEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceControlIncomingCallEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs.cs" />

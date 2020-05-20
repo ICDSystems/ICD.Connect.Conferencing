@@ -8,13 +8,8 @@ using Newtonsoft.Json;
 namespace ICD.Connect.Conferencing.DialContexts
 {
 	[JsonConverter(typeof(DialContextJsonConverter))]
-	public sealed class DialContext : IDialContext
+	public sealed class DialContext : AbstractDialContext
 	{
-		public eDialProtocol Protocol { get; set; }
-		public eCallType CallType { get; set; }
-		public string DialString { get; set; }
-		public string Password { get; set; }
-
 		/// <summary>
 		/// Creates a copy of the given dial context.
 		/// </summary>

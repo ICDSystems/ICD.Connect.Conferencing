@@ -334,7 +334,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 
 			IDialContext[] dialMethods =
 			{
-				new TraditionalDialContext { DialString = match.Groups["number"].Value }
+				new DialContext { DialString = match.Groups["number"].Value }
 			};
 
 			return new Contact(match.Groups["name"].Value, dialMethods);

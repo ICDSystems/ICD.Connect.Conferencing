@@ -170,8 +170,9 @@ namespace ICD.Connect.Conferencing.DialingPlans
 				contact.GetDialContexts()
 				       .Select(c =>
 					               c.CallType == eCallType.Unknown
-						               ? new ThinDialContext(c.Protocol)
+						               ? new DialContext
 						               {
+										   Protocol = c.Protocol,
 							               CallType = GetCallType(c),
 							               DialString = c.DialString,
 							               Password = c.Password

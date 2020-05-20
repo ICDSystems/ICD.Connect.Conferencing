@@ -64,7 +64,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 				switch (number.Protocol.ToUpper())
 				{
 					case "SIP":
-						yield return new SipDialContext { DialString = number.Number };
+						yield return new DialContext {Protocol = eDialProtocol.Sip, DialString = number.Number};
 						continue;
 				}
 			}

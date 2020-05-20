@@ -165,7 +165,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (callType == eCallType.Unknown)
 				callType = extends.DialingPlan.DefaultCallType;
 
-			extends.Dial(new TraditionalDialContext { DialString = number, CallType = callType });
+			extends.Dial(new DialContext { DialString = number, CallType = callType });
 		}
 
 		/// <summary>

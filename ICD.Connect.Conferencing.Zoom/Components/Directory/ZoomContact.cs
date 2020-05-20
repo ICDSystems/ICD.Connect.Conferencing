@@ -91,7 +91,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Directory
 
 		public IEnumerable<IDialContext> GetDialContexts()
 		{
-			yield return new ZoomContactDialContext { DialString = JoinId };
+			yield return new DialContext {Protocol = eDialProtocol.ZoomContact, DialString = JoinId};
 		}
 
 		public void Update(ZoomContact contact)

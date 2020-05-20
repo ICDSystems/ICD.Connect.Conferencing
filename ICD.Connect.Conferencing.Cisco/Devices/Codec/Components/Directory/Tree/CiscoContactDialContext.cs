@@ -16,11 +16,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// </summary>
 		[PublicAPI]
 		public int ContactMethodId { get; set; }
-
-		public override eDialProtocol Protocol
-		{
-			get { return eDialProtocol.Unknown; }
-		}
 	}
 
 	public sealed class CiscoContactMethodXmlConverter : AbstractGenericXmlConverter<CiscoContactDialContext>

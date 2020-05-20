@@ -4,7 +4,7 @@ using ICD.Connect.Settings.ORM;
 
 namespace ICD.Connect.Conferencing.Favorites
 {
-	public sealed class FavoriteDialContext : IDialContext
+	public sealed class FavoriteDialContext : AbstractDialContext
 	{
 		/// <summary>
 		/// Gets the table id for this instance.
@@ -12,6 +12,9 @@ namespace ICD.Connect.Conferencing.Favorites
 		[PrimaryKey]
 		public int Id { get; set; }
 
+		/// <summary>
+		/// Gets the id of the parent favorite contact.
+		/// </summary>
 		[ForeignKey(typeof(Favorite))]
 		public int FavoriteId { get; set; }
 
@@ -33,17 +36,29 @@ namespace ICD.Connect.Conferencing.Favorites
 
 		#region IDialContext Members
 
+		/// <summary>
+		/// Gets the protocol for placing the call.
+		/// </summary>
 		[DataField]
-		public eDialProtocol Protocol { get; set; }
+		public override eDialProtocol Protocol { get; set; }
 
+		/// <summary>
+		/// Gets the type of call.
+		/// </summary>
 		[DataField]
-		public eCallType CallType { get; set; }
+		public override eCallType CallType { get; set; }
 
+		/// <summary>
+		/// Gets the number, uri, etc for placing the call.
+		/// </summary>
 		[DataField]
-		public string DialString { get; set; }
+		public override string DialString { get; set; }
 
+		/// <summary>
+		/// Gets the password for joining the call.
+		/// </summary>
 		[DataField]
-		public string Password { get; set; }
+		public override string Password { get; set; }
 
 		#endregion
 	}

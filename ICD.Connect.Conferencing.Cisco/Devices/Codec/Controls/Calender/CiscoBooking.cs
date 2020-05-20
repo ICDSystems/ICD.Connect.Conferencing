@@ -4,7 +4,6 @@ using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using Booking = ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings.Booking;
 
@@ -59,24 +58,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		    m_BookingNumbers = ParseBookingNumbers().ToList();
 	    }
 
-        private static eMeetingType FromCallType(eCiscoCallType type)
-        {
-            switch (type)
-            {
-                case eCiscoCallType.Unknown:
-                case eCiscoCallType.Video:
-                    return eMeetingType.VideoConference;
-
-                case eCiscoCallType.Audio:
-                case eCiscoCallType.AudioCanEscalate:
-                case eCiscoCallType.ForwardAllCall:
-                    return eMeetingType.AudioConference;
-
-                default:
-                    throw new ArgumentOutOfRangeException("type");
-            }
-        }
-
 	    private IEnumerable<IDialContext> ParseBookingNumbers()
 	    {
 		    foreach (BookingCall call in m_Booking.GetCalls())
@@ -84,11 +65,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 			    switch (call.Protocol.ToUpper())
 			    {
 				    case "SIP":
-					    yield return new SipDialContext { DialString = call.Number };
+					    yield return new DialContext {Protocol = eDialProtocol.Sip, DialString = call.Number};
 					    continue;
 			    }
 			}
-
 	    }
     }
 }

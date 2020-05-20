@@ -59,43 +59,27 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 		private static void Dial<T>(IConferenceDeviceControl<T> instance, eDialProtocol protocol, string number) where T : IConference
 		{
-			switch (protocol)
-			{
-				case eDialProtocol.Pstn:
-					instance.Dial(new PstnDialContext { DialString = number });
-					break;
-				case eDialProtocol.Sip:
-					instance.Dial(new SipDialContext { DialString = number });
-					break;
-				case eDialProtocol.Zoom:
-					instance.Dial(new ZoomDialContext{ DialString = number });
-					break;
-				case eDialProtocol.ZoomContact:
-					instance.Dial(new ZoomContactDialContext { DialString = number });
-					break;
-			}
+			DialContext context =
+				new DialContext
+				{
+					Protocol = protocol,
+					DialString = number
+				};
+
+			instance.Dial(context);
 		}
+
 		private static void Dial<T>(IConferenceDeviceControl<T> instance, eDialProtocol protocol, string number, string password) where T : IConference
 		{
-			switch (protocol)
-			{
-				case eDialProtocol.Pstn:
-					instance.Dial(new PstnDialContext { DialString = number });
-					break;
-				case eDialProtocol.Sip:
-					instance.Dial(new SipDialContext { DialString = number });
-					break;
-				case eDialProtocol.Zoom:
-					instance.Dial(new ZoomDialContext
-					{
-						DialString = number,
-						Password = password
-					});
-					break;
-				case eDialProtocol.ZoomContact:
-					instance.Dial(new ZoomContactDialContext { DialString = number });
-					break;
-			}
+			DialContext context =
+				new DialContext
+				{
+					Protocol = protocol,
+					DialString = number,
+					Password = password
+				};
+
+			instance.Dial(context);
 		}
 	}
 }

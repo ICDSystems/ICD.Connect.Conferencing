@@ -32,7 +32,9 @@ namespace ICD.Connect.Conferencing.Mock
 
 		public override void PopulateFolder(IDirectoryFolder folder)
 		{
-			folder.AddContact(new Contact("MockPerson", new IDialContext[]{ new SipDialContext { DialString = "555-555-5555" } }));
+			folder.AddContact(new Contact("MockPerson",
+			                              new IDialContext[]
+			                              {new DialContext {Protocol = eDialProtocol.Pstn, DialString = "555-555-5555"}}));
 		}
 	}
 }
