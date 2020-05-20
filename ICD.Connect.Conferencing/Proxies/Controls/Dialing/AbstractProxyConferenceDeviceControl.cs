@@ -21,6 +21,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 	{
 		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
+		public event EventHandler<GenericEventArgs<IDialContext>> OnCallInInfoChanged;
 		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
@@ -32,8 +33,27 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
 		private eConferenceFeatures m_SupportedConferenceFeatures;
+		private IDialContext m_CallInInfo;
 
 		#region Properties
+
+		/// <summary>
+		/// Gets the call-in info for this conference control.
+		/// </summary>
+		public IDialContext CallInInfo
+		{
+			get { return m_CallInInfo; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_CallInInfo)
+					return;
+
+				m_CallInInfo = value;
+
+				OnCallInInfoChanged.Raise(this, new GenericEventArgs<IDialContext>(m_CallInInfo));
+			}
+		}
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
@@ -139,6 +159,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 			OnDoNotDisturbChanged = null;
 			OnAutoAnswerChanged = null;
 			OnPrivacyMuteChanged = null;
+			OnCallInInfoChanged = null;
 
 			base.DisposeFinal(disposing);
 		}

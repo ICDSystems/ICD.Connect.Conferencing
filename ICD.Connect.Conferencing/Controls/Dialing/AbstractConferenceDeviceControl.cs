@@ -42,6 +42,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public abstract event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		/// <summary>
+		/// Raised when the call-in info for the conference control changes.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<IDialContext>> OnCallInInfoChanged;
+
+		/// <summary>
 		/// Raised when the Do Not Disturb state changes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
@@ -67,6 +72,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
 		private eConferenceFeatures m_SupportedConferenceFeatures;
+		private IDialContext m_CallInInfo;
 
 		#region Properties
 
@@ -74,6 +80,25 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public abstract eCallType Supports { get; }
+
+		/// <summary>
+		/// Gets the call-in info for this conference control.
+		/// </summary>
+		public IDialContext CallInInfo
+		{
+			get { return m_CallInInfo; }
+			protected set
+			{
+				if (value == m_CallInInfo)
+					return;
+
+				m_CallInInfo = value;
+
+				Logger.Set("CallInInfo", eSeverity.Informational, m_CallInInfo);
+
+				OnCallInInfoChanged.Raise(this, new GenericEventArgs<IDialContext>(m_CallInInfo));
+			}
+		}
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
@@ -204,6 +229,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			OnAutoAnswerChanged = null;
 			OnPrivacyMuteChanged = null;
 			OnSupportedConferenceFeaturesChanged = null;
+			OnCallInInfoChanged = null;
 
 			base.DisposeFinal(disposing);
 		}

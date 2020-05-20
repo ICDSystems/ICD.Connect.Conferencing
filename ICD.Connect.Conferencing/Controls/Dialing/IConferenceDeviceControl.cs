@@ -79,6 +79,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		/// <summary>
+		/// Raised when the call-in info for the conference control changes.
+		/// </summary>
+		event EventHandler<GenericEventArgs<IDialContext>> OnCallInInfoChanged; 
+
+		/// <summary>
 		/// Raised when the Do Not Disturb state changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
@@ -118,6 +123,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		#endregion
 
 		#region Properties
+
+		/// <summary>
+		/// Gets the call-in info for this conference control.
+		/// </summary>
+		IDialContext CallInInfo { get; }
 
 		/// <summary>
 		/// Gets the AutoAnswer state.
