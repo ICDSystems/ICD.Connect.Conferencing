@@ -9,6 +9,7 @@ using ICD.Common.Utils.Timers;
 using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Calendaring.Controls;
 using ICD.Connect.Conferencing.Zoom.Components.Bookings;
+using Booking = ICD.Connect.Conferencing.Zoom.Components.Bookings.Booking;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 {

@@ -9,6 +9,7 @@ using ICD.Common.Utils.Timers;
 using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Calendaring.Controls;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
+using Booking = ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings.Booking;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 {

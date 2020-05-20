@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Conferencing.DialContexts;
-using ICD.Connect.Conferencing.Zoom.Components.Bookings;
+using Booking = ICD.Connect.Conferencing.Zoom.Components.Bookings.Booking;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 {
