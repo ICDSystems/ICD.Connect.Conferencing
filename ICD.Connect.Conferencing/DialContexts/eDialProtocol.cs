@@ -6,11 +6,10 @@
 	/// </summary>
 	public enum eDialProtocol
 	{
-		None = 0,
-		Unknown = 1,
-		Pstn = 2,
-		Sip = 3,
-		Zoom = 4,
-		ZoomContact = 5
+		Unknown = 0,
+		Pstn = 1,
+		Sip = 2,
+		Zoom = 3,
+		ZoomContact = 4
 	}
 }
