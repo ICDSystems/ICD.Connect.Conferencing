@@ -38,7 +38,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private readonly PresentationComponent m_PresentationComponent;
 
 		private IRoutingGraph m_CachedRoutingGraph;
-		private ICore m_CachedCore;
 		private string m_LastSelectedCameraUsbId;
 
 		/// <summary>
@@ -47,14 +46,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		private IRoutingGraph RoutingGraph
 		{
 			get { return m_CachedRoutingGraph = m_CachedRoutingGraph ?? ServiceProvider.GetService<IRoutingGraph>(); }
-		}
-
-		/// <summary>
-		/// Gets the core.
-		/// </summary>
-		private ICore Core
-		{
-			get { return m_CachedCore = m_CachedCore ?? ServiceProvider.GetService<ICore>(); }
 		}
 
 		/// <summary>
@@ -160,7 +151,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		public override void SetCameraInput(int address, int cameraDeviceId)
 		{
 			IOriginator camera;
-			if (!Core.Originators.TryGetChild(cameraDeviceId, out camera))
+			if (!Parent.Core.Originators.TryGetChild(cameraDeviceId, out camera))
 			{
 				Logger.Log(eSeverity.Error, "Failed to find device for camera ID {0}", cameraDeviceId);
 				return;
