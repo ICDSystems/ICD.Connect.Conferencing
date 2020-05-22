@@ -98,11 +98,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public IEnumerable<IConference> ActiveConferences { get { return m_Conferences.Where(c => c.IsActive()); } }
 
 		/// <summary>
-		/// Gets the online conferences.
-		/// </summary>
-		public IEnumerable<IConference> OnlineConferences { get { return m_Conferences.Where(c => c.IsOnline()); } }
-
-		/// <summary>
 		/// Returns true if actively in a call.
 		/// </summary>
 		public eInCall IsInCall
@@ -593,10 +588,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		private void UpdateIsInCall()
 		{
-			if (!OnlineConferences.Any())
-				IsInCall = eInCall.None;
-			else
-				IsInCall = (eInCall)OnlineConferences.Max(c => (int)c.CallType);
+			IsInCall = (eInCall)ActiveConferences.Select(c => (int)c.CallType).MaxOrDefault();
 		}
 
 		#endregion

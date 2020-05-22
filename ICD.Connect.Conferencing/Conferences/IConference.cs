@@ -90,33 +90,6 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		/// <summary>
-		/// Returns true if this conference is currently online.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <returns></returns>
-		public static bool IsOnline([NotNull] this IConference extends)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			switch (extends.Status)
-			{
-				case eConferenceStatus.Undefined:
-				case eConferenceStatus.Connecting:
-				case eConferenceStatus.Disconnecting: // TODO - Disconnecting hasn't disconnected yet, online?
-				case eConferenceStatus.Disconnected:
-					return false;
-
-				case eConferenceStatus.Connected:
-				case eConferenceStatus.OnHold:
-					return true;
-				
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-		}
-
-		/// <summary>
 		/// Returns true if this conference is not disconnected.
 		/// </summary>
 		/// <param name="extends"></param>
