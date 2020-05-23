@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
@@ -15,6 +16,7 @@ using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Zoom.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Components.System;
 using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Connect.Protocol.Network.Ports.Web;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 {
@@ -45,6 +47,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
+		private static Dictionary<string, string> s_PersonalToId;
 		private readonly CallComponent m_CallComponent;
 		private readonly SystemComponent m_SystemComponent;
 
@@ -53,6 +56,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private readonly Dictionary<IIncomingCall, SafeTimer> m_IncomingCalls;
 		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
 		private readonly SafeCriticalSection m_InviteSection;
+
+		private readonly HttpPort m_PersonalIdPort;
 
 		/// <summary>
 		/// If true, if camera is enabled/unmuted, it will be forced back to disabled
@@ -76,6 +81,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		#endregion
 
 		/// <summary>
+		/// Static constructor.
+		/// </summary>
+		static ZoomRoomConferenceControl()
+		{
+			s_PersonalToId = new Dictionary<string, string>();
+		}
+
+		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="parent"></param>
@@ -91,6 +104,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_InviteOnMeetingStart = new IcdHashSet<string>();
 			m_InviteSection = new SafeCriticalSection();
 			m_KeepCameraMutedResetTimer = SafeTimer.Stopped(ResetKeepCameraMuted);
+			m_PersonalIdPort = new HttpPort();
 
 			m_Conference = new ZoomWebConference(m_CallComponent);
 			m_Conference.OnStatusChanged += ConferenceOnStatusChanged;
@@ -143,7 +157,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			if (string.IsNullOrEmpty(dialContext.DialString))
 				return eDialContextSupport.Unsupported;
 
-			if (dialContext.Protocol == eDialProtocol.Zoom || dialContext.Protocol == eDialProtocol.ZoomContact)
+			if (dialContext.Protocol == eDialProtocol.Zoom || dialContext.Protocol == eDialProtocol.ZoomContact ||
+			    dialContext.Protocol == eDialProtocol.ZoomPersonal)
 				return eDialContextSupport.Native;
 
 			return eDialContextSupport.Unsupported;
@@ -179,6 +194,16 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 							m_CallComponent.StartPersonalMeeting();
 							break;
 					}
+					break;
+
+				case eDialProtocol.ZoomPersonal:
+					string newDialString = ConvertZoomPersonalToZoom(dialContext.DialString);
+
+					// Dial normally through the API
+					if (string.IsNullOrEmpty(dialContext.Password))
+						m_CallComponent.StartMeeting(newDialString);
+					else
+						m_CallComponent.JoinMeeting(newDialString, dialContext.Password);
 					break;
 			}
 		}
@@ -346,6 +371,28 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private void ResetKeepCameraMuted()
 		{
 			m_KeepCameraMuted = false;
+		}
+
+		/// <summary>
+		/// Gets a zoom meeting id for the given personal id.
+		/// </summary>
+		/// <param name="personal"></param>
+		/// <returns></returns>
+		private string ConvertZoomPersonalToZoom(string personal)
+		{
+			string id;
+			if (s_PersonalToId.TryGetValue(personal, out id))
+				return id;
+
+			// Regex to pull out the real zoom meeting ID
+			const string zoomResponseRegex = "zoom\\.us\\/j\\/(?'meeting'\\d+)";
+
+			// Form the full personal URI from the DialString
+			// Example: "https://icdpf.zoom.us/my/P3rS0naL.d1aL5tr1nG"
+			WebPortResponse response = m_PersonalIdPort.Get("https://icdpf.zoom.us/my/" + personal);
+
+			Match match = Regex.Match(response.ResponseUrl, zoomResponseRegex);
+			return s_PersonalToId[personal] = match.Groups["meeting"].Value;
 		}
 
 		#endregion

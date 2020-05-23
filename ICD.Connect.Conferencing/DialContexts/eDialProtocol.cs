@@ -10,6 +10,7 @@
 		Pstn = 1,
 		Sip = 2,
 		Zoom = 3,
-		ZoomContact = 4
+		ZoomContact = 4,
+		ZoomPersonal = 5
 	}
 }
