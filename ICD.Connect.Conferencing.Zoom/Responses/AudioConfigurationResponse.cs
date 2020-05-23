@@ -32,11 +32,17 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 		public bool? ReduceReverb { get; set; }
 
 		public int? Volume { get; set; }
+
+		[CanBeNull]
+		public string SelectedId { get; set; }
 	}
 
 	[JsonConverter(typeof(OutputConfigurationConverter))]
 	public sealed class OutputConfiguration
 	{
 		public int? Volume { get; set; }
+
+		[CanBeNull]
+		public string SelectedId { get; set; }
 	}
 }

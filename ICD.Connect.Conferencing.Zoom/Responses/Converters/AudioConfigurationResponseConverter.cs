@@ -84,6 +84,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 		private const string ATTR_IS_SAP_DISABLED = "is_sap_disabled";
 		private const string ATTR_REDUCE_REVERB = "reduce_reverb";
 		private const string ATTR_VOLUME = "volume";
+		private const string ATTR_SELECTED_ID = "selectedId";
 
 		protected override void WriteProperties(JsonWriter writer, InputConfiguration value,
 		                                        JsonSerializer serializer)
@@ -98,6 +99,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 			if (value.Volume != null)
 				writer.WriteProperty(ATTR_VOLUME, serializer);
+
+			if (value.SelectedId != null)
+				writer.WriteProperty(ATTR_SELECTED_ID, serializer);
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, InputConfiguration instance,
@@ -114,6 +118,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				case ATTR_VOLUME:
 					instance.Volume = reader.GetValueAsInt();
 					break;
+				case ATTR_SELECTED_ID:
+					instance.SelectedId = reader.GetValueAsString();
+					break;
 
 				default:
 					base.ReadProperty(property, reader, instance, serializer);
@@ -125,6 +132,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 	public sealed class OutputConfigurationConverter : AbstractGenericJsonConverter<OutputConfiguration>
 	{
 		private const string ATTR_VOLUME = "volume";
+		private const string ATTR_SELECTED_ID = "selectedId";
 
 		protected override void WriteProperties(JsonWriter writer, OutputConfiguration value, JsonSerializer serializer)
 		{
@@ -132,6 +140,9 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 
 			if (value.Volume != null)
 				writer.WriteProperty(ATTR_VOLUME, serializer);
+
+			if (value.SelectedId != null)
+				writer.WriteProperty(ATTR_SELECTED_ID, serializer);
 		}
 
 		protected override void ReadProperty(string property, JsonReader reader, OutputConfiguration instance,
@@ -142,6 +153,10 @@ namespace ICD.Connect.Conferencing.Zoom.Responses.Converters
 				case ATTR_VOLUME:
 					instance.Volume = reader.GetValueAsInt();
 					break;
+				case ATTR_SELECTED_ID:
+					instance.SelectedId = reader.GetValueAsString();
+					break;
+
 
 				default:
 					base.ReadProperty(property, reader, instance, serializer);

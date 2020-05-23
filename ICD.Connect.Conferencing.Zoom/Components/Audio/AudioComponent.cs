@@ -23,10 +23,22 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnReduceReverbChanged;
 
+		/// <summary>
+		/// Raised when then selected audio input device is changed.
+		/// </summary>
+		public event EventHandler<StringEventArgs> OnAudioInputDeviceChanged;
+
+		/// <summary>
+		/// Raised when the selected audio output device is changed.
+		/// </summary>
+		public event EventHandler<StringEventArgs> OnAudioOutputDeviceChanged;
+
 		#endregion
 
 		private bool m_IsSapDisabled;
 		private bool m_ReduceReverb;
+		private string m_SelectedAudioInputDeviceId;
+		private string m_SelectedAudioOutputDeviceId;
 
 		#region Properties
 
@@ -61,6 +73,40 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 				m_ReduceReverb = value;
 				Parent.Logger.Set("Reduce Reverb", eSeverity.Informational, m_ReduceReverb);
 				OnReduceReverbChanged.Raise(this, new BoolEventArgs(m_ReduceReverb));
+			}
+		}
+
+		/// <summary>
+		/// The currently selected Audio Input Device Id for the Zoom Room.
+		/// </summary>
+		public string SelectedAudioInputDeviceId
+		{
+			get { return m_SelectedAudioInputDeviceId; }
+			private set
+			{
+				if (m_SelectedAudioInputDeviceId == value)
+					return;
+
+				m_SelectedAudioInputDeviceId = value;
+				Parent.Logger.Set("Selected Audio Input DeviceId", eSeverity.Informational, m_SelectedAudioInputDeviceId);
+				OnAudioInputDeviceChanged.Raise(this, new StringEventArgs(m_SelectedAudioInputDeviceId));
+			}
+		}
+
+		/// <summary>
+		/// The currently selected Audio Output Device Id for the Zoom Room.
+		/// </summary>
+		public string SelectedAudioOutputDeviceId
+		{
+			get { return m_SelectedAudioOutputDeviceId; }
+			private set
+			{
+				if (m_SelectedAudioOutputDeviceId == value)
+					return;
+
+				m_SelectedAudioOutputDeviceId = value;
+				Parent.Logger.Set("Selected Audio Output DeviceId", eSeverity.Informational, m_SelectedAudioOutputDeviceId);
+				OnAudioOutputDeviceChanged.Raise(this, new StringEventArgs(m_SelectedAudioOutputDeviceId));
 			}
 		}
 
@@ -107,10 +153,24 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 			Parent.SendCommand("zConfiguration Audio Input reduce_reverb: {0}", enabled ? "on" : "off");
 		}
 
+		public void SetAudioInputDeviceById(string id)
+		{
+			Parent.Logger.Log(eSeverity.Informational, "Setting Audio Input Device Id to: {0}", id);
+			Parent.SendCommand("zConfiguration Audio Input selectedId: {0}", id);
+		}
+
+		public void SetAudioOutputDeviceById(string id)
+		{
+			Parent.Logger.Log(eSeverity.Informational, "Setting Audio Output Device Id to: {0}", id);
+			Parent.SendCommand("zConfiguration Audio Output selectedId: {0}", id);
+		}
+
 		public void UpdateAudio()
 		{
 			Parent.SendCommand("zConfiguration Audio Input is_sap_disabled");
 			Parent.SendCommand("zConfiguration Audio Input reduce_reverb");
+			Parent.SendCommand("zConfiguration Audio Input selectedId");
+			Parent.SendCommand("zConfiguration Audio Output selectedId");
 		}
 
 		#endregion
@@ -133,15 +193,26 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 			if (topData == null)
 				return;
 
-			var data = topData.InputConfiguration;
-			if (data == null)
+			var inputData = topData.InputConfiguration;
+			var outputData = topData.OutputConfiguration;
+
+			if (inputData == null && outputData == null)
 				return;
 
-			if (data.IsSapDisabled != null)
-				IsSapDisabled = (bool)data.IsSapDisabled;
+			if (inputData != null)
+			{
+				if (inputData.IsSapDisabled != null)
+					IsSapDisabled = (bool)inputData.IsSapDisabled;
 
-			if (data.ReduceReverb != null)
-				ReduceReverb = (bool)data.ReduceReverb;
+				if (inputData.ReduceReverb != null)
+					ReduceReverb = (bool)inputData.ReduceReverb;
+			}
+
+			if (outputData != null)
+			{
+				if (outputData.SelectedId != null)
+					SelectedAudioOutputDeviceId = outputData.SelectedId;
+			}
 		}
 
 		#endregion
@@ -156,6 +227,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 			addRow("IsSapDisabled", IsSapDisabled);
 			addRow("ReduceReverb", ReduceReverb);
+			addRow("SelectedAudioInputDeviceId", SelectedAudioOutputDeviceId);
+			addRow("SelectedAudioOutputDeviceId", SelectedAudioOutputDeviceId);
 		}
 
 		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
@@ -167,6 +240,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 			                                             b => SetSapDisabled(b));
 			yield return new GenericConsoleCommand<bool>("SetReduceReverb", "SetReduceReverb <true/false>",
 			                                             b => SetReduceReverb(b));
+			yield return new GenericConsoleCommand<string>("SetAudioInputById",
+			                                               "SetAudioInputById <Audio Input Zoom Device Id>",
+			                                               s => SetAudioInputDeviceById(s));
+			yield return new GenericConsoleCommand<string>("SetAudioOutputById",
+			                                               "SetAudioOutputById <Audio Output Zoom Device Id>",
+			                                               s => SetAudioOutputDeviceById(s));
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
