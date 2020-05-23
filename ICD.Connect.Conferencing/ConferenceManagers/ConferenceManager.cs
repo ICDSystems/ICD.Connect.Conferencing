@@ -6,6 +6,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Audio.VolumePoints;
+using ICD.Connect.Conferencing.ConferenceManagers.History;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
@@ -41,6 +42,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
         private readonly ConferenceManagerDialers m_Dialers;
 		private readonly ConferenceManagerVolumePoints m_VolumePoints;
 		private readonly DialingPlan m_DialingPlan;
+		private readonly ConferenceManagerHistory m_History;
 
 		private eEnforceState m_EnforceDoNotDisturb;
 		private eEnforceState m_EnforceAutoAnswer;
@@ -72,6 +74,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		[NotNull]
 		public ConferenceManagerDialers Dialers { get { return m_Dialers; } }
+
+		public ConferenceManagerHistory History { get { return m_History; } }
 
 		/// <summary>
 		/// Gets the conference manager volume points collection.
@@ -152,6 +156,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_DialingPlan = new DialingPlan();
 			m_Dialers = new ConferenceManagerDialers(this);
 			m_VolumePoints = new ConferenceManagerVolumePoints(this);
+			m_History = new ConferenceManagerHistory(this);
 		}
 
 		#region Methods

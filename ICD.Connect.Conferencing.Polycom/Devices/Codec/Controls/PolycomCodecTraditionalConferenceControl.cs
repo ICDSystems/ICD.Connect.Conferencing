@@ -393,9 +393,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			source.SetCallType(callStatus.VideoCall ? eCallType.Video : eCallType.Audio);
 
 			if (source.GetIsOnline())
-				source.SetStart(source.Start ?? IcdEnvironment.GetUtcTime());
-			else if (source.Start != null)
-				source.SetEnd(source.End ?? IcdEnvironment.GetUtcTime());
+				source.SetStart(source.StartTime ?? IcdEnvironment.GetUtcTime());
+			else if (source.StartTime != null)
+				source.SetEnd(source.EndTime ?? IcdEnvironment.GetUtcTime());
 		}
 
 		/// <summary>
@@ -515,12 +515,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				call.Name = callStatus.FarSiteName;
 
 			call.Number = callStatus.FarSiteNumber;
-
-			bool? outgoing = callStatus.Outgoing;
-			if (outgoing == null)
-				call.Direction = eCallDirection.Incoming;
-			else
-				call.Direction = (bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming;
 
 			if (callStatus.ConnectionState == eConnectionState.Connected)
 			{

@@ -1,6 +1,7 @@
 using System;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
+using ICD.Connect.Conferencing.ConferenceManagers.History;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
@@ -46,6 +47,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		[NotNull]
 		ConferenceManagerDialers Dialers { get; }
+
+		[NotNull]
+		ConferenceManagerHistory History { get; }
 
 		/// <summary>
 		/// Gets the conference manager volume points collection.

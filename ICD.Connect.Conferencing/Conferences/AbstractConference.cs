@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
@@ -30,10 +31,23 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
+		/// <summary>
+		/// Raised when the start time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
+
+		/// <summary>
+		/// Raised when the end time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
+
 		private readonly IcdHashSet<T> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private eConferenceStatus m_Status;
+
+		private DateTime? m_Start;
+		private DateTime? m_End;
 
 		/// <summary>
 		/// Maps participant status to conference status.
@@ -59,40 +73,55 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		#region Properties
 
-		public eConferenceStatus Status { get { return m_Status; } }
+		public eConferenceStatus Status
+		{
+			get { return m_Status; }
+			private set
+			{
+				if(m_Status == value)
+					return;
+
+				m_Status = value;
+
+				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(value));
+			}
+		}
 
 		/// <summary>
 		/// The time the conference started.
 		/// </summary>
-		public DateTime? Start
+		public DateTime? StartTime
 		{
-			get
+			get { return m_Start; }
+			private set
 			{
-				DateTime start;
-				if (GetParticipants().Select(s => s.Start)
-				                     .OfType<DateTime>()
-				                     .Order()
-				                     .TryFirst(out start))
-					return start;
+				if (m_Start == value)
+					return;
 
-				return null;
+				m_Start = value;
+
+				OnStartTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
 			}
 		}
 
 		/// <summary>
 		/// The time the conference ended.
 		/// </summary>
-		public DateTime? End
+		public DateTime? EndTime
 		{
 			get
 			{
-				DateTime?[] ends = GetParticipants().Select(s => s.End).ToArray();
+				return m_End;
+			}
 
-				// Conference hasn't ended yet.
-				if (ends.Length == 0 || ends.Any(e => e == null))
-					return null;
+			private set
+			{
+				if (m_End == value)
+					return;
 
-				return ends.ExceptNulls().Max();
+				m_End = value;
+
+				OnEndTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
 			}
 		}
 
@@ -218,43 +247,10 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		#region Private Methods
 
-		/// <summary>
-		/// Subscribes to the participant events.
-		/// </summary>
-		/// <param name="participant"></param>
-		private void Subscribe(IParticipant participant)
-		{
-			participant.OnStatusChanged += ParticipantOnStatusChanged;
-		}
-
-		/// <summary>
-		/// Unsubscribes from the participant events.
-		/// </summary>
-		/// <param name="participant"></param>
-		private void Unsubscribe(IParticipant participant)
-		{
-			participant.OnStatusChanged -= ParticipantOnStatusChanged;
-		}
-
-		/// <summary>
-		/// Called when a participant status changes.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
-		{
-			UpdateStatus();
-		}
-
 		private void UpdateStatus()
 		{
-			eConferenceStatus status = GetStatusFromSources();
-			if (status == m_Status)
-				return;
-
-			m_Status = status;
-
-			OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(m_Status));
+			Status = GetStatusFromSources();
+			UpdateStartAndEndTime();
 		}
 
 		private eConferenceStatus GetStatusFromSources()
@@ -283,6 +279,80 @@ namespace ICD.Connect.Conferencing.Conferences
 
 			// If we don't know the current state, we shouldn't assume we've disconnected.
 			return eConferenceStatus.Undefined;
+		}
+
+		private void UpdateStartAndEndTime()
+		{
+			UpdateStartTime();
+			UpdateEndTime();
+		}
+
+		private void UpdateStartTime()
+		{
+			DateTime? start;
+			GetParticipants().Select(s => s.StartTime)
+			                 .Where(s => s != null)
+			                 .Order()
+			                 .TryFirst(out start);
+			if (start != null)
+				StartTime = start;
+		}
+
+		private void UpdateEndTime()
+		{
+			DateTime? end;
+			GetParticipants().Select(e => e.EndTime)
+			                 .Where(e => e != null)
+			                 .Order()
+			                 .TryFirst(out end);
+			if (end != null)
+				EndTime = end;
+		}
+
+		#endregion
+
+		#region Participant Callbacks
+
+		/// <summary>
+		/// Subscribes to the participant events.
+		/// </summary>
+		/// <param name="participant"></param>
+		private void Subscribe(IParticipant participant)
+		{
+			participant.OnStatusChanged += ParticipantOnStatusChanged;
+			participant.OnStartTimeChanged += ParticipantOnOnStartTimeChanged;
+			participant.OnEndTimeChanged += ParticipantOnOnEndTimeChanged;
+		}
+
+		/// <summary>
+		/// Unsubscribes from the participant events.
+		/// </summary>
+		/// <param name="participant"></param>
+		private void Unsubscribe(IParticipant participant)
+		{
+			participant.OnStatusChanged -= ParticipantOnStatusChanged;
+			participant.OnStartTimeChanged -= ParticipantOnOnStartTimeChanged;
+			participant.OnEndTimeChanged -= ParticipantOnOnEndTimeChanged;
+		}
+
+		/// <summary>
+		/// Called when a participant status changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
+		{
+			UpdateStatus();
+		}
+
+		private void ParticipantOnOnStartTimeChanged(object sender, DateTimeNullableEventArgs e)
+		{
+			UpdateStartTime();
+		}
+
+		private void ParticipantOnOnEndTimeChanged(object sender, DateTimeNullableEventArgs e)
+		{
+			UpdateEndTime();
 		}
 
 		#endregion

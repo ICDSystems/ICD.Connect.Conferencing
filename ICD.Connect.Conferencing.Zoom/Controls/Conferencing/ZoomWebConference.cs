@@ -33,11 +33,23 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
+		/// <summary>
+		/// Raised when the start time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
+
+		/// <summary>
+		/// Raised when the end time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
+
 		private readonly IcdOrderedDictionary<string, ZoomWebParticipant> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private readonly CallComponent m_CallComponent;
 		private eConferenceStatus m_Status;
+		private DateTime? m_StartTime;
+		private DateTime? m_EndTime;
 
 		#region Properties
 
@@ -61,12 +73,36 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <summary>
 		/// The time the conference ended.
 		/// </summary>
-		public DateTime? Start { get; private set; }
+		public DateTime? StartTime
+		{
+			get { return m_StartTime; }
+			private set
+			{
+				if (m_StartTime == value)
+					return;
+
+				m_StartTime = value;
+
+				OnStartTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
+			}
+		}
 
 		/// <summary>
 		/// The time the call ended.
 		/// </summary>
-		public DateTime? End { get; private set; }
+		public DateTime? EndTime
+		{
+			get { return m_EndTime; }
+			private set
+			{
+				if (m_EndTime == value)
+					return;
+
+				m_EndTime = value;
+
+				OnEndTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
+			}
+		}
 
 		/// <summary>
 		/// Gets the type of call.
@@ -265,13 +301,14 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 				case eCallStatus.IN_MEETING:
 					Status = eConferenceStatus.Connected;
-					Start = IcdEnvironment.GetUtcTime();
+					StartTime = IcdEnvironment.GetUtcTime();
 					break;
 
 				case eCallStatus.NOT_IN_MEETING:
 				case eCallStatus.LOGGED_OUT:
 					Clear();
 					Status = eConferenceStatus.Disconnected;
+					EndTime = IcdEnvironment.GetUtcTime();
 					break;
 
 				case eCallStatus.UNKNOWN:

@@ -62,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Raised when the answer state changes.
 		/// </summary>
-		public event EventHandler<IncomingCallAnswerStateEventArgs> OnAnswerStateChanged;
+		public event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
 
 		/// <summary>
 		/// Raised when the call status changes.
@@ -73,6 +73,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// Raised when the source name changes.
 		/// </summary>
 		public event EventHandler<StringEventArgs> OnNameChanged;
+
+		/// <summary>
+		/// Raised when the participant's start time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
+
+		/// <summary>
+		/// Raised when the participant's end time changes
+		/// </summary>
+		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
 
 		/// <summary>
 		/// Raised when the source number changes.
@@ -91,6 +101,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private eCiscoCallType m_CiscoCallType;
 		private eCallType m_SourceType;
 		private eCallAnswerState m_AnswerState;
+		private DateTime? m_StartTime;
+		private DateTime? m_EndTime;
 
 		private static readonly Dictionary<string, string> s_CachedNumberToName;
 		private static readonly SafeCriticalSection s_CachedNumberToNameSection;
@@ -116,7 +128,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				m_AnswerState = value;
 
-				OnAnswerStateChanged.Raise(this, new IncomingCallAnswerStateEventArgs(m_AnswerState));
+				OnAnswerStateChanged.Raise(this, new CallAnswerStateEventArgs(m_AnswerState));
 			}
 		}
 
@@ -171,12 +183,36 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// The time the call started.
 		/// </summary>
-		public DateTime? Start { get; private set; }
+		public DateTime? StartTime
+		{
+			get { return m_StartTime; }
+			private set
+			{
+				if (m_StartTime == value)
+					return;
+
+				m_StartTime = value;
+
+				OnStartTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
+			}
+		}
 
 		/// <summary>
 		/// The time the call ended.
 		/// </summary>
-		public DateTime? End { get; private set; }
+		public DateTime? EndTime
+		{
+			get { return m_EndTime; }
+			private set
+			{
+				if (m_EndTime == value)
+					return;
+
+				m_EndTime = value;
+
+				OnEndTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
+			}
+		}
 
 		public DateTime DialTime { get; private set; }
 
@@ -476,16 +512,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			// If we came online for the first time, update the call start.
 			if (!m_FirstOnline && isOnline)
 			{
-				if (Start == null)
-					Start = IcdEnvironment.GetUtcTime();
+				if (StartTime == null)
+					StartTime = IcdEnvironment.GetUtcTime();
 				m_FirstOnline = true;
 			}
 
 			// If we went offline for the first time, update the call end.
 			if (m_FirstOnline && !m_FirstOffline && !isOnline)
 			{
-				if (End == null)
-					End = IcdEnvironment.GetUtcTime();
+				if (EndTime == null)
+					EndTime = IcdEnvironment.GetUtcTime();
 				m_FirstOffline = true;
 			}
 		}
@@ -588,8 +624,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="duration"></param>
 		private void SetDuration(int duration)
 		{
-			DateTime end = End ?? IcdEnvironment.GetUtcTime();
-			Start = end - TimeSpan.FromSeconds(duration);
+			DateTime end = EndTime ?? IcdEnvironment.GetUtcTime();
+			StartTime = end - TimeSpan.FromSeconds(duration);
 		}
 
 		#endregion

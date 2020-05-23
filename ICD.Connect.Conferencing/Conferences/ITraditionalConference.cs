@@ -53,12 +53,12 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <param name="extends"></param>
 		public static TimeSpan GetDuration(this ITraditionalConference extends)
 		{
-			if (extends.Start == null)
+			if (extends.StartTime == null)
 				return new TimeSpan();
 
-			DateTime end = (extends.End != null) ? (DateTime)extends.End : IcdEnvironment.GetUtcTime();
+			DateTime end = (extends.EndTime != null) ? (DateTime)extends.EndTime : IcdEnvironment.GetUtcTime();
 
-			return end - (DateTime)extends.Start;
+			return end - (DateTime)extends.StartTime;
 		}
 
 		/// <summary>

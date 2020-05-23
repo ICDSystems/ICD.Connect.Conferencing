@@ -1,7 +1,9 @@
 ﻿using System;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.IncomingCalls;
 
 namespace ICD.Connect.Conferencing.Participants
 {
@@ -121,12 +123,12 @@ namespace ICD.Connect.Conferencing.Participants
 
 		public void SetStart(DateTime start)
 		{
-			Start = start;
+			StartTime = start;
 		}
 
 		public void SetEnd(DateTime end)
 		{
-			End = end;
+			EndTime = end;
 		}
 
 		public void SetDialTime(DateTime dialTime)
@@ -137,6 +139,30 @@ namespace ICD.Connect.Conferencing.Participants
 		public void SetAnswerState(eCallAnswerState answerState)
 		{
 			AnswerState = answerState;
+		}
+
+		#endregion
+
+		#region Static Methods
+
+		/// <summary>
+		/// Generates a new ThinTraditionalParticipant based on an incoming call
+		/// </summary>
+		/// <param name="incomingCall"></param>
+		/// <returns></returns>
+		public static ThinTraditionalParticipant FromIncomingCall([NotNull] IIncomingCall incomingCall)
+		{
+			if (incomingCall == null)
+				throw new ArgumentNullException("incomingCall");
+
+			return new ThinTraditionalParticipant()
+			{
+				DialTime = incomingCall.StartTime,
+				Name = incomingCall.Name,
+				Number = incomingCall.Number,
+				AnswerState = incomingCall.AnswerState,
+				Direction = eCallDirection.Incoming
+			};
 		}
 
 		#endregion
