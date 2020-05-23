@@ -114,6 +114,8 @@
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Responses\AudioConfigurationResponse.cs" />
+    <Compile Include="Responses\AudioInputLineResponse.cs" />
+    <Compile Include="Responses\AudioOutputLineResponse.cs" />
     <Compile Include="Responses\BookingsListResultResponse.cs" />
     <Compile Include="Responses\BookingsUpdatedEventResponse.cs" />
     <Compile Include="Responses\BookingsUpdateResponse.cs" />
@@ -129,6 +131,8 @@
     <Compile Include="Responses\CameraControlNotificationResponse.cs" />
     <Compile Include="Responses\ClientCallLayoutResponse.cs" />
     <Compile Include="Responses\Converters\AudioConfigurationResponseConverter.cs" />
+    <Compile Include="Responses\Converters\AudioInputLineResponseConverter.cs" />
+    <Compile Include="Responses\Converters\AudioOutputLineResponseConverter.cs" />
     <Compile Include="Responses\Converters\BookingConverter.cs" />
     <Compile Include="Responses\Converters\BookingsListCommandResponseConverter.cs" />
     <Compile Include="Responses\Converters\BookingsUpdatedEventResponseConverter.cs" />
