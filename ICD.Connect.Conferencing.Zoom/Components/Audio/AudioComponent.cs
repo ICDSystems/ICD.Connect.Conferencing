@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -33,7 +35,20 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 		/// </summary>
 		public event EventHandler<StringEventArgs> OnAudioOutputDeviceChanged;
 
+		/// <summary>
+		/// Raised when the collection of microphones is changed.
+		/// </summary>
+		public event EventHandler OnMicrophonesChanged;
+
+		/// <summary>
+		/// Raised when the collection of speakers is changed.
+		/// </summary>
+		public event EventHandler OnSpeakersChanged;
+
 		#endregion
+
+		private readonly IcdOrderedDictionary<string, AudioInputLine> m_Microphones;
+		private readonly IcdOrderedDictionary<string, AudioOutputLine> m_Speakers;
 
 		private bool m_IsSapDisabled;
 		private bool m_ReduceReverb;
@@ -114,9 +129,12 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 		#region Constructor
 
-		public AudioComponent(ZoomRoom parent) 
+		public AudioComponent(ZoomRoom parent)
 			: base(parent)
 		{
+			m_Microphones = new IcdOrderedDictionary<string, AudioInputLine>();
+			m_Speakers = new IcdOrderedDictionary<string, AudioOutputLine>();
+
 			Subscribe(Parent);
 		}
 
@@ -126,6 +144,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 			OnSoftwareAudioProcessingChanged = null;
 			OnReduceReverbChanged = null;
+			OnMicrophonesChanged = null;
+			OnSpeakersChanged = null;
 
 			Unsubscribe(Parent);
 		}
@@ -138,7 +158,22 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 		{
 			base.Initialize();
 
-			UpdateAudio();
+			Parent.SendCommand("zConfiguration Audio Input is_sap_disabled");
+			Parent.SendCommand("zConfiguration Audio Input reduce_reverb");
+			Parent.SendCommand("zStatus Audio Input Line");
+			Parent.SendCommand("zStatus Audio Output Line");
+			Parent.SendCommand("zConfiguration Audio Input selectedId");
+			Parent.SendCommand("zConfiguration Audio Output selectedId");
+		}
+
+		public IEnumerable<AudioInputLine> GetMicrophones()
+		{
+			return m_Microphones.Values.ToArray(m_Microphones.Count);
+		}
+
+		public IEnumerable<AudioOutputLine> GetSpeakers()
+		{
+			return m_Speakers.Values.ToArray(m_Speakers.Count);
 		}
 
 		public void SetSapDisabled(bool disabled)
@@ -165,40 +200,31 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 			Parent.SendCommand("zConfiguration Audio Output selectedId: {0}", id);
 		}
 
-		public void UpdateAudio()
-		{
-			Parent.SendCommand("zConfiguration Audio Input is_sap_disabled");
-			Parent.SendCommand("zConfiguration Audio Input reduce_reverb");
-			Parent.SendCommand("zConfiguration Audio Input selectedId");
-			Parent.SendCommand("zConfiguration Audio Output selectedId");
-		}
-
 		#endregion
 
 		#region Parent Callbacks
 
 		private void Subscribe(ZoomRoom parent)
 		{
-			Parent.RegisterResponseCallback<AudioConfigurationResponse>(AudioConfigurationResponseCallback);
+			parent.RegisterResponseCallback<AudioConfigurationResponse>(AudioConfigurationResponseCallback);
+			parent.RegisterResponseCallback<AudioInputLineResponse>(AudioInputLineResponseCallback);
+			parent.RegisterResponseCallback<AudioOutputLineResponse>(AudioOutputLineResponseCallback);
 		}
 
 		private void Unsubscribe(ZoomRoom parent)
 		{
-			Parent.UnregisterResponseCallback<AudioConfigurationResponse>(AudioConfigurationResponseCallback);
+			parent.UnregisterResponseCallback<AudioConfigurationResponse>(AudioConfigurationResponseCallback);
+			parent.UnregisterResponseCallback<AudioInputLineResponse>(AudioInputLineResponseCallback);
+			parent.UnregisterResponseCallback<AudioOutputLineResponse>(AudioOutputLineResponseCallback);
 		}
 
 		private void AudioConfigurationResponseCallback(ZoomRoom zoomroom, AudioConfigurationResponse response)
 		{
-			var topData = response.AudioConfiguration;
+			AudioConfiguration topData = response.AudioConfiguration;
 			if (topData == null)
 				return;
 
-			var inputData = topData.InputConfiguration;
-			var outputData = topData.OutputConfiguration;
-
-			if (inputData == null && outputData == null)
-				return;
-
+			InputConfiguration inputData = topData.InputConfiguration;
 			if (inputData != null)
 			{
 				if (inputData.IsSapDisabled != null)
@@ -206,13 +232,41 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 
 				if (inputData.ReduceReverb != null)
 					ReduceReverb = (bool)inputData.ReduceReverb;
+
+				if (inputData.SelectedId != null)
+					SelectedAudioInputDeviceId = inputData.SelectedId;
 			}
 
+			OutputConfiguration outputData = topData.OutputConfiguration;
 			if (outputData != null)
 			{
 				if (outputData.SelectedId != null)
 					SelectedAudioOutputDeviceId = outputData.SelectedId;
 			}
+		}
+
+		private void AudioInputLineResponseCallback(ZoomRoom zoomroom, AudioInputLineResponse response)
+		{
+			var data = response.AudioInputLines;
+			if (data == null)
+				return;
+
+			m_Microphones.Clear();
+			m_Microphones.AddRange(data.Select(m => new KeyValuePair<string, AudioInputLine>(m.Id, m)));
+
+			OnMicrophonesChanged.Raise(this);
+		}
+
+		private void AudioOutputLineResponseCallback(ZoomRoom zoomroom, AudioOutputLineResponse response)
+		{
+			var data = response.AudioOutputLines;
+			if (data == null)
+				return;
+
+			m_Speakers.Clear();
+			m_Speakers.AddRange(data.Select(s => new KeyValuePair<string, AudioOutputLine>(s.Id, s)));
+
+			OnSpeakersChanged.Raise(this);
 		}
 
 		#endregion
