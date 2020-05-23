@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ICD.Common.Utils;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Protocol.SerialBuffers;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 {
-	public sealed class PolycomGroupSeriesSerialBuffer : ISerialBuffer
+	public sealed class PolycomGroupSeriesSerialBuffer : AbstractSerialBuffer
 	{
-		/// <summary>
-		/// Raised when a complete message has been buffered.
-		/// </summary>
-		public event EventHandler<StringEventArgs> OnCompletedSerial;
+		private static readonly char[] s_Delimiters =
+		{
+			'\r',
+			'\n',
+			':' // Polycom doesn't use CRLF after login prompts
+		};
 
 		/// <summary>
 		/// Raised when a username prompt has been buffered.
@@ -26,19 +26,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		public event EventHandler OnPasswordPrompt; 
 
 		private readonly StringBuilder m_RxData;
-		private readonly Queue<string> m_Queue;
-
-		private readonly SafeCriticalSection m_QueueSection;
-		private readonly SafeCriticalSection m_ParseSection;
-
-		private static readonly char[] s_Delimiters =
-		{
-			'\r',
-			'\n',
-			':' // Polycom doesn't use CRLF after login prompts
-		};
-
-		#region Constructors
 
 		/// <summary>
 		/// Constructor.
@@ -46,114 +33,66 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		public PolycomGroupSeriesSerialBuffer()
 		{
 			m_RxData = new StringBuilder();
-			m_Queue = new Queue<string>();
-
-			m_QueueSection = new SafeCriticalSection();
-			m_ParseSection = new SafeCriticalSection();
 		}
 
-		#endregion
-
-		#region Methods
+		/// <summary>
+		/// Override to clear any current state.
+		/// </summary>
+		protected override void ClearFinal()
+		{
+			m_RxData.Clear();
+		}
 
 		/// <summary>
-		/// Enqueues the serial data.
+		/// Override to process the given item for chunking.
 		/// </summary>
 		/// <param name="data"></param>
-		public void Enqueue(string data)
+		/// <returns></returns>
+		protected override IEnumerable<string> Process(string data)
 		{
-			m_QueueSection.Execute(() => m_Queue.Enqueue(data));
-			Parse();
-		}
-
-		/// <summary>
-		/// Clears all queued data in the buffer.
-		/// </summary>
-		public void Clear()
-		{
-			m_ParseSection.Enter();
-			m_QueueSection.Enter();
-
-			try
+			while (true)
 			{
-				m_RxData.Clear();
-				m_Queue.Clear();
-			}
-			finally
-			{
-				m_ParseSection.Leave();
-				m_QueueSection.Leave();
-			}
-		}
-
-		#endregion
-
-		/// <summary>
-		/// Searches the enqueued serial data for the delimiter character.
-		/// Complete strings are raised via the OnCompletedString event.
-		/// </summary>
-		private void Parse()
-		{
-			if (!m_ParseSection.TryEnter())
-				return;
-
-			try
-			{
-				string data = null;
-
-				while (m_QueueSection.Execute(() => m_Queue.Dequeue(out data)))
+				int index = data.IndexOfAny(s_Delimiters);
+				if (index < 0)
 				{
-					while (true)
-					{
-						int index = data.IndexOfAny(s_Delimiters);
-						if (index < 0)
-						{
-							m_RxData.Append(data);
-							break;
-						}
-
-						char delimiter = data[index];
-
-						m_RxData.Append(data.Substring(0, index));
-						data = data.Substring(index + 1);
-
-						switch (delimiter)
-						{
-							// Login prompt
-							case ':':
-								string prompt = m_RxData.ToString().ToLower();
-
-								switch (prompt)
-								{
-									case "password":
-										m_RxData.Clear();
-										OnPasswordPrompt.Raise(this);
-										break;
-
-									case "username":
-										m_RxData.Clear();
-										OnUsernamePrompt.Raise(this);
-										break;
-
-									// Unhandled colon, push it back onto the rx data
-									default:
-										m_RxData.Append(':');
-										break;
-								}
-								continue;
-						}
-
-						string output = m_RxData.Pop();
-						if (string.IsNullOrEmpty(output))
-							continue;
-
-						OnCompletedSerial.Raise(this, new StringEventArgs(output));
-					}
+					m_RxData.Append(data);
+					break;
 				}
-			}
-			finally
-			{
-				m_ParseSection.Leave();
+
+				char delimiter = data[index];
+
+				m_RxData.Append(data.Substring(0, index));
+				data = data.Substring(index + 1);
+
+				switch (delimiter)
+				{
+					// Login prompt
+					case ':':
+						string prompt = m_RxData.ToString().ToLower();
+
+						switch (prompt)
+						{
+							case "password":
+								m_RxData.Clear();
+								OnPasswordPrompt.Raise(this);
+								break;
+
+							case "username":
+								m_RxData.Clear();
+								OnUsernamePrompt.Raise(this);
+								break;
+
+							// Unhandled colon, push it back onto the rx data
+							default:
+								m_RxData.Append(':');
+								break;
+						}
+						continue;
+				}
+
+				string output = m_RxData.Pop();
+				if (!string.IsNullOrEmpty(output))
+					yield return output;
 			}
 		}
 	}
