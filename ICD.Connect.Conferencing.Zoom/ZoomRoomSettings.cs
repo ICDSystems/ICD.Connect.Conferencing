@@ -32,6 +32,9 @@ namespace ICD.Connect.Conferencing.Zoom
 		private const string CAMERA_4_ELEMENT = "Camera4";
 		private const string CAMERA_4_USB_ELEMENT = "Camera4Usb";
 
+		private const string DEFAULT_MICROPHONE_ID_ELEMENT = "DefaultMicrophoneId";
+		private const string DEFAULT_SPEAKER_ID_ELEMENT = "DefaultSpeakerId";
+
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		#region Properties
@@ -117,6 +120,16 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		[UsedImplicitly]
 		public string Camera4UsbDeviceId { set { Camera4Usb = WindowsDevicePathInfo.SetDeviceId(Camera4Usb, value); } }
+
+		/// <summary>
+		/// Gets/sets the default microphone ID.
+		/// </summary>
+		public string DefaultMicrophoneId { get; set; }
+
+		/// <summary>
+		/// Gets/sets the default speaker ID.
+		/// </summary>
+		public string DefaultSpeakerId { get; set; }
 
 		#endregion
 
@@ -204,6 +217,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			writer.WriteElementString(CAMERA_4_ELEMENT, Camera4 == null ? null : IcdXmlConvert.ToString((int)Camera4));
 			writer.WriteElementString(CAMERA_4_USB_ELEMENT, Camera4Usb.ToString());
 
+			writer.WriteElementString(DEFAULT_MICROPHONE_ID_ELEMENT, DefaultMicrophoneId);
+			writer.WriteElementString(DEFAULT_SPEAKER_ID_ELEMENT, DefaultSpeakerId);
+
 			m_NetworkProperties.WriteElements(writer);
 
 			writer.WriteElementString(DIAL_OUT_ENABLED_ELEMENT, IcdXmlConvert.ToString(DialOutEnabled));
@@ -231,6 +247,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			Camera3Usb = ReadUsbInfoFromXml(xml, CAMERA_3_USB_ELEMENT);
 			Camera4 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_4_ELEMENT);
 			Camera4Usb = ReadUsbInfoFromXml(xml, CAMERA_4_USB_ELEMENT);
+
+			DefaultMicrophoneId = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_MICROPHONE_ID_ELEMENT);
+			DefaultSpeakerId = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_SPEAKER_ID_ELEMENT);
 
 			m_NetworkProperties.ParseXml(xml);
 
