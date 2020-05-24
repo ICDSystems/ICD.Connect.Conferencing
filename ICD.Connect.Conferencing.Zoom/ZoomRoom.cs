@@ -76,20 +76,20 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnRecordEnabledChanged;
 
-        /// <summary>
-        /// Raised when the MuteMyCameraOnStart state changes.
-        /// </summary>
-        public event EventHandler<BoolEventArgs> OnMuteMyCameraOnStartChanged;
+		/// <summary>
+		/// Raised when the MuteMyCameraOnStart state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteMyCameraOnStartChanged;
 
-        /// <summary>
-        /// Raised when the MuteParticipantsOnStart state changes.
-        /// </summary>
-        public event EventHandler<BoolEventArgs> OnMuteParticipantsOnStartChanged;
+		/// <summary>
+		/// Raised when the MuteParticipantsOnStart state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnMuteParticipantsOnStartChanged;
 
-        /// <summary>
-        /// Raised when the mapping of camera to USB ids changes.
-        /// </summary>
-        public event EventHandler OnUsbCamerasChanged;
+		/// <summary>
+		/// Raised when the mapping of camera to USB ids changes.
+		/// </summary>
+		public event EventHandler OnUsbCamerasChanged;
 
 		/// <summary>
 		/// Raised when the default microphone ID changes.
@@ -99,7 +99,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Raised when the default microphone ID changes.
 		/// </summary>
-		public event EventHandler<StringEventArgs> OnDefaultSpeakerIdChanged; 
+		public event EventHandler<StringEventArgs> OnDefaultSpeakerIdChanged;
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly DelimiterSerialBuffer m_SerialBuffer;
@@ -107,7 +107,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly SafeCriticalSection m_ResponseCallbacksSection;
 		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly Dictionary<IDeviceBase, WindowsDevicePathInfo> m_UsbCameras;
-        private readonly SafeCriticalSection m_UsbCamerasSection;
+		private readonly SafeCriticalSection m_UsbCamerasSection;
 
 		private string m_DefaultMicrophoneId;
 		private string m_DefaultSpeakerId;
@@ -304,11 +304,11 @@ namespace ICD.Connect.Conferencing.Zoom
 		{
 			OnConnectedStateChanged = null;
 			OnInitializedChanged = null;
-            OnDialOutEnabledChanged = null;
-            OnRecordEnabledChanged = null;
+			OnDialOutEnabledChanged = null;
+			OnRecordEnabledChanged = null;
 			OnMuteMyCameraOnStartChanged = null;
 			OnMuteParticipantsOnStartChanged = null;
-            OnUsbCamerasChanged = null;
+			OnUsbCamerasChanged = null;
 			OnDefaultMicrophoneIdChanged = null;
 			OnDefaultSpeakerIdChanged = null;
 
@@ -348,7 +348,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			// SSH
 			if (port is ISecureNetworkPort)
 				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
-			// TCP
+				// TCP
 			else if (port is INetworkPort)
 				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 		}
@@ -387,12 +387,12 @@ namespace ICD.Connect.Conferencing.Zoom
 			m_ResponseCallbacksSection.Enter();
 
 			try
-			{		                                   
+			{
 				List<ResponseCallbackPair> callbacks;
-				if (!m_ResponseCallbacks.TryGetValue(typeof(T), out callbacks))
+				if (!m_ResponseCallbacks.TryGetValue(typeof (T), out callbacks))
 				{
 					callbacks = new List<ResponseCallbackPair>();
-					m_ResponseCallbacks.Add(typeof(T), callbacks);
+					m_ResponseCallbacks.Add(typeof (T), callbacks);
 				}
 
 				callbacks.Add(new ResponseCallbackPair
@@ -425,7 +425,7 @@ namespace ICD.Connect.Conferencing.Zoom
 			try
 			{
 				List<ResponseCallbackPair> callbacks;
-				if (!m_ResponseCallbacks.TryGetValue(typeof(T), out callbacks))
+				if (!m_ResponseCallbacks.TryGetValue(typeof (T), out callbacks))
 					return;
 
 				int indexToRemove = callbacks.FindIndex(c => c.ActualCallback.Equals(callback));
@@ -440,67 +440,67 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 		}
 
-        #endregion
+		#endregion
 
-        #region USB Cameras
+		#region USB Cameras
 
-        public void SetUsbIdForCamera([NotNull] IDeviceBase camera, WindowsDevicePathInfo? usbInfo)
-        {
-            if (camera == null)
-                throw new ArgumentNullException("camera");
+		public void SetUsbIdForCamera([NotNull] IDeviceBase camera, WindowsDevicePathInfo? usbInfo)
+		{
+			if (camera == null)
+				throw new ArgumentNullException("camera");
 
-            m_UsbCamerasSection.Enter();
+			m_UsbCamerasSection.Enter();
 
-            try
-            {
-                if (usbInfo == GetUsbIdForCamera(camera))
-                    return;
+			try
+			{
+				if (usbInfo == GetUsbIdForCamera(camera))
+					return;
 
-                if (usbInfo.HasValue)
-                    m_UsbCameras[camera] = usbInfo.Value;
-                else
-                    m_UsbCameras.Remove(camera);
-            }
-            finally
-            {
-                m_UsbCamerasSection.Leave();
-            }
+				if (usbInfo.HasValue)
+					m_UsbCameras[camera] = usbInfo.Value;
+				else
+					m_UsbCameras.Remove(camera);
+			}
+			finally
+			{
+				m_UsbCamerasSection.Leave();
+			}
 
-            OnUsbCamerasChanged.Raise(this);
-        }
+			OnUsbCamerasChanged.Raise(this);
+		}
 
-        public WindowsDevicePathInfo? GetUsbIdForCamera([NotNull] IDeviceBase camera)
-        {
-            return m_UsbCamerasSection.Execute(() => m_UsbCameras.GetDefault(camera));
-        }
+		public WindowsDevicePathInfo? GetUsbIdForCamera([NotNull] IDeviceBase camera)
+		{
+			return m_UsbCamerasSection.Execute(() => m_UsbCameras.GetDefault(camera));
+		}
 
-        public void ClearUsbCameras()
-        {
-           m_UsbCamerasSection.Enter();
+		public void ClearUsbCameras()
+		{
+			m_UsbCamerasSection.Enter();
 
-           try
-           {
-               if (m_UsbCameras.Count == 0)
-                   return;
+			try
+			{
+				if (m_UsbCameras.Count == 0)
+					return;
 
-			   m_UsbCameras.Clear();
-           }
-           finally
-           {
-               m_UsbCamerasSection.Leave();
-           }
+				m_UsbCameras.Clear();
+			}
+			finally
+			{
+				m_UsbCamerasSection.Leave();
+			}
 
-		   OnUsbCamerasChanged.Raise(this);
-        }
+			OnUsbCamerasChanged.Raise(this);
+		}
 
-        public IEnumerable<KeyValuePair<IDeviceBase, WindowsDevicePathInfo>> GetUsbCameras()
-        {
-            return m_UsbCamerasSection.Execute(() => m_UsbCameras.ToArray());
-        }
+		public IEnumerable<KeyValuePair<IDeviceBase, WindowsDevicePathInfo>> GetUsbCameras()
+		{
+			return m_UsbCamerasSection.Execute(() => m_UsbCameras.ToArray());
+		}
 
-        #endregion
+		#endregion
 
-        #region Private Methods
+		#region Private Methods
 
 		/// <summary>
 		/// Initialize the Zoom Room API.
@@ -690,34 +690,34 @@ namespace ICD.Connect.Conferencing.Zoom
 			DefaultMicrophoneId = settings.DefaultMicrophoneId;
 			DefaultSpeakerId = settings.DefaultSpeakerId;
 
-            DialOutEnabled = settings.DialOutEnabled;
-            RecordEnabled = settings.RecordEnabled;
-            MuteMyCameraOnStart = settings.MuteMyCameraOnStart;
-            MuteParticipantsOnStart = settings.MuteParticipantsOnStart;
+			DialOutEnabled = settings.DialOutEnabled;
+			RecordEnabled = settings.RecordEnabled;
+			MuteMyCameraOnStart = settings.MuteMyCameraOnStart;
+			MuteParticipantsOnStart = settings.MuteParticipantsOnStart;
 
-            SetUsbIdForCamera(factory, settings.Camera1, settings.Camera1Usb);
-            SetUsbIdForCamera(factory, settings.Camera2, settings.Camera2Usb);
-            SetUsbIdForCamera(factory, settings.Camera3, settings.Camera3Usb);
-            SetUsbIdForCamera(factory, settings.Camera4, settings.Camera4Usb);
+			SetUsbIdForCamera(factory, settings.Camera1, settings.Camera1Usb);
+			SetUsbIdForCamera(factory, settings.Camera2, settings.Camera2Usb);
+			SetUsbIdForCamera(factory, settings.Camera3, settings.Camera3Usb);
+			SetUsbIdForCamera(factory, settings.Camera4, settings.Camera4Usb);
 		}
 
-        private void SetUsbIdForCamera([NotNull] IDeviceFactory factory, int? cameraId, WindowsDevicePathInfo usbInfo)
-        {
-            if (cameraId == null)
-                return;
+		private void SetUsbIdForCamera([NotNull] IDeviceFactory factory, int? cameraId, WindowsDevicePathInfo usbInfo)
+		{
+			if (cameraId == null)
+				return;
 
-            try
-            {
-                IDeviceBase camera = factory.GetDeviceById((int)cameraId);
-                SetUsbIdForCamera(camera, usbInfo);
-            }
-            catch (KeyNotFoundException)
-            {
-                Logger.Log(eSeverity.Error, "No camera device with id {0}", cameraId);
-            }
-        }
+			try
+			{
+				IDeviceBase camera = factory.GetDeviceById((int)cameraId);
+				SetUsbIdForCamera(camera, usbInfo);
+			}
+			catch (KeyNotFoundException)
+			{
+				Logger.Log(eSeverity.Error, "No camera device with id {0}", cameraId);
+			}
+		}
 
-        protected override void ClearSettingsFinal()
+		protected override void ClearSettingsFinal()
 		{
 			base.ClearSettingsFinal();
 
@@ -725,18 +725,18 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			SetPort(null);
 
-	        DefaultMicrophoneId = null;
-	        DefaultSpeakerId = null;
+			DefaultMicrophoneId = null;
+			DefaultSpeakerId = null;
 
-            DialOutEnabled = ZoomRoomSettings.DEFAULT_DIAL_OUT_ENABLED;
-            RecordEnabled = ZoomRoomSettings.DEFAULT_RECORD_ENABLED;
-            MuteMyCameraOnStart = false;
-            MuteParticipantsOnStart = false;
+			DialOutEnabled = ZoomRoomSettings.DEFAULT_DIAL_OUT_ENABLED;
+			RecordEnabled = ZoomRoomSettings.DEFAULT_RECORD_ENABLED;
+			MuteMyCameraOnStart = false;
+			MuteParticipantsOnStart = false;
 
 			ClearUsbCameras();
 		}
 
-        protected override void CopySettingsFinal(ZoomRoomSettings settings)
+		protected override void CopySettingsFinal(ZoomRoomSettings settings)
 		{
 			base.CopySettingsFinal(settings);
 
@@ -744,42 +744,42 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			settings.Copy(m_NetworkProperties);
 
-	        settings.DefaultMicrophoneId = DefaultMicrophoneId;
-	        settings.DefaultSpeakerId = DefaultSpeakerId;
+			settings.DefaultMicrophoneId = DefaultMicrophoneId;
+			settings.DefaultSpeakerId = DefaultSpeakerId;
 
-            settings.DialOutEnabled = DialOutEnabled;
-            settings.RecordEnabled = RecordEnabled;
-            settings.MuteMyCameraOnStart = MuteMyCameraOnStart;
-            settings.MuteParticipantsOnStart = MuteParticipantsOnStart;
+			settings.DialOutEnabled = DialOutEnabled;
+			settings.RecordEnabled = RecordEnabled;
+			settings.MuteMyCameraOnStart = MuteMyCameraOnStart;
+			settings.MuteParticipantsOnStart = MuteParticipantsOnStart;
 
 			int incrementer = 1;
 			foreach (KeyValuePair<IDeviceBase, WindowsDevicePathInfo> usbCamera in GetUsbCameras())
-            {
-                switch (incrementer)
-                {
-                    case 1:
-                        settings.Camera1 = usbCamera.Key.Id;
-                        settings.Camera1Usb = usbCamera.Value;
-                        break;
-                    case 2:
-                        settings.Camera2 = usbCamera.Key.Id;
-                        settings.Camera2Usb = usbCamera.Value;
-                        break;
-                    case 3:
-                        settings.Camera3 = usbCamera.Key.Id;
-                        settings.Camera3Usb = usbCamera.Value;
-                        break;
-                    case 4:
-                        settings.Camera4 = usbCamera.Key.Id;
-                        settings.Camera4Usb = usbCamera.Value;
-                        break;
-                }
+			{
+				switch (incrementer)
+				{
+					case 1:
+						settings.Camera1 = usbCamera.Key.Id;
+						settings.Camera1Usb = usbCamera.Value;
+						break;
+					case 2:
+						settings.Camera2 = usbCamera.Key.Id;
+						settings.Camera2Usb = usbCamera.Value;
+						break;
+					case 3:
+						settings.Camera3 = usbCamera.Key.Id;
+						settings.Camera3Usb = usbCamera.Value;
+						break;
+					case 4:
+						settings.Camera4 = usbCamera.Key.Id;
+						settings.Camera4Usb = usbCamera.Value;
+						break;
+				}
 
-                incrementer++;
-            }
+				incrementer++;
+			}
 		}
 
-        #endregion
+		#endregion
 
 		#region Console
 
@@ -838,9 +838,9 @@ namespace ICD.Connect.Conferencing.Zoom
 			yield return new GenericConsoleCommand<bool>("SetDialOutEnabled", "SetDialOutEnabled <True/False>",
 			                                             e => DialOutEnabled = e);
 			yield return new GenericConsoleCommand<bool>("SetMuteMyCameraOnStart", "SetMuteMyCameraOnStart <True/False>",
-														 e => MuteMyCameraOnStart = e);
+			                                             e => MuteMyCameraOnStart = e);
 			yield return new GenericConsoleCommand<bool>("SetMuteParticipantsOnStart", "SetMuteParticipantsOnStart <True/False>",
-														 e => MuteParticipantsOnStart = e);
+			                                             e => MuteParticipantsOnStart = e);
 		}
 
 		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
