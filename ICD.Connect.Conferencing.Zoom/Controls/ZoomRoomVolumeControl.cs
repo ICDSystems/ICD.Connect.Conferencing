@@ -3,6 +3,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Audio.Controls.Volume;
 using ICD.Connect.Conferencing.Zoom.Components.Audio;
 using ICD.Connect.Conferencing.Zoom.Components.Volume;
+using ICD.Connect.Conferencing.Zoom.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Controls
 {
@@ -135,11 +136,13 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 		/// </summary>
 		private void UpdateInputOutput()
 		{
-			if (Parent.DefaultMicrophoneId != null)
-				m_AudioComponent.SetAudioInputDeviceById(Parent.DefaultMicrophoneId);
+			AudioInputLine microphone = Parent.DefaultMicrophoneName == null ? null : m_AudioComponent.GetMicrophone(Parent.DefaultMicrophoneName);
+			if (microphone != null)
+				m_AudioComponent.SetAudioInputDeviceById(microphone.Id);
 
-			if (Parent.DefaultSpeakerId != null)
-				m_AudioComponent.SetAudioOutputDeviceById(Parent.DefaultSpeakerId);
+			AudioOutputLine speaker = Parent.DefaultSpeakerName == null ? null : m_AudioComponent.GetSpeaker(Parent.DefaultSpeakerName);
+			if (speaker != null)
+				m_AudioComponent.SetAudioOutputDeviceById(speaker.Id);
 		}
 
 		/// <summary>

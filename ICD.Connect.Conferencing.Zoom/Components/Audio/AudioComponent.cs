@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -171,9 +172,21 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 			return m_Microphones.Values.ToArray(m_Microphones.Count);
 		}
 
+		[CanBeNull]
+		public AudioInputLine GetMicrophone(string name)
+		{
+			return m_Microphones.Values.FirstOrDefault(m => m.ShortName == name);
+		}
+
 		public IEnumerable<AudioOutputLine> GetSpeakers()
 		{
 			return m_Speakers.Values.ToArray(m_Speakers.Count);
+		}
+
+		[CanBeNull]
+		public AudioOutputLine GetSpeaker(string name)
+		{
+			return m_Speakers.Values.FirstOrDefault(s => s.ShortName == name);
 		}
 
 		public void SetSapDisabled(bool disabled)

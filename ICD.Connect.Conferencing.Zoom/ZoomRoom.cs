@@ -94,12 +94,12 @@ namespace ICD.Connect.Conferencing.Zoom
 		/// <summary>
 		/// Raised when the default microphone ID changes.
 		/// </summary>
-		public event EventHandler<StringEventArgs> OnDefaultMicrophoneIdChanged;
+		public event EventHandler<StringEventArgs> OnDefaultMicrophoneNameChanged;
 
 		/// <summary>
 		/// Raised when the default microphone ID changes.
 		/// </summary>
-		public event EventHandler<StringEventArgs> OnDefaultSpeakerIdChanged;
+		public event EventHandler<StringEventArgs> OnDefaultSpeakerNameChanged;
 
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly DelimiterSerialBuffer m_SerialBuffer;
@@ -109,8 +109,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		private readonly Dictionary<IDeviceBase, WindowsDevicePathInfo> m_UsbCameras;
 		private readonly SafeCriticalSection m_UsbCamerasSection;
 
-		private string m_DefaultMicrophoneId;
-		private string m_DefaultSpeakerId;
+		private string m_DefaultMicrophoneName;
+		private string m_DefaultSpeakerName;
 
 		private bool m_Initialized;
 		private bool m_IsConnected;
@@ -123,36 +123,36 @@ namespace ICD.Connect.Conferencing.Zoom
 		#region Properties
 
 		/// <summary>
-		/// Gets/sets the default microphone id.
+		/// Gets/sets the default microphone name.
 		/// </summary>
-		public string DefaultMicrophoneId
+		public string DefaultMicrophoneName
 		{
-			get { return m_DefaultMicrophoneId; }
+			get { return m_DefaultMicrophoneName; }
 			set
 			{
-				if (value == m_DefaultMicrophoneId)
+				if (value == m_DefaultMicrophoneName)
 					return;
 
-				m_DefaultMicrophoneId = value;
+				m_DefaultMicrophoneName = value;
 
-				OnDefaultMicrophoneIdChanged.Raise(this, new StringEventArgs(m_DefaultMicrophoneId));
+				OnDefaultMicrophoneNameChanged.Raise(this, new StringEventArgs(m_DefaultMicrophoneName));
 			}
 		}
 
 		/// <summary>
-		/// Gets/sets the default speaker id.
+		/// Gets/sets the default speaker name.
 		/// </summary>
-		public string DefaultSpeakerId
+		public string DefaultSpeakerName
 		{
-			get { return m_DefaultSpeakerId; }
+			get { return m_DefaultSpeakerName; }
 			set
 			{
-				if (value == m_DefaultSpeakerId)
+				if (value == m_DefaultSpeakerName)
 					return;
 
-				m_DefaultSpeakerId = value;
+				m_DefaultSpeakerName = value;
 
-				OnDefaultSpeakerIdChanged.Raise(this, new StringEventArgs(m_DefaultSpeakerId));
+				OnDefaultSpeakerNameChanged.Raise(this, new StringEventArgs(m_DefaultSpeakerName));
 			}
 		}
 
@@ -309,8 +309,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			OnMuteMyCameraOnStartChanged = null;
 			OnMuteParticipantsOnStartChanged = null;
 			OnUsbCamerasChanged = null;
-			OnDefaultMicrophoneIdChanged = null;
-			OnDefaultSpeakerIdChanged = null;
+			OnDefaultMicrophoneNameChanged = null;
+			OnDefaultSpeakerNameChanged = null;
 
 			base.DisposeFinal(disposing);
 
@@ -687,8 +687,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			}
 			SetPort(port);
 
-			DefaultMicrophoneId = settings.DefaultMicrophoneId;
-			DefaultSpeakerId = settings.DefaultSpeakerId;
+			DefaultMicrophoneName = settings.DefaultMicrophoneName;
+			DefaultSpeakerName = settings.DefaultSpeakerName;
 
 			DialOutEnabled = settings.DialOutEnabled;
 			RecordEnabled = settings.RecordEnabled;
@@ -725,8 +725,8 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			SetPort(null);
 
-			DefaultMicrophoneId = null;
-			DefaultSpeakerId = null;
+			DefaultMicrophoneName = null;
+			DefaultSpeakerName = null;
 
 			DialOutEnabled = ZoomRoomSettings.DEFAULT_DIAL_OUT_ENABLED;
 			RecordEnabled = ZoomRoomSettings.DEFAULT_RECORD_ENABLED;
@@ -744,8 +744,8 @@ namespace ICD.Connect.Conferencing.Zoom
 
 			settings.Copy(m_NetworkProperties);
 
-			settings.DefaultMicrophoneId = DefaultMicrophoneId;
-			settings.DefaultSpeakerId = DefaultSpeakerId;
+			settings.DefaultMicrophoneName = DefaultMicrophoneName;
+			settings.DefaultSpeakerName = DefaultSpeakerName;
 
 			settings.DialOutEnabled = DialOutEnabled;
 			settings.RecordEnabled = RecordEnabled;

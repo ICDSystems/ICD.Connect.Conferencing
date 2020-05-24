@@ -32,8 +32,8 @@ namespace ICD.Connect.Conferencing.Zoom
 		private const string CAMERA_4_ELEMENT = "Camera4";
 		private const string CAMERA_4_USB_ELEMENT = "Camera4Usb";
 
-		private const string DEFAULT_MICROPHONE_ID_ELEMENT = "DefaultMicrophoneId";
-		private const string DEFAULT_SPEAKER_ID_ELEMENT = "DefaultSpeakerId";
+		private const string DEFAULT_MICROPHONE_NAME_ELEMENT = "DefaultMicrophoneName";
+		private const string DEFAULT_SPEAKER_NAME_ELEMENT = "DefaultSpeakerName";
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
@@ -122,14 +122,14 @@ namespace ICD.Connect.Conferencing.Zoom
 		public string Camera4UsbDeviceId { set { Camera4Usb = WindowsDevicePathInfo.SetDeviceId(Camera4Usb, value); } }
 
 		/// <summary>
-		/// Gets/sets the default microphone ID.
+		/// Gets/sets the default microphone name.
 		/// </summary>
-		public string DefaultMicrophoneId { get; set; }
+		public string DefaultMicrophoneName { get; set; }
 
 		/// <summary>
-		/// Gets/sets the default speaker ID.
+		/// Gets/sets the default speaker name.
 		/// </summary>
-		public string DefaultSpeakerId { get; set; }
+		public string DefaultSpeakerName { get; set; }
 
 		#endregion
 
@@ -217,8 +217,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			writer.WriteElementString(CAMERA_4_ELEMENT, Camera4 == null ? null : IcdXmlConvert.ToString((int)Camera4));
 			writer.WriteElementString(CAMERA_4_USB_ELEMENT, Camera4Usb.ToString());
 
-			writer.WriteElementString(DEFAULT_MICROPHONE_ID_ELEMENT, DefaultMicrophoneId);
-			writer.WriteElementString(DEFAULT_SPEAKER_ID_ELEMENT, DefaultSpeakerId);
+			writer.WriteElementString(DEFAULT_MICROPHONE_NAME_ELEMENT, DefaultMicrophoneName);
+			writer.WriteElementString(DEFAULT_SPEAKER_NAME_ELEMENT, DefaultSpeakerName);
 
 			m_NetworkProperties.WriteElements(writer);
 
@@ -248,8 +248,8 @@ namespace ICD.Connect.Conferencing.Zoom
 			Camera4 = XmlUtils.TryReadChildElementContentAsInt(xml, CAMERA_4_ELEMENT);
 			Camera4Usb = ReadUsbInfoFromXml(xml, CAMERA_4_USB_ELEMENT);
 
-			DefaultMicrophoneId = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_MICROPHONE_ID_ELEMENT);
-			DefaultSpeakerId = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_SPEAKER_ID_ELEMENT);
+			DefaultMicrophoneName = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_MICROPHONE_NAME_ELEMENT);
+			DefaultSpeakerName = XmlUtils.TryReadChildElementContentAsString(xml, DEFAULT_SPEAKER_NAME_ELEMENT);
 
 			m_NetworkProperties.ParseXml(xml);
 

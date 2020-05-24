@@ -15,25 +15,7 @@ namespace ICD.Connect.Conferencing.Zoom.Responses
 	}
 
 	[JsonConverter(typeof(AudioInputLineConverter))]
-	public sealed class AudioInputLine
+	public sealed class AudioInputLine : AbstractAudioInputOutputLine
 	{
-		[CanBeNull]
-		public string Alias { get; set; }
-
-		[CanBeNull]
-		public string Name { get; set; }
-
-		public bool? Selected { get; set; }
-
-		public bool? CombinedDevice { get; set; }
-
-		[CanBeNull]
-		public string Id { get; set; }
-
-		public bool? ManuallySelected { get; set; }
-
-		public int? NumberOfCombinedDevices { get; set; }
-
-		public int? PtzComId { get; set; }
 	}
 }
