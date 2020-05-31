@@ -5,7 +5,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Connect.Telemetry;
+using ICD.Connect.Telemetry.Providers;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {

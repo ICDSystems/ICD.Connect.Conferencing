@@ -3,28 +3,13 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Devices;
-using ICD.Connect.Telemetry;
 using ICD.Connect.Telemetry.Attributes;
-using ICD.Connect.Telemetry.Nodes.External;
+using ICD.Connect.Telemetry.Providers.External;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
-	public sealed class CiscoCodecExternalTelemetry : IExternalTelemetryProvider
+	public sealed class CiscoCodecExternalTelemetry : AbstractExternalTelemetryProvider<CiscoCodecDevice>
 	{
-		#region Fields
-
-		private CiscoCodecDevice m_Parent;
-
-		private string m_Address;
-		private string m_SubnetMask;
-		private string m_Gateway;
-		private string m_SoftwareVersion;
-		private string m_SoftwareVersionDate;
-		private string m_ProductPlatform;
-		private string m_SerialNumber;
-
-		#endregion
-
 		#region Events
 
 		[EventTelemetry(DeviceTelemetryNames.DEVICE_IP_ADDRESS_CHANGED)]
@@ -47,6 +32,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 		[EventTelemetry(DeviceTelemetryNames.DEVICE_SERIAL_NUMBER_CHANGED)]
 		public event EventHandler<StringEventArgs> OnSerialNumberChanged;
+
+		#endregion
+
+		#region Fields
+
+		private string m_Address;
+		private string m_SubnetMask;
+		private string m_Gateway;
+		private string m_SoftwareVersion;
+		private string m_SoftwareVersionDate;
+		private string m_ProductPlatform;
+		private string m_SerialNumber;
 
 		#endregion
 
@@ -168,27 +165,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 		#endregion
 
-		#region Parent Callbacks
+		#region Methods
 
-		public void SetParent(ITelemetryProvider provider)
+		protected override void SetParent(CiscoCodecDevice provider)
 		{
-			CiscoCodecDevice parent = provider as CiscoCodecDevice;
+			base.SetParent(provider);
 
-			Unsubscribe(m_Parent);
-
-			m_Parent = parent;
-
-			Subscribe(m_Parent);
-
-			Update(m_Parent);
+			Update();
 		}
 
-		private void Update(CiscoCodecDevice parent)
+		private void Update()
 		{
-			if (parent == null)
-				return;
-
-			SystemComponent systemComponent = parent.Components.GetComponent<SystemComponent>();
+			SystemComponent systemComponent = Parent == null ? null : Parent.Components.GetComponent<SystemComponent>();
 			if (systemComponent == null)
 				return;
 
@@ -201,73 +189,81 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			SerialNumber = systemComponent.SerialNumber;
 		}
 
-		private void Subscribe(CiscoCodecDevice parent)
+		#endregion
+
+		#region Provider Callbacks
+
+		protected override void Subscribe(CiscoCodecDevice parent)
 		{
+			base.Subscribe(parent);
+
 			if (parent == null)
 				return;
 
 			SystemComponent systemComponent = parent.Components.GetComponent<SystemComponent>();
 			if (systemComponent != null)
 			{
-				systemComponent.OnAddressChanged += SystemComponentOnOnAddressChanged;
-				systemComponent.OnSubnetMaskChanged += SystemComponentOnOnSubnetMaskChanged;
-				systemComponent.OnGatewayChanged += SystemComponentOnOnGatewayChanged;
-				systemComponent.OnSoftwareVersionChanged += SystemComponentOnOnSoftwareVersionChanged;
-				systemComponent.OnSoftwareVerisonDateChanged += SystemComponentOnOnSoftwareVerisonDateChanged;
-				systemComponent.OnPlatformChanged += SystemComponentOnOnPlatformChanged;
-				systemComponent.OnSerialNumberChanged += SystemComponentOnOnSerialNumberChanged;
+				systemComponent.OnAddressChanged += SystemComponentOnAddressChanged;
+				systemComponent.OnSubnetMaskChanged += SystemComponentOnSubnetMaskChanged;
+				systemComponent.OnGatewayChanged += SystemComponentOnGatewayChanged;
+				systemComponent.OnSoftwareVersionChanged += SystemComponentOnSoftwareVersionChanged;
+				systemComponent.OnSoftwareVerisonDateChanged += SystemComponentOnSoftwareVerisonDateChanged;
+				systemComponent.OnPlatformChanged += SystemComponentOnPlatformChanged;
+				systemComponent.OnSerialNumberChanged += SystemComponentOnSerialNumberChanged;
 			}
 		}
 
-		private void Unsubscribe(CiscoCodecDevice parent)
+		protected override void Unsubscribe(CiscoCodecDevice parent)
 		{
+			base.Unsubscribe(parent);
+
 			if (parent == null)
 				return;
 
 			SystemComponent systemComponent = parent.Components.GetComponent<SystemComponent>();
 			if (systemComponent != null)
 			{
-				systemComponent.OnAddressChanged -= SystemComponentOnOnAddressChanged;
-				systemComponent.OnSubnetMaskChanged -= SystemComponentOnOnSubnetMaskChanged;
-				systemComponent.OnGatewayChanged -= SystemComponentOnOnGatewayChanged;
-				systemComponent.OnSoftwareVersionChanged -= SystemComponentOnOnSoftwareVersionChanged;
-				systemComponent.OnSoftwareVerisonDateChanged -= SystemComponentOnOnSoftwareVerisonDateChanged;
-				systemComponent.OnPlatformChanged -= SystemComponentOnOnPlatformChanged;
-				systemComponent.OnSerialNumberChanged -= SystemComponentOnOnSerialNumberChanged;
+				systemComponent.OnAddressChanged -= SystemComponentOnAddressChanged;
+				systemComponent.OnSubnetMaskChanged -= SystemComponentOnSubnetMaskChanged;
+				systemComponent.OnGatewayChanged -= SystemComponentOnGatewayChanged;
+				systemComponent.OnSoftwareVersionChanged -= SystemComponentOnSoftwareVersionChanged;
+				systemComponent.OnSoftwareVerisonDateChanged -= SystemComponentOnSoftwareVerisonDateChanged;
+				systemComponent.OnPlatformChanged -= SystemComponentOnPlatformChanged;
+				systemComponent.OnSerialNumberChanged -= SystemComponentOnSerialNumberChanged;
 			}
 		}
 
-		private void SystemComponentOnOnAddressChanged(object sender, StringEventArgs e)
+		private void SystemComponentOnAddressChanged(object sender, StringEventArgs e)
 		{
 			Address = e.Data;
 		}
 
-		private void SystemComponentOnOnSubnetMaskChanged(object sender, StringEventArgs e)
+		private void SystemComponentOnSubnetMaskChanged(object sender, StringEventArgs e)
 		{
 			SubnetMask = e.Data;
 		}
 
-		private void SystemComponentOnOnGatewayChanged(object sender, StringEventArgs e)
+		private void SystemComponentOnGatewayChanged(object sender, StringEventArgs e)
 		{
 			Gateway = e.Data;
 		}
 
-		private void SystemComponentOnOnSoftwareVersionChanged(object sender, StringEventArgs e)
+		private void SystemComponentOnSoftwareVersionChanged(object sender, StringEventArgs e)
 		{
 			SoftwareVersion = e.Data;
 		}
 
-		private void SystemComponentOnOnSoftwareVerisonDateChanged(object sender, StringEventArgs e)
+		private void SystemComponentOnSoftwareVerisonDateChanged(object sender, StringEventArgs e)
 		{
 			SoftwareVersionDate = e.Data;
 		}
 
-		private void SystemComponentOnOnPlatformChanged(object sender, StringEventArgs e)
+		private void SystemComponentOnPlatformChanged(object sender, StringEventArgs e)
 		{
 			ProductPlatform = e.Data;
 		}
 
-		private void SystemComponentOnOnSerialNumberChanged(object sender, StringEventArgs e)
+		private void SystemComponentOnSerialNumberChanged(object sender, StringEventArgs e)
 		{
 			SerialNumber = e.Data;
 		}

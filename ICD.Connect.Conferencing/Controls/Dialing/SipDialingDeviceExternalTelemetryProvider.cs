@@ -1,7 +1,7 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.Telemetry;
+using ICD.Connect.Telemetry.Providers;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
