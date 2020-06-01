@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
@@ -94,7 +95,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 				m_CallInInfo = value;
 
-				Logger.Set("CallInInfo", eSeverity.Informational, m_CallInInfo);
+				Logger.LogSetTo(eSeverity.Informational, "CallInInfo", m_CallInInfo);
 
 				OnCallInInfoChanged.Raise(this, new GenericEventArgs<IDialContext>(m_CallInInfo));
 			}
@@ -118,7 +119,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_AutoAnswer = value;
 
-					Logger.Set("Auto Answer", eSeverity.Informational, m_AutoAnswer);
+					Logger.LogSetTo(eSeverity.Informational, "AutoAnswer", m_AutoAnswer);
 				}
 				finally
 				{
@@ -147,7 +148,8 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_PrivacyMuted = value;
 
-					Logger.Set("Privacy Muted", eSeverity.Informational, m_PrivacyMuted);
+					Logger.LogSetTo(eSeverity.Informational, "PrivacyMuted", m_PrivacyMuted);
+					Activities.LogActivity(ConferenceDeviceControlActivities.GetPrivacyMuteActivity(m_PrivacyMuted));
 				}
 				finally
 				{
@@ -176,7 +178,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_DoNotDisturb = value;
 
-					Logger.Set("Do Not Disturb", eSeverity.Informational, m_DoNotDisturb);
+					Logger.LogSetTo(eSeverity.Informational, "DoNotDisturb", m_DoNotDisturb);
 				}
 				finally
 				{

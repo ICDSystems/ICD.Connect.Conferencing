@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API;
@@ -11,6 +10,7 @@ using ICD.Connect.Conferencing.Controls.Presentation;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Proxies.Controls;
 using ICD.Connect.Devices.Proxies.Devices;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 {
@@ -35,14 +35,14 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		public int? PresentationActiveInput
 		{
 			get { return m_PresentationActiveInput; }
-			[UsedImplicitly] private set
+			protected set
 			{
 				if (value == m_PresentationActiveInput)
 					return;
-				
+
 				m_PresentationActiveInput = value;
 
-				Logger.Set("Presentation Active Input", eSeverity.Informational, m_PresentationActiveInput);
+				Logger.LogSetTo(eSeverity.Informational, "PresentationActiveInput", m_PresentationActiveInput);
 
 				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActiveInput));
 			}
@@ -54,15 +54,19 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Presentation
 		public bool PresentationActive
 		{
 			get { return m_PresentationActive; }
-			[UsedImplicitly]
-			private set
+			protected set
 			{
 				if (value == m_PresentationActive)
 					return;
 
 				m_PresentationActive = value;
 
-				Logger.Set("Presentation Active", eSeverity.Informational, m_PresentationActive);
+				Logger.LogSetTo(eSeverity.Informational, "PresentationActive", m_PresentationActive);
+				Activities.LogActivity(m_PresentationActive
+									   ? new Activity(Activity.ePriority.Medium, "Presentation Active", "Presentation Active",
+													  eSeverity.Informational)
+									   : new Activity(Activity.ePriority.Lowest, "Presentation Active", "Presentation Inactive",
+													  eSeverity.Informational));
 
 				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
 			}

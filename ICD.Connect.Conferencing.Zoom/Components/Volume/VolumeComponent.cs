@@ -6,6 +6,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 {
@@ -46,7 +47,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 					return;
 
 				m_AudioInputVolume = value;
-				Parent.Logger.Set("Audio Input Volume", eSeverity.Informational, m_AudioInputVolume);
+
+				Parent.Logger.LogSetTo(eSeverity.Informational, "AudioInputVolume", m_AudioInputVolume);
+
 				OnInputVolumeChanged.Raise(this, new IntEventArgs(m_AudioInputVolume));
 			}
 		}
@@ -63,7 +66,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Volume
 					return;
 
 				m_AudioOutputVolume = value;
-				Parent.Logger.Set("Audio Output Volume", eSeverity.Informational, m_AudioOutputVolume);
+
+				Parent.Logger.LogSetTo(eSeverity.Informational, "AudioOutputVolume", m_AudioOutputVolume);
+
 				OnOutputVolumeChanged.Raise(this, new IntEventArgs(m_AudioOutputVolume));
 			}
 		}

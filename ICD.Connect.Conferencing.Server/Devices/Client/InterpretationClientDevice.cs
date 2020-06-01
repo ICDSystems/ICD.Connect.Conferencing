@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -90,12 +91,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 				m_IsConnected = value;
 
+				eSeverity severity = m_IsConnected ? eSeverity.Informational : eSeverity.Error;
+
+				Logger.LogSetTo(severity, "IsConnected", m_IsConnected);
+				Activities.LogActivity(m_IsConnected
+					? new Activity(Activity.ePriority.Low, "Connected", "Connected To Server", severity)
+					: new Activity(Activity.ePriority.High, "Connected", "Not Connected To Server", severity));
+
 				UpdateCachedOnlineStatus();
-
-				eSeverity severity = m_IsConnected ? eSeverity.Informational : eSeverity.Alert;
-				string message = m_IsConnected ? "Connected To Server" : "Lost Connection To Server";
-
-				Logger.Set("Connected", severity, message);
 
 				if (m_IsConnected)
 					Register();

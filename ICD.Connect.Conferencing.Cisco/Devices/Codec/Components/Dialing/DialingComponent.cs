@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -11,6 +12,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using Activity = ICD.Common.Logging.LoggingContexts.Activity;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {
@@ -60,9 +62,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private readonly Dictionary<int, CallComponent> m_CallComponents;
 		private readonly SafeCriticalSection m_CallComponentsSection;
 
-		private bool m_CachedDoNotDisturbState;
-		private bool m_CachedAutoAnswerState;
-		private bool m_CachedPrivacyMuteState;
+		private bool m_DoNotDisturb;
+		private bool m_AutoAnswer;
+		private bool m_PrivacyMuted;
 
 		#region Properties
 
@@ -71,17 +73,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		public bool DoNotDisturb
 		{
-			get { return m_CachedDoNotDisturbState; }
+			get { return m_DoNotDisturb; }
 			private set
 			{
-				if (value == m_CachedDoNotDisturbState)
+				if (value == m_DoNotDisturb)
 					return;
 
-				m_CachedDoNotDisturbState = value;
+				m_DoNotDisturb = value;
 
-				Codec.Logger.Set("Do Not Disturb", eSeverity.Informational, m_CachedDoNotDisturbState);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "DoNotDisturb", m_DoNotDisturb);
 
-				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_CachedDoNotDisturbState));
+				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_DoNotDisturb));
 			}
 		}
 
@@ -90,17 +92,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		public bool AutoAnswer
 		{
-			get { return m_CachedAutoAnswerState; }
+			get { return m_AutoAnswer; }
 			private set
 			{
-				if (value == m_CachedAutoAnswerState)
+				if (value == m_AutoAnswer)
 					return;
 
-				m_CachedAutoAnswerState = value;
+				m_AutoAnswer = value;
 
-				Codec.Logger.Set("Auto Answer", eSeverity.Informational, m_CachedAutoAnswerState);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "AutoAnswer", m_AutoAnswer);
 
-				OnAutoAnswerChanged.Raise(this, new BoolEventArgs(m_CachedAutoAnswerState));
+				OnAutoAnswerChanged.Raise(this, new BoolEventArgs(m_AutoAnswer));
 			}
 		}
 
@@ -109,17 +111,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// </summary>
 		public bool PrivacyMuted
 		{
-			get { return m_CachedPrivacyMuteState; }
+			get { return m_PrivacyMuted; }
 			private set
 			{
-				if (value == m_CachedPrivacyMuteState)
+				if (value == m_PrivacyMuted)
 					return;
 
-				m_CachedPrivacyMuteState = value;
+				m_PrivacyMuted = value;
 
-				Codec.Logger.Set("Privacy Muted", eSeverity.Informational, m_CachedPrivacyMuteState);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PrivacyMuted", m_PrivacyMuted);
+				Codec.Activities.LogActivity(m_PrivacyMuted
+					                         ? new Activity(Activity.ePriority.Medium, "Privacy Muted", "Privacy Mute Enabled",
+					                                        eSeverity.Informational)
+					                         : new Activity(Activity.ePriority.Low, "Privacy Muted", "Privacy Mute Disabled",
+					                                        eSeverity.Informational));
 
-				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_CachedPrivacyMuteState));
+				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMuted));
 			}
 		}
 

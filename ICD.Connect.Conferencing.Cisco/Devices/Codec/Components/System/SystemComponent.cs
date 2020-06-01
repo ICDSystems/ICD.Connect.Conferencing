@@ -9,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 {
@@ -127,7 +128,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Platform = value;
 
-				Codec.Logger.Set("Platform", eSeverity.Informational, m_Platform);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "System Platform", m_Platform);
+
 				OnPlatformChanged.Raise(this, new StringEventArgs(m_Platform));
 			}
 		}
@@ -146,7 +148,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Name = value;
 
-				Codec.Logger.Set("Name", eSeverity.Informational, m_Name);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "System Name", m_Name);
+
 				OnNameChanged.Raise(this, new StringEventArgs(m_Name));
 			}
 		}
@@ -165,7 +168,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Address = value;
 
-				Codec.Logger.Set("Address", eSeverity.Informational, m_Address);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "System Address", m_Address);
+
 				OnAddressChanged.Raise(this, new StringEventArgs(m_Address));
 			}
 		}
@@ -184,7 +188,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Gateway = value;
 
-				Codec.Logger.Set("Gateway", eSeverity.Informational, m_Gateway);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "System Gateway", m_Gateway);
+
 				OnGatewayChanged.Raise(this, new StringEventArgs(m_Gateway));
 			}
 		}
@@ -203,7 +208,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SubnetMask = value;
 
-				Codec.Logger.Set("Subnet Mask", eSeverity.Informational, m_SubnetMask);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "System Subnet Mask", m_SubnetMask);
+
 				OnSubnetMaskChanged.Raise(this, new StringEventArgs(m_SubnetMask));
 			}
 		}
@@ -222,7 +228,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_Awake = value;
 
-				Codec.Logger.Set("Awake", eSeverity.Informational, m_Awake);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "Awake", m_Awake);
+				Codec.Activities.LogActivity(m_Awake
+					                         ? new Activity(Activity.ePriority.Low, "Awake", "Awake", eSeverity.Informational)
+					                         : new Activity(Activity.ePriority.High, "Awake", "Asleep", eSeverity.Informational));
+
 				OnAwakeStateChanged.Raise(this, new BoolEventArgs(m_Awake));
 			}
 		}
@@ -241,7 +251,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SoftwareVersion = value;
 
-				Codec.Logger.Set("Software Version", eSeverity.Informational, m_SoftwareVersion);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SoftwareVersion", m_SoftwareVersion);
+
 				OnSoftwareVersionChanged.Raise(this, new StringEventArgs(m_SoftwareVersion));
 			}
 		}
@@ -262,7 +273,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SoftwareVersionDate = value;
 
-				Codec.Logger.Log(eSeverity.Informational, "Codec software version date is {0}", value);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SoftwareVersionDate", m_SoftwareVersionDate);
+
 				OnSoftwareVerisonDateChanged.Raise(this, new StringEventArgs(value));
 			}
 		}
@@ -281,7 +293,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_H323Enabled = value;
 
-				Codec.Logger.Set("H323 Enabled", eSeverity.Informational, m_H323Enabled);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "H323Enabled", m_H323Enabled);
+
 				OnH323EnabledStateChanged.Raise(this, new BoolEventArgs(m_H323Enabled));
 			}
 		}
@@ -300,7 +313,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_H323GatekeeperStatus = value;
 
-				Codec.Logger.Set("H323 Gatekeeper Status", eSeverity.Informational, m_H323GatekeeperStatus);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "H323GatekeeperStatus", m_H323GatekeeperStatus);
+				
 				OnGatekeeperStatusChanged.Raise(this, new GatekeeperStatusArgs(m_H323GatekeeperStatus));
 			}
 		}
@@ -319,7 +333,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_H323GatekeeperAddress = value;
 
-				Codec.Logger.Set("H323 Gatekeeper Address", eSeverity.Informational, m_H323GatekeeperAddress);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "H323GatekeeperAddress", m_H323GatekeeperAddress);
+
 				OnGatekeeperAddressChanged.Raise(this, new StringEventArgs(m_H323GatekeeperAddress));
 			}
 		}

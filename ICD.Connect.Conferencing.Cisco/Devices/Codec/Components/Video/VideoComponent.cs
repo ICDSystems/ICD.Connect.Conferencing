@@ -9,6 +9,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 {
@@ -126,7 +127,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewEnabled = value;
 
-				Codec.Logger.Set("Self View Enabled", eSeverity.Informational, m_SelfViewEnabled);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SelfViewEnabled", m_SelfViewEnabled);
 
 				OnSelfViewEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewEnabled));
 			}
@@ -145,7 +146,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewFullScreenEnabled = value;
 
-				Codec.Logger.Set("Self View Fullscreen Enabled", eSeverity.Informational, m_SelfViewFullScreenEnabled);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SelfViewFullscreenEnabled", m_SelfViewFullScreenEnabled);
 
 				OnSelfViewFullScreenEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewFullScreenEnabled));
 			}
@@ -165,7 +166,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewPosition = value;
 
-				Codec.Logger.Set("Self View Position", eSeverity.Informational, m_SelfViewPosition);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SelfViewPosition", m_SelfViewPosition);
 
 				OnSelfViewPositionChanged.Raise(null, new PipPositionEventArgs(m_SelfViewPosition));
 			}
@@ -185,7 +186,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_SelfViewMonitor = value;
 
-				Codec.Logger.Set("Self View Monitor", eSeverity.Informational, m_SelfViewMonitor);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SelfViewMonitor", m_SelfViewMonitor);
 
 				OnSelfViewMonitorChanged.Raise(this, new SelfViewMonitorRoleEventArgs(m_SelfViewMonitor));
 			}
@@ -205,7 +206,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_ActiveSpeakerPosition = value;
 
-				Codec.Logger.Set("Active Speaker Position", eSeverity.Informational, m_ActiveSpeakerPosition);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "ActiveSpeakerPosition", m_ActiveSpeakerPosition);
 
 				OnActiveSpeakerPositionChanged.Raise(this, new PipPositionEventArgs(m_ActiveSpeakerPosition));
 			}
@@ -225,7 +226,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_MainVideoSource = value;
 
-				Codec.Logger.Set("Main Video Source", eSeverity.Informational, m_MainVideoSource);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "MainVideoSource", m_MainVideoSource);
 
 				OnMainVideoSourceChanged.Raise(this, new IntEventArgs(m_MainVideoSource));
 			}
@@ -245,7 +246,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_MainVideoMuted = value;
 
-				Codec.Logger.Set("Main Video Muted", eSeverity.Informational, m_MainVideoMuted);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "MainVideoMuted", m_MainVideoMuted);
 
 				OnMainVideoMutedChanged.Raise(this, new BoolEventArgs(m_MainVideoMuted));
 			}
@@ -265,7 +266,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 
 				m_Monitors = value;
 
-				Codec.Logger.Set("Monitors", eSeverity.Informational, m_Monitors);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "Monitors", m_Monitors);
 
 				OnMonitorsChanged.Raise(this, new MonitorsEventArgs(m_Monitors));
 			}

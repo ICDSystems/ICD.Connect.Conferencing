@@ -102,6 +102,7 @@
     <Compile Include="Controls\Dialing\AbstractConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\AbstractTraditionalConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\AbstractWebConferenceDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\ConferenceDeviceControlActivities.cs" />
     <Compile Include="Controls\Dialing\ITraditionalConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\IWebConferenceDeviceControl.cs" />
     <Compile Include="DialContexts\AbstractDialContext.cs" />

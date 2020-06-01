@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -34,7 +35,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.System
 
 				m_SipAccountName = value;
 
-				Codec.Logger.Set("SIP Account Name", eSeverity.Informational, m_SipAccountName);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SIP Account Name", m_SipAccountName);
 
 				OnSipAccountNameChanged.Raise(this, new StringEventArgs(m_SipAccountName));
 			}

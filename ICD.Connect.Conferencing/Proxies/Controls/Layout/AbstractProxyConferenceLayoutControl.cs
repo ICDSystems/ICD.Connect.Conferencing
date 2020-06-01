@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Properties;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API;
@@ -44,15 +44,14 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Layout
 		public bool LayoutAvailable
 		{
 			get { return m_LayoutAvailable; }
-			[UsedImplicitly]
-			private set
+			protected set
 			{
 				if (value == m_LayoutAvailable)
 					return;
 
 				m_LayoutAvailable = value;
 
-				Logger.Set("Layout Available", eSeverity.Informational, m_LayoutAvailable);
+				Logger.LogSetTo(eSeverity.Informational, "LayoutAvailable", m_LayoutAvailable);
 
 				OnLayoutAvailableChanged.Raise(this, new ConferenceLayoutAvailableApiEventArgs(m_LayoutAvailable));
 			}
@@ -64,15 +63,14 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Layout
 		public bool SelfViewEnabled
 		{
 			get { return m_SelfViewEnabled; }
-			[UsedImplicitly]
-			private set
+			protected set
 			{
 				if (value == m_SelfViewEnabled)
 					return;
 
 				m_SelfViewEnabled = value;
 
-				Logger.Set("Self View Enabled", eSeverity.Informational, m_SelfViewEnabled);
+				Logger.LogSetTo(eSeverity.Informational, "SelfViewEnabled", m_SelfViewEnabled);
 
 				OnSelfViewEnabledChanged.Raise(this, new ConferenceLayoutSelfViewApiEventArgs(m_SelfViewEnabled));
 			}
@@ -84,15 +82,14 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Layout
 		public bool SelfViewFullScreenEnabled
 		{
 			get { return m_SelfViewFullScreenEnabled; }
-			[UsedImplicitly]
-			private set
+			protected set
 			{
 				if (value == m_SelfViewFullScreenEnabled)
 					return;
 
 				m_SelfViewFullScreenEnabled = value;
 
-				Logger.Set("Self View Fullscreen Enabled", eSeverity.Informational, m_SelfViewFullScreenEnabled);
+				Logger.LogSetTo(eSeverity.Informational, "SelfViewFullScreenEnabled", m_SelfViewFullScreenEnabled);
 
 				OnSelfViewFullScreenEnabledChanged.Raise(this, new ConferenceLayoutSelfViewFullScreenApiEventArgs(m_SelfViewFullScreenEnabled));
 			}

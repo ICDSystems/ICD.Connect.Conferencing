@@ -5,6 +5,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 {
@@ -33,7 +34,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 
 				m_ContentVideoSource = value;
 
-				Codec.Logger.Set("Content Video Source", eSeverity.Informational, m_ContentVideoSource);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "ContentVideoSource", m_ContentVideoSource);
 
 				OnContentVideoSourceChanged.Raise(this, new ContentVideoSourceEventArgs(m_ContentVideoSource));
 			}
@@ -49,7 +50,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 
 				m_PresentationActive = value;
 
-				Codec.Logger.Set("Presentation Active", eSeverity.Informational, m_PresentationActive);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PresentationActive", m_PresentationActive);
+				Codec.Activities.LogActivity(m_PresentationActive
+					? new Activity(Activity.ePriority.Medium, "Presentation", "Presenting", eSeverity.Informational)
+					: new Activity(Activity.ePriority.Lowest, "Presentation", "Not Presenting", eSeverity.Informational));
 
 				OnPresentationActiveChanged.Raise(this, new PresentationActiveEventArgs(m_PresentationActive));
 			}

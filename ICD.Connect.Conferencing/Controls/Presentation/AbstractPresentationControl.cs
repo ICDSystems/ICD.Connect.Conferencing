@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -39,7 +40,7 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 
 				m_PresentationActiveInput = value;
 
-				Logger.Set("Presentation Active Input", eSeverity.Informational, m_PresentationActiveInput);
+				Logger.LogSetTo(eSeverity.Informational, "PresentationActiveInput", m_PresentationActiveInput);
 
 				OnPresentationActiveInputChanged.Raise(this, new PresentationActiveInputApiEventArgs(m_PresentationActiveInput));
 			}
@@ -58,7 +59,12 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 
 				m_PresentationActive = value;
 
-				Logger.Set("Presentation Active", eSeverity.Informational, m_PresentationActive);
+				Logger.LogSetTo(eSeverity.Informational, "PresentationActive", m_PresentationActive);
+				Activities.LogActivity(m_PresentationActive
+					                   ? new Activity(Activity.ePriority.Medium, "Presentation Active", "Presentation Active",
+					                                  eSeverity.Informational)
+					                   : new Activity(Activity.ePriority.Lowest, "Presentation Active", "Presentation Inactive",
+					                                  eSeverity.Informational));
 
 				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
 			}

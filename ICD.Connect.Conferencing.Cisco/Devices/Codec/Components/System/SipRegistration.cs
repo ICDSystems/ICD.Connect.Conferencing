@@ -4,6 +4,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 {
@@ -69,7 +70,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SipReason = value;
 
-				m_Codec.Logger.Set("SIP Reason " + m_Item, eSeverity.Informational, m_SipReason);
+				m_Codec.Logger.LogSetTo(eSeverity.Informational, "SIP Reason " + m_Item, m_SipReason);
+
 				OnReasonChange.Raise(this, new StringEventArgs(m_SipReason));
 			}
 		}
@@ -88,7 +90,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SipRegistration = value;
 
-				m_Codec.Logger.Set("SIP Registration " + m_Item, eSeverity.Informational, m_SipRegistration);
+				m_Codec.Logger.LogSetTo(eSeverity.Informational, "SIP Registration " + m_Item, m_SipRegistration);
+				m_Codec.Activities.LogActivity(m_SipRegistration == eRegState.Failed
+					? new Activity(Activity.ePriority.High, "SIP Registration " + m_Item, string.Format("SIP Registration {0} Failed", m_Item), eSeverity.Error)
+					: new Activity(Activity.ePriority.Low, "SIP Registration " + m_Item, string.Format("SIP Registration {0} is {1}", m_Item, m_SipRegistration), eSeverity.Informational));
+				
 				OnRegistrationChange.Raise(this, new RegistrationEventArgs(m_SipRegistration));
 			}
 		}
@@ -107,7 +113,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SipUri = value;
 
-				m_Codec.Logger.Set("SIP URI " + m_Item, eSeverity.Informational, m_SipUri);
+				m_Codec.Logger.LogSetTo(eSeverity.Informational, "SIP URI " + m_Item, m_SipUri);
 				OnUriChange.Raise(this, new StringEventArgs(m_SipUri));
 			}
 		}
@@ -126,7 +132,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SipProxyAddress = value;
 
-				m_Codec.Logger.Set("SIP Proxy Address " + m_Item, eSeverity.Informational, m_SipProxyAddress);
+				m_Codec.Logger.LogSetTo(eSeverity.Informational, "SIP Proxy Address " + m_Item, m_SipProxyAddress);
+				
 				OnProxyAddressChanged.Raise(this, new StringEventArgs(m_SipProxyAddress));
 			}
 		}
@@ -145,7 +152,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 
 				m_SipProxyStatus = value;
 
-				m_Codec.Logger.Set("SIP Proxy Status " + m_Item, eSeverity.Informational, m_SipProxyStatus);
+				m_Codec.Logger.LogSetTo(eSeverity.Informational, "SIP Proxy Status " + m_Item, m_SipProxyStatus);
+				
 				OnProxyStatusChanged.Raise(this, new StringEventArgs(m_SipProxyStatus));
 			}
 		}

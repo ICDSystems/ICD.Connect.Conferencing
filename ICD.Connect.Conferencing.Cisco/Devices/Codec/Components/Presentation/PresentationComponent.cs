@@ -8,6 +8,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 {
@@ -68,7 +69,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 
 				m_PresentationPosition = value;
 
-				Codec.Logger.Set("Presentation Position", eSeverity.Informational, m_PresentationPosition);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PresentationPosition", m_PresentationPosition);
 
 				OnPresentationPositionChanged.Raise(this, new PipPositionEventArgs(m_PresentationPosition));
 			}
@@ -88,7 +89,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 
 				m_PresentationView = value;
 
-				Codec.Logger.Set("Presentation View", eSeverity.Informational, m_PresentationView);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PresentationView", m_PresentationView);
 
 				OnPresentationViewChanged.Raise(this, new LayoutEventArgs(m_PresentationView));
 			}
@@ -108,7 +109,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation
 
 				m_PresentationMode = value;
 
-				Codec.Logger.Set("Presentation Mode", eSeverity.Informational, m_PresentationMode);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PresentationMode", m_PresentationMode);
 
 				OnPresentationModeChanged.Raise(this, new PresentationModeEventArgs(m_PresentationMode));
 			}

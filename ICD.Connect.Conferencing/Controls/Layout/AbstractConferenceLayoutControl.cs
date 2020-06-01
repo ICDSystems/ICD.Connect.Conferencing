@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -48,7 +49,7 @@ namespace ICD.Connect.Conferencing.Controls.Layout
 
 				m_LayoutAvailable = value;
 
-				Logger.Set("Layout Available", eSeverity.Informational, m_LayoutAvailable);
+				Logger.LogSetTo(eSeverity.Informational, "LayoutAvailable", m_LayoutAvailable);
 
 				OnLayoutAvailableChanged.Raise(this, new ConferenceLayoutAvailableApiEventArgs(m_LayoutAvailable));
 			}
@@ -67,7 +68,7 @@ namespace ICD.Connect.Conferencing.Controls.Layout
 
 				m_SelfViewEnabled = value;
 
-				Logger.Set("Self View Enabled", eSeverity.Informational, m_SelfViewEnabled);
+				Logger.LogSetTo(eSeverity.Informational, "SelfViewEnabled", m_SelfViewEnabled);
 
 				OnSelfViewEnabledChanged.Raise(this, new ConferenceLayoutSelfViewApiEventArgs(m_SelfViewEnabled));
 			}
@@ -86,7 +87,7 @@ namespace ICD.Connect.Conferencing.Controls.Layout
 
 				m_SelfViewFullScreenEnabled = value;
 
-				Logger.Set("Self View Full Screen Enabled", eSeverity.Informational, m_SelfViewFullScreenEnabled);
+				Logger.LogSetTo(eSeverity.Informational, "SelfViewFullScreenEnabled", m_SelfViewFullScreenEnabled);
 				
 				OnSelfViewFullScreenEnabledChanged.Raise(this, new ConferenceLayoutSelfViewFullScreenApiEventArgs(m_SelfViewFullScreenEnabled));
 			}

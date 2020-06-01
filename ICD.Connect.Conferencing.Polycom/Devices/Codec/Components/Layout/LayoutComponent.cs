@@ -7,6 +7,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 {
@@ -59,10 +60,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 		/// </summary>
 		public ePipPosition PipPosition
 		{
-			get
-			{
-				return m_PipPosition;
-			}
+			get { return m_PipPosition; }
 			private set
 			{
 				if (value == m_PipPosition)
@@ -70,7 +68,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 
 				m_PipPosition = value;
 
-				Codec.Logger.Set("PIP Position", eSeverity.Informational, m_PipPosition);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PipPosition", m_PipPosition);
 
 				OnPipPositionChanged.Raise(this, new PipPositionEventArgs(m_PipPosition));
 			}
@@ -81,10 +79,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 		/// </summary>
 		public eSelfView SelfView
 		{
-			get
-			{
-				return m_SelfView;
-			}
+			get { return m_SelfView; }
 			private set
 			{
 				if (value == m_SelfView)
@@ -92,7 +87,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Layout
 
 				m_SelfView = value;
 
-				Codec.Logger.Set("Self View", eSeverity.Informational, m_SelfView);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SelfView", m_SelfView);
 
 				OnSelfViewChanged.Raise(this, new SelfViewEventArgs(m_SelfView));
 			}

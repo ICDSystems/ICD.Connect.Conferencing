@@ -11,6 +11,7 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Cameras;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 {
@@ -104,7 +105,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_PresenterTrackAvailability = value;
 
-				Codec.Logger.Set("Presenter Track Availability", eSeverity.Informational, m_PresenterTrackAvailability);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PresenterTrackAvailability", m_PresenterTrackAvailability);
 
 				OnPresenterTrackAvailabilityChanged.Raise(this,
 				                                          new PresenterTrackAvailabilityEventArgs(m_PresenterTrackAvailability));
@@ -125,7 +126,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_PresenterDetected = value;
 
-				Codec.Logger.Set("Presenter Detected", eSeverity.Informational, m_PresenterDetected);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PresenterDetected", m_PresenterDetected);
 
 				OnPresenterDetectedStateChanged.Raise(this, new BoolEventArgs(m_PresenterDetected));
 			}
@@ -145,7 +146,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 				
 				m_PresenterTrackMode = value;
 
-				Codec.Logger.Set("Presenter Track Mode", eSeverity.Informational, m_PresenterTrackMode);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "PresenterTrackMode", m_PresenterTrackMode);
 
 				OnPresenterTrackModeChanged.Raise(this, new PresenterTrackModeEventArgs(m_PresenterTrackMode));
 			}
@@ -170,7 +171,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 				
 				m_SpeakerTrackAvailability = value;
 
-				Codec.Logger.Set("Speaker Track Availability", eSeverity.Informational, m_SpeakerTrackAvailability);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SpeakerTrackAvailability", m_SpeakerTrackAvailability);
 
 				OnSpeakerTrackAvailabilityChanged.Raise(this, new SpeakerTrackAvailabilityEventArgs(m_SpeakerTrackAvailability));
 			}
@@ -190,7 +191,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_SpeakerTrackStatus = value;
 
-				Codec.Logger.Set("Speaker Track Status", eSeverity.Informational,  m_SpeakerTrackStatus);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SpeakerTrackStatus", m_SpeakerTrackStatus);
 
 				OnSpeakerTrackStatusChanged.Raise(this, new SpeakerTrackStatusEventArgs(m_SpeakerTrackStatus));
 			}
@@ -210,7 +211,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_SpeakerTrackWhiteboardMode = value;
 
-				Codec.Logger.Set("Speaker Track Whiteboard Mode", eSeverity.Informational, m_SpeakerTrackWhiteboardMode);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SpeakerTrackWhiteboardMode", m_SpeakerTrackWhiteboardMode);
 
 				OnSpeakerTrackWhiteboardModeChanged.Raise(this, new SpeakerTrackWhiteboardModeEventArgs(m_SpeakerTrackWhiteboardMode));
 			}
@@ -230,7 +231,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 				m_SpeakerTrackWhiteboardDistance = value;
 
-				Codec.Logger.Log(eSeverity.Informational, "SpeakerTrack Whiteboard Distance is {0}", m_SpeakerTrackWhiteboardDistance);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "SpeakerTrack Whiteboard Distance", m_SpeakerTrackWhiteboardDistance);
 
 				OnSpeakerTrackWhiteboardDistanceChanged.Raise(this, new IntEventArgs(m_SpeakerTrackWhiteboardDistance));
 			}

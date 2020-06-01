@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
@@ -48,7 +49,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera
 
 				m_ActiveNearCamera = value;
 
-				Codec.Logger.Set("Active Near Camera", eSeverity.Informational, m_ActiveNearCamera);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "ActiveNearCamera", m_ActiveNearCamera);
 
 				OnActiveNearCameraChanged.Raise(this, new ActiveCameraEventArgs(m_ActiveNearCamera));
 			}

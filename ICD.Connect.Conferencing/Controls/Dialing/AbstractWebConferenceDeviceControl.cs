@@ -5,6 +5,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Devices;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
@@ -51,7 +52,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_CameraEnabled = value;
 
-					Logger.Set("Camera Enabled", eSeverity.Informational, m_CameraEnabled);
+					Logger.LogSetTo(eSeverity.Informational, "Camera Enabled", m_CameraEnabled);
 				}
 				finally
 				{
@@ -79,7 +80,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_AmIHost = value;
 
-					Logger.Set("Am I Host", eSeverity.Informational, m_AmIHost);
+					Logger.LogSetTo(eSeverity.Informational, "AmIHost", m_AmIHost);
 				}
 				finally
 				{
@@ -107,7 +108,10 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_CallLock = value;
 
-					Logger.Set("Call Lock", eSeverity.Informational, m_CallLock);
+					Logger.LogSetTo(eSeverity.Informational, "CallLock", eSeverity.Informational);
+					Activities.LogActivity(m_CallLock
+						? new Activity(Activity.ePriority.Medium, "Call Lock", "Call Lock Enabled", eSeverity.Informational)
+						: new Activity(Activity.ePriority.Low, "Call Lock", "Call Lock Disabled", eSeverity.Informational));
 				}
 				finally
 				{

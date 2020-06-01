@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -70,7 +71,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_IsSapDisabled = value;
-				Parent.Logger.Set("SAP Disabled", eSeverity.Informational, m_IsSapDisabled);
+
+				Parent.Logger.LogSetTo(eSeverity.Informational, "IsSapDisabled", m_IsSapDisabled);
+
 				OnSoftwareAudioProcessingChanged.Raise(this, new BoolEventArgs(m_IsSapDisabled));
 			}
 		}
@@ -87,7 +90,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_ReduceReverb = value;
-				Parent.Logger.Set("Reduce Reverb", eSeverity.Informational, m_ReduceReverb);
+
+				Parent.Logger.LogSetTo(eSeverity.Informational, "ReduceReverb", m_ReduceReverb);
+
 				OnReduceReverbChanged.Raise(this, new BoolEventArgs(m_ReduceReverb));
 			}
 		}
@@ -104,7 +109,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_SelectedAudioInputDeviceId = value;
-				Parent.Logger.Set("Selected Audio Input DeviceId", eSeverity.Informational, m_SelectedAudioInputDeviceId);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "Selected Audio Input DeviceId", m_SelectedAudioInputDeviceId);
 				OnAudioInputDeviceChanged.Raise(this, new StringEventArgs(m_SelectedAudioInputDeviceId));
 			}
 		}
@@ -121,7 +126,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Audio
 					return;
 
 				m_SelectedAudioOutputDeviceId = value;
-				Parent.Logger.Set("Selected Audio Output DeviceId", eSeverity.Informational, m_SelectedAudioOutputDeviceId);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "Selected Audio Output DeviceId", m_SelectedAudioOutputDeviceId);
 				OnAudioOutputDeviceChanged.Raise(this, new StringEventArgs(m_SelectedAudioOutputDeviceId));
 			}
 		}

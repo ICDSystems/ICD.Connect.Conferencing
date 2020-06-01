@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -102,7 +103,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 				m_Initialized = value;
 
-				Logger.Set("Initialized", eSeverity.Informational, m_Initialized);
+				Logger.LogSetTo(eSeverity.Informational, "Initialized", m_Initialized);
+				Activities.LogActivity(m_Initialized
+					                   ? new Activity(Activity.ePriority.Low, "Initialized", "Initialized", eSeverity.Informational)
+					                   : new Activity(Activity.ePriority.High, "Initialized", "Not Initialized", eSeverity.Warning));
 
 				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
 			}

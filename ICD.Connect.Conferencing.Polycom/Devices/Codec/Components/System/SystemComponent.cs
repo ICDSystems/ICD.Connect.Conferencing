@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
@@ -28,7 +29,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.System
 
 				m_FirmwareVersion = value;
 
-				Codec.Logger.Set("Firmware Version", eSeverity.Informational, m_FirmwareVersion);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "FirmwareVersion", m_FirmwareVersion);
 
 				if (!UndefinedVersionEqualityComparer.Instance.Equals(m_FirmwareVersion, s_ExpectedVersion))
 					Codec.Logger.Log(eSeverity.Warning, "Driver is programmed to work with firmware version {0}", s_ExpectedVersion);

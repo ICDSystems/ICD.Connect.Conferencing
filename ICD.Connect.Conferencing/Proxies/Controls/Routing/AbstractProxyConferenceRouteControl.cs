@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -46,7 +47,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 
 				m_CameraInput = value;
 
-				Logger.Set("Camera Input", eSeverity.Informational, m_CameraInput);
+				Logger.LogSetTo(eSeverity.Informational, "CameraInput", m_CameraInput);
 
 				OnCameraInputChanged.Raise(this, new ConferenceRouteDestinationCameraInputApiEventArgs(m_CameraInput));
 			}

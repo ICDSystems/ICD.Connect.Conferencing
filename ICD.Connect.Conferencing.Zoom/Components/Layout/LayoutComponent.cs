@@ -6,6 +6,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 {
@@ -67,7 +68,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_ShareThumb = value;
 
-				Parent.Logger.Set("Share Thumb", eSeverity.Informational, m_ShareThumb);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "ShareThumb", m_ShareThumb);
 
 				OnShareThumbChanged.Raise(this, new BoolEventArgs(m_ShareThumb));
 			}
@@ -86,7 +87,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_LayoutStyle = value;
 
-				Parent.Logger.Set("Layout Style", eSeverity.Informational, m_LayoutStyle);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "LayoutStyle", m_LayoutStyle);
 
 				OnStyleChanged.Raise(this, new ZoomLayoutStyleEventArgs(m_LayoutStyle));
 			}
@@ -105,7 +106,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_LayoutSize = value;
 
-				Parent.Logger.Set("Layout Size", eSeverity.Informational, m_LayoutSize);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "LayoutSize", m_LayoutSize);
 				
 				OnSizeChanged.Raise(this, new ZoomLayoutSizeEventArgs(m_LayoutSize));
 			}
@@ -125,7 +126,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_LayoutPosition = value;
 
-				Parent.Logger.Set("Layout Position", eSeverity.Informational, m_LayoutPosition);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "LayoutPosition", m_LayoutPosition);
 
 				OnPositionChanged.Raise(this, new ZoomLayoutPositionEventArgs(m_LayoutPosition));
 			}
@@ -144,7 +145,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 
 				m_SelfViewEnabled = value;
 
-				Parent.Logger.Set("Self View Enabled", eSeverity.Informational, m_SelfViewEnabled);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "SelfViewEnabled", m_SelfViewEnabled);
 
 				OnSelfViewEnabledChanged.Raise(this, new BoolEventArgs(m_SelfViewEnabled));
 			}
@@ -159,8 +160,6 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Layout
 					return;
 
 				m_LayoutAvailability = value;
-
-				Parent.Logger.Set("Layout Availability", eSeverity.Informational, m_LayoutAvailability);
 
 				OnCallLayoutAvailabilityChanged.Raise(this, new GenericEventArgs<ZoomLayoutAvailability>(m_LayoutAvailability));
 			}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -48,7 +49,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 				m_MutedNear = value;
 
-				Codec.Logger.Set("Muted Near", eSeverity.Informational, m_MutedNear);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "MutedNear", m_MutedNear);
 
 				OnMutedNearChanged.Raise(this, new BoolEventArgs(m_MutedNear));
 			}
@@ -67,7 +68,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 				m_MutedFar = value;
 
-				Codec.Logger.Set("Muted Far", eSeverity.Informational, m_MutedFar);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "MutedFar", m_MutedFar);
 
 				OnMutedFarChanged.Raise(this, new BoolEventArgs(m_MutedFar));
 			}
@@ -86,7 +87,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute
 
 				m_VideoMuted = value;
 
-				Codec.Logger.Set("Video Muted", eSeverity.Informational, m_VideoMuted);
+				Codec.Logger.LogSetTo(eSeverity.Informational, "VideoMuted", m_VideoMuted);
 
 				OnVideoMutedChanged.Raise(this, new BoolEventArgs(m_VideoMuted));
 			}

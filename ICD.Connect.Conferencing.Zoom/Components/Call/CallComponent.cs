@@ -10,6 +10,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Responses;
+using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Zoom.Components.Call
 {
@@ -147,7 +148,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_MeetingId = value;
-				Parent.Logger.Set("Meeting ID", eSeverity.Informational, m_MeetingId);
+
+				Parent.Logger.LogSetTo(eSeverity.Informational, "MeetingId", m_MeetingId);
 
 				OnMeetingIdChanged.Raise(this, new StringEventArgs(m_MeetingId));
 			}
@@ -170,7 +172,8 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_CameraMute = value;
-				Parent.Logger.Set("Camera Mute", eSeverity.Informational, m_CameraMute);
+
+				Parent.Logger.LogSetTo(eSeverity.Informational, "CameraMute", m_CameraMute);
 
 				OnCameraMuteChanged.Raise(this, new BoolEventArgs(m_CameraMute));
 			}
@@ -188,7 +191,9 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_MicrophoneMute = value;
-				Parent.Logger.Set("Microphone Mute", eSeverity.Informational, m_MicrophoneMute);
+
+				Parent.Logger.LogSetTo(eSeverity.Informational, "MicrophoneMute", m_MicrophoneMute);
+
 
 				// The far end is trying to mute/unmute us
 				if (m_MicrophoneMute != m_LastMicrophoneMute)
@@ -214,7 +219,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_AmIHost = value;
-				Parent.Logger.Set("Am I Host", eSeverity.Informational, m_AmIHost);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "AmIHost", m_AmIHost);
 
 				OnAmIHostChanged.Raise(this, new BoolEventArgs(m_AmIHost));
 			}
@@ -232,7 +237,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_CallLock = value;
-				Parent.Logger.Set("Call Lock", eSeverity.Informational, m_CallLock);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "CallLock", m_CallLock);
 
 				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
 			}
@@ -250,7 +255,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_CallRecord = value;
-				Parent.Logger.Set("Call Record", eSeverity.Informational, m_CallRecord);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "CallRecord", m_CallRecord);
 
 				OnCallRecordChanged.Raise(this, new BoolEventArgs(m_CallRecord));
 			}
@@ -268,7 +273,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_Status = value;
-				Parent.Logger.Set("Call Status", eSeverity.Informational, m_Status);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "CallStatus", m_Status);
 
 				OnStatusChanged.Raise(this, new GenericEventArgs<eCallStatus>(m_Status));
 			}
@@ -286,7 +291,7 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 					return;
 
 				m_MuteUserOnEntry = value;
-				Parent.Logger.Set("Mute User On Entry", eSeverity.Informational, m_MuteUserOnEntry);
+				Parent.Logger.LogSetTo(eSeverity.Informational, "MuteUserOnEntry", m_MuteUserOnEntry);
 
 				OnMuteUserOnEntryChanged.Raise(this, new BoolEventArgs(m_MuteUserOnEntry));
 			}
