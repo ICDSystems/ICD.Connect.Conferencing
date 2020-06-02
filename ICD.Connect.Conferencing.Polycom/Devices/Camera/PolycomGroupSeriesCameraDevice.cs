@@ -9,6 +9,7 @@ using ICD.Connect.Cameras.Controls;
 using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Camera;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings;
 
@@ -53,10 +54,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 			SupportedCameraFeatures =
 				eCameraFeatures.PanTiltZoom |
 				eCameraFeatures.Presets;
-
-			Controls.Add(new GenericCameraRouteSourceControl<PolycomGroupSeriesCameraDevice>(this, 0));
-			Controls.Add(new CameraDeviceControl(this, 1));
-			Controls.Add(new PolycomGroupSeriesCameraDevicePowerControl(this, 2));
 		}
 
 		/// <summary>
@@ -299,6 +296,21 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
 
 			settings.CodecId = m_Codec == null ? null : (int?)m_Codec.Id;
 			settings.CameraId = CameraId;
+		}
+
+		/// <summary>
+		/// Override to add controls to the device.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		/// <param name="addControl"></param>
+		protected override void AddControls(PolycomGroupSeriesCameraSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new GenericCameraRouteSourceControl<PolycomGroupSeriesCameraDevice>(this, 0));
+			addControl(new CameraDeviceControl(this, 1));
+			addControl(new PolycomGroupSeriesCameraDevicePowerControl(this, 2));
 		}
 
 		#endregion

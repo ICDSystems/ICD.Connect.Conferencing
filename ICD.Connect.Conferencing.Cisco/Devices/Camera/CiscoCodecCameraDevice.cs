@@ -13,6 +13,7 @@ using ICD.Connect.Cameras.Devices;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Devices.EventArguments;
 using ICD.Connect.Settings;
 using ICD.Connect.Telemetry.Attributes;
@@ -112,16 +113,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Constructor.
-		/// </summary>
-		public CiscoCodecCameraDevice()
-		{
-			Controls.Add(new GenericCameraRouteSourceControl<CiscoCodecCameraDevice>(this, 0));
-			Controls.Add(new CameraDeviceControl(this, 1));
-			Controls.Add(new CiscoCodecCameraDevicePowerControl(this, 2));
-		}
 
 		/// <summary>
 		/// Release resources.
@@ -553,6 +544,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			settings.CameraId = CameraId == 0 ? (int?)null : CameraId;
 			settings.PanTiltSpeed = m_PanTiltSpeed;
 			settings.ZoomSpeed = m_ZoomSpeed;
+		}
+
+		/// <summary>
+		/// Override to add controls to the device.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		/// <param name="addControl"></param>
+		protected override void AddControls(CiscoCodecCameraDeviceSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new GenericCameraRouteSourceControl<CiscoCodecCameraDevice>(this, 0));
+			addControl(new CameraDeviceControl(this, 1));
+			addControl(new CiscoCodecCameraDevicePowerControl(this, 2));
 		}
 
 		#endregion

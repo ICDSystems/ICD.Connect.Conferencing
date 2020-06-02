@@ -15,6 +15,7 @@ using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Ports;
@@ -159,14 +160,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
-
-			Controls.Add(new PolycomCodecRoutingControl(this, 0));
-			Controls.Add(new PolycomCodecTraditionalConferenceControl(this, 1));
-			Controls.Add(new PolycomCodecDirectoryControl(this, 2));
-			Controls.Add(new PolycomCodecLayoutControl(this, 3));
-			Controls.Add(new PolycomCodecPresentationControl(this, 4));
-			Controls.Add(new PolycomCodecPowerControl(this, 5));
-			Controls.Add(new PolycomCalendarControl(this, 6));
 		}
 
 		#endregion
@@ -682,6 +675,25 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			}
 
 			SetPort(port);
+		}
+
+		/// <summary>
+		/// Override to add controls to the device.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		/// <param name="addControl"></param>
+		protected override void AddControls(PolycomGroupSeriesSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new PolycomCodecRoutingControl(this, 0));
+			addControl(new PolycomCodecTraditionalConferenceControl(this, 1));
+			addControl(new PolycomCodecDirectoryControl(this, 2));
+			addControl(new PolycomCodecLayoutControl(this, 3));
+			addControl(new PolycomCodecPresentationControl(this, 4));
+			addControl(new PolycomCodecPowerControl(this, 5));
+			addControl(new PolycomCalendarControl(this, 6));
 		}
 
 		#endregion

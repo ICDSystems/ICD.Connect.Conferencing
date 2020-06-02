@@ -15,6 +15,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender;
 using ICD.Connect.Conferencing.Devices;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Ports;
@@ -172,16 +173,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			m_SerialBuffer = new XmlSerialBuffer();
 			Subscribe(m_SerialBuffer);
-
-			Controls.Add(new CiscoCodecRoutingControl(this, 0));
-			Controls.Add(new CiscoCodecTraditionalConferenceControl(this, 1));
-			Controls.Add(new CiscoCodecDirectoryControl(this, 2));
-			Controls.Add(new CiscoCodecLayoutControl(this, 3));
-			Controls.Add(new CiscoCodecPresentationControl(this, 4));
-			Controls.Add(new CiscoCodecPowerControl(this, 5));
-			Controls.Add(new CiscoCodecCalendarControl(this, 6));
-			Controls.Add(new CiscoCodecOccupancySensorControl(this, 7));
-			Controls.Add(new CiscoCodecVolumeControl(this, 8));
 		}
 
 		#endregion
@@ -733,6 +724,27 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			}
 
 			SetPort(port);
+		}
+
+		/// <summary>
+		/// Override to add controls to the device.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		/// <param name="addControl"></param>
+		protected override void AddControls(CiscoCodecSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new CiscoCodecRoutingControl(this, 0));
+			addControl(new CiscoCodecTraditionalConferenceControl(this, 1));
+			addControl(new CiscoCodecDirectoryControl(this, 2));
+			addControl(new CiscoCodecLayoutControl(this, 3));
+			addControl(new CiscoCodecPresentationControl(this, 4));
+			addControl(new CiscoCodecPowerControl(this, 5));
+			addControl(new CiscoCodecCalendarControl(this, 6));
+			addControl(new CiscoCodecOccupancySensorControl(this, 7));
+			addControl(new CiscoCodecVolumeControl(this, 8));
 		}
 
 		#endregion

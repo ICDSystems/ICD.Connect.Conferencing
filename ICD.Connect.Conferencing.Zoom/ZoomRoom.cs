@@ -11,6 +11,7 @@ using ICD.Connect.Conferencing.Zoom.Controls.Calendar;
 using ICD.Connect.Conferencing.Zoom.Controls.Conferencing;
 using ICD.Connect.Conferencing.Zoom.Responses;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Ports;
@@ -284,16 +285,6 @@ namespace ICD.Connect.Conferencing.Zoom
 			Components.GetComponent<SystemComponent>();
 			// Create new Audio component
 			Components.GetComponent<AudioComponent>();
-
-			Controls.Add(new ZoomRoomRoutingControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomDirectoryControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomPresentationControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomConferenceControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomTraditionalConferenceControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomCalendarControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomLayoutControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomVolumeControl(this, Controls.Count));
-			Controls.Add(new ZoomRoomCameraControl(this, Controls.Count));
 		}
 
 		/// <summary>
@@ -777,6 +768,27 @@ namespace ICD.Connect.Conferencing.Zoom
 
 				incrementer++;
 			}
+		}
+
+		/// <summary>
+		/// Override to add controls to the device.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		/// <param name="addControl"></param>
+		protected override void AddControls(ZoomRoomSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new ZoomRoomRoutingControl(this, Controls.Count));
+			addControl(new ZoomRoomDirectoryControl(this, Controls.Count));
+			addControl(new ZoomRoomPresentationControl(this, Controls.Count));
+			addControl(new ZoomRoomConferenceControl(this, Controls.Count));
+			addControl(new ZoomRoomTraditionalConferenceControl(this, Controls.Count));
+			addControl(new ZoomRoomCalendarControl(this, Controls.Count));
+			addControl(new ZoomRoomLayoutControl(this, Controls.Count));
+			addControl(new ZoomRoomVolumeControl(this, Controls.Count));
+			addControl(new ZoomRoomCameraControl(this, Controls.Count));
 		}
 
 		#endregion

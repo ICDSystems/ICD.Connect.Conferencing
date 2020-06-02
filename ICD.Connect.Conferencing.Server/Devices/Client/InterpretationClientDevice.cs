@@ -18,6 +18,7 @@ using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Conferencing.Utils;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
@@ -173,8 +174,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_RpcController = new ClientSerialRpcController(this);
 			m_Sources = new BiDictionary<Guid, ThinTraditionalParticipant>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
-
-			Controls.Add(new DialerDeviceDialerControl(this, 0));
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
@@ -631,6 +630,19 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_NetworkProperties.ClearNetworkProperties();
 
 			SetPort(null);
+		}
+
+		/// <summary>
+		/// Override to add controls to the device.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		/// <param name="addControl"></param>
+		protected override void AddControls(InterpretationClientDeviceSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new DialerDeviceDialerControl(this, 0));
 		}
 
 		#endregion

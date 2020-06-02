@@ -13,7 +13,9 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Devices.Mock;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Mock
 {
@@ -48,10 +50,6 @@ namespace ICD.Connect.Conferencing.Mock
 		{
 			m_Sources = new List<ITraditionalParticipant>();
 
-			Controls.Add(new MockVideoConferenceRouteControl(this, 0));
-			Controls.Add(new MockTraditionalConferenceDeviceControl(this, 1));
-			Controls.Add(new MockDirectoryControl(this, 2));
-
 			m_InputTypes = new CodecInputTypes();
 			m_InputTypes.SetInputType(3, eCodecInputType.None);
 		}
@@ -67,6 +65,21 @@ namespace ICD.Connect.Conferencing.Mock
 			base.DisposeFinal(disposing);
 
 			m_Sources.Clear();
+		}
+
+		/// <summary>
+		/// Override to add controls to the device.
+		/// </summary>
+		/// <param name="settings"></param>
+		/// <param name="factory"></param>
+		/// <param name="addControl"></param>
+		protected override void AddControls(MockConferencingDeviceSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new MockVideoConferenceRouteControl(this, 0));
+			addControl(new MockTraditionalConferenceDeviceControl(this, 1));
+			addControl(new MockDirectoryControl(this, 2));
 		}
 
 		#region Console
