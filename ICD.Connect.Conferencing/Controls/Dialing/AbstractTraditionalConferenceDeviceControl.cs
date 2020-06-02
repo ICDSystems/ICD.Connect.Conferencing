@@ -34,6 +34,17 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		{
 		}
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		/// <param name="uuid"></param>
+		protected AbstractTraditionalConferenceDeviceControl(T parent, int id, Guid uuid)
+			: base(parent, id, uuid)
+		{
+		}
+
 		#region Methods
 
 		/// <summary>

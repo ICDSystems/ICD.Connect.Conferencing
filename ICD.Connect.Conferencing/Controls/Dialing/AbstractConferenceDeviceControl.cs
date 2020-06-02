@@ -222,6 +222,18 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		}
 
 		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		/// <param name="uuid"></param>
+		protected AbstractConferenceDeviceControl(T parent, int id, Guid uuid)
+			: base(parent, id, uuid)
+		{
+			m_StateSection = new SafeCriticalSection();
+		}
+
+		/// <summary>
 		/// Override to release resources.
 		/// </summary>
 		/// <param name="disposing"></param>
