@@ -1,6 +1,6 @@
 ﻿using ICD.Common.Utils.Collections;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics;
-using ICD.Connect.Misc.Occupancy;
+using ICD.Connect.Partitioning.Commercial.Controls.Occupancy;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
