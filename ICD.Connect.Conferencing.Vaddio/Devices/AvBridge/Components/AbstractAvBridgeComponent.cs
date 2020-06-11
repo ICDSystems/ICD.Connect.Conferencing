@@ -68,7 +68,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// Calls the delegate for each console status item.
 		/// </summary>
 		/// <param name="addRow"></param>
-		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		public virtual void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
 		}
 
@@ -76,7 +76,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// Gets the child console nodes.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		public virtual IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
 			yield break;
 		}
@@ -85,7 +85,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// Gets the child console commands.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IConsoleCommand> GetConsoleCommands()
+		public virtual IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
 			yield break;
 		}

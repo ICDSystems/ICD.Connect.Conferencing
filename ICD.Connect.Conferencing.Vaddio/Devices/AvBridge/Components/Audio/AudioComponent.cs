@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
+using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 {
@@ -11,13 +14,13 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 		public event EventHandler<IntEventArgs> OnVolumeChanged;
 
-		public event EventHandler<BoolEventArgs> OnMuteChanged;
+		public event EventHandler<BoolEventArgs> OnAudioMuteChanged;
 
 		#endregion
 
 		private int m_Volume;
 
-		private bool m_Mute;
+		private bool m_AudioMute;
 
 		#region Properties
 
@@ -35,17 +38,17 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 			}
 		}
 
-		public bool Mute
+		public bool AudioMute
 		{
-			get { return m_Mute; }
+			get { return m_AudioMute; }
 			private set
 			{
-				if (value == m_Mute)
+				if (value == m_AudioMute)
 					return;
 
-				m_Mute = value;
+				m_AudioMute = value;
 
-				OnMuteChanged.Raise(this, new BoolEventArgs(value));
+				OnAudioMuteChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
 
@@ -64,6 +67,17 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 			if(avBridge.Initialized)
 				Initialize();
+		}
+
+		/// <summary>
+		/// Called to initialize the component.
+		/// </summary>
+		protected override void Initialize()
+		{
+			base.Initialize();
+
+			GetAudioInput();
+			GetAudioVolume();
 		}
 
 		#endregion
@@ -155,6 +169,48 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		public void DecrementAudioVolume()
 		{
 			AvBridge.SendCommand("audio volume down");
+		}
+
+		#endregion
+
+		#region Console
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			yield return new GenericConsoleCommand<bool>("SetAudioMute", "<true | false>", m => SetAudioMute(m));
+			yield return new ConsoleCommand("ToggleAudioMute", "Toggles the audio mute", () => ToggleAudioMute());
+			yield return
+				new GenericConsoleCommand<int>("SetAudioVolume", "Sets the volume [0-10] inclusive", v => SetAudioVolume(v));
+			yield return new ConsoleCommand("IncrementVolume", "Increments the volume one step", () => IncrementAudioVolume());
+			yield return new ConsoleCommand("DecrementVolume", "Decrements the volume one step", () => DecrementAudioVolume());
+		}
+
+		/// <summary>
+		/// Shim to avoid "unverifiable code" warning.
+		/// </summary>
+		/// <returns></returns>
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
+		}
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public override void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+			base.BuildConsoleStatus(addRow);
+
+			addRow("Volume", Volume);
+			addRow("AudioMute", AudioMute);
 		}
 
 		#endregion
