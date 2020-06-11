@@ -64,16 +64,25 @@
   <ItemGroup>
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\AvBridge\Components\AbstractAvBridgeComponent.cs" />
-    <Compile Include="Devices\AvBridge\Components\AudioComponent.cs" />
+    <Compile Include="Devices\AvBridge\Components\Audio\AudioComponent.cs" />
+    <Compile Include="Devices\AvBridge\Components\Audio\eAudioInput.cs" />
+    <Compile Include="Devices\AvBridge\Components\AvBridgeComponentFactory.cs" />
     <Compile Include="Devices\AvBridge\Components\IAvBridgeComponent.cs" />
+    <Compile Include="Devices\AvBridge\Components\Video\eVideoInput.cs" />
+    <Compile Include="Devices\AvBridge\Components\Video\VideoComponent.cs" />
     <Compile Include="Devices\AvBridge\Controls\VaddioAvBridgeVolumeControl.cs" />
     <Compile Include="Devices\AvBridge\VaddioAvBridgeDevice.cs" />
     <Compile Include="Devices\AvBridge\VaddioAvBridgeDeviceSettings.cs" />
+    <Compile Include="Devices\AvBridge\VaddioAvBridgeSerialBuffer.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ICD.Common.Logging\ICD.Common.Logging\ICD.Common.Logging_SimplSharp.csproj">
+      <Project>{8093AE94-7250-411E-9C55-68AB2B5D705A}</Project>
+      <Name>ICD.Common.Logging_SimplSharp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ICD.Common.Utils\ICD.Common.Utils\ICD.Common.Utils_SimplSharp.csproj">
       <Project>{CB4055C6-D59E-479E-9C56-2C92335A7D9A}</Project>
       <Name>ICD.Common.Utils_SimplSharp</Name>

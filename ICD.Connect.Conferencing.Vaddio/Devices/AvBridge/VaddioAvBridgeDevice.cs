@@ -6,7 +6,6 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
-using ICD.Common.Utils.Timers;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components;
@@ -17,7 +16,6 @@ using ICD.Connect.Protocol.Network.Ports;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
-using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Protocol.Settings;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
@@ -29,6 +27,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		/// </summary>
 		private const string END_OF_LINE = "\r\n";
 
+		#region Events
+
 		/// <summary>
 		/// Raised when the class initializes.
 		/// </summary>
@@ -39,19 +39,31 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnConnectedStateChanged;
 
+		#endregion
+
 		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
-
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
 		private readonly AvBridgeComponentFactory m_Components;
 
-		private readonly ISerialBuffer m_SerialBuffer;
-		private readonly SafeTimer m_FeedbackTimer;
+		private readonly VaddioAvBridgeSerialBuffer m_SerialBuffer;
 
 		private bool m_Initialized;
 
 		#region Properties
+
+		/// <summary>
+		/// Username for loggin into the device
+		/// </summary>
+		[PublicAPI]
+		public string Username { get; set; }
+
+		/// <summary>
+		/// Password for logging in to the device.
+		/// </summary>
+		[PublicAPI]
+		public string Password { get; set; }
 
 		/// <summary>
 		/// Device Initialized Status.
@@ -92,12 +104,15 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
+			m_Components = new AvBridgeComponentFactory(this);
+
+			m_SerialBuffer = new VaddioAvBridgeSerialBuffer();
+			Subscribe(m_SerialBuffer);
+
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
-
-			m_Components = new AvBridgeComponentFactory(this);
 
 			Controls.Add(new VaddioAvBridgeVolumeControl(this, 0));
 		}
@@ -109,6 +124,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		{
 			OnInitializedChanged = null;
 			OnConnectedStateChanged = null;
+
+			Unsubscribe(m_SerialBuffer);
 
 			m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
@@ -149,6 +166,12 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
+			if (port != null)
+			{
+				port.DebugRx = eDebugMode.Ascii;
+				port.DebugTx = eDebugMode.Ascii;
+			}
+
 			m_ConnectionStateManager.SetPort(port);
 		}
 
@@ -189,11 +212,6 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 				command = string.Format(command, args);
 
 			m_ConnectionStateManager.Send(command + END_OF_LINE);
-
-#if !SIMPLSHARP
-			// Too fast!
-			ThreadingUtils.Sleep(10);
-#endif
 		}
 
 		/// <summary>
@@ -229,17 +247,53 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 
 		private void PortOnSerialDataReceived(object sender, StringEventArgs e)
 		{
-			//throw new NotImplementedException();
+			m_SerialBuffer.Enqueue(e.Data);
 		}
 
 		private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs e)
 		{
-			//throw new NotImplementedException();
+			UpdateCachedOnlineStatus();
 		}
 
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs e)
 		{
-			//throw new NotImplementedException();
+			// TODO
+			// Lose connection gracefully.
+
+			//OnConnectedStateChanged.Raise(this, new BoolEventArgs(e.Data));
+		}
+
+		#endregion
+
+		#region Serial Buffer Callbacks
+
+		private void Subscribe(VaddioAvBridgeSerialBuffer serialBuffer)
+		{
+			serialBuffer.OnUsernamePrompt += SerialBufferOnUsernamePrompt;
+			serialBuffer.OnPasswordPrompt += SerialBufferOnPasswordPrompt;
+			serialBuffer.OnCompletedSerial += SerialBufferOnCompletedSerial;
+		}
+
+		private void Unsubscribe(VaddioAvBridgeSerialBuffer serialBuffer)
+		{
+			serialBuffer.OnUsernamePrompt -= SerialBufferOnUsernamePrompt;
+			serialBuffer.OnPasswordPrompt -= SerialBufferOnPasswordPrompt;
+			serialBuffer.OnCompletedSerial -= SerialBufferOnCompletedSerial;
+		}
+
+		private void SerialBufferOnUsernamePrompt(object sender, EventArgs args)
+		{
+			m_ConnectionStateManager.Send(Username + END_OF_LINE);
+		}
+
+		private void SerialBufferOnPasswordPrompt(object sender, EventArgs args)
+		{
+			m_ConnectionStateManager.Send(Password + END_OF_LINE);
+		}
+
+		private void SerialBufferOnCompletedSerial(object sender, StringEventArgs stringEventArgs)
+		{
+			//Handle feedback
 		}
 
 		#endregion
@@ -251,6 +305,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			base.CopySettingsFinal(settings);
 
 			settings.Port = m_ConnectionStateManager.PortNumber;
+			settings.Username = Username;
+			settings.Password = Password;
 
 			settings.Copy(m_ComSpecProperties);
 			settings.Copy(m_NetworkProperties);
@@ -260,18 +316,24 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		{
 			base.ClearSettingsFinal();
 
+			Username = null;
+			Password = null;
+
 			m_ComSpecProperties.ClearComSpecProperties();
 			m_NetworkProperties.ClearNetworkProperties();
 
 			SetPort(null);
 		}
 
-		protected override void ApplySettingsFinal(VaddioAvBridgeDeviceSettings settings, ICD.Connect.Settings.IDeviceFactory factory)
+		protected override void ApplySettingsFinal(VaddioAvBridgeDeviceSettings settings, Settings.IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
 
 			m_ComSpecProperties.Copy(settings);
 			m_NetworkProperties.Copy(settings);
+
+			Username = settings.Username;
+			Password = settings.Password;
 
 			ISerialPort port = null;
 

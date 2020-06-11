@@ -66,7 +66,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 					case ':':
 						string prompt = m_RxData.ToString().ToLower();
 
-						if (prompt.Contains("login"))
+						if (prompt.Contains("login") && !prompt.Contains("last login"))
 						{
 							m_RxData.Clear();
 							OnUsernamePrompt.Raise(this);
