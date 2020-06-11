@@ -13,6 +13,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 	public sealed class VaddioAvBridgeDeviceSettings : AbstractVideoConferenceDeviceSettings, IComSpecSettings, ISecureNetworkSettings
 	{
 		private const string PORT_ELEMENT = "Port";
+		private const string USERNAME_ELEMENT = "Username";
+		private const string PASSWORD_ELEMENT = "Password";
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
@@ -24,6 +26,10 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		/// </summary>
 		[OriginatorIdSettingsProperty(typeof(ISerialPort))]
 		public int? Port { get; set; }
+
+		public string Username { get; set; }
+
+		public string Password { get; set; }
 
 		#endregion
 
@@ -177,6 +183,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			base.WriteElements(writer);
 
 			writer.WriteElementString(PORT_ELEMENT, Port == null ? null : IcdXmlConvert.ToString((int)Port));
+			writer.WriteElementString(USERNAME_ELEMENT, Username);
+			writer.WriteElementString(PASSWORD_ELEMENT, Password);
 		}
 
 		/// <summary>
@@ -188,6 +196,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			base.ParseXml(xml);
 
 			Port = XmlUtils.TryReadChildElementContentAsInt(xml, PORT_ELEMENT);
+			Username = XmlUtils.TryReadChildElementContentAsString(xml, USERNAME_ELEMENT);
+			Password = XmlUtils.TryReadChildElementContentAsString(xml, PASSWORD_ELEMENT);
 
 			UpdateNetworkDefaults();
 			UpdateComSpecDefaults();
