@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio;
+using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 {
