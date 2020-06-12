@@ -8,19 +8,19 @@ using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 {
 	/// <summary>
-	/// AvBridgeComponentFactory provides a facility for lazy-loading components.
+	/// VaddioAvBridgeComponentFactory provides a facility for lazy-loading components.
 	/// </summary>
-	public sealed class AvBridgeComponentFactory : IDisposable
+	public sealed class VaddioAvBridgeComponentFactory : IDisposable
 	{
 
-		private static readonly Dictionary<Type, Func<VaddioAvBridgeDevice, IAvBridgeComponent>> s_Factories =
-			new Dictionary<Type, Func<VaddioAvBridgeDevice, IAvBridgeComponent>>
+		private static readonly Dictionary<Type, Func<VaddioAvBridgeDevice, IVaddioAvBridgeComponent>> s_Factories =
+			new Dictionary<Type, Func<VaddioAvBridgeDevice, IVaddioAvBridgeComponent>>
 			{
-				{typeof(AudioComponent), avBridge => new AudioComponent(avBridge)},
-				{typeof(VideoComponent), avBridge => new VideoComponent(avBridge)}
+				{typeof(VaddioAvBridgeAudioComponent), avBridge => new VaddioAvBridgeAudioComponent(avBridge)},
+				{typeof(VaddioAvBridgeVideoComponent), avBridge => new VaddioAvBridgeVideoComponent(avBridge)}
 			};
 
-		private readonly Dictionary<Type, IAvBridgeComponent> m_Components;
+		private readonly Dictionary<Type, IVaddioAvBridgeComponent> m_Components;
 		private readonly SafeCriticalSection m_ComponentsSection;
 
 		private readonly VaddioAvBridgeDevice m_AvBridge;
@@ -31,9 +31,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// Constructor.
 		/// </summary>
 		/// <param name="avBridge"></param>
-		public AvBridgeComponentFactory(VaddioAvBridgeDevice avBridge)
+		public VaddioAvBridgeComponentFactory(VaddioAvBridgeDevice avBridge)
 		{
-			m_Components = new Dictionary<Type, IAvBridgeComponent>();
+			m_Components = new Dictionary<Type, IVaddioAvBridgeComponent>();
 			m_ComponentsSection = new SafeCriticalSection();
 
 			m_AvBridge = avBridge;
@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// <summary>
 		/// Deconstructor.
 		/// </summary>
-		~AvBridgeComponentFactory()
+		~VaddioAvBridgeComponentFactory()
 		{
 			Dispose(false);
 		}
@@ -69,7 +69,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 
 			try
 			{
-				foreach (IAvBridgeComponent component in m_Components.Values)
+				foreach (IVaddioAvBridgeComponent component in m_Components.Values)
 					component.Dispose();
 				m_Components.Clear();
 			}
@@ -89,18 +89,18 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		public T GetComponent<T>()
-			where T : IAvBridgeComponent
+			where T : IVaddioAvBridgeComponent
 		{
 			return (T)GetComponent(typeof(T));
 		}
 
-		public IAvBridgeComponent GetComponent(Type type)
+		public IVaddioAvBridgeComponent GetComponent(Type type)
 		{
 			m_ComponentsSection.Enter();
 
 			try
 			{
-				IAvBridgeComponent component;
+				IVaddioAvBridgeComponent component;
 				if (!m_Components.TryGetValue(type, out component))
 				{
 					component = s_Factories[type](m_AvBridge);
@@ -119,7 +119,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// Returns the cached components.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IAvBridgeComponent> GetComponents()
+		public IEnumerable<IVaddioAvBridgeComponent> GetComponents()
 		{
 			return m_ComponentsSection.Execute(() => m_Components.Values.OrderBy(c => c.GetType().Name).ToArray());
 		}

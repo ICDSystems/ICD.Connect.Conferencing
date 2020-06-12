@@ -24,6 +24,11 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		/// </summary>
 		public event EventHandler OnPasswordPrompt;
 
+		/// <summary>
+		/// Raised when a welcome prompt has been buffered.
+		/// </summary>
+		public event EventHandler OnWelcomePrompt;
+
 		private readonly StringBuilder m_RxData;
 
 		public VaddioAvBridgeSerialBuffer()
@@ -60,12 +65,15 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 				m_RxData.Append(data.Substring(0, index));
 				data = data.Substring(index + 1);
 
+				// Scrub the vaddio delimiter - we're delimiting on >
+				const string vaddioDelimiter = "\x1B\x5B\x4A";
+				m_RxData.Replace(vaddioDelimiter, "");
+
+				string prompt = m_RxData.ToString().ToLower();
 				switch (delimiter)
 				{
 					// Login prompt
 					case ':':
-						string prompt = m_RxData.ToString().ToLower();
-
 						if (prompt.Contains("login") && !prompt.Contains("last login"))
 						{
 							m_RxData.Clear();
@@ -84,6 +92,16 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 							m_RxData.Append(':');
 							continue;
 						}
+
+					// Welcome prompt used to initialize
+					case '>':
+						if (prompt.Contains("vaddio interactive shell"))
+						{
+							m_RxData.Clear();
+							OnWelcomePrompt.Raise(this);
+							continue;
+						}
+						break;
 				}
 
 				string output = m_RxData.Pop();

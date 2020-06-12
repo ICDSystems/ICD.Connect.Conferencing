@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
-using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -11,11 +11,14 @@ using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls;
 using ICD.Connect.Protocol;
+using ICD.Connect.Protocol.Data;
+using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Ports;
 using ICD.Connect.Protocol.Network.Settings;
 using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
+using ICD.Connect.Protocol.SerialQueues;
 using ICD.Connect.Protocol.Settings;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
@@ -41,13 +44,16 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 
 		#endregion
 
+		private readonly Dictionary<string, IcdHashSet<Action<VaddioAvBridgeSerialResponse>>> m_FeedbackHandlers;
+
 		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 		private readonly ConnectionStateManager m_ConnectionStateManager;
 
-		private readonly AvBridgeComponentFactory m_Components;
+		private readonly VaddioAvBridgeComponentFactory m_Components;
 
 		private readonly VaddioAvBridgeSerialBuffer m_SerialBuffer;
+		private readonly SerialQueue m_SerialQueue;
 
 		private bool m_Initialized;
 
@@ -85,7 +91,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		/// <summary>
 		/// Provides the components attached to this AV Bridge.
 		/// </summary>
-		public AvBridgeComponentFactory Components { get { return m_Components; } }
+		public VaddioAvBridgeComponentFactory Components { get { return m_Components; } }
 
 		/// <summary>
 		/// Gets the help information for the node.
@@ -104,16 +110,20 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
-			m_Components = new AvBridgeComponentFactory(this);
+			m_FeedbackHandlers = new Dictionary<string, IcdHashSet<Action<VaddioAvBridgeSerialResponse>>>();
 
 			m_SerialBuffer = new VaddioAvBridgeSerialBuffer();
 			Subscribe(m_SerialBuffer);
 
+			m_SerialQueue = new SerialQueue();
+			m_SerialQueue.SetBuffer(m_SerialBuffer);
+			Subscribe(m_SerialQueue);
+
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
 
+			m_Components = new VaddioAvBridgeComponentFactory(this);
 			Controls.Add(new VaddioAvBridgeVolumeControl(this, 0));
 		}
 
@@ -126,10 +136,10 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			OnConnectedStateChanged = null;
 
 			Unsubscribe(m_SerialBuffer);
+			Unsubscribe(m_SerialQueue);
 
 			m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
-			m_ConnectionStateManager.OnSerialDataReceived -= PortOnSerialDataReceived;
 			m_ConnectionStateManager.Dispose();
 
 			base.DisposeFinal(disposing);
@@ -173,6 +183,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			}
 
 			m_ConnectionStateManager.SetPort(port);
+			m_SerialQueue.SetPort(port);
 		}
 
 		/// <summary>
@@ -211,21 +222,21 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			if (args != null)
 				command = string.Format(command, args);
 
-			m_ConnectionStateManager.Send(command + END_OF_LINE);
+			m_SerialQueue.Enqueue(new SerialData(command + END_OF_LINE));
 		}
 
-		/// <summary>
-		/// Sends commands.
-		/// </summary>
-		/// <param name="commands"></param>
-		[PublicAPI]
-		public void SendCommands(params string[] commands)
+		public void RegisterFeedback(string commandKey, Action<VaddioAvBridgeSerialResponse> callback)
 		{
-			if (commands == null)
-				throw new ArgumentNullException("commands");
+			if (commandKey == null)
+				throw new ArgumentNullException("commandKey");
 
-			foreach (string command in commands)
-				SendCommand(command);
+			if (callback == null)
+				throw new ArgumentNullException("callback");
+
+			if (!m_FeedbackHandlers.ContainsKey(commandKey))
+				m_FeedbackHandlers.Add(commandKey, new IcdHashSet<Action<VaddioAvBridgeSerialResponse>>());
+
+			m_FeedbackHandlers[commandKey].Add(callback);
 		}
 
 		#endregion
@@ -245,11 +256,6 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 
 		#region Port Callbacks
 
-		private void PortOnSerialDataReceived(object sender, StringEventArgs e)
-		{
-			m_SerialBuffer.Enqueue(e.Data);
-		}
-
 		private void PortOnIsOnlineStateChanged(object sender, BoolEventArgs e)
 		{
 			UpdateCachedOnlineStatus();
@@ -257,10 +263,15 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs e)
 		{
-			// TODO
-			// Lose connection gracefully.
+			if (!e.Data)
+			{
+				m_SerialBuffer.Clear();
 
-			//OnConnectedStateChanged.Raise(this, new BoolEventArgs(e.Data));
+				Logger.Log(eSeverity.Critical, "Lost connection");
+				Initialized = false;
+			}
+
+			OnConnectedStateChanged.Raise(this, new BoolEventArgs(e.Data));
 		}
 
 		#endregion
@@ -271,14 +282,21 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		{
 			serialBuffer.OnUsernamePrompt += SerialBufferOnUsernamePrompt;
 			serialBuffer.OnPasswordPrompt += SerialBufferOnPasswordPrompt;
-			serialBuffer.OnCompletedSerial += SerialBufferOnCompletedSerial;
+			serialBuffer.OnWelcomePrompt += SerialBufferOnWelcomePrompt;
+		}
+
+		private void SerialBufferOnWelcomePrompt(object sender, EventArgs e)
+		{
+			// Re-initialize on welcome prompt.
+			Initialized = false;
+			Initialized = true;
 		}
 
 		private void Unsubscribe(VaddioAvBridgeSerialBuffer serialBuffer)
 		{
 			serialBuffer.OnUsernamePrompt -= SerialBufferOnUsernamePrompt;
 			serialBuffer.OnPasswordPrompt -= SerialBufferOnPasswordPrompt;
-			serialBuffer.OnCompletedSerial -= SerialBufferOnCompletedSerial;
+			serialBuffer.OnWelcomePrompt -= SerialBufferOnWelcomePrompt;
 		}
 
 		private void SerialBufferOnUsernamePrompt(object sender, EventArgs args)
@@ -291,9 +309,61 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			m_ConnectionStateManager.Send(Password + END_OF_LINE);
 		}
 
-		private void SerialBufferOnCompletedSerial(object sender, StringEventArgs stringEventArgs)
+		#endregion
+
+		#region Serial Queue
+
+		private void Subscribe(SerialQueue serialQueue)
 		{
-			//Handle feedback
+			serialQueue.OnSerialResponse += SerialQueueOnSerialResponse;
+			serialQueue.OnTimeout += SerialQueueOnTimeout;
+		}
+
+		private void Unsubscribe(SerialQueue serialQueue)
+		{
+			serialQueue.OnSerialResponse -= SerialQueueOnSerialResponse;
+			serialQueue.OnTimeout -= SerialQueueOnTimeout;
+		}
+
+		private void SerialQueueOnTimeout(object sender, SerialDataEventArgs e)
+		{
+			Logger.Log(eSeverity.Error, "Command timed out - {0}", e.Data.Serialize());
+		}
+
+		private void SerialQueueOnSerialResponse(object sender, SerialResponseEventArgs args)
+		{
+			string data = args.Response;
+			if (string.IsNullOrEmpty(data))
+				return;
+
+			if (m_ConnectionStateManager.IsConnected)
+				Initialized = true;
+
+			var response = new VaddioAvBridgeSerialResponse(data);
+			HandleResponse(response);
+		}
+
+		private void HandleResponse(VaddioAvBridgeSerialResponse response)
+		{
+			// No key from either an error or junk data.
+			if (response.Command == null)
+				return;
+
+			IcdHashSet<Action<VaddioAvBridgeSerialResponse>> handlers;
+			if (!m_FeedbackHandlers.TryGetValue(response.Command, out handlers))
+				return;
+
+			foreach (var handler in handlers)
+			{
+				try
+				{
+					handler(response);
+				}
+				catch (Exception e)
+				{
+					Logger.Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", response.Command, e.Message);
+				}
+			}
 		}
 
 		#endregion

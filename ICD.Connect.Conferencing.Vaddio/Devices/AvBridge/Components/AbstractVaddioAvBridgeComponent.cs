@@ -6,7 +6,7 @@ using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 {
-	public abstract class AbstractAvBridgeComponent : IAvBridgeComponent
+	public abstract class AbstractVaddioAvBridgeComponent : IVaddioAvBridgeComponent
 	{
 		#region Properties
 
@@ -30,7 +30,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// Constructor.
 		/// </summary>
 		/// <param name="avBridge"></param>
-		protected AbstractAvBridgeComponent(VaddioAvBridgeDevice avBridge)
+		protected AbstractVaddioAvBridgeComponent(VaddioAvBridgeDevice avBridge)
 		{
 			AvBridge = avBridge;
 		}
@@ -38,7 +38,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components
 		/// <summary>
 		/// Deconstructor.
 		/// </summary>
-		~AbstractAvBridgeComponent()
+		~AbstractVaddioAvBridgeComponent()
 		{
 			Dispose(false);
 		}

@@ -63,17 +63,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ObfuscationSettings.cs" />
-    <Compile Include="Devices\AvBridge\Components\AbstractAvBridgeComponent.cs" />
-    <Compile Include="Devices\AvBridge\Components\Audio\AudioComponent.cs" />
+    <Compile Include="Devices\AvBridge\Components\AbstractVaddioAvBridgeComponent.cs" />
+    <Compile Include="Devices\AvBridge\Components\Audio\VaddioAvBridgeAudioComponent.cs" />
     <Compile Include="Devices\AvBridge\Components\Audio\eAudioInput.cs" />
-    <Compile Include="Devices\AvBridge\Components\AvBridgeComponentFactory.cs" />
-    <Compile Include="Devices\AvBridge\Components\IAvBridgeComponent.cs" />
+    <Compile Include="Devices\AvBridge\Components\VaddioAvBridgeComponentFactory.cs" />
+    <Compile Include="Devices\AvBridge\Components\IVaddioAvBridgeComponent.cs" />
     <Compile Include="Devices\AvBridge\Components\Video\eVideoInput.cs" />
-    <Compile Include="Devices\AvBridge\Components\Video\VideoComponent.cs" />
+    <Compile Include="Devices\AvBridge\Components\Video\VaddioAvBridgeVideoComponent.cs" />
     <Compile Include="Devices\AvBridge\Controls\VaddioAvBridgeVolumeControl.cs" />
     <Compile Include="Devices\AvBridge\VaddioAvBridgeDevice.cs" />
     <Compile Include="Devices\AvBridge\VaddioAvBridgeDeviceSettings.cs" />
     <Compile Include="Devices\AvBridge\VaddioAvBridgeSerialBuffer.cs" />
+    <Compile Include="Devices\AvBridge\VaddioAvBridgeSerialResponse.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Properties\ControlSystem.cfg" />

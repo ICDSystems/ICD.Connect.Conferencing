@@ -8,11 +8,29 @@ using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 {
-	public sealed class VideoComponent : AbstractAvBridgeComponent
+	public sealed class VaddioAvBridgeVideoComponent : AbstractVaddioAvBridgeComponent
 	{
+		public event EventHandler<GenericEventArgs<eVideoInput>> OnVideoInputChanged;
+
 		public event EventHandler<BoolEventArgs> OnVideoMuteChanged;
 
+		private eVideoInput m_VideoInput;
 		private bool m_VideoMute;
+
+		public eVideoInput VideoInput
+		{
+			get { return m_VideoInput; }
+			private set
+			{
+				if (value == m_VideoInput)
+					return;
+
+				m_VideoInput = value;
+
+				AvBridge.Logger.Log(eSeverity.Informational, "Video input set to {0}", m_VideoInput);
+				OnVideoInputChanged.Raise(this, new GenericEventArgs<eVideoInput>(value));
+			}
+		}
 
 		public bool VideoMute
 		{
@@ -24,6 +42,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 
 				m_VideoMute = value;
 
+				AvBridge.Logger.Log(eSeverity.Informational, "Video mute set to {0}", m_VideoMute);
 				OnVideoMuteChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
@@ -34,7 +53,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 		/// Constructor.
 		/// </summary>
 		/// <param name="avBridge"></param>
-		public VideoComponent(VaddioAvBridgeDevice avBridge)
+		public VaddioAvBridgeVideoComponent(VaddioAvBridgeDevice avBridge)
 			: base(avBridge)
 		{
 			Subscribe(avBridge);
@@ -51,6 +70,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 			base.Initialize();
 
 			GetVideoInput();
+			GetVideoMute();
 		}
 
 		#endregion
@@ -69,7 +89,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 		{
 			if (input == eVideoInput.None)
 			{
-				AvBridge.Logger.Log(eSeverity.Warning, "Please select a valid video input");
+				AvBridge.Logger.Log(eSeverity.Warning, "Please select a valid video input - {0}", input);
 				return;
 			}
 
@@ -104,6 +124,85 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 
 		#endregion
 
+		#region Feedback Handlers
+
+		protected override void Subscribe(VaddioAvBridgeDevice avBridge)
+		{
+			base.Subscribe(avBridge);
+
+			avBridge.RegisterFeedback("video input", HandleVideoInputFeedback);
+			avBridge.RegisterFeedback("video mute", HandleVideoMuteFeedback);
+		}
+
+		private void HandleVideoInputFeedback(VaddioAvBridgeSerialResponse response)
+		{
+			if (response.StatusCode != "OK")
+			{
+				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
+				return;
+			}
+
+			switch (response.CommandSetValue)
+			{
+				case "get":
+					VideoInput = (eVideoInput)Enum.Parse(typeof(eVideoInput), response.OptionValue, true);
+					break;
+
+				case "auto":
+					VideoInput = eVideoInput.auto;
+					break;
+
+				case "hdmi":
+					VideoInput = eVideoInput.hdmi;
+					break;
+
+				case "rgbhv":
+					VideoInput = eVideoInput.rgbhv;
+					break;
+
+				case "sd":
+					VideoInput = eVideoInput.sd;
+					break;
+
+				case "ypbpr":
+					VideoInput = eVideoInput.ypbpr;
+					break;
+			}
+		}
+
+		private void HandleVideoMuteFeedback(VaddioAvBridgeSerialResponse response)
+		{
+			if (response.StatusCode != "OK")
+			{
+				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
+				return;
+			}
+
+			switch (response.CommandSetValue)
+			{
+				case "get":
+					if (response.OptionValue == "on")
+						VideoMute = true;
+					if (response.OptionValue == "off")
+						VideoMute = false;
+					break;
+
+				case "on":
+					VideoMute = true;
+					break;
+
+				case "off":
+					VideoMute = false;
+					break;
+
+				case "toggle":
+					VideoMute = !VideoMute;
+					break;
+			}
+		}
+
+		#endregion
+
 		#region Console
 
 		/// <summary>
@@ -115,7 +214,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<bool>("SetVideoMute", "<true | false>", m => SetVideoMute(m));
+			yield return new GenericConsoleCommand<eVideoInput>("SetVideoInput", "<auto|hdmi|rgbhv|sd|ypbpr>",
+			                                                    i => SetVideoInput(i));
+			yield return new GenericConsoleCommand<bool>("SetVideoMute", "<true|false>", m => SetVideoMute(m));
 			yield return new ConsoleCommand("ToggleVideoMute", "Toggles the video mute", () => ToggleVideoMute());
 		}
 
@@ -136,6 +237,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 		{
 			base.BuildConsoleStatus(addRow);
 
+			addRow("VideoInput", VideoInput);
 			addRow("VideoMute", VideoMute);
 		}
 

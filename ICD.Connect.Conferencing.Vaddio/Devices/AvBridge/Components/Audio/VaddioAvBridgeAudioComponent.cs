@@ -8,7 +8,7 @@ using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 {
-	public sealed class AudioComponent : AbstractAvBridgeComponent
+	public sealed class VaddioAvBridgeAudioComponent : AbstractVaddioAvBridgeComponent
 	{
 		#region Events
 
@@ -18,11 +18,27 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 		#endregion
 
+		private eAudioInput m_AudioInput;
+
 		private int m_Volume;
 
 		private bool m_AudioMute;
 
 		#region Properties
+
+		public eAudioInput AudioInput
+		{
+			get { return m_AudioInput; }
+			private set
+			{
+				if (value == m_AudioInput)
+					return;
+
+				m_AudioInput = value;
+
+				AvBridge.Logger.Log(eSeverity.Informational, "AudioInput set to {0}", m_AudioInput);
+			}
+		}
 
 		public int Volume
 		{
@@ -34,6 +50,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 				m_Volume = value;
 
+				AvBridge.Logger.Log(eSeverity.Informational, "Volume set to {0}", m_Volume);
 				OnVolumeChanged.Raise(this, new IntEventArgs(value));
 			}
 		}
@@ -48,6 +65,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 				m_AudioMute = value;
 
+				AvBridge.Logger.Log(eSeverity.Informational, "AudioMute set to {0}", m_AudioMute);
 				OnAudioMuteChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
@@ -60,7 +78,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// Constructor.
 		/// </summary>
 		/// <param name="avBridge"></param>
-		public AudioComponent(VaddioAvBridgeDevice avBridge) 
+		public VaddioAvBridgeAudioComponent(VaddioAvBridgeDevice avBridge) 
 			: base(avBridge)
 		{
 			Subscribe(avBridge);
@@ -77,6 +95,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 			base.Initialize();
 
 			GetAudioInput();
+			GetAudioMute();
 			GetAudioVolume();
 		}
 
@@ -152,7 +171,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 				return;
 			}
 
-			AvBridge.SendCommand("audio volume set {0}");
+			AvBridge.SendCommand("audio volume set {0}", volume);
 		}
 
 		/// <summary>
@@ -173,6 +192,120 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 		#endregion
 
+		#region Feedback Handlers
+
+		protected override void Subscribe(VaddioAvBridgeDevice avBridge)
+		{
+			base.Subscribe(avBridge);
+
+			avBridge.RegisterFeedback("audio input", HandleAudioInputFeedback);
+			avBridge.RegisterFeedback("audio mute", HandleAudioMuteFeedback);
+			avBridge.RegisterFeedback("audio volume", HandleAudioVolumeFeedback);
+			avBridge.RegisterFeedback("audio volume set", HandleAudioVolumeSetFeedback);
+		}
+
+		private void HandleAudioInputFeedback(VaddioAvBridgeSerialResponse response)
+		{
+			if (response.StatusCode != "OK")
+			{
+				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
+				return;
+			}
+
+			switch (response.CommandSetValue)
+			{
+				case "get":
+					AudioInput = (eAudioInput)Enum.Parse(typeof(eAudioInput), response.OptionValue, true);
+					break;
+
+				case "unbalanced":
+					AudioInput = eAudioInput.unbalanced;
+					break;
+
+				case "balanced":
+					AudioInput = eAudioInput.balanced;
+					break;
+			}
+		}
+
+		private void HandleAudioMuteFeedback(VaddioAvBridgeSerialResponse response)
+		{
+			if (response.StatusCode != "OK")
+			{
+				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
+				return;
+			}
+
+			switch (response.CommandSetValue)
+			{
+				case "get":
+					if (response.OptionValue == "on")
+						AudioMute = true;
+					if (response.OptionValue == "off")
+						AudioMute = false;
+					break;
+
+				case "on":
+					AudioMute = true;
+					break;
+
+				case "off":
+					AudioMute = false;
+					break;
+
+				case "toggle":
+					AudioMute = !AudioMute;
+					break;
+			}
+		}
+
+		private void HandleAudioVolumeFeedback(VaddioAvBridgeSerialResponse response)
+		{
+			if (response.StatusCode != "OK")
+			{
+				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
+				return;
+			}
+
+			switch (response.CommandSetValue)
+			{
+				case "get":
+					Volume = int.Parse(response.OptionValue);
+					break;
+
+				case "up":
+					if (Volume == 10)
+						return;
+
+					Volume++;
+					break;
+
+				case "down":
+					if (Volume == 0)
+						return;
+
+					Volume--;
+					break;
+			}
+		}
+
+		private void HandleAudioVolumeSetFeedback(VaddioAvBridgeSerialResponse response)
+		{
+			if (response.StatusCode != "OK")
+			{
+				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
+				return;
+			}
+
+			var volume = int.Parse(response.CommandSetValue);
+			if (volume < 0 || volume > 10)
+				return;
+
+			Volume = volume;
+		}
+
+		#endregion
+
 		#region Console
 
 		/// <summary>
@@ -184,7 +317,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
-			yield return new GenericConsoleCommand<bool>("SetAudioMute", "<true | false>", m => SetAudioMute(m));
+			yield return new GenericConsoleCommand<eAudioInput>("SetAudioInput", "<balanced|unbalanced>", i => SetAudioInput(i));
+			yield return new GenericConsoleCommand<bool>("SetAudioMute", "<true|false>", m => SetAudioMute(m));
 			yield return new ConsoleCommand("ToggleAudioMute", "Toggles the audio mute", () => ToggleAudioMute());
 			yield return
 				new GenericConsoleCommand<int>("SetAudioVolume", "Sets the volume [0-10] inclusive", v => SetAudioVolume(v));
@@ -209,6 +343,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		{
 			base.BuildConsoleStatus(addRow);
 
+			addRow("Input", AudioInput);
 			addRow("Volume", Volume);
 			addRow("AudioMute", AudioMute);
 		}
