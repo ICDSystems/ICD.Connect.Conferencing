@@ -125,6 +125,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 
 			m_Components = new VaddioAvBridgeComponentFactory(this);
 			Controls.Add(new VaddioAvBridgeVolumeControl(this, 0));
+			Controls.Add(new VaddioAvBridgeRoutingControl(this, 1));
 		}
 
 		/// <summary>
