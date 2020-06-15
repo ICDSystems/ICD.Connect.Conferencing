@@ -152,6 +152,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		}
 
 		/// <summary>
+		/// Sets the input address to use for the content feed.
+		/// </summary>
+		/// <param name="address"></param>
+		/// <param name="contentDeviceId"></param>
+		public override void SetContentInput(int address, int contentDeviceId)
+		{
+		}
+
+		/// <summary>
 		/// Returns true if the source contains an output at the given address.
 		/// </summary>
 		/// <param name="output"></param>

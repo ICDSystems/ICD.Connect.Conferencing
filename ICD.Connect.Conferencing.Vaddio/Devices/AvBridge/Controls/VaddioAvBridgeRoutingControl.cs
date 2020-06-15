@@ -165,7 +165,15 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 			m_VideoComponent.SetVideoInput(AddressToVideoInput(address));
 		}
 
-		// TODO - SetContentInput
+		/// <summary>
+		/// Sets the input address to use for the content feed.
+		/// </summary>
+		/// <param name="address"></param>
+		/// <param name="contentDeviceId"></param>
+		public override void SetContentInput(int address, int contentDeviceId)
+		{
+			m_VideoComponent.SetVideoInput(AddressToVideoInput(address));
+		}
 
 		/// <summary>
 		/// Gets the output at the given address.

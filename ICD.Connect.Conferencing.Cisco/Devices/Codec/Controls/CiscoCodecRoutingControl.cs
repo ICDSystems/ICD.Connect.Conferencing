@@ -136,6 +136,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		}
 
 		/// <summary>
+		/// Sets the input address to use for the content feed.
+		/// </summary>
+		/// <param name="address"></param>
+		/// <param name="contentDeviceId"></param>
+		public override void SetContentInput(int address, int contentDeviceId)
+		{
+		}
+
+		/// <summary>
 		/// Returns true if video is detected at the given input.
 		/// </summary>
 		/// <param name="input"></param>

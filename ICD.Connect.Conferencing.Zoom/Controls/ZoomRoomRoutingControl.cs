@@ -168,6 +168,10 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			m_CameraComponent.SetActiveCameraByUsbId(zoomUsbId);
 		}
 
+		public override void SetContentInput(int address, int contentDeviceId)
+		{
+		}
+
 		/// <summary>
 		/// Returns true if the source contains an output at the given address.
 		/// </summary>

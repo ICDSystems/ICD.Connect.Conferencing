@@ -97,6 +97,20 @@ namespace ICD.Connect.Conferencing.Mock
 			}
 		}
 
+		public override void SetContentInput(int address, int contentDeviceId)
+		{
+			if (address == 1)
+			{
+				Parent.SetInputTypeForInput(1, eCodecInputType.Content);
+				Parent.SetInputTypeForInput(2, eCodecInputType.Camera);
+			}
+			else if (address == 2)
+			{
+				Parent.SetInputTypeForInput(2, eCodecInputType.Content);
+				Parent.SetInputTypeForInput(1, eCodecInputType.Camera);
+			}
+		}
+
 		/// <summary>
 		/// Returns true if the device is actively transmitting on the given output.
 		/// This is NOT the same as sending video, since some devices may send an
