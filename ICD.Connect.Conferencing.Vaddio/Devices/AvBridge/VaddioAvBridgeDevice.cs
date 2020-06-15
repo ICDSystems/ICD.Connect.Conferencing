@@ -10,6 +10,8 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls;
+using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing;
+using ICD.Connect.Devices.Controls;
 using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Data;
 using ICD.Connect.Protocol.EventArguments;
@@ -20,6 +22,7 @@ using ICD.Connect.Protocol.Ports;
 using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialQueues;
 using ICD.Connect.Protocol.Settings;
+using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 {
@@ -124,8 +127,15 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 
 			m_Components = new VaddioAvBridgeComponentFactory(this);
-			Controls.Add(new VaddioAvBridgeVolumeControl(this, 0));
-			Controls.Add(new VaddioAvBridgeRoutingControl(this, 1));
+		}
+
+		protected override void AddControls(VaddioAvBridgeDeviceSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		{
+			base.AddControls(settings, factory, addControl);
+
+			addControl(new VaddioAvBridgeVolumeControl(this, 0));
+			addControl(new VaddioAvBridgeRoutingControl(this, 1));
+			addControl(new VaddioAvBridgeConferenceControl(this, 2));
 		}
 
 		/// <summary>

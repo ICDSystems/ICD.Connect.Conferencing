@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Controls.Routing;
+using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
 using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
@@ -14,6 +16,15 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 {
 	public sealed class VaddioAvBridgeRoutingControl : AbstractVideoConferenceRouteControl<VaddioAvBridgeDevice>
 	{
+		private const int OUTPUT_ADDRESS = 1;
+
+		private const int INPUT_ADDRESS_HDMI = 1;
+		private const int INPUT_ADDRESS_VGA = 2;
+		private const int INPUT_ADDRESS_COMPOSITE = 3;
+
+		private const int INPUT_ADDRESS_BALANCED = 1;
+		private const int INPUT_ADDRESS_UNBALANCED = 2;
+
 		#region Events
 
 		public override event EventHandler<SourceDetectionStateChangeEventArgs> OnSourceDetectionStateChange;
@@ -23,10 +34,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		#endregion
 
 		private readonly SwitcherCache m_SwitcherCache;
-
 		private readonly VaddioAvBridgeVideoComponent m_VideoComponent;
-
-		private eVideoInput m_ActiveVideoInput;
+		private readonly VaddioAvBridgeAudioComponent m_AudioComponent;
 
 		#region Constructor
 
@@ -43,6 +52,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 
 			m_VideoComponent = parent.Components.GetComponent<VaddioAvBridgeVideoComponent>();
 			Subscribe(m_VideoComponent);
+
+			m_AudioComponent = parent.Components.GetComponent<VaddioAvBridgeAudioComponent>();
+			Subscribe(m_AudioComponent);
 		}
 
 		/// <summary>
@@ -51,14 +63,15 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			base.DisposeFinal(disposing);
-
 			OnSourceDetectionStateChange = null;
 			OnActiveInputsChanged = null;
 			OnActiveTransmissionStateChanged = null;
 
+			base.DisposeFinal(disposing);
+
 			Unsubscribe(m_SwitcherCache);
 			Unsubscribe(m_VideoComponent);
+			Unsubscribe(m_AudioComponent);
 		}
 
 		#endregion
@@ -73,7 +86,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		/// <returns></returns>
 		public override bool GetSignalDetectedState(int input, eConnectionType type)
 		{
-			return GetInputs().Any(i => i.Address == input && i.ConnectionType == type);
+			return GetInputs().Any(i => i.Address == input && i.ConnectionType.HasFlags(type));
 		}
 
 		/// <summary>
@@ -116,7 +129,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		/// </summary>
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
-			return input == GetInputAddressForActiveVideoInput();
+			return m_SwitcherCache.GetInputForOutput(OUTPUT_ADDRESS, type) != null;
 		}
 
 		/// <summary>
@@ -125,12 +138,21 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		/// <returns></returns>
 		public override IEnumerable<ConnectorInfo> GetInputs()
 		{
-			// HDMI
-			yield return new ConnectorInfo(1, eConnectionType.Video);
-			// VGA (rgbhv OR ypbpr)
-			yield return new ConnectorInfo(2, eConnectionType.Video);
-			// Composite (sd)
-			yield return new ConnectorInfo(3, eConnectionType.Video);
+			IEnumerable<int> videoAddresses =
+				EnumUtils.GetValues<eVideoInput>()
+				         .Select(input => VideoInputToAddress(input))
+				         .ExceptNulls();
+
+			foreach (int videoAddress in videoAddresses)
+				yield return new ConnectorInfo(videoAddress, eConnectionType.Video);
+
+			IEnumerable<int> audioAddresses =
+				EnumUtils.GetValues<eAudioInput>()
+				         .Select(input => AudioInputToAddress(input))
+				         .ExceptNulls();
+
+			foreach (int audioAddress in audioAddresses)
+				yield return new ConnectorInfo(audioAddress, eConnectionType.Audio);
 		}
 
 		/// <summary>
@@ -140,8 +162,10 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		/// <param name="cameraDeviceId"></param>
 		public override void SetCameraInput(int address, int cameraDeviceId)
 		{
-			m_VideoComponent.SetVideoInput(GetVideoInputForInputAddress(address));
+			m_VideoComponent.SetVideoInput(AddressToVideoInput(address));
 		}
+
+		// TODO - SetContentInput
 
 		/// <summary>
 		/// Gets the output at the given address.
@@ -170,35 +194,46 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		public override IEnumerable<ConnectorInfo> GetOutputs()
 		{
 			// USB 2.0 from bridge to PC
-			yield return new ConnectorInfo(1, eConnectionType.Audio | eConnectionType.Video | eConnectionType.Usb);
+			yield return new ConnectorInfo(OUTPUT_ADDRESS, eConnectionType.Audio | eConnectionType.Video);
 		}
 
 		#endregion
 
 		#region Private Methods
 
-		/// <summary>
-		/// Determines the hardcoded input address for the 
-		/// current active video input from the component.
-		/// </summary>
-		/// <returns></returns>
-		private int? GetInputAddressForActiveVideoInput()
+
+		private static int? VideoInputToAddress(eVideoInput input)
 		{
-			switch (m_ActiveVideoInput)
+			switch (input)
 			{
 				case eVideoInput.None:
 				case eVideoInput.auto:
 					return null;
 				case eVideoInput.hdmi:
-					return 1;
+					return INPUT_ADDRESS_HDMI;
 				case eVideoInput.rgbhv:
 				case eVideoInput.ypbpr:
-					return 2;
+					return INPUT_ADDRESS_VGA;
 				case eVideoInput.sd:
-					return 3;
+					return INPUT_ADDRESS_COMPOSITE;
 
 				default:
-					throw new InvalidOperationException("Cannot determine input from active source");
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		private static int? AudioInputToAddress(eAudioInput input)
+		{
+			switch (input)
+			{
+				case eAudioInput.None:
+					return null;
+				case eAudioInput.balanced:
+					return INPUT_ADDRESS_BALANCED;
+				case eAudioInput.unbalanced:
+					return INPUT_ADDRESS_UNBALANCED;
+				default:
+					throw new ArgumentOutOfRangeException();
 			}
 		}
 
@@ -207,19 +242,33 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		/// </summary>
 		/// <param name="address"></param>
 		/// <returns></returns>
-		private eVideoInput GetVideoInputForInputAddress(int address)
+		private static eVideoInput AddressToVideoInput(int address)
 		{
 			switch (address)
 			{
-				case 1:
+				case INPUT_ADDRESS_HDMI:
 					return eVideoInput.hdmi;
-				case 2:
+				case INPUT_ADDRESS_VGA:
 					return eVideoInput.rgbhv;
-				case 3:
+				case INPUT_ADDRESS_COMPOSITE:
 					return eVideoInput.sd;
 
 				default:
 					return eVideoInput.None;
+			}
+		}
+
+		private static eAudioInput AddressToAudioInput(int address)
+		{
+			switch (address)
+			{
+				case INPUT_ADDRESS_BALANCED:
+					return eAudioInput.balanced;
+				case INPUT_ADDRESS_UNBALANCED:
+					return eAudioInput.unbalanced;
+
+				default:
+					return eAudioInput.None;
 			}
 		}
 
@@ -267,17 +316,33 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 
 		private void Unsubscribe(VaddioAvBridgeVideoComponent videoComponent)
 		{
-			videoComponent.OnVideoInputChanged += VideoComponentOnVideoInputChanged;
+			videoComponent.OnVideoInputChanged -= VideoComponentOnVideoInputChanged;
 		}
 
-		private void VideoComponentOnVideoInputChanged(object sender, GenericEventArgs<eVideoInput> genericEventArgs)
+		private void VideoComponentOnVideoInputChanged(object sender, GenericEventArgs<eVideoInput> e)
 		{
-			eVideoInput input = genericEventArgs.Data;
+			int? address = VideoInputToAddress(e.Data);
+			m_SwitcherCache.SetInputForOutput(OUTPUT_ADDRESS, address, eConnectionType.Video);
+		}
 
-			m_ActiveVideoInput = input;
+		#endregion
 
-			m_SwitcherCache.SetInputForOutput(1, GetInputAddressForActiveVideoInput(),
-			                                  eConnectionType.Audio | eConnectionType.Video | eConnectionType.Usb);
+		#region Audio Component Callbacks
+
+		private void Subscribe(VaddioAvBridgeAudioComponent audioComponent)
+		{
+			audioComponent.OnAudioInputChanged += AudioComponentOnOnAudioInputChanged;
+		}
+
+		private void Unsubscribe(VaddioAvBridgeAudioComponent audioComponent)
+		{
+			audioComponent.OnAudioInputChanged -= AudioComponentOnOnAudioInputChanged;
+		}
+
+		private void AudioComponentOnOnAudioInputChanged(object sender, GenericEventArgs<eAudioInput> e)
+		{
+			int? address = AudioInputToAddress(e.Data);
+			m_SwitcherCache.SetInputForOutput(OUTPUT_ADDRESS, address, eConnectionType.Audio);
 		}
 
 		#endregion

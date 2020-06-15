@@ -12,6 +12,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 	{
 		#region Events
 
+		public event EventHandler<GenericEventArgs<eAudioInput>> OnAudioInputChanged; 
+
 		public event EventHandler<IntEventArgs> OnVolumeChanged;
 
 		public event EventHandler<BoolEventArgs> OnAudioMuteChanged;
@@ -37,6 +39,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 				m_AudioInput = value;
 
 				AvBridge.Logger.Log(eSeverity.Informational, "AudioInput set to {0}", m_AudioInput);
+				OnAudioInputChanged.Raise(this, new GenericEventArgs<eAudioInput>(value));
 			}
 		}
 
@@ -78,7 +81,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// Constructor.
 		/// </summary>
 		/// <param name="avBridge"></param>
-		public VaddioAvBridgeAudioComponent(VaddioAvBridgeDevice avBridge) 
+		public VaddioAvBridgeAudioComponent(VaddioAvBridgeDevice avBridge)
 			: base(avBridge)
 		{
 			Subscribe(avBridge);

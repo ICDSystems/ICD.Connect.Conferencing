@@ -3,8 +3,7 @@
 	public enum eAudioInput
 	{
 		None = 0,
-		get = 1,
-		balanced = 2,
-		unbalanced = 3
+		balanced = 1,
+		unbalanced = 2
 	}
 }
