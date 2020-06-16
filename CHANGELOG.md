@@ -8,11 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
  - Added features for getting Zoom meeting IDs in human readable format
+ - Vaddio AV Bridge device driver
+ - Added a ContentInput property for VideoConferenceRoutControls
  
 ### Changed
  - MockConferecingDevice now inherits from AbstractMockDevice
  - Using new logging context
  - Favorites are now managed through Favorite static methods
+ - The CameraEnabled property has been moved from AbstractWebConferenceDeviceControl to AbstractConferenceControl
  
 ### Removed
  - Removed IFavorites and SQLiteFavorites implementation
