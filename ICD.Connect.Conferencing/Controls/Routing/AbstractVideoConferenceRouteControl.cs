@@ -28,7 +28,13 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// </summary>
 		public event EventHandler<ConferenceRouteDestinationCameraInputApiEventArgs> OnCameraInputChanged;
 
+		/// <summary>
+		/// Raised when the content input changes.
+		/// </summary>
+		public event EventHandler<ConferenceRouteDestinationContentInputApiEventArgs> OnContentInputChanged;
+
 		private int? m_CameraInput;
+		private int? m_ContentInput;
 
 		/// <summary>
 		/// Gets the input address for the camera feed.
@@ -46,6 +52,22 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 				Logger.LogSetTo(eSeverity.Informational, "Camera Input", m_CameraInput);
 
 				OnCameraInputChanged.Raise(this, new ConferenceRouteDestinationCameraInputApiEventArgs(m_CameraInput));
+			}
+		}
+
+		public int? ContentInput
+		{
+			get { return m_ContentInput; }
+			protected set
+			{
+				if (value == m_ContentInput)
+					return;
+
+				m_ContentInput = value;
+
+				Logger.LogSetTo(eSeverity.Informational, "Content Input", m_ContentInput);
+
+				OnContentInputChanged.Raise(this, new ConferenceRouteDestinationContentInputApiEventArgs(m_ContentInput));
 			}
 		}
 

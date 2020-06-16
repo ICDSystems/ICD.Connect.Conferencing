@@ -114,6 +114,7 @@
     <Compile Include="EventArguments\ConferenceControlIncomingCallEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceParticipantAddedOrRemovedEventArgs.cs" />
+    <Compile Include="EventArguments\ConferenceRouteDestinationContentInputApiEventArgs.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
     <Compile Include="EventArguments\PresentationActiveApiEventArgs.cs" />
     <Compile Include="IncomingCalls\AbstractIncomingCall.cs" />

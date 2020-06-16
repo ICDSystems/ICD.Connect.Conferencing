@@ -31,7 +31,13 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 		/// </summary>
 		public event EventHandler<ConferenceRouteDestinationCameraInputApiEventArgs> OnCameraInputChanged;
 
+		/// <summary>
+		/// Raised when the content input changes.
+		/// </summary>
+		public event EventHandler<ConferenceRouteDestinationContentInputApiEventArgs> OnContentInputChanged;
+
 		private int? m_CameraInput;
+		private int? m_ContentInput;
 
 		/// <summary>
 		/// Gets the input address for the camera feed.
@@ -50,6 +56,23 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 				Logger.LogSetTo(eSeverity.Informational, "CameraInput", m_CameraInput);
 
 				OnCameraInputChanged.Raise(this, new ConferenceRouteDestinationCameraInputApiEventArgs(m_CameraInput));
+			}
+		}
+
+		public int? ContentInput
+		{
+			get { return m_ContentInput; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_ContentInput)
+					return;
+
+				m_ContentInput = value;
+
+				Logger.LogSetTo(eSeverity.Informational, "ContentInput", m_ContentInput);
+
+				OnContentInputChanged.Raise(this, new ConferenceRouteDestinationContentInputApiEventArgs(m_ContentInput));
 			}
 		}
 
@@ -120,6 +143,16 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Routing
 		public void SetCameraInput(int address, int cameraDeviceId)
 		{
 			CallMethod(VideoConferenceRouteDestinationControlApi.METHOD_SET_CAMERA_INPUT, address);
+		}
+
+		/// <summary>
+		/// Sets the input address to use for the content feed.
+		/// </summary>
+		/// <param name="address"></param>
+		/// <param name="contentDeviceId"></param>
+		public void SetContentInput(int address, int contentDeviceId)
+		{
+			CallMethod(VideoConferenceRouteDestinationControlApi.METHOD_SET_CONTENT_INPUT, address);
 		}
 
 		/// <summary>

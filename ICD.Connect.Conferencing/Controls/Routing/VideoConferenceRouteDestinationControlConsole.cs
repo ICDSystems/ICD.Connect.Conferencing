@@ -31,6 +31,7 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 				throw new ArgumentNullException("instance");
 
 			addRow("Camera Input", instance.CameraInput);
+			addRow("Content Input", instance.ContentInput);
 		}
 
 		/// <summary>
@@ -44,6 +45,7 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 				throw new ArgumentNullException("instance");
 
 			yield return new GenericConsoleCommand<int, int>("SetCameraInput", "SetCameraInput <INPUT> <CAMERA ID>", (a, b) => instance.SetCameraInput(a, b));
+			yield return new GenericConsoleCommand<int, int>("SetContentInput", "SetContentInput <INPUT> <CONTENT ID>", (a, b) => instance.SetContentInput(a, b));
 		}
 	}
 }
