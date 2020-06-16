@@ -166,6 +166,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			UpdateMute();
 		}
 
+		/// <summary>
+		/// Sets whether the camera should transmit video or not.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public override void SetCameraEnabled(bool enabled)
+		{
+			m_MuteComponent.MuteVideo(!enabled);
+		}
+
 		#endregion
 
 		/// <summary>

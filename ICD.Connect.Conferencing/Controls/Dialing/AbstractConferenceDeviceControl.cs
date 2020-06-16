@@ -63,6 +63,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		/// <summary>
+		/// Raised when the camera is enabled/disabled.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
+
+		/// <summary>
 		/// Raised when the supported conference features change.
 		/// </summary>
 		public event EventHandler<ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs> OnSupportedConferenceFeaturesChanged;
@@ -72,6 +77,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
+		private bool m_CameraEnabled;
 		private eConferenceFeatures m_SupportedConferenceFeatures;
 		private IDialContext m_CallInInfo;
 
@@ -190,6 +196,34 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		}
 
 		/// <summary>
+		/// Gets the camera enabled state.
+		/// </summary>
+		public bool CameraEnabled
+		{
+			get { return m_CameraEnabled; }
+			protected set
+			{
+				m_StateSection.Enter();
+
+				try
+				{
+					if (m_CameraEnabled == value)
+						return;
+
+					m_CameraEnabled = value;
+
+					Logger.LogSetTo(eSeverity.Informational, "Camera Enabled", m_CameraEnabled);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
+
+				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(value));
+			}
+		}
+
+		/// <summary>
 		/// Returns the features that are supported by this conference control.
 		/// </summary>
 		public eConferenceFeatures SupportedConferenceFeatures
@@ -244,6 +278,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			OnPrivacyMuteChanged = null;
 			OnSupportedConferenceFeaturesChanged = null;
 			OnCallInInfoChanged = null;
+			OnCameraEnabledChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -295,6 +330,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		/// <param name="enabled"></param>
 		public abstract void SetPrivacyMute(bool enabled);
+
+		/// <summary>
+		/// Sets whether the camera should transmit video or not.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public abstract void SetCameraEnabled(bool enabled);
 
 		#endregion
 

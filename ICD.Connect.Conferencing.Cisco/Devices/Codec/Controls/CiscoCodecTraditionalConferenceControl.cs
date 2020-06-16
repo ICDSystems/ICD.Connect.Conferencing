@@ -6,6 +6,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -27,6 +28,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private readonly DialingComponent m_DialingComponent;
 		private readonly SystemComponent m_SystemComponent;
+		private readonly VideoComponent m_VideoComponent;
 
 		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations;
 		private readonly BiDictionary<CallComponent, TraditionalIncomingCall> m_IncomingCalls;
@@ -83,6 +85,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			m_DialingComponent = Parent.Components.GetComponent<DialingComponent>();
 			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
+			m_VideoComponent = Parent.Components.GetComponent<VideoComponent>();
 
 			m_SubscribedRegistrations = new IcdHashSet<SipRegistration>();
 			m_IncomingCalls = new BiDictionary<CallComponent, TraditionalIncomingCall>();
@@ -95,10 +98,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			Subscribe(m_DialingComponent);
 			Subscribe(m_SystemComponent);
+			Subscribe(m_VideoComponent);
 
 			UpdatePrivacyMute();
 			UpdateDoNotDisturb();
 			UpdateAutoAnswer();
+			UpdateCameraEnabled();
 		}
 
 		/// <summary>
@@ -117,6 +122,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			Unsubscribe(m_DialingComponent);
 			Unsubscribe(m_SystemComponent);
+			Unsubscribe(m_VideoComponent);
 		}
 
 		#region Methods
@@ -179,6 +185,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_DialingComponent.SetPrivacyMute(enabled);
 		}
 
+		public override void SetCameraEnabled(bool enabled)
+		{
+			throw new NotSupportedException();
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -196,6 +207,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private void UpdateAutoAnswer()
 		{
 			AutoAnswer = m_DialingComponent.AutoAnswer;
+		}
+
+		private void UpdateCameraEnabled()
+		{
+			CameraEnabled = !m_VideoComponent.MainVideoMuted;
 		}
 
 		#endregion
@@ -448,6 +464,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
 			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
 			OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(SipRegistrationStatus));
+		}
+
+		#endregion
+
+		#region Video Component Callbacks
+
+		private void Subscribe(VideoComponent videoComponent)
+		{
+			videoComponent.OnMainVideoMutedChanged += VideoComponentOnOnMainVideoMutedChanged;
+		}
+
+		private void Unsubscribe(VideoComponent videoComponent)
+		{
+			videoComponent.OnMainVideoMutedChanged -= VideoComponentOnOnMainVideoMutedChanged;
+		}
+
+		private void VideoComponentOnOnMainVideoMutedChanged(object sender, BoolEventArgs e)
+		{
+			UpdateCameraEnabled();
 		}
 
 		#endregion

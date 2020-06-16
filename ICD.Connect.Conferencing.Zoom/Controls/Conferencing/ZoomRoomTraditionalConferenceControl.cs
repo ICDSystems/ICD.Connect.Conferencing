@@ -131,6 +131,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			throw new NotSupportedException();
 		}
 
+		public override void SetCameraEnabled(bool enabled)
+		{
+			throw new NotSupportedException();
+		}
+
 		#endregion
 
 		#region Private Methods

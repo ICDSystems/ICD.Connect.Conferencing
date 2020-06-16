@@ -14,11 +14,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		where T : IDevice
 	{
 		/// <summary>
-		/// Raised when the camera is enabled/disabled.
-		/// </summary>
-		public event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
-
-		/// <summary>
 		/// Raised when the call lock status changes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnCallLockChanged;
@@ -30,39 +25,10 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 		private readonly SafeCriticalSection m_StateSection;
 
-		private bool m_CameraEnabled;
 		private bool m_AmIHost;
 		private bool m_CallLock;
 
 		#region Properties
-
-		/// <summary>
-		/// Gets the camera enabled state.
-		/// </summary>
-		public bool CameraEnabled
-		{
-			get { return m_CameraEnabled;}
-			protected set
-			{
-				m_StateSection.Enter();
-
-				try
-				{
-					if (m_CameraEnabled == value)
-						return;
-
-					m_CameraEnabled = value;
-
-					Logger.LogSetTo(eSeverity.Informational, "Camera Enabled", m_CameraEnabled);
-				}
-				finally
-				{
-					m_StateSection.Leave();
-				}
-
-				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(value));
-			}
-		}
 
 		/// <summary>
 		/// Returns true if we are the host of the current conference.
@@ -142,7 +108,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnCameraEnabledChanged = null;
 			OnCallLockChanged = null;
 			OnAmIHostChanged = null;
 
@@ -150,12 +115,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		}
 
 		#region Methods
-
-		/// <summary>
-		/// Sets whether the camera should transmit video or not.
-		/// </summary>
-		/// <param name="enabled"></param>
-		public abstract void SetCameraEnabled(bool enabled);
 
 		/// <summary>
 		/// Starts a personal meeting.
