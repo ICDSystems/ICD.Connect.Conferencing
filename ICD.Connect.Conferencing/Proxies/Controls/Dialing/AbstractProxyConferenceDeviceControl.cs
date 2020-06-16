@@ -27,11 +27,13 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
+		public event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
 		public event EventHandler<ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs> OnSupportedConferenceFeaturesChanged;
 
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
+		private bool m_CameraEnabled;
 		private eConferenceFeatures m_SupportedConferenceFeatures;
 		private IDialContext m_CallInInfo;
 
@@ -106,6 +108,21 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 				m_DoNotDisturb = value;
 
 				OnDoNotDisturbChanged.Raise(this, new BoolEventArgs(m_DoNotDisturb));
+			}
+		}
+
+		public bool CameraEnabled
+		{
+			get { return m_CameraEnabled; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_CameraEnabled)
+					return;
+
+				m_CameraEnabled = value;
+
+				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(m_CameraEnabled));
 			}
 		}
 
@@ -226,6 +243,15 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		public void SetPrivacyMute(bool enabled)
 		{
 			CallMethod(ConferenceDeviceControlApi.METHOD_SET_PRIVACY_MUTE, enabled);
+		}
+
+		/// <summary>
+		/// Sets the camera enabled state.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public void SetCameraEnabled(bool enabled)
+		{
+			CallMethod(ConferenceDeviceControlApi.METHOD_SET_CAMERA_ENABLED, enabled);
 		}
 
 		#endregion

@@ -110,8 +110,10 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 			m_ActiveConference.Hangup();
 
-			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+			var endedConference = m_ActiveConference;
 			m_ActiveConference = null;
+
+			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(endedConference));
 		}
 
 		/// <summary>
@@ -120,7 +122,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		/// <returns></returns>
 		public override IEnumerable<TraditionalConference> GetConferences()
 		{
-			yield return m_ActiveConference != null ? m_ActiveConference : new TraditionalConference();
+			if (m_ActiveConference != null)
+				yield return m_ActiveConference;
 		}
 
 		/// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -38,7 +39,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 				m_AudioInput = value;
 
-				AvBridge.Logger.Log(eSeverity.Informational, "AudioInput set to {0}", m_AudioInput);
+				AvBridge.Logger.LogSetTo(eSeverity.Informational, "AudioInput", m_AudioInput);
 				OnAudioInputChanged.Raise(this, new GenericEventArgs<eAudioInput>(value));
 			}
 		}
@@ -53,7 +54,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 				m_Volume = value;
 
-				AvBridge.Logger.Log(eSeverity.Informational, "Volume set to {0}", m_Volume);
+				AvBridge.Logger.LogSetTo(eSeverity.Informational, "Volume", m_Volume);
 				OnVolumeChanged.Raise(this, new IntEventArgs(value));
 			}
 		}
@@ -68,7 +69,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 
 				m_AudioMute = value;
 
-				AvBridge.Logger.Log(eSeverity.Informational, "AudioMute set to {0}", m_AudioMute);
+				AvBridge.Logger.LogSetTo(eSeverity.Informational, "AudioMute", m_AudioMute);
 				OnAudioMuteChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
@@ -111,6 +112,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// </summary>
 		public void GetAudioInput()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Querying Audio Input State");
 			AvBridge.SendCommand("audio input get");
 		}
 
@@ -126,7 +128,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 				return;
 			}
 
+			AvBridge.Logger.Log(eSeverity.Informational, "Setting Audio Input to {0}", source);
 			AvBridge.SendCommand("audio input " + source);
+			GetAudioInput();
 		}
 
 		/// <summary>
@@ -134,6 +138,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// </summary>
 		public void GetAudioMute()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Querying Audio Mute State");
 			AvBridge.SendCommand("audio mute get");
 		}
 
@@ -143,7 +148,10 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		public void SetAudioMute(bool mute)
 		{
 			string muteString = mute ? "on" : "off";
+
+			AvBridge.Logger.Log(eSeverity.Informational, "Setting Audio Mute State to {0}", muteString);
 			AvBridge.SendCommand("audio mute " + muteString);
+			GetAudioMute();
 		}
 
 		/// <summary>
@@ -151,7 +159,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// </summary>
 		public void ToggleAudioMute()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Toggling Audio Mute State");
 			AvBridge.SendCommand("audio mute toggle");
+			GetAudioMute();
 		}
 
 		/// <summary>
@@ -159,6 +169,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// </summary>
 		public void GetAudioVolume()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Querying Audio Volume State");
 			AvBridge.SendCommand("audio volume get");
 		}
 
@@ -174,7 +185,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 				return;
 			}
 
+			AvBridge.Logger.Log(eSeverity.Informational, "Setting Audio Volume to {0}", volume);
 			AvBridge.SendCommand("audio volume set {0}", volume);
+			GetAudioVolume();
 		}
 
 		/// <summary>
@@ -182,7 +195,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// </summary>
 		public void IncrementAudioVolume()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Incrementing Audio Volume One Step");
 			AvBridge.SendCommand("audio volume up");
+			GetAudioVolume();
 		}
 
 		/// <summary>
@@ -190,7 +205,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 		/// </summary>
 		public void DecrementAudioVolume()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Decrementing Audio Volume One Step");
 			AvBridge.SendCommand("audio volume down");
+			GetAudioVolume();
 		}
 
 		#endregion
@@ -204,107 +221,24 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio
 			avBridge.RegisterFeedback("audio input", HandleAudioInputFeedback);
 			avBridge.RegisterFeedback("audio mute", HandleAudioMuteFeedback);
 			avBridge.RegisterFeedback("audio volume", HandleAudioVolumeFeedback);
-			avBridge.RegisterFeedback("audio volume set", HandleAudioVolumeSetFeedback);
 		}
 
 		private void HandleAudioInputFeedback(VaddioAvBridgeSerialResponse response)
 		{
-			if (response.StatusCode != "OK")
-			{
-				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
-				return;
-			}
-
-			switch (response.CommandSetValue)
-			{
-				case "get":
-					AudioInput = (eAudioInput)Enum.Parse(typeof(eAudioInput), response.OptionValue, true);
-					break;
-
-				case "unbalanced":
-					AudioInput = eAudioInput.unbalanced;
-					break;
-
-				case "balanced":
-					AudioInput = eAudioInput.balanced;
-					break;
-			}
+			if (response.CommandSetValue == "get")
+				AudioInput = (eAudioInput)Enum.Parse(typeof(eAudioInput), response.OptionValue, true);
 		}
 
 		private void HandleAudioMuteFeedback(VaddioAvBridgeSerialResponse response)
 		{
-			if (response.StatusCode != "OK")
-			{
-				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
-				return;
-			}
-
-			switch (response.CommandSetValue)
-			{
-				case "get":
-					if (response.OptionValue == "on")
-						AudioMute = true;
-					if (response.OptionValue == "off")
-						AudioMute = false;
-					break;
-
-				case "on":
-					AudioMute = true;
-					break;
-
-				case "off":
-					AudioMute = false;
-					break;
-
-				case "toggle":
-					AudioMute = !AudioMute;
-					break;
-			}
+			if (response.CommandSetValue == "get")
+				AudioMute = response.OptionValue == "on";
 		}
 
 		private void HandleAudioVolumeFeedback(VaddioAvBridgeSerialResponse response)
 		{
-			if (response.StatusCode != "OK")
-			{
-				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
-				return;
-			}
-
-			switch (response.CommandSetValue)
-			{
-				case "get":
-					Volume = int.Parse(response.OptionValue);
-					break;
-
-				case "up":
-					if (Volume == 10)
-						return;
-
-					Volume++;
-					break;
-
-				case "down":
-					if (Volume == 0)
-						return;
-
-					Volume--;
-					break;
-			}
-		}
-
-		private void HandleAudioVolumeSetFeedback(VaddioAvBridgeSerialResponse response)
-		{
-			if (response.StatusCode != "OK")
-			{
-				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
-				return;
-			}
-
-			var volume = int.Parse(response.CommandSetValue);
-			if (volume < 0 || volume > 10)
-				return;
-
-			Volume = volume;
+			if (response.CommandSetValue == "get")
+				Volume = int.Parse(response.OptionValue);
 		}
 
 		#endregion

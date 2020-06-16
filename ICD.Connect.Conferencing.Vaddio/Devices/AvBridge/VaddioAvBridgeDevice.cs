@@ -33,6 +33,11 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		/// </summary>
 		private const string END_OF_LINE = "\r\n";
 
+		/// <summary>
+		/// Status code of a response message with no errors.
+		/// </summary>
+		private const string SUCCESS_STATUS_CODE = "OK";
+
 		#region Events
 
 		/// <summary>
@@ -187,12 +192,6 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			if (port != null)
-			{
-				port.DebugRx = eDebugMode.Ascii;
-				port.DebugTx = eDebugMode.Ascii;
-			}
-
 			m_ConnectionStateManager.SetPort(port);
 			m_SerialQueue.SetPort(port);
 		}
@@ -360,12 +359,17 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			if (response.Command == null)
 				return;
 
+			if (response.StatusCode != SUCCESS_STATUS_CODE)
+			{
+				Logger.Log(eSeverity.Error, "AV Bridge device encountered an error - {0}", response.StatusCode);
+				return;
+			}
+
 			IcdHashSet<Action<VaddioAvBridgeSerialResponse>> handlers;
 			if (!m_FeedbackHandlers.TryGetValue(response.Command, out handlers))
 				return;
 
 			foreach (var handler in handlers)
-			{
 				try
 				{
 					handler(response);
@@ -374,7 +378,6 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 				{
 					Logger.Log(eSeverity.Error, "Failed to handle feedback {0} - {1}", response.Command, e.Message);
 				}
-			}
 		}
 
 		#endregion

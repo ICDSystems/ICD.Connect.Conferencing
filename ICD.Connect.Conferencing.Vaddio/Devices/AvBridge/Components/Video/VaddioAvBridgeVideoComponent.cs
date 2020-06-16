@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -27,7 +28,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 
 				m_VideoInput = value;
 
-				AvBridge.Logger.Log(eSeverity.Informational, "Video input set to {0}", m_VideoInput);
+				AvBridge.Logger.LogSetTo(eSeverity.Informational, "VideoInput", m_VideoInput);
 				OnVideoInputChanged.Raise(this, new GenericEventArgs<eVideoInput>(value));
 			}
 		}
@@ -42,7 +43,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 
 				m_VideoMute = value;
 
-				AvBridge.Logger.Log(eSeverity.Informational, "Video mute set to {0}", m_VideoMute);
+				AvBridge.Logger.LogSetTo(eSeverity.Informational, "VideoMute", m_VideoMute);
 				OnVideoMuteChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
@@ -82,6 +83,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 		/// </summary>
 		public void GetVideoInput()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Querying Video Input State");
 			AvBridge.SendCommand("video input get");
 		}
 
@@ -93,7 +95,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 				return;
 			}
 
+			AvBridge.Logger.Log(eSeverity.Informational, "Setting Video Input to {0}", input);
 			AvBridge.SendCommand("video input {0}", input);
+			GetVideoInput();
 		}
 
 		/// <summary>
@@ -101,6 +105,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 		/// </summary>
 		public void GetVideoMute()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Querying Video Mute State");
 			AvBridge.SendCommand("video mute get");
 		}
 
@@ -111,7 +116,10 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 		public void SetVideoMute(bool mute)
 		{
 			string muteString = mute ? "on" : "off";
+			
+			AvBridge.Logger.Log(eSeverity.Informational, "Setting Video Mute State to {0}", muteString);
 			AvBridge.SendCommand("video mute {0}", muteString);
+			GetVideoMute();
 		}
 
 		/// <summary>
@@ -119,7 +127,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 		/// </summary>
 		public void ToggleVideoMute()
 		{
+			AvBridge.Logger.Log(eSeverity.Informational, "Toggling Video Mute State");
 			AvBridge.SendCommand("video mute toggle");
+			GetVideoMute();
 		}
 
 		#endregion
@@ -136,69 +146,14 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video
 
 		private void HandleVideoInputFeedback(VaddioAvBridgeSerialResponse response)
 		{
-			if (response.StatusCode != "OK")
-			{
-				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
-				return;
-			}
-
-			switch (response.CommandSetValue)
-			{
-				case "get":
-					VideoInput = (eVideoInput)Enum.Parse(typeof(eVideoInput), response.OptionValue, true);
-					break;
-
-				case "auto":
-					VideoInput = eVideoInput.auto;
-					break;
-
-				case "hdmi":
-					VideoInput = eVideoInput.hdmi;
-					break;
-
-				case "rgbhv":
-					VideoInput = eVideoInput.rgbhv;
-					break;
-
-				case "sd":
-					VideoInput = eVideoInput.sd;
-					break;
-
-				case "ypbpr":
-					VideoInput = eVideoInput.ypbpr;
-					break;
-			}
+			if (response.CommandSetValue == "get")
+				VideoInput = (eVideoInput)Enum.Parse(typeof(eVideoInput), response.OptionValue, true);
 		}
 
 		private void HandleVideoMuteFeedback(VaddioAvBridgeSerialResponse response)
 		{
-			if (response.StatusCode != "OK")
-			{
-				AvBridge.Logger.Log(eSeverity.Warning, "error in AV Bridge response - {0}", response.StatusCode);
-				return;
-			}
-
-			switch (response.CommandSetValue)
-			{
-				case "get":
-					if (response.OptionValue == "on")
-						VideoMute = true;
-					if (response.OptionValue == "off")
-						VideoMute = false;
-					break;
-
-				case "on":
-					VideoMute = true;
-					break;
-
-				case "off":
-					VideoMute = false;
-					break;
-
-				case "toggle":
-					VideoMute = !VideoMute;
-					break;
-			}
+			if (response.CommandSetValue == "get")
+				VideoMute = response.OptionValue == "on";
 		}
 
 		#endregion

@@ -10,13 +10,13 @@ using ICD.Connect.Settings.Attributes.SettingsProperties;
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 {
 	[KrangSettings("VaddioAvBridge", typeof(VaddioAvBridgeDevice))]
-	public sealed class VaddioAvBridgeDeviceSettings : AbstractVideoConferenceDeviceSettings, IComSpecSettings, ISecureNetworkSettings
+	public sealed class VaddioAvBridgeDeviceSettings : AbstractVideoConferenceDeviceSettings, IComSpecSettings, INetworkSettings
 	{
 		private const string PORT_ELEMENT = "Port";
 		private const string USERNAME_ELEMENT = "Username";
 		private const string PASSWORD_ELEMENT = "Password";
 
-		private readonly SecureNetworkProperties m_NetworkProperties;
+		private readonly NetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		#region Properties
@@ -138,24 +138,6 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		}
 
 		/// <summary>
-		/// Gets/sets the configurable network username.
-		/// </summary>
-		public string NetworkUsername
-		{
-			get { return m_NetworkProperties.NetworkUsername; }
-			set { m_NetworkProperties.NetworkUsername = value; }
-		}
-
-		/// <summary>
-		/// Gets/sets the configurable network password.
-		/// </summary>
-		public string NetworkPassword
-		{
-			get { return m_NetworkProperties.NetworkPassword; }
-			set { m_NetworkProperties.NetworkPassword = value; }
-		}
-
-		/// <summary>
 		/// Clears the configured values.
 		/// </summary>
 		public void ClearNetworkProperties()
@@ -167,10 +149,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 
 		public VaddioAvBridgeDeviceSettings()
 		{
-			m_NetworkProperties = new SecureNetworkProperties();
+			m_NetworkProperties = new NetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
-			UpdateNetworkDefaults();
 			UpdateComSpecDefaults();
 		}
 
@@ -199,13 +180,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			Username = XmlUtils.TryReadChildElementContentAsString(xml, USERNAME_ELEMENT);
 			Password = XmlUtils.TryReadChildElementContentAsString(xml, PASSWORD_ELEMENT);
 
-			UpdateNetworkDefaults();
 			UpdateComSpecDefaults();
-		}
-
-		private void UpdateNetworkDefaults()
-		{
-			m_NetworkProperties.ApplyDefaultValues(null, 23, null, null);
 		}
 
 		private void UpdateComSpecDefaults()

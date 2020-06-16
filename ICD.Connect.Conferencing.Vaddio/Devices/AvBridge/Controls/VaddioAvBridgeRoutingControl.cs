@@ -22,8 +22,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		private const int INPUT_ADDRESS_VGA = 2;
 		private const int INPUT_ADDRESS_COMPOSITE = 3;
 
-		private const int INPUT_ADDRESS_BALANCED = 1;
-		private const int INPUT_ADDRESS_UNBALANCED = 2;
+		private const int INPUT_ADDRESS_BALANCED = 4;
+		private const int INPUT_ADDRESS_UNBALANCED = 5;
 
 		#region Events
 

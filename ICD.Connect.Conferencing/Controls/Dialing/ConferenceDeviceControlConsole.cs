@@ -37,6 +37,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			addRow("AutoAnswer", instance.AutoAnswer);
 			addRow("PrivacyMuted", instance.PrivacyMuted);
 			addRow("DoNotDisturb", instance.DoNotDisturb);
+			addRow("CameraEnabled", instance.CameraEnabled);
 			addRow("Supports", instance.Supports);
 		}
 
@@ -55,6 +56,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			yield return new GenericConsoleCommand<bool>("SetDoNotDisturb", "SetDoNotDisturb <true/false>", b => instance.SetDoNotDisturb(b));
 			yield return new GenericConsoleCommand<bool>("SetAutoAnswer", "SetAutoAnswer <true/false>", b => instance.SetAutoAnswer(b));
 			yield return new GenericConsoleCommand<bool>("SetPrivacyMute", "SetPrivacyMute <true/false>", b => instance.SetPrivacyMute(b));
+			yield return new GenericConsoleCommand<bool>("SetCameraEnabled", "SetCameraEnabled <true/false>", b => instance.SetCameraEnabled(b));
 		}
 
 		private static void Dial<T>(IConferenceDeviceControl<T> instance, eDialProtocol protocol, string number) where T : IConference
