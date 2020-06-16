@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Commands;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 {
-	public sealed class VaddioAvBridgeConferenceControl : AbstractConferenceDeviceControl<VaddioAvBridgeDevice, VaddioAvBridgeWebinar>
+	public sealed class VaddioAvBridgeConferenceControl : AbstractConferenceDeviceControl<VaddioAvBridgeDevice, TraditionalConference>
 	{
 		#region Events
 
@@ -23,6 +29,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 		private readonly VaddioAvBridgeAudioComponent m_AudioComponent;
 		private readonly VaddioAvBridgeVideoComponent m_VideoComponent;
+
+		[CanBeNull]
+		private TraditionalConference m_ActiveConference;
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
@@ -39,10 +48,13 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		public VaddioAvBridgeConferenceControl(VaddioAvBridgeDevice parent, int id) 
 			: base(parent, id)
 		{
+			SupportedConferenceFeatures = eConferenceFeatures.PrivacyMute;
+
 			m_AudioComponent = parent.Components.GetComponent<VaddioAvBridgeAudioComponent>();
 			m_VideoComponent = parent.Components.GetComponent<VaddioAvBridgeVideoComponent>();
 
 			Subscribe(m_AudioComponent);
+			Subscribe(m_VideoComponent);
 		}
 
 		/// <summary>
@@ -54,6 +66,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_AudioComponent);
+			Unsubscribe(m_VideoComponent);
 		}
 
 		#endregion
@@ -61,12 +74,53 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		#region Methods
 
 		/// <summary>
+		/// Starts a new conference and adds a participant with the given name.
+		/// </summary>
+		/// <param name="name"></param>
+		public void StartConference(string name)
+		{
+			EndConference();
+
+			DateTime now = IcdEnvironment.GetUtcTime();
+
+			ThinTraditionalParticipant participant = new ThinTraditionalParticipant
+			{
+				HangupCallback = HangupParticipant
+			};
+			participant.SetName(name);
+			participant.SetAnswerState(eCallAnswerState.Answered);
+			participant.SetCallType(Supports);
+			participant.SetDialTime(now);
+			participant.SetStart(now);
+			participant.SetStatus(eParticipantStatus.Connected);
+
+			m_ActiveConference = new TraditionalConference();
+			m_ActiveConference.AddParticipant(participant);
+
+			OnConferenceAdded.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+		}
+
+		/// <summary>
+		/// Stops the current conference.
+		/// </summary>
+		public void EndConference()
+		{
+			if (m_ActiveConference == null)
+				return;
+
+			m_ActiveConference.Hangup();
+
+			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+			m_ActiveConference = null;
+		}
+
+		/// <summary>
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public override IEnumerable<VaddioAvBridgeWebinar> GetConferences()
+		public override IEnumerable<TraditionalConference> GetConferences()
 		{
-			throw new NotImplementedException();
+			yield return m_ActiveConference != null ? m_ActiveConference : new TraditionalConference();
 		}
 
 		/// <summary>
@@ -76,7 +130,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		/// <returns></returns>
 		public override eDialContextSupport CanDial(IDialContext dialContext)
 		{
-			throw new NotImplementedException();
+			return eDialContextSupport.Unsupported;
 		}
 
 		/// <summary>
@@ -85,7 +139,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		/// <param name="dialContext"></param>
 		public override void Dial(IDialContext dialContext)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		/// <summary>
@@ -94,7 +148,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		/// <param name="enabled"></param>
 		public override void SetDoNotDisturb(bool enabled)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		/// <summary>
@@ -103,7 +157,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		/// <param name="enabled"></param>
 		public override void SetAutoAnswer(bool enabled)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 
 		/// <summary>
@@ -113,6 +167,28 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		public override void SetPrivacyMute(bool enabled)
 		{
 			m_AudioComponent.SetAudioMute(enabled);
+		}
+
+		/// <summary>
+		/// Sets whether the camera should transmit video or not.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public override void SetCameraEnabled(bool enabled)
+		{
+			m_VideoComponent.SetVideoMute(enabled);
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void HangupParticipant(ThinTraditionalParticipant participant)
+		{
+			participant.SetStatus(eParticipantStatus.Disconnected);
+			participant.SetEnd(IcdEnvironment.GetUtcTime());
+
+			if (m_ActiveConference != null)
+				m_ActiveConference.RemoveParticipant(participant);
 		}
 
 		#endregion
@@ -129,9 +205,46 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 			audioComponent.OnAudioMuteChanged -= AudioComponentOnAudioMuteChanged;
 		}
 
-		private void AudioComponentOnAudioMuteChanged(object sender, BoolEventArgs boolEventArgs)
+		private void AudioComponentOnAudioMuteChanged(object sender, BoolEventArgs e)
 		{
-			PrivacyMuted = boolEventArgs.Data;
+			PrivacyMuted = e.Data;
+		}
+
+		#endregion
+
+		#region Video Component Callbacks
+
+		private void Subscribe(VaddioAvBridgeVideoComponent videoComponent)
+		{
+			videoComponent.OnVideoMuteChanged += VideoComponentOnVideoMuteChanged;
+		}
+
+		private void Unsubscribe(VaddioAvBridgeVideoComponent videoComponent)
+		{
+			videoComponent.OnVideoMuteChanged -= VideoComponentOnVideoMuteChanged;
+		}
+
+		private void VideoComponentOnVideoMuteChanged(object sender, BoolEventArgs e)
+		{
+			CameraEnabled = e.Data;
+		}
+
+		#endregion
+
+		#region Console
+
+		public override IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			foreach (IConsoleCommand command in GetBaseConsoleCommands())
+				yield return command;
+
+			yield return new GenericConsoleCommand<string>("StartConference", "StartConference <Name>", n => StartConference(n));
+			yield return new ConsoleCommand("EndConference", "Ends the active conference", () => EndConference());
+		}
+
+		private IEnumerable<IConsoleCommand> GetBaseConsoleCommands()
+		{
+			return base.GetConsoleCommands();
 		}
 
 		#endregion
