@@ -47,7 +47,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
-		private static Dictionary<string, string> s_PersonalToId;
+		private static readonly Dictionary<string, string> s_PersonalToId;
+
 		private readonly CallComponent m_CallComponent;
 		private readonly SystemComponent m_SystemComponent;
 
@@ -499,7 +500,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <param name="eventArgs"></param>
 		private void CallComponentOnIncomingCall(object sender, GenericEventArgs<IncomingCall> eventArgs)
 		{
-			if (DoNotDisturb)
+			if (DoNotDisturb || CallLock)
 			{
 				m_CallComponent.CallReject(eventArgs.Data.CallerJoinId);
 				return;
