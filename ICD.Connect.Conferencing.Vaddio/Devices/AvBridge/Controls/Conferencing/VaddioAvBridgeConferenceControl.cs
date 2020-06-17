@@ -229,7 +229,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 		private void VideoComponentOnVideoMuteChanged(object sender, BoolEventArgs e)
 		{
-			CameraEnabled = e.Data;
+			CameraEnabled = !e.Data;
 		}
 
 		#endregion

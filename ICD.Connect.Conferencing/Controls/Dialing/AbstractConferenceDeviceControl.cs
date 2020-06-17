@@ -198,6 +198,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Gets the camera enabled state.
 		/// </summary>
+		[PublicAPI]
 		public bool CameraEnabled
 		{
 			get { return m_CameraEnabled; }

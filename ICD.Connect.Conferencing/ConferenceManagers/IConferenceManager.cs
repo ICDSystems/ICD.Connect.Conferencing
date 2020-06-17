@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.ConferenceManagers.History;
 using ICD.Connect.Conferencing.Contacts;
+using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.DialingPlans;
 using ICD.Connect.Conferencing.EventArguments;
@@ -182,6 +186,22 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				throw new ArgumentNullException("extends");
 
 			extends.PrivacyMuted = !extends.PrivacyMuted;
+		}
+
+		/// <summary>
+		/// Returns the bitwise AND of the supported conference features for the active dialers.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static eConferenceFeatures ActiveConferenceFeatures([NotNull] this IConferenceManager extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			return extends.Dialers
+			              .GetActiveDialers()
+			              .Select(c => c.SupportedConferenceFeatures)
+			              .AggregateOrDefault((current, next) => current & next);
 		}
 	}
 }
