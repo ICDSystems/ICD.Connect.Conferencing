@@ -37,17 +37,17 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		DoNotDisturb = 4,
 
 		/// <summary>
-		/// Supports setting camera enabled state.
+		/// Supports setting camera mute state.
 		/// </summary>
-		CameraEnabled = 8,
+		CameraMute = 8,
 
 		/// <summary>
-		/// Supports conference holding.
+		/// Supports holding and resuming active conferences.
 		/// </summary>
 		Hold = 16,
 
 		/// <summary>
-		/// Supports the use of dual-tone multi-frequency signaling.
+		/// Supports the use of dual-tone multi-frequency signaling in active conferences.
 		/// </summary>
 		Dtmf = 32
 	}

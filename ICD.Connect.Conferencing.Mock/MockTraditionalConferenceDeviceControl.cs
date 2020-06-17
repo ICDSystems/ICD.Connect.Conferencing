@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Mock
 				eConferenceFeatures.AutoAnswer |
 				eConferenceFeatures.DoNotDisturb |
 				eConferenceFeatures.PrivacyMute |
-				eConferenceFeatures.CameraEnabled |
+				eConferenceFeatures.CameraMute |
 				eConferenceFeatures.Hold |
 				eConferenceFeatures.Dtmf;
 

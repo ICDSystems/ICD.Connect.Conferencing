@@ -66,7 +66,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				eConferenceFeatures.AutoAnswer |
 				eConferenceFeatures.DoNotDisturb |
 				eConferenceFeatures.PrivacyMute |
-				eConferenceFeatures.CameraEnabled |
+				eConferenceFeatures.CameraMute |
 				eConferenceFeatures.Hold |
 				eConferenceFeatures.Dtmf;
 

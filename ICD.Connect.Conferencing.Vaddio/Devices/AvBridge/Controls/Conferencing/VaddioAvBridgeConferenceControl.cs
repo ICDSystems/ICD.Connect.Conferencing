@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		public VaddioAvBridgeConferenceControl(VaddioAvBridgeDevice parent, int id) 
 			: base(parent, id)
 		{
-			SupportedConferenceFeatures = eConferenceFeatures.PrivacyMute | eConferenceFeatures.CameraEnabled;
+			SupportedConferenceFeatures = eConferenceFeatures.PrivacyMute | eConferenceFeatures.CameraMute;
 
 			m_AudioComponent = parent.Components.GetComponent<VaddioAvBridgeAudioComponent>();
 			m_VideoComponent = parent.Components.GetComponent<VaddioAvBridgeVideoComponent>();
