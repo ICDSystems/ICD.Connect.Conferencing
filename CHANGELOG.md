@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Added features for getting Zoom meeting IDs in human readable format
  - Vaddio AV Bridge device driver
  - Added a ContentInput property for VideoConferenceRoutControls
+ - Added three new flags to the eConferenceFeatures enum: CameraEnabled, Hold, & Dtmf. Implemented in conference controls where applicable.
  
 ### Changed
  - MockConferecingDevice now inherits from AbstractMockDevice

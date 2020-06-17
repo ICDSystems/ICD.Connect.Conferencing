@@ -61,6 +61,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			m_ParticipantSection = new SafeCriticalSection();
 
 			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;
+			SupportedConferenceFeatures |= eConferenceFeatures.Dtmf;
 
 			Subscribe(m_CallComponent);
 			Subscribe(m_TraditionalCallComponent);
@@ -411,7 +412,6 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		private void HoldCallback(ThinTraditionalParticipant sender)
 		{
 			Parent.Logger.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
-
 		}
 
 		private void ResumeCallback(ThinTraditionalParticipant sender)

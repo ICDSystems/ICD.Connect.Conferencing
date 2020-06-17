@@ -65,7 +65,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			SupportedConferenceFeatures =
 				eConferenceFeatures.AutoAnswer |
 				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute;
+				eConferenceFeatures.PrivacyMute |
+				eConferenceFeatures.CameraEnabled |
+				eConferenceFeatures.Hold |
+				eConferenceFeatures.Dtmf;
 
 			Subscribe(m_DialComponent);
 			Subscribe(m_AutoAnswerComponent);

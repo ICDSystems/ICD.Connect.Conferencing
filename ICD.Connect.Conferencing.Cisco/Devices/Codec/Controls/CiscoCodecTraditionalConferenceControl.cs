@@ -472,15 +472,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void Subscribe(VideoComponent videoComponent)
 		{
-			videoComponent.OnMainVideoMutedChanged += VideoComponentOnOnMainVideoMutedChanged;
+			videoComponent.OnMainVideoMutedChanged += VideoComponentOnMainVideoMutedChanged;
 		}
 
 		private void Unsubscribe(VideoComponent videoComponent)
 		{
-			videoComponent.OnMainVideoMutedChanged -= VideoComponentOnOnMainVideoMutedChanged;
+			videoComponent.OnMainVideoMutedChanged -= VideoComponentOnMainVideoMutedChanged;
 		}
 
-		private void VideoComponentOnOnMainVideoMutedChanged(object sender, BoolEventArgs e)
+		private void VideoComponentOnMainVideoMutedChanged(object sender, BoolEventArgs e)
 		{
 			UpdateCameraEnabled();
 		}

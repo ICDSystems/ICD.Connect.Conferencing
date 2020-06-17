@@ -22,7 +22,10 @@ namespace ICD.Connect.Conferencing.Mock
 			SupportedConferenceFeatures =
 				eConferenceFeatures.AutoAnswer |
 				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute;
+				eConferenceFeatures.PrivacyMute |
+				eConferenceFeatures.CameraEnabled |
+				eConferenceFeatures.Hold |
+				eConferenceFeatures.Dtmf;
 
 			parent.OnParticipantAdded += ParentOnParticipantAdded;
 			parent.OnParticipantRemoved += ParentOnParticipantRemoved;

@@ -113,6 +113,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			SupportedConferenceFeatures |= eConferenceFeatures.AutoAnswer;
 			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;
 			SupportedConferenceFeatures |= eConferenceFeatures.PrivacyMute;
+			SupportedConferenceFeatures |= eConferenceFeatures.CameraEnabled;
 
 			Subscribe(m_CallComponent);
 			Subscribe(m_SystemComponent);
