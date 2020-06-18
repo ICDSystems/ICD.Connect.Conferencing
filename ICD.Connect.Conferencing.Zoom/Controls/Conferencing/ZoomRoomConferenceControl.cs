@@ -238,15 +238,15 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		}
 
 		/// <summary>
-		/// Sets whether the camera should transmit video or not.
+		/// Sets the camera mute state.
 		/// </summary>
-		/// <param name="enabled"></param>
-		public override void SetCameraEnabled(bool enabled)
+		/// <param name="mute"></param>
+		public override void SetCameraMute(bool mute)
 		{
-			m_CallComponent.MuteCamera(!enabled);
+			m_CallComponent.MuteCamera(mute);
 			
 			// If the user explicitly requests to turn on the camera, turn off KeepCameraMuted
-			if (enabled && m_KeepCameraMuted)
+			if (!mute && m_KeepCameraMuted)
 			{
 				m_KeepCameraMuted = false;
 				m_KeepCameraMutedResetTimer.Stop();
@@ -524,11 +524,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// <param name="boolEventArgs"></param>
 		private void CallComponentOnCameraMuteChanged(object sender, BoolEventArgs boolEventArgs)
 		{
-			CameraEnabled = !m_CallComponent.CameraMute;
+			CameraMute = m_CallComponent.CameraMute;
 
 			// If KeepCameraMuted is set and camera mute is enabled, disable the camera again
-			if (m_KeepCameraMuted && !boolEventArgs.Data)
-				SetCameraEnabled(false);
+			if (m_KeepCameraMuted && boolEventArgs.Data)
+				SetCameraMute(false);
 		}
 
 		/// <summary>

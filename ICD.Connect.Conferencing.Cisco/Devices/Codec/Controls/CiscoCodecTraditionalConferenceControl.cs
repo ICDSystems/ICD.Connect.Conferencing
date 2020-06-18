@@ -103,7 +103,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			UpdatePrivacyMute();
 			UpdateDoNotDisturb();
 			UpdateAutoAnswer();
-			UpdateCameraEnabled();
+			UpdateCameraMute();
 		}
 
 		/// <summary>
@@ -185,7 +185,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_DialingComponent.SetPrivacyMute(enabled);
 		}
 
-		public override void SetCameraEnabled(bool enabled)
+		public override void SetCameraMute(bool mute)
 		{
 			throw new NotSupportedException();
 		}
@@ -209,9 +209,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			AutoAnswer = m_DialingComponent.AutoAnswer;
 		}
 
-		private void UpdateCameraEnabled()
+		private void UpdateCameraMute()
 		{
-			CameraEnabled = !m_VideoComponent.MainVideoMuted;
+			CameraMute = m_VideoComponent.MainVideoMuted;
 		}
 
 		#endregion
@@ -482,7 +482,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void VideoComponentOnMainVideoMutedChanged(object sender, BoolEventArgs e)
 		{
-			UpdateCameraEnabled();
+			UpdateCameraMute();
 		}
 
 		#endregion

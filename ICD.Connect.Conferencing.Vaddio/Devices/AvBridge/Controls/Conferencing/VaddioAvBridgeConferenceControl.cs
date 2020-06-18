@@ -173,12 +173,12 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		}
 
 		/// <summary>
-		/// Sets whether the camera should transmit video or not.
+		/// Sets the camera mute state.
 		/// </summary>
-		/// <param name="enabled"></param>
-		public override void SetCameraEnabled(bool enabled)
+		/// <param name="mute"></param>
+		public override void SetCameraMute(bool mute)
 		{
-			m_VideoComponent.SetVideoMute(enabled);
+			m_VideoComponent.SetVideoMute(mute);
 		}
 
 		#endregion
@@ -229,7 +229,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 		private void VideoComponentOnVideoMuteChanged(object sender, BoolEventArgs e)
 		{
-			CameraEnabled = !e.Data;
+			CameraMute = e.Data;
 		}
 
 		#endregion

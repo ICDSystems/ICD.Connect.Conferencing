@@ -7,11 +7,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 	public interface IWebConferenceDeviceControl : IConferenceDeviceControl<IWebConference>
 	{
 		/// <summary>
-		/// Raised when the camera is enabled/disabled.
-		/// </summary>
-		event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
-
-		/// <summary>
 		/// Raised when the call lock status changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnCallLockChanged;
@@ -22,11 +17,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		event EventHandler<BoolEventArgs> OnAmIHostChanged;
 
 		/// <summary>
-		/// Gets the camera enabled state.
-		/// </summary>
-		bool CameraEnabled { get; }
-
-		/// <summary>
 		/// Returns true if we are the host of the active conference.
 		/// </summary>
 		bool AmIHost { get; }
@@ -35,12 +25,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// Gets the CallLock State.
 		/// </summary>
 		bool CallLock { get; }
-
-		/// <summary>
-		/// Sets whether the camera should transmit video or not.
-		/// </summary>
-		/// <param name="enabled"></param>
-		void SetCameraEnabled(bool enabled);
 
 		/// <summary>
 		/// Starts a personal meeting.

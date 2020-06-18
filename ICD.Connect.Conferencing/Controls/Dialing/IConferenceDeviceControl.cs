@@ -116,7 +116,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Raised when the camera's enabled state changes.
 		/// </summary>
-		event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
+		event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
 		/// <summary>
 		/// Raised when the supported conference features change.
@@ -170,8 +170,8 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Gets the current camera enabled state.
 		/// </summary>
-		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_CAMERA_ENABLED, ConferenceDeviceControlApi.HELP_PROPERTY_CAMERA_ENABLED)]
-		bool CameraEnabled { get; }
+		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_CAMERA_MUTE, ConferenceDeviceControlApi.HELP_PROPERTY_CAMERA_MUTE)]
+		bool CameraMute { get; }
 
 		#endregion
 
@@ -221,11 +221,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		void SetPrivacyMute(bool enabled);
 
 		/// <summary>
-		/// Sets the camera enabled state.
+		/// Sets the camera mute state.
 		/// </summary>
-		/// <param name="enabled"></param>
-		[ApiMethod(ConferenceDeviceControlApi.METHOD_SET_CAMERA_ENABLED, ConferenceDeviceControlApi.HELP_METHOD_SET_CAMERA_ENABLED)]
-		void SetCameraEnabled(bool enabled);
+		/// <param name="mute"></param>
+		[ApiMethod(ConferenceDeviceControlApi.METHOD_SET_CAMERA_MUTE, ConferenceDeviceControlApi.HELP_METHOD_SET_CAMERA_MUTE)]
+		void SetCameraMute(bool mute);
 
 		#endregion
 	}

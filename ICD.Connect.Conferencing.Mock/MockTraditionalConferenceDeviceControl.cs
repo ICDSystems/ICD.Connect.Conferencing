@@ -78,9 +78,9 @@ namespace ICD.Connect.Conferencing.Mock
 			PrivacyMuted = enabled;
 		}
 
-		public override void SetCameraEnabled(bool enabled)
+		public override void SetCameraMute(bool mute)
 		{
-			CameraEnabled = enabled;
+			CameraMute = mute;
 		}
 	}
 }

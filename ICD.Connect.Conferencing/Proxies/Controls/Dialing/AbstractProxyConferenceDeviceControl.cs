@@ -27,13 +27,13 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnDoNotDisturbChanged;
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
-		public event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
+		public event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 		public event EventHandler<ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs> OnSupportedConferenceFeaturesChanged;
 
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
-		private bool m_CameraEnabled;
+		private bool m_CameraMute;
 		private eConferenceFeatures m_SupportedConferenceFeatures;
 		private IDialContext m_CallInInfo;
 
@@ -111,18 +111,18 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 			}
 		}
 
-		public bool CameraEnabled
+		public bool CameraMute
 		{
-			get { return m_CameraEnabled; }
+			get { return m_CameraMute; }
 			[UsedImplicitly]
 			private set
 			{
-				if (value == m_CameraEnabled)
+				if (value == m_CameraMute)
 					return;
 
-				m_CameraEnabled = value;
+				m_CameraMute = value;
 
-				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(m_CameraEnabled));
+				OnCameraMuteChanged.Raise(this, new BoolEventArgs(m_CameraMute));
 			}
 		}
 
@@ -177,6 +177,7 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 			OnAutoAnswerChanged = null;
 			OnPrivacyMuteChanged = null;
 			OnCallInInfoChanged = null;
+			OnCameraMuteChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -246,12 +247,12 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		}
 
 		/// <summary>
-		/// Sets the camera enabled state.
+		/// Sets the camera mute state.
 		/// </summary>
-		/// <param name="enabled"></param>
-		public void SetCameraEnabled(bool enabled)
+		/// <param name="mute"></param>
+		public void SetCameraMute(bool mute)
 		{
-			CallMethod(ConferenceDeviceControlApi.METHOD_SET_CAMERA_ENABLED, enabled);
+			CallMethod(ConferenceDeviceControlApi.METHOD_SET_CAMERA_MUTE, mute);
 		}
 
 		#endregion

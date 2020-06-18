@@ -111,7 +111,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			Parent.SetPrivacyMute(enabled);
 		}
 
-		public override void SetCameraEnabled(bool enabled)
+		public override void SetCameraMute(bool mute)
 		{
 			throw new NotSupportedException();
 		}

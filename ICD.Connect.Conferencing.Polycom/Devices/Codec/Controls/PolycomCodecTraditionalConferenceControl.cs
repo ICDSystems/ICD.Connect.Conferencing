@@ -170,12 +170,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		}
 
 		/// <summary>
-		/// Sets whether the camera should transmit video or not.
+		/// Sets the camera mute state.
 		/// </summary>
-		/// <param name="enabled"></param>
-		public override void SetCameraEnabled(bool enabled)
+		/// <param name="mute"></param>
+		public override void SetCameraMute(bool mute)
 		{
-			m_MuteComponent.MuteVideo(!enabled);
+			m_MuteComponent.MuteVideo(mute);
 		}
 
 		#endregion

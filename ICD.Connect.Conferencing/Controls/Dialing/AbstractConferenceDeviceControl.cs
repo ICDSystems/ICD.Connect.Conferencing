@@ -63,9 +63,9 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		/// <summary>
-		/// Raised when the camera is enabled/disabled.
+		/// Raised when the camera is muted/unmuted.
 		/// </summary>
-		public event EventHandler<BoolEventArgs> OnCameraEnabledChanged;
+		public event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
 		/// <summary>
 		/// Raised when the supported conference features change.
@@ -77,7 +77,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
-		private bool m_CameraEnabled;
+		private bool m_CameraMute;
 		private eConferenceFeatures m_SupportedConferenceFeatures;
 		private IDialContext m_CallInInfo;
 
@@ -196,31 +196,31 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		}
 
 		/// <summary>
-		/// Gets the camera enabled state.
+		/// Gets the camera mute state.
 		/// </summary>
 		[PublicAPI]
-		public bool CameraEnabled
+		public bool CameraMute
 		{
-			get { return m_CameraEnabled; }
+			get { return m_CameraMute; }
 			protected set
 			{
 				m_StateSection.Enter();
 
 				try
 				{
-					if (m_CameraEnabled == value)
+					if (m_CameraMute == value)
 						return;
 
-					m_CameraEnabled = value;
+					m_CameraMute = value;
 
-					Logger.LogSetTo(eSeverity.Informational, "Camera Enabled", m_CameraEnabled);
+					Logger.LogSetTo(eSeverity.Informational, "Camera Enabled", m_CameraMute);
 				}
 				finally
 				{
 					m_StateSection.Leave();
 				}
 
-				OnCameraEnabledChanged.Raise(this, new BoolEventArgs(value));
+				OnCameraMuteChanged.Raise(this, new BoolEventArgs(value));
 			}
 		}
 
@@ -279,7 +279,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			OnPrivacyMuteChanged = null;
 			OnSupportedConferenceFeaturesChanged = null;
 			OnCallInInfoChanged = null;
-			OnCameraEnabledChanged = null;
+			OnCameraMuteChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -333,10 +333,10 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public abstract void SetPrivacyMute(bool enabled);
 
 		/// <summary>
-		/// Sets whether the camera should transmit video or not.
+		/// Sets the camera mute state.
 		/// </summary>
-		/// <param name="enabled"></param>
-		public abstract void SetCameraEnabled(bool enabled);
+		/// <param name="mute"></param>
+		public abstract void SetCameraMute(bool mute);
 
 		#endregion
 
