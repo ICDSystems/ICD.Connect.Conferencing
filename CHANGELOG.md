@@ -6,16 +6,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [17.0.0] - 2020-06-18
 ### Added
  - Added features for getting Zoom meeting IDs in human readable format
+ - Added routing control to mock conference device
+ - Conference controls provide a CallInInfo property for a call-in DialContext
+ - Added support for personalized Zoom "my" URLs
+ - Added features for selecting Zoom audio input/output devices
+ - Added configuration items for specifying Zoom audio input/output devices
+ - Zoom device will force audio input/output devices back to the previously selected device
  
 ### Changed
  - MockConferecingDevice now inherits from AbstractMockDevice
  - Using new logging context
- - Favorites are now managed through Favorite static methods
+ - Favorites are now stored per room ORM databases
+ - Fixed a bug where passwords were not being saved to contact favorites
  
 ### Removed
  - Removed IFavorites and SQLiteFavorites implementation
+ - Removed redundant DialContext implementations
 
 ## [16.0.0] - 2020-05-23
 ### Added
