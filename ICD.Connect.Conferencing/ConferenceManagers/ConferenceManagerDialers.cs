@@ -563,7 +563,22 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		private void UpdateIsInCall()
 		{
-			IsInCall = (eInCall)ActiveConferences.Select(c => (int)c.CallType).MaxOrDefault();
+			eCallType max = ActiveConferences.SelectMany(c => EnumUtils.GetFlags(c.CallType)).MaxOrDefault();
+
+			switch (max)
+			{
+				case eCallType.Unknown:
+					IsInCall = eInCall.None;
+					break;
+				case eCallType.Audio:
+					IsInCall = eInCall.Audio;
+					break;
+				case eCallType.Video:
+					IsInCall = eInCall.Video;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		#endregion
