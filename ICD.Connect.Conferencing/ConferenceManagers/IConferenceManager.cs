@@ -193,7 +193,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static eConferenceFeatures ActiveConferenceFeatures([NotNull] this IConferenceManager extends)
+		public static eConferenceFeatures ActiveConferenceFeaturesExclusive([NotNull] this IConferenceManager extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -202,6 +202,22 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			              .GetActiveDialers()
 			              .Select(c => c.SupportedConferenceFeatures)
 			              .AggregateOrDefault((current, next) => current & next);
+		}
+
+		/// <summary>
+		/// Returns the bitwise OR of the supported conference features for the active dialers.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static eConferenceFeatures ActiveConferenceFeaturesInclusive([NotNull] this IConferenceManager extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			return extends.Dialers
+			              .GetActiveDialers()
+			              .Select(c => c.SupportedConferenceFeatures)
+			              .AggregateOrDefault((current, next) => current | next);
 		}
 	}
 }
