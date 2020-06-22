@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.Devices
 		/// <returns></returns>
 		public eCodecInputType GetInputType(int input)
 		{
-			return m_InputTypesSection.Execute(() => m_InputTypes.GetDefault(input, eCodecInputType.None));
+			return m_InputTypesSection.Execute(() => m_InputTypes.GetDefault(input));
 		}
 
 		/// <summary>
@@ -63,7 +63,7 @@ namespace ICD.Connect.Conferencing.Devices
 
 			try
 			{
-				return m_InputTypes.Where(kvp => kvp.Value == type)
+				return m_InputTypes.Where(kvp => kvp.Value.HasFlags(type))
 				                   .Select(kvp => kvp.Key)
 				                   .Order()
 				                   .ToArray();

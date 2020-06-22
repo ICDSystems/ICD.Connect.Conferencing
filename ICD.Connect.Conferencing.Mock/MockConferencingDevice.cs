@@ -130,8 +130,7 @@ namespace ICD.Connect.Conferencing.Mock
 
 		public void SetInputTypeForInput(int address, eCodecInputType type)
 		{
-			if(address > 0 && address < 4)
-				m_InputTypes.SetInputType(address, type);
+			m_InputTypes.SetInputType(address, type);
 		}
 
 		public IEnumerable<ITraditionalParticipant> GetSources()
