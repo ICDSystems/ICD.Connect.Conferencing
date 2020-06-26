@@ -107,6 +107,7 @@
     <Compile Include="Controls\Dialing\IWebConferenceDeviceControl.cs" />
     <Compile Include="DialContexts\AbstractDialContext.cs" />
     <Compile Include="DialContexts\DialContext.cs" />
+    <Compile Include="DialContexts\DialContextEqualityComparer.cs" />
     <Compile Include="DialContexts\eDialProtocol.cs" />
     <Compile Include="DialContexts\IDialContext.cs" />
     <Compile Include="EventArguments\CallAnswerStateEventArgs.cs" />

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+ - Added DialContextEqualityComparer
+
 ### Changed
  - Fixed a bug where ORM members were being obfuscated
  - Zoom and Polycom return bookings for the full day
