@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+ - Fixed a bug where ORM members were being obfuscated
+
 ## [17.0.0] - 2020-06-18
 ### Added
  - Added features for getting Zoom meeting IDs in human readable format
