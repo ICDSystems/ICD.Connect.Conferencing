@@ -178,10 +178,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 	    {
 		    bool change = false;
 
-		    Booking[] bookings = m_BookingsComponent.GetBookings()
-		                                            .Where(b => b.EndTime > IcdEnvironment.GetUtcTime())
-		                                            .Distinct()
-		                                            .ToArray();
+		    Booking[] bookings = m_BookingsComponent.GetBookings().ToArray();
 
 		    m_CriticalSection.Enter();
 
