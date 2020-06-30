@@ -130,7 +130,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public eCallType CallType
 		{
-			get { return this.GetOnlineParticipants().Max(p => p.CallType); }
+			get { return this.GetOnlineParticipants().MaxOrDefault(p => p.CallType); }
 		}
 
 		#endregion

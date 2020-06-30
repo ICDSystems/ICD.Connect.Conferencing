@@ -138,8 +138,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		{
 			base.AddControls(settings, factory, addControl);
 
-			addControl(new VaddioAvBridgeVolumeControl(this, 0));
-			addControl(new VaddioAvBridgeRoutingControl(this, 1));
+			addControl(new VaddioAvBridgeRoutingControl(this, 0));
+			addControl(new VaddioAvBridgeVolumeControl(this, 1));
 			addControl(new VaddioAvBridgeConferenceControl(this, 2));
 		}
 

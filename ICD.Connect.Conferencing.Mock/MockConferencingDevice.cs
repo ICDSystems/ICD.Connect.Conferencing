@@ -51,6 +51,8 @@ namespace ICD.Connect.Conferencing.Mock
 			m_Sources = new List<ITraditionalParticipant>();
 
 			m_InputTypes = new CodecInputTypes();
+			m_InputTypes.SetInputType(1, eCodecInputType.Camera);
+			m_InputTypes.SetInputType(2, eCodecInputType.Content);
 			m_InputTypes.SetInputType(3, eCodecInputType.None);
 		}
 
