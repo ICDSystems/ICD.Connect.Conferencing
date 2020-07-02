@@ -163,6 +163,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		public override void SetCameraInput(int address, int cameraDeviceId)
 		{
 			m_VideoComponent.SetVideoInput(AddressToVideoInput(address));
+			CameraInput = address;
 		}
 
 		/// <summary>
@@ -173,6 +174,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 		public override void SetContentInput(int address, int contentDeviceId)
 		{
 			m_VideoComponent.SetVideoInput(AddressToVideoInput(address));
+			ContentInput = address;
 		}
 
 		/// <summary>
