@@ -141,6 +141,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			addControl(new VaddioAvBridgeRoutingControl(this, 0));
 			addControl(new VaddioAvBridgeVolumeControl(this, 1));
 			addControl(new VaddioAvBridgeConferenceControl(this, 2));
+			addControl(new VaddioAvBridgePresentationControl(this, 3));
 		}
 
 		/// <summary>

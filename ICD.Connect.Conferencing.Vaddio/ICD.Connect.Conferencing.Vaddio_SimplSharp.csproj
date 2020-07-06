@@ -71,6 +71,7 @@
     <Compile Include="Devices\AvBridge\Components\Video\eVideoInput.cs" />
     <Compile Include="Devices\AvBridge\Components\Video\VaddioAvBridgeVideoComponent.cs" />
     <Compile Include="Devices\AvBridge\Controls\Conferencing\VaddioAvBridgeConferenceControl.cs" />
+    <Compile Include="Devices\AvBridge\Controls\VaddioAvBridgePresentationControl.cs" />
     <Compile Include="Devices\AvBridge\Controls\VaddioAvBridgeRoutingControl.cs" />
     <Compile Include="Devices\AvBridge\Controls\VaddioAvBridgeVolumeControl.cs" />
     <Compile Include="Devices\AvBridge\VaddioAvBridgeDevice.cs" />
