@@ -26,7 +26,6 @@
     <None Remove="binNetCoreApp\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="ObfuscationSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Topshelf" Version="4.2.1" />

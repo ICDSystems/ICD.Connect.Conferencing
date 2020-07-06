@@ -1,5 +1,4 @@
-﻿using ICD.Common.Properties;
-using ICD.Connect.Conferencing.DialContexts;
+﻿using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Settings.ORM;
 
@@ -11,14 +10,14 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// Gets the table id for this instance.
 		/// </summary>
 		[PrimaryKey]
-		[Obfuscation(Exclude = true)]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public int Id { get; set; }
 
 		/// <summary>
 		/// Gets the id of the parent favorite contact.
 		/// </summary>
 		[ForeignKey(typeof(Favorite))]
-		[Obfuscation(Exclude = true)]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public int FavoriteId { get; set; }
 
 		/// <summary>
@@ -43,28 +42,28 @@ namespace ICD.Connect.Conferencing.Favorites
 		/// Gets the protocol for placing the call.
 		/// </summary>
 		[DataField]
-		[Obfuscation(Exclude = true)]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public override eDialProtocol Protocol { get; set; }
 
 		/// <summary>
 		/// Gets the type of call.
 		/// </summary>
 		[DataField]
-		[Obfuscation(Exclude = true)]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public override eCallType CallType { get; set; }
 
 		/// <summary>
 		/// Gets the number, uri, etc for placing the call.
 		/// </summary>
 		[DataField]
-		[Obfuscation(Exclude = true)]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public override string DialString { get; set; }
 
 		/// <summary>
 		/// Gets the password for joining the call.
 		/// </summary>
 		[DataField]
-		[Obfuscation(Exclude = true)]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public override string Password { get; set; }
 
 		#endregion

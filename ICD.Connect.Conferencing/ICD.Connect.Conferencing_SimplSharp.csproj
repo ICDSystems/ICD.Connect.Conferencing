@@ -196,7 +196,7 @@
     <Compile Include="EventArguments\ConferenceEventArgs.cs" />
     <Compile Include="Participants\ITraditionalParticipant.cs" />
     <Compile Include="Controls\Dialing\IConferenceDeviceControl.cs" />
-    <None Include="ObfuscationSettings.cs" />
+    <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Participants\ThinTraditionalParticipant.cs" />
     <Compile Include="Participants\EventHelpers\TraditionalParticipantEventHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
