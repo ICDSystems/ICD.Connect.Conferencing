@@ -5,65 +5,74 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Connect.Telemetry.Providers;
+using ICD.Connect.Telemetry.Attributes;
+using ICD.Connect.Telemetry.Providers.External;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
-	public sealed class DialingDeviceExternalTelemetryProvider : IDialingDeviceExternalTelemetryProvider
+	public sealed class DialingDeviceExternalTelemetryProvider : AbstractExternalTelemetryProvider<IConferenceDeviceControl>
 	{
-		public event EventHandler OnRequestTelemetryRebuild;
+		/// <summary>
+		/// Raised when the dialing device starts a call from idle state or ends the last remaining call
+		/// </summary>
+		[EventTelemetry(DialingTelemetryNames.CALL_IN_PROGRESS_CHANGED)]
 		public event EventHandler<BoolEventArgs> OnCallInProgressChanged;
-		public event EventHandler<StringEventArgs> OnCallTypeChanged;
-		public event EventHandler<StringEventArgs> OnCallNumberChanged;
 
-		private IConferenceDeviceControl m_Parent;
+		/// <summary>
+		/// Raised when the dialing device adds or removes a call.
+		/// </summary>
+		[EventTelemetry(DialingTelemetryNames.CALL_TYPE_CHANGED)]
+		public event EventHandler<StringEventArgs> OnCallTypeChanged;
+
+		/// <summary>
+		/// Raised when the dialing device adds or removes a call.
+		/// </summary>
+		[EventTelemetry(DialingTelemetryNames.CALL_NUMBER_CHANGED)]
+		public event EventHandler<StringEventArgs> OnCallNumberChanged;
 
 		/// <summary>
 		/// Gets whether the dialing device has a call in progress
 		/// </summary>
+		[PropertyTelemetry(DialingTelemetryNames.CALL_IN_PROGRESS, null, DialingTelemetryNames.CALL_IN_PROGRESS_CHANGED)]
 		public bool CallInProgress
 		{
-			get
-			{
-				if (m_Parent == null)
-					return false;
-
-				return m_Parent.GetConferences().SelectMany(c => c.GetOnlineParticipants()).Any();
-			}
+			get { return Parent != null && Parent.GetConferences().SelectMany(c => c.GetOnlineParticipants()).Any(); }
 		}
 
 		/// <summary>
 		/// Gets a comma separated list of the type of each active call on the dialer.
 		/// </summary>
+		[PropertyTelemetry(DialingTelemetryNames.CALL_TYPE, null, DialingTelemetryNames.CALL_TYPE_CHANGED)]
 		public string CallTypes
 		{
 			get
 			{
-				if (m_Parent == null)
+				if (Parent == null)
 					return null;
 
-				return string.Join(", ", m_Parent.GetConferences()
-				                                 .SelectMany(c => c.GetOnlineParticipants())
-				                                 .Select(s => s.CallType.ToString())
-				                                 .ToArray());
+				return string.Join(", ", Parent.GetConferences()
+				                               .SelectMany(c => c.GetOnlineParticipants())
+				                               .Select(s => s.CallType.ToString())
+				                               .ToArray());
 			}
 		}
 
 		/// <summary>
 		/// Gets a comma separated list of the type of each active call on the dialer.
 		/// </summary>
+		[PropertyTelemetry(DialingTelemetryNames.CALL_NUMBER, null, DialingTelemetryNames.CALL_NUMBER_CHANGED)]
 		public string CallNumbers
 		{
 			get
 			{
-				if (m_Parent == null)
+				if (Parent == null)
 					return null;
 
-				return string.Join(", ", m_Parent.GetConferences()
-				                                 .SelectMany(c => c.GetOnlineParticipants())
-				                                 .Select(p => GetInformationalNumber(p))
-				                                 .Except((string)null)
-				                                 .ToArray());
+				return string.Join(", ", Parent.GetConferences()
+				                               .SelectMany(c => c.GetOnlineParticipants())
+				                               .Select(p => GetInformationalNumber(p))
+				                               .Except((string)null)
+				                               .ToArray());
 			}
 		}
 
@@ -83,37 +92,46 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			throw new ArgumentException("Unexpected participant type", "participant");
 		}
 
-		public void SetParent(ITelemetryProvider provider)
+		/// <summary>
+		/// Subscribe to the parent events.
+		/// </summary>
+		/// <param name="parent"></param>
+		protected override void Subscribe(IConferenceDeviceControl parent)
 		{
-			if (!(provider is IConferenceDeviceControl))
-				throw new InvalidOperationException(
-					string.Format("Cannot create external telemetry for provider {0}, " +
-					              "Provider must be of type IDialingDeviceControl.", provider));
+			base.Subscribe(parent);
 
-			if (m_Parent != null)
-			{
-				m_Parent.OnConferenceAdded += ParentOnConferenceAddedOrRemoved;
-				m_Parent.OnConferenceRemoved += ParentOnConferenceAddedOrRemoved;
-			}
+			if (parent == null)
+				return;
 
-			m_Parent = (IConferenceDeviceControl)provider;
+			parent.OnConferenceAdded += ParentOnConferenceAddedOrRemoved;
+			parent.OnConferenceRemoved += ParentOnConferenceAddedOrRemoved;
+		}
 
-			if (m_Parent != null)
-			{
-				m_Parent.OnConferenceAdded -= ParentOnConferenceAddedOrRemoved;
-				m_Parent.OnConferenceRemoved -= ParentOnConferenceAddedOrRemoved;
-			}
+		/// <summary>
+		/// Unsubscribe from the parent events.
+		/// </summary>
+		/// <param name="parent"></param>
+		protected override void Unsubscribe(IConferenceDeviceControl parent)
+		{
+			base.Unsubscribe(parent);
+
+			if (parent == null)
+				return;
+
+			parent.OnConferenceAdded -= ParentOnConferenceAddedOrRemoved;
+			parent.OnConferenceRemoved -= ParentOnConferenceAddedOrRemoved;
 		}
 
 		/// <summary>
 		/// Forces all calls on the dialer to end.
 		/// </summary>
+		[MethodTelemetry(DialingTelemetryNames.END_CALL_COMMAND)]
 		public void EndCalls()
 		{
-			if (m_Parent == null)
+			if (Parent == null)
 				return;
 
-			foreach (IConference conference in m_Parent.GetConferences())
+			foreach (IConference conference in Parent.GetConferences())
 				EndConference(conference);
 		}
 
@@ -130,13 +148,10 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			}
 
 			IWebConference web = conference as IWebConference;
-			if (web != null)
-			{
-				web.LeaveConference();
-				return;
-			}
+			if (web == null)
+				throw new ArgumentException("Unexpected conference type", "conference");
 
-			throw new ArgumentException("Unexpected conference type", "conference");
+			web.LeaveConference();
 		}
 
 		private void ParentOnConferenceAddedOrRemoved(object sender, ConferenceEventArgs conferenceEventArgs)
