@@ -63,7 +63,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		/// <summary>
-		/// Raised when the camera is muted/unmuted.
+		/// Raised when the camera's mute state changes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
@@ -213,7 +213,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 					m_CameraMute = value;
 
-					Logger.LogSetTo(eSeverity.Informational, "Camera Enabled", m_CameraMute);
+					Logger.LogSetTo(eSeverity.Informational, "Camera Mute", m_CameraMute);
 				}
 				finally
 				{

@@ -114,7 +114,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 
 		/// <summary>
-		/// Raised when the camera's enabled state changes.
+		/// Raised when the camera's mute state changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
@@ -168,7 +168,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		bool DoNotDisturb { get; }
 
 		/// <summary>
-		/// Gets the current camera enabled state.
+		/// Gets the current camera mute state.
 		/// </summary>
 		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_CAMERA_MUTE, ConferenceDeviceControlApi.HELP_PROPERTY_CAMERA_MUTE)]
 		bool CameraMute { get; }
