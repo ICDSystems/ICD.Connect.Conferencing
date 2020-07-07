@@ -23,15 +23,18 @@ namespace ICD.Connect.Conferencing.Favorites
 		#region Properties
 
 		[PrimaryKey]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public int Id { get; set; }
 
 		/// <summary>
 		/// Gets/sets the name.
 		/// </summary>
 		[DataField]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public string Name { get; set; }
 
 		[ForeignKey]
+		[System.Reflection.Obfuscation(Exclude = true)]
 		public IEnumerable<FavoriteDialContext> DialContexts { get; set; }
 
 		#endregion

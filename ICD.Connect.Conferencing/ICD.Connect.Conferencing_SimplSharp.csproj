@@ -107,6 +107,7 @@
     <Compile Include="Controls\Dialing\IWebConferenceDeviceControl.cs" />
     <Compile Include="DialContexts\AbstractDialContext.cs" />
     <Compile Include="DialContexts\DialContext.cs" />
+    <Compile Include="DialContexts\DialContextEqualityComparer.cs" />
     <Compile Include="DialContexts\eDialProtocol.cs" />
     <Compile Include="DialContexts\IDialContext.cs" />
     <Compile Include="EventArguments\CallAnswerStateEventArgs.cs" />
@@ -137,9 +138,7 @@
     <Compile Include="Controls\Dialing\eDialContextSupport.cs" />
     <Compile Include="Controls\Dialing\DialingDeviceExternalTelemetryProvider.cs" />
     <Compile Include="Controls\Dialing\DialingTelemetryNames.cs" />
-    <Compile Include="Controls\Dialing\IDialingDeviceExternalTelemetryProvider.cs" />
     <Compile Include="Controls\Dialing\ISipDialingDeviceControl.cs" />
-    <Compile Include="Controls\Dialing\ISipDialingDeviceExternalTelemetryProvider.cs" />
     <Compile Include="Controls\Dialing\SipDialingDeviceExternalTelemetryProvider.cs" />
     <Compile Include="Controls\Directory\AbstractDirectoryControl.cs" />
     <Compile Include="Controls\Directory\DirectoryControlConsole.cs" />
@@ -196,7 +195,7 @@
     <Compile Include="EventArguments\ConferenceEventArgs.cs" />
     <Compile Include="Participants\ITraditionalParticipant.cs" />
     <Compile Include="Controls\Dialing\IConferenceDeviceControl.cs" />
-    <None Include="ObfuscationSettings.cs" />
+    <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Participants\ThinTraditionalParticipant.cs" />
     <Compile Include="Participants\EventHelpers\TraditionalParticipantEventHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -169,10 +169,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 	    {
 		    bool change = false;
 
-		    MeetingInfo[] meetings = m_BookingsComponent.GetMeetingInfos()
-		                                                .Where(b => b.End > IcdEnvironment.GetUtcTime())
-		                                                .Distinct()
-		                                                .ToArray();
+		    MeetingInfo[] meetings = m_BookingsComponent.GetMeetingInfos().ToArray();
 
 			m_CriticalSection.Enter();
 
