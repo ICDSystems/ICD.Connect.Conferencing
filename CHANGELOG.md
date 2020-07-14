@@ -7,17 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
- - Added DialContextEqualityComparer
  - Vaddio AV Bridge device driver
  - Added a ContentInput property for VideoConferenceRoutControls
  - Added three new flags to the eConferenceFeatures enum: CameraEnabled, Hold, & Dtmf. Implemented in conference controls where applicable.
  - Added a ConferenceManager extension method to return only the common set of supported conference features between all active dialers.
 
 ### Changed
+ - The CameraEnabled property has been moved from AbstractWebConferenceDeviceControl to AbstractConferenceControl
+
+## [17.1.0] - 2020-07-14
+### Added
+ - Added DialContextEqualityComparer
+
+### Changed
  - Fixed a bug where ORM members were being obfuscated
  - Zoom and Polycom return bookings for the full day
+ - Simplified external telemetry providers
  - Favorites are now managed through Favorite static methods
- - The CameraEnabled property has been moved from AbstractWebConferenceDeviceControl to AbstractConferenceControl
 
 ## [17.0.0] - 2020-06-18
 ### Added
