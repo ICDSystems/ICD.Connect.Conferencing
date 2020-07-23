@@ -207,7 +207,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <param name="xml"></param>
 		public void Parse(string xml)
 		{
-			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? false;
+			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? Connected;
 			Model = XmlUtils.TryReadChildElementContentAsString(xml, "Model") ?? string.Empty;
 			SerialNumber = XmlUtils.TryReadChildElementContentAsString(xml, "SerialNumber") ?? string.Empty;
 			SoftwareId = XmlUtils.TryReadChildElementContentAsString(xml, "SoftwareID") ?? string.Empty;
@@ -318,7 +318,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		[PublicAPI]
 		public void ActivatePreset(int presetIndex)
 		{
-			m_NearCamerasComponent.ActivatePreset(CameraId, presetIndex);
+			// offset the index by 1 to match the mapping in the component.
+			int offsetIndex = presetIndex - 1;
+			m_NearCamerasComponent.ActivatePreset(CameraId, offsetIndex);
 		}
 
 		/// <summary>
@@ -328,7 +330,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		[PublicAPI]
 		public void StorePreset(int presetIndex)
 		{
-			m_NearCamerasComponent.StorePreset(CameraId, presetIndex);
+			// offset the index by 1 to match the mapping in the component.
+			int offsetIndex = presetIndex - 1;
+			m_NearCamerasComponent.StorePreset(CameraId, offsetIndex);
 		}
 
 		/// <summary>
