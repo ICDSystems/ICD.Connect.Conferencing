@@ -555,6 +555,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 					  cameraId, whiteboardId);
 		}
 
+		[PublicAPI]
+		public void RemoveCameraPresets()
+		{
+			foreach (var presetId in m_CameraToPresets.SelectMany(cameraToPreset => cameraToPreset.Value))
+			{
+				Codec.SendCommand("xCommand Camera Preset Remove PresetId: {0}", presetId.Key);
+				m_Presets.Remove(presetId.Key);
+			}
+
+			m_CameraToPresets.Clear();
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -897,6 +909,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			yield return new GenericConsoleCommand<int>("ActivateSpeakerTrackWhiteboardPosition",
 			                                            "ActivateSpeakerTrackWhiteboardPosition <CameraId>",
 			                                            i => ActivateSpeakerTrackWhiteboardPosition(i));
+
+			yield return new ConsoleCommand("RemoveCameraPresets",
+			                                "Removes all camera presets",
+			                                () => RemoveCameraPresets());
 		}
 
 		/// <summary>
