@@ -282,9 +282,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public override IEnumerable<CameraPreset> GetPresets()
 		{
-			return m_CamerasComponent == null
+			return m_Camera == null
 				       ? Enumerable.Empty<CameraPreset>()
-				       : m_CamerasComponent.GetRemappedCameraPresets(CameraId);
+				       : m_Camera.GetPresets();
 		}
 
 		/// <summary>

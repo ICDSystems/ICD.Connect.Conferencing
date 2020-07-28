@@ -312,27 +312,32 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		}
 
 		/// <summary>
-		/// Activates the preset at the given index for this camera.
+		/// Gets the stored presets for this camera.
 		/// </summary>
-		/// <param name="presetIndex"></param>
 		[PublicAPI]
-		public void ActivatePreset(int presetIndex)
+		public IEnumerable<CameraPreset> GetPresets()
 		{
-			// offset the index by 1 to match the mapping in the component.
-			int offsetIndex = presetIndex - 1;
-			m_NearCamerasComponent.ActivatePreset(CameraId, offsetIndex);
+			return m_NearCamerasComponent.GetPresets(CameraId);
 		}
 
 		/// <summary>
-		/// Stores the current camera position as a preset with the given index.
+		/// Activates the preset at the given ID for this camera.
 		/// </summary>
-		/// <param name="presetIndex"></param>
+		/// <param name="presetId"></param>
 		[PublicAPI]
-		public void StorePreset(int presetIndex)
+		public void ActivatePreset(int presetId)
 		{
-			// offset the index by 1 to match the mapping in the component.
-			int offsetIndex = presetIndex - 1;
-			m_NearCamerasComponent.StorePreset(CameraId, offsetIndex);
+			m_NearCamerasComponent.ActivatePreset(CameraId, presetId);
+		}
+
+		/// <summary>
+		/// Stores the current camera position as a preset with the given ID.
+		/// </summary>
+		/// <param name="presetId"></param>
+		[PublicAPI]
+		public void StorePreset(int presetId)
+		{
+			m_NearCamerasComponent.StorePreset(CameraId, presetId);
 		}
 
 		/// <summary>
