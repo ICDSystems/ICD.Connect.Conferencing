@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -317,7 +319,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		[PublicAPI]
 		public IEnumerable<CameraPreset> GetPresets()
 		{
-			return m_NearCamerasComponent.GetPresets(CameraId);
+			return m_NearCamerasComponent.GetPresets()
+			                             .Where(p => p.CameraId == CameraId && p.Name.IsNumeric())
+			                             .Select(p => new CameraPreset(int.Parse(p.Name), "Preset " + p.Name))
+			                             .OrderBy(p => p.PresetId);
 		}
 
 		/// <summary>
@@ -327,17 +332,41 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		[PublicAPI]
 		public void ActivatePreset(int presetId)
 		{
-			m_NearCamerasComponent.ActivatePreset(CameraId, presetId);
+			int ciscoPresetId = GetCiscoPresetId(presetId);
+			m_NearCamerasComponent.ActivatePreset(CameraId, ciscoPresetId);
 		}
 
 		/// <summary>
-		/// Stores the current camera position as a preset with the given ID.
+		/// Stores the current camera position as a preset with the given ID as the name.
 		/// </summary>
 		/// <param name="presetId"></param>
 		[PublicAPI]
 		public void StorePreset(int presetId)
 		{
-			m_NearCamerasComponent.StorePreset(CameraId, presetId);
+			int ciscoPresetId = GetCiscoPresetId(presetId);
+			m_NearCamerasComponent.StorePreset(CameraId, presetId.ToString(), ciscoPresetId);
+		}
+
+		/// <summary>
+		/// Returns the existing cisco id for the given preset, otherwise returns the first unused preset.
+		/// </summary>
+		/// <param name="presetId"></param>
+		/// <returns></returns>
+		private int GetCiscoPresetId(int presetId)
+		{
+			IEnumerable<CiscoCameraPreset> allPresets = m_NearCamerasComponent.GetPresets().ToArray();
+
+			foreach (CiscoCameraPreset ciscoPreset in
+				allPresets.Where(ciscoPreset => ciscoPreset.CameraId == CameraId &&
+				                                ciscoPreset.Name == presetId.ToString()))
+				return ciscoPreset.PresetId;
+
+			IcdHashSet<int> usedIds = allPresets.Where(p => p.Name.IsNumeric()) // Overwrite non-numeric names
+			                                    .Select(p => p.PresetId)
+												.ToIcdHashSet();
+
+			return Enumerable.Range(1, int.MaxValue)
+			                 .First(i => !usedIds.Contains(i));
 		}
 
 		/// <summary>
