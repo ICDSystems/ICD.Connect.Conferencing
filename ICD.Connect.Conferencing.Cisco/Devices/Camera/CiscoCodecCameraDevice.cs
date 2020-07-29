@@ -286,9 +286,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public override IEnumerable<CameraPreset> GetPresets()
 		{
-			return m_CamerasComponent == null
+			return m_Camera == null
 				       ? Enumerable.Empty<CameraPreset>()
-				       : m_CamerasComponent.GetRemappedCameraPresets(CameraId);
+				       : m_Camera.GetPresets().Select(p => new CameraPreset(p.PresetId, p.Name));
 		}
 
 		/// <summary>
@@ -310,9 +310,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		}
 
 		/// <summary>
-		/// Stores the cameras current position in the given preset index.
+		/// Stores the cameras current position with the given presetId.
 		/// </summary>
-		/// <param name="presetId">The index to store the preset at.</param>
+		/// <param name="presetId"></param>
 		public override void StorePreset(int presetId)
 		{
 			if (m_Camera == null)
