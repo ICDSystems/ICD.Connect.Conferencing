@@ -10,7 +10,6 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Cameras;
 using ICD.Common.Logging.LoggingContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
@@ -66,10 +65,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public event EventHandler<IntEventArgs> OnSpeakerTrackWhiteboardDistanceChanged; 
 
 		private readonly IcdOrderedDictionary<int, NearCamera> m_Cameras;
-
-		// CameraId -> PresetId -> Preset
-		private readonly IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>> m_CameraToPresets;
-		private readonly IcdOrderedDictionary<int, CameraPreset> m_Presets;
+		private readonly IcdOrderedDictionary<int, CiscoCameraPreset> m_Presets;
 
 		private readonly SafeCriticalSection m_CamerasSection;
 		private readonly SafeCriticalSection m_PresetsSection;
@@ -245,11 +241,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// Constructor.
 		/// </summary>
 		/// <param name="codec"></param>
-		public NearCamerasComponent(CiscoCodecDevice codec) : base(codec)
+		public NearCamerasComponent(CiscoCodecDevice codec)
+			: base(codec)
 		{
 			m_Cameras = new IcdOrderedDictionary<int, NearCamera>();
-			m_CameraToPresets = new IcdOrderedDictionary<int, IcdOrderedDictionary<int, CameraPreset>>();
-			m_Presets = new IcdOrderedDictionary<int, CameraPreset>();
+			m_Presets = new IcdOrderedDictionary<int, CiscoCameraPreset>();
 
 			m_CamerasSection = new SafeCriticalSection();
 			m_PresetsSection = new SafeCriticalSection();
@@ -296,13 +292,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			try
 			{
-				NearCamera camera;
-				if (!m_Cameras.TryGetValue(cameraId, out camera))
-				{
-					camera = new NearCamera(cameraId, Codec);
-					m_Cameras[cameraId] = camera;
-				}
-				return camera;
+				return m_Cameras.GetOrAddNew(cameraId, () => new NearCamera(cameraId, Codec));
 			}
 			finally
 			{
@@ -330,95 +320,67 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			return GetCameras().Where(c => c.Connected);
 		}
 
-		/// <summary>
-		/// Gets the camera presets.
-		/// </summary>
-		/// <returns></returns>
-		[PublicAPI]
-		public IEnumerable<CameraPreset> GetCameraPresets()
+		public IEnumerable<CiscoCameraPreset> GetPresets()
 		{
 			return m_PresetsSection.Execute(() => m_Presets.Values.ToArray());
-		}
+		} 
 
 		/// <summary>
-		/// Gets the camera presets for the given camera.
+		/// Updates the list of presets.
 		/// </summary>
-		/// <param name="cameraId"></param>
-		/// <returns></returns>
-		[PublicAPI]
-		public IEnumerable<CameraPreset> GetCameraPresets(int cameraId)
+		public void ListPresets()
 		{
-			m_PresetsSection.Enter();
-
-			try
-			{
-				IcdOrderedDictionary<int, CameraPreset> presetMap;
-				return m_CameraToPresets.TryGetValue(cameraId, out presetMap)
-					? presetMap.Values.ToArray()
-					: Enumerable.Empty<CameraPreset>();
-			}
-			finally
-			{
-				m_PresetsSection.Leave();
-			}
-		}
-
-		/// <summary>
-		/// Gets the presets for the given camera id and remaps them starting from preset id 1.
-		/// </summary>
-		/// <param name="cameraId"></param>
-		/// <returns></returns>
-		public IEnumerable<CameraPreset> GetRemappedCameraPresets(int cameraId)
-		{
-			int newId = 1;
-			return GetCameraPresets(cameraId).OrderBy(p => p.PresetId)
-			                                 .Select(p => new CameraPreset(newId++, p.Name));
-		}
-
-		/// <summary>
-		/// Looks up the preset id for the camera id and preset index and activates it.
-		/// </summary>
-		/// <param name="cameraId"></param>
-		/// <param name="presetIndex"></param>
-		public void ActivatePreset(int cameraId, int presetIndex)
-		{
-			int presetId = GetPresetId(cameraId, presetIndex);
-			ActivatePresetById(presetId);
+			Codec.SendCommand("xCommand Camera Preset List");
 		}
 
 		/// <summary>
 		/// Activates the preset with the given id.
 		/// </summary>
+		/// <param name="cameraId"></param>
 		/// <param name="presetId"></param>
-		public void ActivatePresetById(int presetId)
+		public void ActivatePreset(int cameraId, int presetId)
 		{
+			Codec.Logger.Log(eSeverity.Informational, "Activating Preset {0} for Camera {1}", presetId, cameraId);
 			Codec.SendCommand("xCommand Camera Preset Activate PresetId: {0}", presetId);
-			Codec.Logger.Log(eSeverity.Informational, "Activating Preset {0}", presetId);
 		}
 
 		/// <summary>
-		/// Looks up the preset id for the camera id and preset index and stores it.
+		/// Removes the preset with the given id.
 		/// </summary>
-		/// <param name="cameraId"></param>
-		/// <param name="presetIndex"></param>
-		public void StorePreset(int cameraId, int presetIndex)
+		/// <param name="presetId"></param>
+		[PublicAPI]
+		public void RemovePreset(int presetId)
 		{
-			int presetId = GetPresetId(cameraId, presetIndex);
-			StorePresetById(cameraId, presetId);
+			Codec.Logger.Log(eSeverity.Informational, "Removing Preset {0}", presetId);
+			Codec.SendCommand("xCommand Camera Preset Remove PresetId: {0}", presetId);
+
+			ListPresets();
+		}
+
+		/// <summary>
+		/// Removes all of the camera presets.
+		/// </summary>
+		[PublicAPI]
+		public void RemovePresets()
+		{
+			IEnumerable<int> presetIds = m_CamerasSection.Execute(() => m_Presets.Keys.ToArray());
+
+			foreach (int presetId in presetIds)
+				RemovePreset(presetId);
 		}
 
 		/// <summary>
 		/// Stores the given camera position as the preset with the given id.
 		/// </summary>
 		/// <param name="cameraId"></param>
+		/// <param name="name"></param>
 		/// <param name="presetId"></param>
-		public void StorePresetById(int cameraId, int presetId)
+		public void StorePreset(int cameraId, string name, int presetId)
 		{
-			Codec.SendCommand("xCommand Camera Preset Store CameraId: {0} PresetId: \"{1}\"", cameraId, presetId);
 			Codec.Logger.Log(eSeverity.Informational, "Storing preset {0} for Camera {1}", presetId, cameraId);
+			Codec.SendCommand("xCommand Camera Preset Store CameraId: {0} PresetId: {1} Name: {2}", cameraId, presetId, name);
 
-			// Updates the presets
-			Codec.SendCommand("xCommand Camera Preset List");
+			ListPresets();
 		}
 
 		/// <summary>
@@ -561,54 +523,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		#region Private Methods
 
 		/// <summary>
-		/// Gets the existing preset id reserved for this camera at the given preset index,
-		/// or generates a new one if none has been assigned.
-		/// </summary>
-		/// <param name="cameraId"></param>
-		/// <param name="presetIndex"></param>
-		/// <returns></returns>
-		private int GetPresetId(int cameraId, int presetIndex)
-		{
-			m_PresetsSection.Enter();
-
-			try
-			{
-				IcdOrderedDictionary<int, CameraPreset> presetsMap;
-				int id;
-
-				if (m_CameraToPresets.TryGetValue(cameraId, out presetsMap) &&
-				    presetsMap.Keys.TryElementAt(presetIndex, out id))
-					return id;
-
-				return GetNextPresetId();
-			}
-			finally
-			{
-				m_PresetsSection.Leave();
-			}
-		}
-
-		private int GetNextPresetId()
-		{
-			m_PresetsSection.Enter();
-
-			try
-			{
-				return Enumerable.Range(1, int.MaxValue).First(i => !m_Presets.ContainsKey(i));
-			}
-			finally
-			{
-				m_PresetsSection.Leave();
-			}
-		}
-
-		/// <summary>
 		/// Instantiates a camera preset from a Preset element.
 		/// </summary>
 		/// <param name="xml"></param>
 		/// <param name="cameraId"></param>
 		/// <returns></returns>
-		private static CameraPreset CameraPresetFromXml(string xml, out int cameraId)
+		private static CiscoCameraPreset CameraPresetFromXml(string xml, out int cameraId)
 		{
 			cameraId = 0;
 
@@ -639,7 +559,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 					child.Dispose();
 				}
 
-				return new CameraPreset(presetId, name);
+				return new CiscoCameraPreset(cameraId, name, presetId);
 			}
 		}
 
@@ -655,7 +575,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			base.Initialize();
 
 			// Initial query to populate the camera presets
-			Codec.SendCommand("xCommand Camera Preset List");
+			ListPresets();
 		}
 
 		/// <summary>
@@ -748,22 +668,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 
 			try
 			{
-				m_CameraToPresets.Clear();
 				m_Presets.Clear();
 
 				foreach (string child in XmlUtils.GetChildElementsAsString(xml))
 				{
 					int cameraId;
-					CameraPreset preset = CameraPresetFromXml(child, out cameraId);
-
-					IcdOrderedDictionary<int, CameraPreset> cameraPresetsMap;
-					if (!m_CameraToPresets.TryGetValue(cameraId, out cameraPresetsMap))
-					{
-						cameraPresetsMap = new IcdOrderedDictionary<int, CameraPreset>();
-						m_CameraToPresets.Add(cameraId, cameraPresetsMap);
-					}
-
-					cameraPresetsMap.Add(preset.PresetId, preset);
+					CiscoCameraPreset preset = CameraPresetFromXml(child, out cameraId);
+                                       
 					m_Presets.Add(preset.PresetId, preset);
 
 					cameras.Add(cameraId);
@@ -898,6 +809,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 			yield return new GenericConsoleCommand<int>("ActivateSpeakerTrackWhiteboardPosition",
 			                                            "ActivateSpeakerTrackWhiteboardPosition <CameraId>",
 			                                            i => ActivateSpeakerTrackWhiteboardPosition(i));
+
+			yield return new ConsoleCommand("RemovePresets",
+			                                "Removes all camera presets",
+			                                () => RemovePresets());
 		}
 
 		/// <summary>

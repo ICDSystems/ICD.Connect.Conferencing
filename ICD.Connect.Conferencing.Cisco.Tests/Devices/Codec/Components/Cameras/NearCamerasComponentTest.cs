@@ -46,7 +46,7 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Cameras
 			Port.Receive(rX);
 
 			Assert.AreEqual(1, responses);
-			Assert.AreEqual(4, component.GetCameraPresets().Count());
+			Assert.AreEqual(4, component.GetPresets().Count());
 		}
 
 		[Test]
