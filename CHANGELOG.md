@@ -194,6 +194,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.10.1] - 2020-07-28
+### Changed
+ - CiscoCodecCamera - Storing and activating presets now works properly
+ - CiscoCodecCamera - Device online state is now properly updated
+
 ## [11.10.0] - 2020-04-30
 ### Added
  - CiscoCodecDevice - Added properties/parsing for SerialNumber and SoftwareVersionDate
