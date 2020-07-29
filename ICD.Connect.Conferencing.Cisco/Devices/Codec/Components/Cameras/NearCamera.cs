@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -207,7 +209,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <param name="xml"></param>
 		public void Parse(string xml)
 		{
-			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? false;
+			Connected = XmlUtils.TryReadChildElementContentAsBoolean(xml, "Connected") ?? Connected;
 			Model = XmlUtils.TryReadChildElementContentAsString(xml, "Model") ?? string.Empty;
 			SerialNumber = XmlUtils.TryReadChildElementContentAsString(xml, "SerialNumber") ?? string.Empty;
 			SoftwareId = XmlUtils.TryReadChildElementContentAsString(xml, "SoftwareID") ?? string.Empty;
@@ -312,23 +314,59 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		}
 
 		/// <summary>
-		/// Activates the preset at the given index for this camera.
+		/// Gets the stored presets for this camera.
 		/// </summary>
-		/// <param name="presetIndex"></param>
 		[PublicAPI]
-		public void ActivatePreset(int presetIndex)
+		public IEnumerable<CameraPreset> GetPresets()
 		{
-			m_NearCamerasComponent.ActivatePreset(CameraId, presetIndex);
+			return m_NearCamerasComponent.GetPresets()
+			                             .Where(p => p.CameraId == CameraId && p.Name.IsNumeric())
+			                             .Select(p => new CameraPreset(int.Parse(p.Name), "Preset " + p.Name))
+			                             .OrderBy(p => p.PresetId);
 		}
 
 		/// <summary>
-		/// Stores the current camera position as a preset with the given index.
+		/// Activates the preset at the given ID for this camera.
 		/// </summary>
-		/// <param name="presetIndex"></param>
+		/// <param name="presetId"></param>
 		[PublicAPI]
-		public void StorePreset(int presetIndex)
+		public void ActivatePreset(int presetId)
 		{
-			m_NearCamerasComponent.StorePreset(CameraId, presetIndex);
+			int ciscoPresetId = GetCiscoPresetId(presetId);
+			m_NearCamerasComponent.ActivatePreset(CameraId, ciscoPresetId);
+		}
+
+		/// <summary>
+		/// Stores the current camera position as a preset with the given ID as the name.
+		/// </summary>
+		/// <param name="presetId"></param>
+		[PublicAPI]
+		public void StorePreset(int presetId)
+		{
+			int ciscoPresetId = GetCiscoPresetId(presetId);
+			m_NearCamerasComponent.StorePreset(CameraId, presetId.ToString(), ciscoPresetId);
+		}
+
+		/// <summary>
+		/// Returns the existing cisco id for the given preset, otherwise returns the first unused preset.
+		/// </summary>
+		/// <param name="presetId"></param>
+		/// <returns></returns>
+		private int GetCiscoPresetId(int presetId)
+		{
+			IEnumerable<CiscoCameraPreset> allPresets = m_NearCamerasComponent.GetPresets().ToArray();
+
+			foreach (CiscoCameraPreset ciscoPreset in
+				allPresets.Where(ciscoPreset => ciscoPreset.CameraId == CameraId &&
+				                                ciscoPreset.Name == presetId.ToString()))
+				return ciscoPreset.PresetId;
+
+			IcdHashSet<int> usedIds = allPresets.Where(p => p.Name.IsNumeric()) // Overwrite non-numeric names
+			                                    .Select(p => p.PresetId)
+												.ToIcdHashSet();
+
+			return Enumerable.Range(1, int.MaxValue)
+			                 .First(i => !usedIds.Contains(i));
 		}
 
 		/// <summary>
