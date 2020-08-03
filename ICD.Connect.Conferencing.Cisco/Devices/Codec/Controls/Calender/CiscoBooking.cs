@@ -62,11 +62,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 	    {
 		    foreach (BookingCall call in m_Booking.GetCalls())
 		    {
-			    switch (call.Protocol.ToUpper())
-			    {
-				    case "SIP":
-					    yield return new DialContext {Protocol = eDialProtocol.Sip, DialString = call.Number};
-					    continue;
+				switch (call.Protocol.ToUpper())
+				{
+					case "SIP":
+						yield return new DialContext
+						{
+							Protocol = eDialProtocol.Sip,
+							DialString = call.Number,
+							CallType = call.CiscoCallType.ToCallType()
+						};
+						continue;
 			    }
 			}
 	    }
