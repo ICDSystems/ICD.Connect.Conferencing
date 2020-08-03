@@ -35,6 +35,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Removed IFavorites and SQLiteFavorites implementation
  - Removed redundant DialContext implementations
 
+## [16.0.1] - 2020-08-03
+### Changed
+ - Correctly parse the CallType for Cisco Bookings
+ - Can no longer use the Cisco to dial contexts with CallType unknown
+
 ## [16.0.0] - 2020-05-23
 ### Added
  - Added ConferenceHistory to the ConfernceManager, replacing recent calls
