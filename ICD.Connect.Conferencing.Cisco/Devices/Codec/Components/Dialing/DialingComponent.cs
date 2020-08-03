@@ -191,6 +191,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="callType"></param>
 		public void Dial(string number, eCallType callType)
 		{
+			if (callType == eCallType.Unknown)
+				throw new ArgumentOutOfRangeException("callType", "Cannot dial call with callType: Unknown");
+
 			Dial(number, eCiscoDialProtocol.Sip, callType);
 		}
 
@@ -207,6 +210,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		[PublicAPI]
 		public void Dial(string number, eCiscoDialProtocol protocol, eCallType callType)
 		{
+			if (callType == eCallType.Unknown)
+				throw new ArgumentOutOfRangeException("callType", "Cannot dial call with callType: Unknown");
+
 			CallComponent existing = GetCallComponents().Where(c => c.GetIsOnline()).FirstOrDefault();
 			if (existing != null)
 				existing.Hold();

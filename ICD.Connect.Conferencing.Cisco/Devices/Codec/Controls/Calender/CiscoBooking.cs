@@ -83,7 +83,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 			    switch (call.Protocol.ToUpper())
 			    {
 				    case "SIP":
-					    yield return new SipDialContext { DialString = call.Number };
+					    yield return new SipDialContext
+					    {
+						    DialString = call.Number,
+						    CallType = call.CiscoCallType.ToCallType()
+					    };
 					    continue;
 			    }
 			}
