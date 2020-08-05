@@ -15,6 +15,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
 using ICD.Connect.Devices.EventArguments;
+using ICD.Connect.Devices.Telemetry;
 using ICD.Connect.Settings;
 using ICD.Connect.Telemetry.Attributes;
 

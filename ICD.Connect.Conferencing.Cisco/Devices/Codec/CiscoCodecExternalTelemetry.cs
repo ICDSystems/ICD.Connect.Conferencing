@@ -3,6 +3,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Devices;
+using ICD.Connect.Devices.Telemetry;
 using ICD.Connect.Telemetry.Attributes;
 using ICD.Connect.Telemetry.Providers.External;
 
