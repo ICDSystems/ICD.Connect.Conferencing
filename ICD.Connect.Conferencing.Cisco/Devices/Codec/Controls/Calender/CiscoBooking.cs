@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using Booking = ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings.Booking;
 
