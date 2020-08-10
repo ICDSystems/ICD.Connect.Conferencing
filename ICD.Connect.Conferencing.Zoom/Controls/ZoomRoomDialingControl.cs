@@ -88,7 +88,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 			var meetingNumberMatch = Regex.Match(number, @"^\d{3}-?\d{3}-?\d{4}$");
 			if (meetingNumberMatch.Success)
 			{
-				Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", number);
+				Parent.SendCommand("zCommand Dial Join meetingNumber: {0}", number);
 				return;
 			}
 
