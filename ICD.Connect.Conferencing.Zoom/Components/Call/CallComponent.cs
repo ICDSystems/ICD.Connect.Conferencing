@@ -474,19 +474,19 @@ namespace ICD.Connect.Conferencing.Zoom.Components.Call
 		}
 
 		/// <summary>
-		/// Starts a new meeting with the given number.
+		/// Joins an existing meeting with the given number.
 		/// </summary>
 		/// <param name="meetingNumber"></param>
 		public void StartMeeting(string meetingNumber)
 		{
 			m_LastJoinNumber = meetingNumber;
 
-			Parent.Log(eSeverity.Debug, "Starting a meeting with number: {0}", meetingNumber);
-			Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", meetingNumber);
+			Parent.Log(eSeverity.Debug, "Joining a meeting with number: {0}", meetingNumber);
+			Parent.SendCommand("zCommand Dial Join meetingNumber: {0}", meetingNumber);
 		}
 
 		/// <summary>
-		/// Starts an existing meeting with the given number and password.
+		/// Joins an existing meeting with the given number and password.
 		/// </summary>
 		/// <param name="meetingNumber"></param>
 		/// <param name="meetingPassword"></param>
