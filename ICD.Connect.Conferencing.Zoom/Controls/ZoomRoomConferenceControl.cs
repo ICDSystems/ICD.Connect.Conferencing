@@ -125,7 +125,7 @@ namespace ICD.Connect.Conferencing.Zoom.Controls
 
 		private void StartMeeting(string meetingNumber)
 		{
-			Parent.SendCommand("zCommand Dial Start meetingNumber: {0}", meetingNumber);
+			Parent.SendCommand("zCommand Dial Join meetingNumber: {0}", meetingNumber);
 		}
 
 		private void JoinMeeting(string meetingNumber, string meetingPassword)
