@@ -238,6 +238,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added port configuration features to conferencing devices
 
+## [11.10.2] - 2020-08-10
+### Changed
+ - Fixed Zoom Room API regression where "Dial Start" became broken in Zoom Room 5.1.1 software
+
 ## [11.10.1] - 2020-07-28
 ### Changed
  - CiscoCodecCamera - Storing and activating presets now works properly
