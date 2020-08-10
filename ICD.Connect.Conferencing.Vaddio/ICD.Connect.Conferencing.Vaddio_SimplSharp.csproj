@@ -123,10 +123,6 @@
       <Project>{9512C0A5-F966-4AC6-9668-62C6F343B0CD}</Project>
       <Name>ICD.Connect.Telemetry_SimplSharp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ICD.Connect.Conferencing.Polycom\ICD.Connect.Conferencing.Polycom_SimplSharp.csproj">
-      <Project>{7CF948F3-D3D4-4102-835E-440D66D2AD35}</Project>
-      <Name>ICD.Connect.Conferencing.Polycom_SimplSharp</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ICD.Connect.Conferencing\ICD.Connect.Conferencing_SimplSharp.csproj">
       <Project>{1CCA89DA-1F1C-4997-A94F-ABCE878BD6DE}</Project>
       <Name>ICD.Connect.Conferencing_SimplSharp</Name>
