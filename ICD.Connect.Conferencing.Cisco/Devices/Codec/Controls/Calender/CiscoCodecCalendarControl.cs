@@ -53,6 +53,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 			m_BookingToCiscoBookings = new IcdOrderedDictionary<Booking, CiscoBooking>(s_BookingComparer);
 			m_CriticalSection = new SafeCriticalSection();
 
+			SupportedCalendarFeatures = eCalendarFeatures.ListBookings;
+
 			m_BookingsComponent = Parent.Components.GetComponent<BookingsComponent>();
 			Subscribe(m_BookingsComponent);
 		}

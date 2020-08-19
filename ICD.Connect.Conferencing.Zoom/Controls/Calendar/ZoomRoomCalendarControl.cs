@@ -55,7 +55,9 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 		    Subscribe(m_BookingsComponent);
 
 			m_RefreshTimer = new SafeTimer(Refresh, REFRESH_INTERVAL, REFRESH_INTERVAL);
-		}
+
+			SupportedCalendarFeatures = eCalendarFeatures.ListBookings | eCalendarFeatures.CheckIn;
+	    }
 
 		/// <summary>
 		/// Release resources.

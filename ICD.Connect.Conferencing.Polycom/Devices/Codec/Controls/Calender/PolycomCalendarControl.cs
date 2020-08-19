@@ -55,6 +55,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 		    m_MeetingInfoToBooking = new IcdOrderedDictionary<MeetingInfo, PolycomBooking>(s_MeetingInfoComparer);
 			m_CriticalSection = new SafeCriticalSection();
 
+			SupportedCalendarFeatures = eCalendarFeatures.ListBookings;
+
 		    m_BookingsComponent = Parent.Components.GetComponent<CalendarComponent>();
 		    Subscribe(m_BookingsComponent);
 		}

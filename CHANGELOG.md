@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Added a ContentInput property for VideoConferenceRoutControls
  - Added three new flags to the eConferenceFeatures enum: CameraEnabled, Hold, & Dtmf. Implemented in conference controls where applicable.
  - Added a ConferenceManager extension method to return only the common set of supported conference features between all active dialers.
+ - Added Supported Calendar Features enum property to Cisco/Polycom/Zoom Calendar Controls
 
 ### Changed
  - The CameraEnabled property has been moved from AbstractWebConferenceDeviceControl to AbstractConferenceControl
