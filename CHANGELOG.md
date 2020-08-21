@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [16.0.2] - 2020-08-21
 ### Changed
  - Refacored a small portion of ConferenceManagerHistory, making sure no events are raised within a critical section to prevent deadlocks.
 
