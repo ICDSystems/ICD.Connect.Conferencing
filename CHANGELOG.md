@@ -49,6 +49,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Removed IFavorites and SQLiteFavorites implementation
  - Removed redundant DialContext implementations
 
+## [16.0.2] - 2020-08-21
+### Changed
+ - Refacored a small portion of ConferenceManagerHistory, making sure no events are raised within a critical section to prevent deadlocks.
+
 ## [16.0.1] - 2020-08-03
 ### Changed
  - Correctly parse the CallType for Cisco Bookings
