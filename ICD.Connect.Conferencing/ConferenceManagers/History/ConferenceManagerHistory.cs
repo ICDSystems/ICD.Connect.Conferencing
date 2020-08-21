@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
-using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
@@ -41,7 +40,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 
 		private readonly BiDictionary<IIncomingCall, HistoricalIncomingConference> m_IncomingCallsMap;
 
-
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="manager"></param>
 		public ConferenceManagerHistory(ConferenceManager manager)
 		{
 			m_Manager = manager;
@@ -51,50 +53,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			m_IncomingCallsMap = new BiDictionary<IIncomingCall, HistoricalIncomingConference>();
 			m_HistorySection = new SafeCriticalSection();
 
-			Subscribe(m_ConferencesHistory);
-
 			m_Manager = manager;
 			Subscribe(m_Manager);
-
 		}
 
 		public IEnumerable<IHistoricalConference> GetHistory()
 		{
 			return m_HistorySection.Execute(() => m_ConferencesHistory.ToList(m_ConferencesHistory.Count));
 		}
-
-		#region ConferenceHistory Callbacks
-
-		private void Subscribe(ScrollQueue<IHistoricalConference> conferencesHistory)
-		{
-			if (conferencesHistory == null)
-				return;
-
-			conferencesHistory.OnItemTrimmed += ConferencesHistoryOnOnItemTrimmed;
-		}
-
-		/// <summary>
-		/// In the unlikely event a conference gets trimmed while it's still active, detach/remove it.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		private void ConferencesHistoryOnOnItemTrimmed(object sender, GenericEventArgs<IHistoricalConference> args)
-		{
-			// Be sure HistoricalConfereces are detached before removing them
-			HistoricalConference historicalConference = args.Data as HistoricalConference;
-			if (historicalConference != null)
-			{
-				DetachConference(historicalConference);
-			}
-
-			// Incoming calls are not added to the history before detached, so this is not necesary for them
-
-			OnHistoryItemsChanged.Raise(this);
-			OnConferenceRemoved.Raise(this, new HistoricalConferenceEventArgs(args.Data));
-
-		}
-
-		#endregion
 
 		#region ConferenceManager Callbacks
 
@@ -103,10 +69,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			if (manager == null)
 				return;
 
-			manager.Dialers.OnConferenceAdded += DialersOnOnConferenceAdded;
-			manager.Dialers.OnConferenceRemoved += DialersOnOnConferenceRemoved;
-			manager.Dialers.OnIncomingCallAdded += DialersOnOnIncomingCallAdded;
-			manager.Dialers.OnIncomingCallRemoved += DialersOnOnIncomingCallRemoved;
+			manager.Dialers.OnConferenceAdded += DialersOnConferenceAdded;
+			manager.Dialers.OnConferenceRemoved += DialersOnConferenceRemoved;
+			manager.Dialers.OnIncomingCallAdded += DialersOnIncomingCallAdded;
+			manager.Dialers.OnIncomingCallRemoved += DialersOnIncomingCallRemoved;
 		}
 
 		private void Unsubscribe(ConferenceManager manager)
@@ -114,28 +80,28 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			if (manager == null)
 				return;
 
-			manager.Dialers.OnConferenceAdded -= DialersOnOnConferenceAdded;
-			manager.Dialers.OnConferenceRemoved -= DialersOnOnConferenceRemoved;
-			manager.Dialers.OnIncomingCallAdded -= DialersOnOnIncomingCallAdded;
-			manager.Dialers.OnIncomingCallRemoved -= DialersOnOnIncomingCallRemoved;
+			manager.Dialers.OnConferenceAdded -= DialersOnConferenceAdded;
+			manager.Dialers.OnConferenceRemoved -= DialersOnConferenceRemoved;
+			manager.Dialers.OnIncomingCallAdded -= DialersOnIncomingCallAdded;
+			manager.Dialers.OnIncomingCallRemoved -= DialersOnIncomingCallRemoved;
 		}
 
-		private void DialersOnOnConferenceAdded(object sender, ConferenceEventArgs args)
+		private void DialersOnConferenceAdded(object sender, ConferenceEventArgs args)
 		{
 			AddConference(args.Data);
 		}
 
-		private void DialersOnOnConferenceRemoved(object sender, ConferenceEventArgs args)
+		private void DialersOnConferenceRemoved(object sender, ConferenceEventArgs args)
 		{
 			DetachConference(args.Data);
 		}
 
-		private void DialersOnOnIncomingCallAdded(object sender, ConferenceControlIncomingCallEventArgs args)
+		private void DialersOnIncomingCallAdded(object sender, ConferenceControlIncomingCallEventArgs args)
 		{
 			AddIncomingCall(args.IncomingCall);
 		}
 
-		private void DialersOnOnIncomingCallRemoved(object sender, ConferenceControlIncomingCallEventArgs args)
+		private void DialersOnIncomingCallRemoved(object sender, ConferenceControlIncomingCallEventArgs args)
 		{
 			ProcessIncomingCallRemoved(args.IncomingCall);
 		}
@@ -159,6 +125,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 				throw new ArgumentNullException("conference");
 
 			HistoricalConference historicalConference;
+			IHistoricalConference removed;
 
 			m_HistorySection.Enter();
 
@@ -166,17 +133,35 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			{
 				if (m_ActiveConferencesMap.ContainsKey(conference))
 					return;
+
 				historicalConference = new HistoricalConference(conference);
 				m_ActiveConferencesMap.Add(conference, historicalConference);
-				m_ConferencesHistory.Enqueue(historicalConference);
+
+				m_ConferencesHistory.Enqueue(historicalConference, out removed);
 			}
 			finally
 			{
 				m_HistorySection.Leave();
 			}
 
+			if (removed != null)
+				RemoveHistoricalConference(removed);
+
 			OnHistoryItemsChanged.Raise(this);
 			OnConferenceAdded.Raise(this, new HistoricalConferenceEventArgs(historicalConference));
+		}
+
+		/// <summary>
+		/// In the unlikely event a conference gets trimmed while it's still active, detach/remove it.
+		/// </summary>
+		private void RemoveHistoricalConference(IHistoricalConference removed)
+		{
+			// Be sure HistoricalConfereces are detached before removing them
+			DetachHistoricalConference(removed);
+
+			// Incoming calls are not added to the history before detached, so this is not necesary for them
+			OnHistoryItemsChanged.Raise(this);
+			OnConferenceRemoved.Raise(this, new HistoricalConferenceEventArgs(removed));
 		}
 
 		private void DetachConference([NotNull]IConference conference)
@@ -185,12 +170,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 				throw new ArgumentNullException("conference");
 
 			m_HistorySection.Enter();
+
 			try
 			{
 				HistoricalConference historicalConference;
 				if (m_ActiveConferencesMap.TryGetValue(conference, out historicalConference))
-					DetachConference(historicalConference);
-
+					DetachHistoricalConference(historicalConference);
 			}
 			finally
 			{
@@ -198,18 +183,24 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			}
 		}
 
-		private void DetachConference([NotNull] HistoricalConference conference)
+		private void DetachHistoricalConference([NotNull] IHistoricalConference conference)
 		{
 			if (conference == null)
 				throw new ArgumentNullException("conference");
 
 			m_HistorySection.Enter();
+
 			try
 			{
 				conference.Detach();
 
-				m_ActiveConferencesMap.RemoveValue(conference);
+				HistoricalConference historicalConference = conference as HistoricalConference;
+				if (historicalConference != null)
+					m_ActiveConferencesMap.RemoveValue(historicalConference);
 
+				HistoricalIncomingConference historicalIncomingConference = conference as HistoricalIncomingConference;
+				if (historicalIncomingConference != null)
+					m_IncomingCallsMap.RemoveValue(historicalIncomingConference);
 			}
 			finally
 			{
@@ -234,7 +225,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 					return;
 
 				m_IncomingCallsMap.Add(incomingCall, new HistoricalIncomingConference(incomingCall));
-
 			}
 			finally
 			{
@@ -248,6 +238,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 				throw new ArgumentNullException("incomingCall");
 
 			HistoricalIncomingConference historicalIncomingConference;
+			IHistoricalConference removed;
 
 			m_HistorySection.Enter();
 
@@ -265,12 +256,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 				    historicalIncomingConference.AnswerState == eCallAnswerState.AutoAnswered)
 					return;
 
-				m_ConferencesHistory.Enqueue(historicalIncomingConference);
+				m_ConferencesHistory.Enqueue(historicalIncomingConference, out removed);
 			}
 			finally
 			{
 				m_HistorySection.Leave();
 			}
+
+			if (removed != null)
+				RemoveHistoricalConference(removed);
 
 			//Raise events for this added
 			OnHistoryItemsChanged.Raise(this);
