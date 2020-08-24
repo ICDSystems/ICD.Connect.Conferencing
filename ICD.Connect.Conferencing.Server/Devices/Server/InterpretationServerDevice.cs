@@ -12,18 +12,18 @@ using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
-using ICD.Connect.Devices.Simpl;
+using ICD.Connect.Devices.CrestronSPlus.Devices.SPlus;
 using ICD.Connect.Protocol.EventArguments;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.Ports.Tcp;
 using ICD.Connect.Protocol.Network.RemoteProcedure;
 using ICD.Connect.Settings;
-using ICD.Connect.Settings.SPlusShims.EventArguments;
+using ICD.Connect.Settings.CrestronSPlus.SPlusShims.EventArguments;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
 	[PublicAPI]
-	public sealed class InterpretationServerDevice : AbstractSimplDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
+	public sealed class InterpretationServerDevice : AbstractSPlusDevice<InterpretationServerDeviceSettings>, IInterpretationServerDevice
 	{
 		public event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
 		public event EventHandler<InterpretationRoomInfoArgs> OnRoomAdded;

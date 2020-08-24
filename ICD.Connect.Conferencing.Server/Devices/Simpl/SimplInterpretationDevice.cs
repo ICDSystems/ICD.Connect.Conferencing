@@ -4,12 +4,12 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Connect.Devices.Simpl;
-using ICD.Connect.Settings.SPlusShims.EventArguments;
+using ICD.Connect.Devices.CrestronSPlus.Devices.SPlus;
+using ICD.Connect.Settings.CrestronSPlus.SPlusShims.EventArguments;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
-	public sealed class SimplInterpretationDevice : AbstractSimplDevice<SimplInterpretationDeviceSettings>, ISimplInterpretationDevice
+	public sealed class SimplInterpretationDevice : AbstractSPlusDevice<SimplInterpretationDeviceSettings>, ISimplInterpretationDevice
 	{
 		public event EventHandler<ParticipantEventArgs> OnSourceAdded;
 		public event EventHandler<ParticipantEventArgs> OnSourceRemoved;

@@ -5,7 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Server.Devices.Server;
-using ICD.Connect.Settings.SPlusShims;
+using ICD.Connect.Settings.CrestronSPlus.SPlusShims;
 
 namespace ICD.Connect.Conferencing.Server.SimplShims
 {

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using ICD.Common.Properties;
-using ICD.Connect.Devices.Simpl;
+using ICD.Connect.Devices.CrestronSPlus.Devices.SPlus;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Server
 {
-	public interface IInterpretationServerDevice : ISimplDevice
+	public interface IInterpretationServerDevice : ISPlusDevice
 	{
 		event EventHandler<InterpretationStateEventArgs> OnInterpretationStateChanged;
 		event EventHandler<InterpretationRoomInfoArgs> OnRoomAdded;

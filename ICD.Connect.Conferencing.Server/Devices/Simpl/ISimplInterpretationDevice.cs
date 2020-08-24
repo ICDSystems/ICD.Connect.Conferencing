@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Connect.Devices.Simpl;
-using ICD.Connect.Settings.SPlusShims.EventArguments;
+using ICD.Connect.Devices.CrestronSPlus.Devices.SPlus;
+using ICD.Connect.Settings.CrestronSPlus.SPlusShims.EventArguments;
 
 namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 	public delegate void SimplDialerSetDoNotDisturbCallback(ISimplInterpretationDevice sender, ushort enabled);
 	public delegate void SimplDialerSetPrivacyMuteCallback(ISimplInterpretationDevice sender, ushort enabled);
 
-	public interface ISimplInterpretationDevice : ISimplDevice
+	public interface ISimplInterpretationDevice : ISPlusDevice
 	{
 		event EventHandler<ParticipantEventArgs> OnSourceAdded;
 		event EventHandler<ParticipantEventArgs> OnSourceRemoved;

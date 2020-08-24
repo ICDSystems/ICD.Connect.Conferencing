@@ -7,8 +7,8 @@ using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
-using ICD.Connect.Devices.SPlusShims;
-using ICD.Connect.Settings.SPlusShims.EventArguments;
+using ICD.Connect.Devices.CrestronSPlus.SPlusShims;
+using ICD.Connect.Settings.CrestronSPlus.SPlusShims.EventArguments;
 #if SIMPLSHARP
 using ICDPlatformString = Crestron.SimplSharp.SimplSharpString;
 #else
