@@ -88,6 +88,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 		    return m_CriticalSection.Execute(() => m_MeetingInfoToBooking.Values.ToArray(m_MeetingInfoToBooking.Count));
 	    }
 
+		public override void PushBooking(IBooking booking)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void EditBooking(IBooking oldBooking, IBooking newBooking)
+		{
+			throw new NotSupportedException();
+		}
+
 		public override bool CanCheckIn(IBooking booking)
 		{
 			return false;

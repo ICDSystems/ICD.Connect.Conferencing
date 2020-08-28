@@ -86,6 +86,16 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Calendar
 			return m_CriticalSection.Execute(() => m_BookingToZoomBooking.Values.ToArray(m_BookingToZoomBooking.Count));
 	    }
 
+		public override void PushBooking(IBooking booking)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void EditBooking(IBooking oldBooking, IBooking newBooking)
+		{
+			throw new NotSupportedException();
+		}
+
 		/// <summary>
 		/// Returns true if the booking argument can be checked in.
 		/// </summary>
