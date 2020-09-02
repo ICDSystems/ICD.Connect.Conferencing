@@ -1,5 +1,4 @@
 ﻿using System;
-using ICD.Common.Logging.Activities;
 using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -30,9 +29,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep
 				m_Awake = value;
 
 				Codec.Logger.LogSetTo(eSeverity.Informational, "Awake", m_Awake);
-				Codec.Activities.LogActivity(m_Awake
-					                         ? new Activity(Activity.ePriority.Low, "Awake", "Awake", eSeverity.Informational)
-					                         : new Activity(Activity.ePriority.High, "Awake", "Asleep", eSeverity.Informational));
 
 				OnAwakeStateChanged.Raise(this, new BoolEventArgs(m_Awake));
 			}

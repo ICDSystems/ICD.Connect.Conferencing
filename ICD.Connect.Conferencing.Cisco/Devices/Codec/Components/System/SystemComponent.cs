@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Logging.Activities;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -230,9 +229,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 				m_Awake = value;
 
 				Codec.Logger.LogSetTo(eSeverity.Informational, "Awake", m_Awake);
-				Codec.Activities.LogActivity(m_Awake
-					                         ? new Activity(Activity.ePriority.Low, "Awake", "Awake", eSeverity.Informational)
-					                         : new Activity(Activity.ePriority.High, "Awake", "Asleep", eSeverity.Informational));
 
 				OnAwakeStateChanged.Raise(this, new BoolEventArgs(m_Awake));
 			}
