@@ -25,8 +25,6 @@
     <None Remove="SIMPLSharpLogs\**" />
   </ItemGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
     <None Remove=".gitignore" />
     <None Remove="ICD.Connect.Conferencing.Server_SimplSharp.suo" />
     <None Remove="ICD.Connect.Conferencing.projectinfo" />
@@ -34,9 +32,11 @@
     <None Remove="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ICD.Connect.Devices\ICD.Connect.Devices.CrestronSPlus\ICD.Connect.Devices.CrestronSPlus_NetStandard.csproj" />
     <ProjectReference Include="..\..\ICD.Connect.Devices\ICD.Connect.Devices\ICD.Connect.Devices_NetStandard.csproj" />
     <ProjectReference Include="..\..\ICD.Connect.Protocol\ICD.Connect.Protocol.Network\ICD.Connect.Protocol.Network_NetStandard.csproj" />
     <ProjectReference Include="..\..\ICD.Connect.Protocol\ICD.Connect.Protocol\ICD.Connect.Protocol_NetStandard.csproj" />
+    <ProjectReference Include="..\..\ICD.Connect.Settings\ICD.Connect.Settings.CrestronSPlus\ICD.Connect.Settings.CrestronSPlus_NetStandard.csproj" />
     <ProjectReference Include="..\ICD.Connect.Conferencing\ICD.Connect.Conferencing_NetStandard.csproj" />
   </ItemGroup>
 
