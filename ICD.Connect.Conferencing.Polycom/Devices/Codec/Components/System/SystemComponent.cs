@@ -2,9 +2,9 @@
 using System.Text.RegularExpressions;
 using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Comparers;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Settings.Comparers;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.System
 {
