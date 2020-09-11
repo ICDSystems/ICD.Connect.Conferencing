@@ -149,11 +149,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 					m_PrivacyMuted = value;
 
 					Logger.LogSetTo(eSeverity.Informational, "PrivacyMuted", m_PrivacyMuted);
-					Activities.LogActivity(ConferenceDeviceControlActivities.GetPrivacyMuteActivity(m_PrivacyMuted));
 				}
 				finally
 				{
 					m_StateSection.Leave();
+
+					Activities.LogActivity(ConferenceDeviceControlActivities.GetPrivacyMuteActivity(m_PrivacyMuted));
 				}
 
 				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMuted));
@@ -219,6 +220,9 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			: base(parent, id)
 		{
 			m_StateSection = new SafeCriticalSection();
+
+			// Initialize activities
+			PrivacyMuted = false;
 		}
 
 		/// <summary>
@@ -231,6 +235,9 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			: base(parent, id, uuid)
 		{
 			m_StateSection = new SafeCriticalSection();
+
+			// Initialize activities
+			PrivacyMuted = false;
 		}
 
 		/// <summary>

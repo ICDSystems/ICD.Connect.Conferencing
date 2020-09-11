@@ -100,17 +100,23 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			get { return m_Initialized; }
 			private set
 			{
-				if (value == m_Initialized)
-					return;
+				try
+				{
+					if (value == m_Initialized)
+						return;
 
-				m_Initialized = value;
+					m_Initialized = value;
 
-				Logger.LogSetTo(eSeverity.Informational, "Initialized", m_Initialized);
-				Activities.LogActivity(m_Initialized
-					                   ? new Activity(Activity.ePriority.Low, "Initialized", "Initialized", eSeverity.Informational)
-					                   : new Activity(Activity.ePriority.High, "Initialized", "Not Initialized", eSeverity.Warning));
+					Logger.LogSetTo(eSeverity.Informational, "Initialized", m_Initialized);
 
-				OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
+					OnInitializedChanged.Raise(this, new BoolEventArgs(m_Initialized));
+				}
+				finally
+				{
+					Activities.LogActivity(m_Initialized
+						                       ? new Activity(Activity.ePriority.Low, "Initialized", "Initialized", eSeverity.Informational)
+						                       : new Activity(Activity.ePriority.High, "Initialized", "Not Initialized", eSeverity.Warning));
+				}
 			}
 		}
 
@@ -161,6 +167,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnSerialDataReceived += PortOnSerialDataReceived;
+
+			// Initialize activities
+			Initialized = false;
 		}
 
 		#endregion

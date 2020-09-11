@@ -88,22 +88,26 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			get { return m_IsConnected; }
 			private set
 			{
-				if (value == m_IsConnected)
-					return;
+				try
+				{
+					if (value == m_IsConnected)
+						return;
 
-				m_IsConnected = value;
+					m_IsConnected = value;
 
-				eSeverity severity = m_IsConnected ? eSeverity.Informational : eSeverity.Error;
+					Logger.LogSetTo(m_IsConnected ? eSeverity.Informational : eSeverity.Error, "IsConnected", m_IsConnected);
 
-				Logger.LogSetTo(severity, "IsConnected", m_IsConnected);
-				Activities.LogActivity(m_IsConnected
-					? new Activity(Activity.ePriority.Low, "Connected", "Connected To Server", severity)
-					: new Activity(Activity.ePriority.High, "Connected", "Not Connected To Server", severity));
+					UpdateCachedOnlineStatus();
 
-				UpdateCachedOnlineStatus();
-
-				if (m_IsConnected)
-					Register();
+					if (m_IsConnected)
+						Register();
+				}
+				finally
+				{
+					Activities.LogActivity(m_IsConnected
+						? new Activity(Activity.ePriority.Low, "Connected", "Connected To Server", eSeverity.Informational)
+						: new Activity(Activity.ePriority.High, "Connected", "Not Connected To Server", eSeverity.Error));
+				}
 			}
 		}
 
@@ -169,6 +173,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#endregion
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
 		public InterpretationClientDevice()
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
@@ -179,6 +186,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectedStateChanged;
+
+			// Initialize activities
+			IsConnected = false;
 		}
 
 		protected override void DisposeFinal(bool disposing)
