@@ -3,7 +3,6 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Sleep;
-using ICD.Connect.Devices.Controls;
 using ICD.Connect.Devices.Controls.Power;
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Camera
