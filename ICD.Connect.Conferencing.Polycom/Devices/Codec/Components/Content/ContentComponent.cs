@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Logging.Activities;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -52,9 +51,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Content
 				m_PresentationActive = value;
 
 				Codec.Logger.LogSetTo(eSeverity.Informational, "PresentationActive", m_PresentationActive);
-				Codec.Activities.LogActivity(m_PresentationActive
-					? new Activity(Activity.ePriority.Medium, "Presentation", "Presenting", eSeverity.Informational)
-					: new Activity(Activity.ePriority.Lowest, "Presentation", "Not Presenting", eSeverity.Informational));
 
 				OnPresentationActiveChanged.Raise(this, new PresentationActiveEventArgs(m_PresentationActive));
 			}

@@ -55,19 +55,25 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 			get { return m_PresentationActive; }
 			protected set
 			{
-				if (value == m_PresentationActive)
-					return;
+				try
+				{
+					if (value == m_PresentationActive)
+						return;
 
-				m_PresentationActive = value;
+					m_PresentationActive = value;
 
-				Logger.LogSetTo(eSeverity.Informational, "PresentationActive", m_PresentationActive);
-				Activities.LogActivity(m_PresentationActive
-					                   ? new Activity(Activity.ePriority.Medium, "Presentation Active", "Presentation Active",
-					                                  eSeverity.Informational)
-					                   : new Activity(Activity.ePriority.Lowest, "Presentation Active", "Presentation Inactive",
-					                                  eSeverity.Informational));
+					Logger.LogSetTo(eSeverity.Informational, "PresentationActive", m_PresentationActive);
 
-				OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
+					OnPresentationActiveChanged.Raise(this, new PresentationActiveApiEventArgs(m_PresentationActive));
+				}
+				finally
+				{
+					Activities.LogActivity(m_PresentationActive
+					   ? new Activity(Activity.ePriority.Medium, "Presentation Active", "Presentation Active",
+									  eSeverity.Informational)
+					   : new Activity(Activity.ePriority.Lowest, "Presentation Active", "Presentation Inactive",
+									  eSeverity.Informational));
+				}
 			}
 		}
 
@@ -79,6 +85,21 @@ namespace ICD.Connect.Conferencing.Controls.Presentation
 		protected AbstractPresentationControl(TDevice parent, int id)
 			: base(parent, id)
 		{
+			// Initialize activities
+			PresentationActive = false;
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		/// <param name="uuid"></param>
+		protected AbstractPresentationControl(TDevice parent, int id, Guid uuid)
+			: base(parent, id, uuid)
+		{
+			// Initialize activities
+			PresentationActive = false;
 		}
 
 		/// <summary>

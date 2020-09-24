@@ -76,13 +76,14 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 					m_CallLock = value;
 
 					Logger.LogSetTo(eSeverity.Informational, "CallLock", eSeverity.Informational);
-					Activities.LogActivity(m_CallLock
-						? new Activity(Activity.ePriority.Medium, "Call Lock", "Call Lock Enabled", eSeverity.Informational)
-						: new Activity(Activity.ePriority.Low, "Call Lock", "Call Lock Disabled", eSeverity.Informational));
 				}
 				finally
 				{
 					m_StateSection.Leave();
+
+					Activities.LogActivity(m_CallLock
+						? new Activity(Activity.ePriority.Medium, "Call Lock", "Call Lock Enabled", eSeverity.Informational)
+						: new Activity(Activity.ePriority.Low, "Call Lock", "Call Lock Disabled", eSeverity.Informational));
 				}
 
 				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
@@ -100,6 +101,24 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			: base(parent, id)
 		{
 			m_StateSection = new SafeCriticalSection();
+
+			// Initialize activities
+			CallLock = false;
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		/// <param name="uuid"></param>
+		protected AbstractWebConferenceDeviceControl(T parent, int id, Guid uuid)
+			: base(parent, id, uuid)
+		{
+			m_StateSection = new SafeCriticalSection();
+
+			// Initialize activities
+			CallLock = false;
 		}
 
 		/// <summary>

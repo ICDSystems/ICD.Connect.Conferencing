@@ -1,5 +1,4 @@
 ﻿using System;
-using ICD.Common.Logging.Activities;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
@@ -92,10 +91,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 				m_SipRegistration = value;
 
 				m_Codec.Logger.LogSetTo(eSeverity.Informational, "SIP Registration " + m_Item, m_SipRegistration);
-				m_Codec.Activities.LogActivity(m_SipRegistration == eRegState.Failed
-					? new Activity(Activity.ePriority.High, "SIP Registration " + m_Item, string.Format("SIP Registration {0} Failed", m_Item), eSeverity.Error)
-					: new Activity(Activity.ePriority.Low, "SIP Registration " + m_Item, string.Format("SIP Registration {0} is {1}", m_Item, m_SipRegistration), eSeverity.Informational));
-				
+
 				OnRegistrationChange.Raise(this, new RegistrationEventArgs(m_SipRegistration));
 			}
 		}

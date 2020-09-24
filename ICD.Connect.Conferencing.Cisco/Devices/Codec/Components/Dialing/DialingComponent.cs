@@ -12,7 +12,6 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
-using ICD.Common.Logging.Activities;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {
@@ -120,11 +119,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				m_PrivacyMuted = value;
 
 				Codec.Logger.LogSetTo(eSeverity.Informational, "PrivacyMuted", m_PrivacyMuted);
-				Codec.Activities.LogActivity(m_PrivacyMuted
-					                         ? new Activity(Activity.ePriority.Medium, "Privacy Muted", "Privacy Mute Enabled",
-					                                        eSeverity.Informational)
-					                         : new Activity(Activity.ePriority.Low, "Privacy Muted", "Privacy Mute Disabled",
-					                                        eSeverity.Informational));
 
 				OnPrivacyMuteChanged.Raise(this, new BoolEventArgs(m_PrivacyMuted));
 			}
