@@ -43,6 +43,11 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 		/// </summary>
 		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
 
+		/// <summary>
+		/// Raised when the conference's call type changes.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
+
 		private readonly IcdOrderedDictionary<string, ZoomWebParticipant> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 

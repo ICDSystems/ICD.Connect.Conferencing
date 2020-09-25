@@ -793,6 +793,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnStatusChanged += ConferenceOnStatusChanged;
 			conference.OnParticipantAdded += ConferenceOnParticipantAdded;
 			conference.OnParticipantRemoved += ConferenceOnParticipantRemoved;
+			conference.OnCallTypeChanged += ConferenceOnCallTypeChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Subscribe(participant);
@@ -810,6 +811,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnStatusChanged -= ConferenceOnStatusChanged;
 			conference.OnParticipantAdded -= ConferenceOnParticipantAdded;
 			conference.OnParticipantRemoved -= ConferenceOnParticipantRemoved;
+			conference.OnCallTypeChanged -= ConferenceOnCallTypeChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Unsubscribe(participant);
@@ -847,6 +849,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			Unsubscribe(args.Data);
 			UpdateIsInCall();
 			OnConferenceParticipantAddedOrRemoved.Raise(this, new ConferenceParticipantAddedOrRemovedEventArgs(conference, false, args.Data));
+		}
+
+		private void ConferenceOnCallTypeChanged(object sender, GenericEventArgs<eCallType> e)
+		{
+			UpdateIsInCall();
 		}
 
 		#endregion

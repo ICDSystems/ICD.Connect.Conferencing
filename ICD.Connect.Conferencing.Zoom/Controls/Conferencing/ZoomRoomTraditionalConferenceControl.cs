@@ -62,6 +62,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 
 			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;
 			SupportedConferenceFeatures |= eConferenceFeatures.Dtmf;
+			SupportedConferenceFeatures |= eConferenceFeatures.CanDial;
+			SupportedConferenceFeatures |= eConferenceFeatures.CanEnd;
 
 			Subscribe(m_CallComponent);
 			Subscribe(m_TraditionalCallComponent);

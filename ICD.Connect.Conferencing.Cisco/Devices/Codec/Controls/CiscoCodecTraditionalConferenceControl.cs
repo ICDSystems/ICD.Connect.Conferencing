@@ -94,7 +94,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			SupportedConferenceFeatures =
 				eConferenceFeatures.AutoAnswer |
 				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute;
+				eConferenceFeatures.PrivacyMute |
+				eConferenceFeatures.CanDial |
+				eConferenceFeatures.CanEnd;
 
 			Subscribe(m_DialingComponent);
 			Subscribe(m_SystemComponent);

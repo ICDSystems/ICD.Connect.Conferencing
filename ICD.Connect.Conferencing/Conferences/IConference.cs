@@ -37,6 +37,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
 
+		/// <summary>
+		/// Raised when the conference's call type changes.
+		/// </summary>
+		event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
+
 		#region Properties
 
 		/// <summary>

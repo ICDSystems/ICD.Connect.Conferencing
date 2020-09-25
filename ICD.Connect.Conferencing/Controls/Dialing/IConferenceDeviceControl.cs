@@ -49,7 +49,17 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Supports the use of dual-tone multi-frequency signaling in active conferences.
 		/// </summary>
-		Dtmf = 32
+		Dtmf = 32,
+
+		/// <summary>
+		/// Supports the ability to dial conferences.
+		/// </summary>
+		CanDial = 64,
+
+		/// <summary>
+		/// Supports the ability to end conferences.
+		/// </summary>
+		CanEnd = 128
 	}
 
 	/// <summary>

@@ -41,6 +41,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
 
+		/// <summary>
+		/// Raised when the conference's call type changes.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
+
 		private readonly IcdHashSet<T> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
@@ -322,6 +327,7 @@ namespace ICD.Connect.Conferencing.Conferences
 			participant.OnStatusChanged += ParticipantOnStatusChanged;
 			participant.OnStartTimeChanged += ParticipantOnOnStartTimeChanged;
 			participant.OnEndTimeChanged += ParticipantOnOnEndTimeChanged;
+			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
 		}
 
 		/// <summary>
@@ -333,6 +339,7 @@ namespace ICD.Connect.Conferencing.Conferences
 			participant.OnStatusChanged -= ParticipantOnStatusChanged;
 			participant.OnStartTimeChanged -= ParticipantOnOnStartTimeChanged;
 			participant.OnEndTimeChanged -= ParticipantOnOnEndTimeChanged;
+			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
 		}
 
 		/// <summary>
@@ -353,6 +360,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		private void ParticipantOnOnEndTimeChanged(object sender, DateTimeNullableEventArgs e)
 		{
 			UpdateEndTime();
+		}
+
+		private void ParticipantOnParticipantTypeChanged(object sender, CallTypeEventArgs e)
+		{
+			OnCallTypeChanged.Raise(this, new GenericEventArgs<eCallType>(e.Data));
 		}
 
 		#endregion

@@ -114,6 +114,8 @@ namespace ICD.Connect.Conferencing.Zoom.Controls.Conferencing
 			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;
 			SupportedConferenceFeatures |= eConferenceFeatures.PrivacyMute;
 			SupportedConferenceFeatures |= eConferenceFeatures.CameraMute;
+			SupportedConferenceFeatures |= eConferenceFeatures.CanDial;
+			SupportedConferenceFeatures |= eConferenceFeatures.CanEnd;
 
 			Subscribe(m_CallComponent);
 			Subscribe(m_SystemComponent);

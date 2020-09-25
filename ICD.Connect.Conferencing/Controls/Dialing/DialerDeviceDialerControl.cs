@@ -22,7 +22,9 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			SupportedConferenceFeatures =
 				eConferenceFeatures.AutoAnswer |
 				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute;
+				eConferenceFeatures.PrivacyMute |
+				eConferenceFeatures.CanDial |
+				eConferenceFeatures.CanEnd;
 		}
 
 		protected override void Subscribe(IDialerDevice parent)

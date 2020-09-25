@@ -25,7 +25,9 @@ namespace ICD.Connect.Conferencing.Mock
 				eConferenceFeatures.PrivacyMute |
 				eConferenceFeatures.CameraMute |
 				eConferenceFeatures.Hold |
-				eConferenceFeatures.Dtmf;
+				eConferenceFeatures.Dtmf |
+				eConferenceFeatures.CanDial |
+				eConferenceFeatures.CanEnd;
 
 			parent.OnParticipantAdded += ParentOnParticipantAdded;
 			parent.OnParticipantRemoved += ParentOnParticipantRemoved;
