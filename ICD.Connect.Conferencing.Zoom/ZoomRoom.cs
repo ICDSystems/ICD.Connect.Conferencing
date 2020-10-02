@@ -287,7 +287,7 @@ namespace ICD.Connect.Conferencing.Zoom
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			m_ConnectionStateManager.SetPort(port);
+			m_ConnectionStateManager.SetPort(port, false);
 		}
 
 		/// <summary>
@@ -721,7 +721,18 @@ namespace ICD.Connect.Conferencing.Zoom
             }
 		}
 
-        #endregion
+		/// <summary>
+		/// Override to add actions on StartSettings
+		/// This should be used to start communications with devices and perform initial actions
+		/// </summary>
+		protected override void StartSettingsFinal()
+		{
+			base.StartSettingsFinal();
+
+			m_ConnectionStateManager.Start();
+		}
+
+		#endregion
 
 		#region Console
 
