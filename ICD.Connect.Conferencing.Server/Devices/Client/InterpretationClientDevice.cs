@@ -20,7 +20,6 @@ using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Conferencing.Utils;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
-using ICD.Connect.Protocol;
 using ICD.Connect.Protocol.Extensions;
 using ICD.Connect.Protocol.Network.Attributes.Rpc;
 using ICD.Connect.Protocol.Network.Ports;
@@ -69,7 +68,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		private readonly ClientSerialRpcController m_RpcController;
 		private readonly BiDictionary<Guid, ThinTraditionalParticipant> m_Sources;
-		private readonly ConnectionStateManager m_ConnectionStateManager;
 		private readonly SafeCriticalSection m_SourcesCriticalSection;
 
 		private bool m_IsConnected;
@@ -183,9 +181,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_Sources = new BiDictionary<Guid, ThinTraditionalParticipant>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
 
-			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
-			m_ConnectionStateManager.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
-			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectedStateChanged;
+			m_RpcController.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
+			m_RpcController.OnConnectedStateChanged += PortOnConnectedStateChanged;
 
 			// Initialize activities
 			IsConnected = false;
@@ -204,10 +201,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			base.DisposeFinal(disposing);
 
-			m_ConnectionStateManager.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
-			m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectedStateChanged;
-			m_ConnectionStateManager.Dispose();
-
+			m_RpcController.OnIsOnlineStateChanged -= PortOnIsOnlineStateChanged;
+			m_RpcController.OnConnectedStateChanged -= PortOnConnectedStateChanged;
 			m_RpcController.Dispose();
 		}
 
@@ -454,19 +449,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			participant.HangupCallback = null;
 		}
 
-		private void ParticipantOnCallAnswered(ThinTraditionalParticipant source)
-		{
-			if (source == null)
-				return;
-
-			Guid id;
-			if (!TryGetId(source, out id))
-				return;
-
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.ANSWER_RPC, m_RoomId, id);
-		}
-
 		private void ParticipantOnCallHeld(ThinTraditionalParticipant source)
 		{
 			if (source == null)
@@ -540,7 +522,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			m_ConnectionStateManager.SetPort(port);
+			m_RpcController.SetPort(port, false);
+
+			UpdateCachedOnlineStatus();
+
+			if (m_RpcController.IsConnected)
+				Register();
 		}
 
 		/// <summary>
@@ -548,20 +535,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// </summary>
 		/// <param name="port"></param>
 		[PublicAPI]
-		public void ConfigurePort(IPort port)
+		public void ConfigurePort(ISerialPort port)
 		{
 			// Network (TCP, UDP, SSH)
 			if (port is ISecureNetworkPort)
 				(port as ISecureNetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
 			else if (port is INetworkPort)
 				(port as INetworkPort).ApplyDeviceConfiguration(m_NetworkProperties);
-
-			m_RpcController.SetPort(port as ISerialPort);
-
-			UpdateCachedOnlineStatus();
-
-			if (m_ConnectionStateManager.IsConnected)
-				Register();
 		}
 
 		/// <summary>
@@ -581,8 +561,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// <param name="args"></param>
 		private void PortOnConnectedStateChanged(object sender, BoolEventArgs args)
 		{
-			IsConnected = m_ConnectionStateManager != null && m_ConnectionStateManager.IsConnected;
-
+			IsConnected = m_RpcController != null && m_RpcController.IsConnected;
 			if (IsConnected)
 				return;
 
@@ -619,6 +598,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				}
 			}
 
+			//todo: Dejank?
+			ConfigurePort(port);
+
 			SetPort(port);
 		}
 
@@ -626,7 +608,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			base.CopySettingsFinal(settings);
 
-			settings.Port = m_ConnectionStateManager.PortNumber;
+			settings.Port = m_RpcController.PortNumber;
 			settings.Room = m_RoomId;
 			settings.RoomName = RoomName;
 			settings.RoomPrefix = RoomPrefix;
@@ -649,11 +631,23 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		/// <param name="settings"></param>
 		/// <param name="factory"></param>
 		/// <param name="addControl"></param>
-		protected override void AddControls(InterpretationClientDeviceSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		protected override void AddControls(InterpretationClientDeviceSettings settings, IDeviceFactory factory,
+		                                    Action<IDeviceControl> addControl)
 		{
 			base.AddControls(settings, factory, addControl);
 
 			addControl(new DialerDeviceDialerControl(this, 0));
+		}
+
+		/// <summary>
+		/// Override to add actions on StartSettings
+		/// This should be used to start communications with devices and perform initial actions
+		/// </summary>
+		protected override void StartSettingsFinal()
+		{
+			base.StartSettingsFinal();
+
+			m_RpcController.Start();
 		}
 
 		#endregion
@@ -691,8 +685,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			foreach (IConsoleCommand command in GetBaseConsolCommands())
 				yield return command;
 
-			yield return new ConsoleCommand("Connect", "Connect to the server", () => m_ConnectionStateManager.Connect());
-			yield return new ConsoleCommand("Disconnect", "Disconnect from the server", () => m_ConnectionStateManager.Disconnect());
+			yield return new ConsoleCommand("Start", "Connect to the server", () => m_RpcController.Start());
+			yield return new ConsoleCommand("Stop", "Disconnect from the server", () => m_RpcController.Stop());
 			yield return new ConsoleCommand("Register", "Register the room with the server", () => Register());
 			yield return new ConsoleCommand("Unregister", "Unregister the room with the server", () => Unregister());
 		}
@@ -711,8 +705,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			if (m_ConnectionStateManager != null)
-				yield return m_ConnectionStateManager.Port;
+			if (m_RpcController != null)
+				yield return m_RpcController.Port;
 		}
 
 		/// <summary>
@@ -730,7 +724,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		protected override bool GetIsOnlineStatus()
 		{
-			return m_ConnectionStateManager != null && m_ConnectionStateManager.IsOnline;
+			return m_RpcController != null && m_RpcController.IsOnline;
 		}
 
 		#endregion

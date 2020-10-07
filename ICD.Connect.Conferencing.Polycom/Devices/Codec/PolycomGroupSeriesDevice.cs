@@ -207,7 +207,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		[PublicAPI]
 		public void SetPort(ISerialPort port)
 		{
-			m_ConnectionStateManager.SetPort(port);
+			m_ConnectionStateManager.SetPort(port, false);
 		}
 
 		private void ConfigurePort(IPort port)
@@ -693,7 +693,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="settings"></param>
 		/// <param name="factory"></param>
 		/// <param name="addControl"></param>
-		protected override void AddControls(PolycomGroupSeriesSettings settings, IDeviceFactory factory, Action<IDeviceControl> addControl)
+		protected override void AddControls(PolycomGroupSeriesSettings settings, IDeviceFactory factory,
+		                                    Action<IDeviceControl> addControl)
 		{
 			base.AddControls(settings, factory, addControl);
 
@@ -704,6 +705,17 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			addControl(new PolycomCodecPresentationControl(this, 4));
 			addControl(new PolycomCodecPowerControl(this, 5));
 			addControl(new PolycomCalendarControl(this, 6));
+		}
+
+		/// <summary>
+		/// Override to add actions on StartSettings
+		/// This should be used to start communications with devices and perform initial actions
+		/// </summary>
+		protected override void StartSettingsFinal()
+		{
+			base.StartSettingsFinal();
+
+			m_ConnectionStateManager.Start();
 		}
 
 		#endregion
