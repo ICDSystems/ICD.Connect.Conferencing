@@ -1015,7 +1015,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			m_Server.Port = settings.ServerPort;
 			m_Server.MaxNumberOfClients = settings.ServerMaxClients;
-			m_Server.Start();
 		}
 
 		protected override void CopySettingsFinal(InterpretationServerDeviceSettings settings)
@@ -1036,6 +1035,17 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			ClearAdapters();
 
 			ClearSources();
+		}
+
+		/// <summary>
+		/// Override to add actions on StartSettings
+		/// This should be used to start communications with devices and perform initial actions
+		/// </summary>
+		protected override void StartSettingsFinal()
+		{
+			base.StartSettingsFinal();
+
+			m_Server.Start();
 		}
 
 		#endregion
