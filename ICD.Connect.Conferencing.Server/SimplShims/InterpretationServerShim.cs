@@ -77,17 +77,6 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		}
 
 		[PublicAPI("S+")]
-		public string GetRoomPrefix(int roomId)
-		{
-			if (Originator == null)
-			{
-				Logger.Log(eSeverity.Error, "Originator Is Null, cannot get room prefix.");
-				return string.Empty;
-			}
-			return Originator.GetRoomPrefix(roomId);
-		}
-
-		[PublicAPI("S+")]
 		public ushort GetBoothId(int roomId)
 		{
 			if (Originator == null)
@@ -147,7 +136,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		private void OriginatorOnRoomAdded(object sender, InterpretationRoomInfoArgs args)
 		{
-			OnRoomAdded.Raise(this, new InterpretationRoomInfoArgs(args.RoomId, args.RoomName, args.RoomPrefix));
+			OnRoomAdded.Raise(this, new InterpretationRoomInfoArgs(args.RoomId, args.RoomName));
 		}	
 	}
 }

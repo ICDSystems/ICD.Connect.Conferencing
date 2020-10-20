@@ -50,14 +50,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		string GetRoomName(int roomId);
 
 		/// <summary>
-		/// Gets the Room Prefix for a given Room Id
-		/// </summary>
-		/// <param name="roomId"></param>
-		/// <returns></returns>
-		[PublicAPI]
-		string GetRoomPrefix(int roomId);
-
-		/// <summary>
 		/// Gets the Booth Id for a given Room Id
 		/// </summary>
 		/// <param name="roomId"></param>

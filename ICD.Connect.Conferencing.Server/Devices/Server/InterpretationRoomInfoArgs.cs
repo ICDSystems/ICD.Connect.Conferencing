@@ -11,14 +11,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[PublicAPI]
 		public string RoomName { get; set; }
 
-		[PublicAPI]
-		public string RoomPrefix { get; set; }
-
-		public InterpretationRoomInfoArgs(int roomId, string roomName, string roomPrefix)
+		public InterpretationRoomInfoArgs(int roomId, string roomName)
 		{
 			RoomId = roomId;
 			RoomName = roomName;
-			RoomPrefix = roomPrefix;
 		}
 
 		/// <summary>

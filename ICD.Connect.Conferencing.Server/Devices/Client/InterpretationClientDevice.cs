@@ -111,8 +111,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		public string RoomName { get; private set; }
 
-		public string RoomPrefix { get; private set; }
-
 		public bool IsInterpretationActive
 		{
 			get { return m_IsInterpretationActive; }
@@ -215,17 +213,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				RoomName = name;
 		}
 
-		public void SetRoomPrefixIfNullOrEmpty(string prefix)
-		{
-			// Only allow the room prefix to be set externally if an override isn't provided in settings.
-			if (string.IsNullOrEmpty(RoomPrefix))
-				RoomPrefix = prefix;
-		}
-
 		public void Register()
 		{
 			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_RoomId, RoomName, RoomPrefix);
+				m_RpcController.CallMethod(InterpretationServerDevice.REGISTER_ROOM_RPC, m_RoomId, RoomName);
 		}
 
 		public void Unregister()
@@ -580,7 +571,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_RoomId = settings.Room == null ? 0 : settings.Room.Value;
 
 			RoomName = settings.RoomName;
-			RoomPrefix = settings.RoomPrefix;
 
 			m_NetworkProperties.Copy(settings);
 
@@ -611,7 +601,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			settings.Port = m_RpcController.PortNumber;
 			settings.Room = m_RoomId;
 			settings.RoomName = RoomName;
-			settings.RoomPrefix = RoomPrefix;
 
 			settings.Copy(m_NetworkProperties);
 		}

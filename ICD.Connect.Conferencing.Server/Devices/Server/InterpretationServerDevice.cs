@@ -66,8 +66,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		// key is tcp client id, value is room id
 		private readonly Dictionary<uint, int> m_ClientToRoom;
 
-		// key is room id, value is 2 item array with name, and prefix (in that order)
-		private readonly Dictionary<int, string[]> m_RoomToRoomInfo;
+		// key is room id, value is name
+		private readonly Dictionary<int, string> m_RoomToRoomInfo;
 
 		#endregion
 
@@ -81,7 +81,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_Sources = new Dictionary<Guid, ITraditionalParticipant>();
 			m_RoomToBooth = new Dictionary<int, ushort>();
 			m_ClientToRoom = new Dictionary<uint, int>();
-			m_RoomToRoomInfo = new Dictionary<int, string[]>();
+			m_RoomToRoomInfo = new Dictionary<int, string>();
 
 			m_SafeCriticalSection = new SafeCriticalSection();
 
@@ -219,25 +219,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				return m_RoomToRoomInfo.ContainsKey(roomId) ? m_RoomToRoomInfo[roomId][0] : string.Empty;
-			}
-			finally
-			{
-				m_SafeCriticalSection.Leave();
-			}
-		}
-
-		/// <summary>
-		/// Gets the Room Prefix for a given Room Id
-		/// </summary>
-		/// <param name="roomId"></param>
-		/// <returns></returns>
-		public string GetRoomPrefix(int roomId)
-		{
-			m_SafeCriticalSection.Enter();
-			try
-			{
-				return m_RoomToRoomInfo.ContainsKey(roomId) ? m_RoomToRoomInfo[roomId][1] : string.Empty;
+				return m_RoomToRoomInfo.ContainsKey(roomId) ? m_RoomToRoomInfo[roomId] : string.Empty;
 			}
 			finally
 			{
@@ -499,7 +481,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		#region RPCs
 
 		[Rpc(REGISTER_ROOM_RPC), UsedImplicitly]
-		public void RegisterRoom(uint clientId, int roomId, string roomName, string roomPrefix)
+		public void RegisterRoom(uint clientId, int roomId, string roomName)
 		{
 			m_SafeCriticalSection.Enter();
 			try
@@ -513,9 +495,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				}
 
 				m_ClientToRoom[clientId] = roomId;
-				m_RoomToRoomInfo[roomId] = new[] { roomName, roomPrefix };
+				m_RoomToRoomInfo[roomId] = roomName;
 
-				OnRoomAdded.Raise(this, new InterpretationRoomInfoArgs(roomId, roomName, roomPrefix));
+				OnRoomAdded.Raise(this, new InterpretationRoomInfoArgs(roomId, roomName));
 			}
 			finally
 			{
