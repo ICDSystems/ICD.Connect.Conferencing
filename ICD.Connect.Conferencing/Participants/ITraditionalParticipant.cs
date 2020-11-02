@@ -63,6 +63,9 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		event EventHandler<StringEventArgs> OnNumberChanged;
 
+		/// <summary>
+		/// Raised when the participant is answered, dismissed or ignored.
+		/// </summary>
 		event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
 
 		#region Properties

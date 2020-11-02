@@ -50,7 +50,6 @@ namespace ICD.Connect.Conferencing.Conferences
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private eConferenceStatus m_Status;
-
 		private DateTime? m_Start;
 		private DateTime? m_End;
 
@@ -78,6 +77,9 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		#region Properties
 
+		/// <summary>
+		/// Current conference status.
+		/// </summary>
 		public eConferenceStatus Status
 		{
 			get { return m_Status; }
@@ -114,11 +116,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public DateTime? EndTime
 		{
-			get
-			{
-				return m_End;
-			}
-
+			get { return m_End; }
 			private set
 			{
 				if (m_End == value)
@@ -231,6 +229,10 @@ namespace ICD.Connect.Conferencing.Conferences
 			return m_ParticipantsSection.Execute(() => m_Participants.ToArray());
 		}
 
+		/// <summary>
+		/// Gets the sources in this conference.
+		/// </summary>
+		/// <returns></returns>
 		IEnumerable<IParticipant> IConference.GetParticipants()
 		{
 			return GetParticipants().Cast<IParticipant>();
@@ -325,8 +327,8 @@ namespace ICD.Connect.Conferencing.Conferences
 		private void Subscribe(IParticipant participant)
 		{
 			participant.OnStatusChanged += ParticipantOnStatusChanged;
-			participant.OnStartTimeChanged += ParticipantOnOnStartTimeChanged;
-			participant.OnEndTimeChanged += ParticipantOnOnEndTimeChanged;
+			participant.OnStartTimeChanged += ParticipantOnStartTimeChanged;
+			participant.OnEndTimeChanged += ParticipantOnEndTimeChanged;
 			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
 		}
 
@@ -337,8 +339,8 @@ namespace ICD.Connect.Conferencing.Conferences
 		private void Unsubscribe(IParticipant participant)
 		{
 			participant.OnStatusChanged -= ParticipantOnStatusChanged;
-			participant.OnStartTimeChanged -= ParticipantOnOnStartTimeChanged;
-			participant.OnEndTimeChanged -= ParticipantOnOnEndTimeChanged;
+			participant.OnStartTimeChanged -= ParticipantOnStartTimeChanged;
+			participant.OnEndTimeChanged -= ParticipantOnEndTimeChanged;
 			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
 		}
 
@@ -352,40 +354,76 @@ namespace ICD.Connect.Conferencing.Conferences
 			UpdateStatus();
 		}
 
-		private void ParticipantOnOnStartTimeChanged(object sender, DateTimeNullableEventArgs e)
+		/// <summary>
+		/// Called when a participant start time changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		private void ParticipantOnStartTimeChanged(object sender, DateTimeNullableEventArgs args)
 		{
 			UpdateStartTime();
 		}
 
-		private void ParticipantOnOnEndTimeChanged(object sender, DateTimeNullableEventArgs e)
+		/// <summary>
+		/// Called when a participant end time changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		private void ParticipantOnEndTimeChanged(object sender, DateTimeNullableEventArgs args)
 		{
 			UpdateEndTime();
 		}
 
-		private void ParticipantOnParticipantTypeChanged(object sender, CallTypeEventArgs e)
+		/// <summary>
+		/// Called when a participant call type changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		private void ParticipantOnParticipantTypeChanged(object sender, CallTypeEventArgs args)
 		{
-			OnCallTypeChanged.Raise(this, new GenericEventArgs<eCallType>(e.Data));
+			OnCallTypeChanged.Raise(this, new GenericEventArgs<eCallType>(args.Data));
 		}
 
 		#endregion
 
 		#region Console
 
+		/// <summary>
+		/// Gets the name of the node.
+		/// </summary>
 		public virtual string ConsoleName { get { return GetType().Name; } }
 
+		/// <summary>
+		/// Gets the help information for the node.
+		/// </summary>
 		public virtual string ConsoleHelp { get { return string.Empty; }  }
 
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
 		public virtual IEnumerable<IConsoleNodeBase> GetConsoleNodes()
 		{
 			yield return ConsoleNodeGroup.IndexNodeMap("Participants", "The collection of participants in this conference", GetParticipants());
 		}
 
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
 		public virtual void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
 			addRow("Status", Status);
+			addRow("StartTime", StartTime);
+			addRow("EndTime", EndTime);
+			addRow("CallType", CallType);
 			addRow("ParticipantCount", GetParticipants().Count());
 		}
 
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
 		public virtual IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
 			yield break;
