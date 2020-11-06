@@ -108,6 +108,9 @@
     <Compile Include="Controls\Dialing\ConferenceDeviceControlActivities.cs" />
     <Compile Include="Controls\Dialing\ITraditionalConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\IWebConferenceDeviceControl.cs" />
+    <Compile Include="Controls\DirectSharing\AbstractDirectSharingControl.cs" />
+    <Compile Include="Controls\DirectSharing\DirectSharingControlConsole.cs" />
+    <Compile Include="Controls\DirectSharing\IDirectSharingControl.cs" />
     <Compile Include="DialContexts\AbstractDialContext.cs" />
     <Compile Include="DialContexts\DialContext.cs" />
     <Compile Include="DialContexts\DialContextEqualityComparer.cs" />
@@ -119,6 +122,10 @@
     <Compile Include="EventArguments\ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceParticipantAddedOrRemovedEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceRouteDestinationContentInputApiEventArgs.cs" />
+    <Compile Include="EventArguments\DirectSharingActiveApiEventArgs.cs" />
+    <Compile Include="EventArguments\DirectSharingCodeApiEventArgs.cs" />
+    <Compile Include="EventArguments\DirectSharingEnabledApiEventArgs.cs" />
+    <Compile Include="EventArguments\DirectSharingSourceNameApiEventArgs.cs" />
     <Compile Include="EventArguments\OnlineStateEventArgs.cs" />
     <Compile Include="EventArguments\PresentationActiveApiEventArgs.cs" />
     <Compile Include="IncomingCalls\AbstractIncomingCall.cs" />
@@ -209,6 +216,10 @@
     <Compile Include="Proxies\Controls\Directory\DirectoryControlApi.cs" />
     <Compile Include="Proxies\Controls\Directory\IProxyDirectoryControl.cs" />
     <Compile Include="Proxies\Controls\Directory\ProxyDirectoryControl.cs" />
+    <Compile Include="Proxies\Controls\DirectSharing\AbstractProxyDirectSharingControl.cs" />
+    <Compile Include="Proxies\Controls\DirectSharing\DirectSharingControlApi.cs" />
+    <Compile Include="Proxies\Controls\DirectSharing\IProxyDirectSharingControl.cs" />
+    <Compile Include="Proxies\Controls\DirectSharing\ProxyDirectSharingControl.cs" />
     <Compile Include="Proxies\Controls\Layout\AbstractProxyConferenceLayoutControl.cs" />
     <Compile Include="Proxies\Controls\Layout\ConferenceLayoutControlApi.cs" />
     <Compile Include="Proxies\Controls\Layout\IProxyConferenceLayoutControl.cs" />
