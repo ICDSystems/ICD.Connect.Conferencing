@@ -10,6 +10,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Peripherals;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Presentation;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Proximity;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
@@ -34,7 +35,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 				{typeof(RoomAnalyticsComponent), codec => new RoomAnalyticsComponent(codec)},
 				{typeof(SystemComponent), codec => new SystemComponent(codec)},
 				{typeof(VideoComponent), codec => new VideoComponent(codec)},
-				{typeof(AudioComponent), codec => new AudioComponent(codec)}
+				{typeof(AudioComponent), codec => new AudioComponent(codec)},
+				{typeof(ProximityComponent), codec => new ProximityComponent(codec)}
 			};
 
 		private readonly Dictionary<Type, ICiscoComponent> m_Components;

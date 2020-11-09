@@ -117,6 +117,9 @@
     <Compile Include="Devices\Codec\Components\Presentation\PresentationModeEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\PresentationItem.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\PresentationComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Proximity\ProximityComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Proximity\ProximityModeEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Proximity\ProximityServicesEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\RoomAnalytics\PeoplePresenceEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\RoomAnalytics\RoomAnalyticsComponent.cs" />
     <Compile Include="Devices\Codec\Components\System\GatekeeperStatusArgs.cs" />
