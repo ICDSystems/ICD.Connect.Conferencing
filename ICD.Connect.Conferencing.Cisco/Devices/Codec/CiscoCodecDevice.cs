@@ -747,6 +747,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			addControl(new CiscoCodecCalendarControl(this, 6));
 			addControl(new CiscoCodecOccupancySensorControl(this, 7));
 			addControl(new CiscoCodecVolumeControl(this, 8));
+			addControl(new CiscoCodecDirectSharingControl(this, 9));
 		}
 
 		/// <summary>
