@@ -214,10 +214,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			try
 			{
 				IGrouping<eDialContextSupport, IConferenceDeviceControl> bestGroup =
-					m_DialingProviders.Keys
-					                  .Where(c => c.Supports.HasFlags(dialContext.CallType))
-					                  .GroupBy(d => d.CanDial(dialContext))
-					                  .Where(g => g.Key != eDialContextSupport.Unsupported)
+					m_DialingProviders.Where(kvp => kvp.Value.HasFlag(dialContext.CallType) && kvp.Key.Supports.HasFlags(dialContext.CallType))
+									  .Select(kvp => kvp.Key)
+					                  .GroupBy(c => c.CanDial(dialContext))
+					                  .Where(kvp => kvp.Key != eDialContextSupport.Unsupported)
 					                  .OrderByDescending(g => g.Key)
 					                  .FirstOrDefault();
 
