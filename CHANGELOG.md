@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [16.1.1] - 2020-11-16
 ### Changed
  - Fixed ConferenceManager.GetBestDialer() to respect call types on conference points
 
