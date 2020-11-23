@@ -14,9 +14,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Devices.Controls;
 using ICD.Connect.Devices.EventArguments;
-using ICD.Connect.Devices.Telemetry;
 using ICD.Connect.Settings;
-using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 {
@@ -29,19 +27,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		public event EventHandler OnCodecChanged;
 
-		[EventTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
-		public event EventHandler<StringEventArgs> OnSoftwareIdChanged;
-
-		[EventTelemetry(DeviceTelemetryNames.DEVICE_MAC_ADDRESS_CHANGED)]
-		public event EventHandler<StringEventArgs> OnMacAddressChanged;
-
         #endregion
 
 		#region Fields
 
 		private bool m_IsConnected;
-		private string m_SoftwareId;
-		private string m_MacAddress;
 
 		[CanBeNull]
 		private CiscoCodecDevice m_Codec;
@@ -81,36 +71,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		private int TiltSpeed { get { return m_PanTiltSpeed ?? (m_Camera == null ? 0 : m_Camera.TiltSpeed); } }
 
 		private int ZoomSpeed { get { return m_ZoomSpeed ?? (m_Camera == null ? 0 : m_Camera.ZoomSpeed); } }
-
-		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION, null, DeviceTelemetryNames.DEVICE_FIRMWARE_VERSION_CHANGED)]
-		public string SoftwareId
-		{
-			get { return m_SoftwareId; }
-			private set
-			{
-				if (m_SoftwareId == value)
-					return;
-
-				m_SoftwareId = value;
-
-				OnSoftwareIdChanged.Raise(this, new StringEventArgs(value));
-			}
-		}
-
-		[PropertyTelemetry(DeviceTelemetryNames.DEVICE_MAC_ADDRESS, null, DeviceTelemetryNames.DEVICE_MAC_ADDRESS_CHANGED)]
-		public string MacAddress
-		{
-			get { return m_MacAddress; }
-			private set
-			{
-				if (m_MacAddress == value)
-					return;
-
-				m_MacAddress = value;
-
-				OnMacAddressChanged.Raise(this, new StringEventArgs(value));
-			}
-		}
 
 		#endregion
 
@@ -407,17 +367,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			if (camera == null)
 			{
 				m_IsConnected = false;
-				m_SoftwareId = null;
-				m_MacAddress = null;
+				MonitoredDeviceInfo.FirmwareVersion = null;
+				MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).MacAddress = null;
 				return;
 			}
 
 			m_IsConnected = camera.Connected;
 
-			Model = camera.Model;
-			SerialNumber = camera.SerialNumber;
-			SoftwareId = camera.SoftwareId;
-			MacAddress = camera.MacAddress;
+			MonitoredDeviceInfo.Model = camera.Model;
+			MonitoredDeviceInfo.SerialNumber = camera.SerialNumber;
+			MonitoredDeviceInfo.FirmwareVersion = camera.SoftwareId;
+			MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).MacAddress = camera.MacAddress;
 
 		}
 
@@ -453,22 +413,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		private void CameraOnOnModelChanged(object sender, StringEventArgs e)
 		{
-			Model = e.Data;
+			MonitoredDeviceInfo.Model = e.Data;
 		}
 
 		private void CameraOnOnSerialNumberChanged(object sender, StringEventArgs e)
 		{
-			SerialNumber = e.Data;
+			MonitoredDeviceInfo.SerialNumber = e.Data;
 		}
 
 		private void CameraOnOnSoftwareIdChanged(object sender, StringEventArgs e)
 		{
-			SoftwareId = e.Data;
+			MonitoredDeviceInfo.FirmwareVersion = e.Data;
 		}
 
 		private void CameraOnOnMacAddressChanged(object sender, StringEventArgs e)
 		{
-			MacAddress = e.Data;
+			MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).MacAddress = e.Data;
 		}
 
 		#endregion
