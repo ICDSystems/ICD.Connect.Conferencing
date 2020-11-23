@@ -25,14 +25,12 @@ using ICD.Connect.Protocol.Ports.ComPort;
 using ICD.Connect.Protocol.SerialBuffers;
 using ICD.Connect.Protocol.Settings;
 using ICD.Connect.Settings;
-using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
 	/// <summary>
 	/// Cisco VTC Codec Control
 	/// </summary>
-	[ExternalTelemetry("Cisco", typeof(CiscoCodecExternalTelemetry))]
 	public sealed class CiscoCodecDevice : AbstractVideoConferenceDevice<CiscoCodecSettings>
 	{
 		/// <summary>
@@ -103,7 +101,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private readonly ComSpecProperties m_ComSpecProperties;
 
 		private bool m_Initialized;
-		
+		private readonly CiscoCodecTelemetryComponent m_TelemetryComponent;
+
 		#region Properties
 
 		/// <summary>
@@ -173,6 +172,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 			m_SerialBuffer = new XmlSerialBuffer();
 			Subscribe(m_SerialBuffer);
+
+			m_TelemetryComponent = new CiscoCodecTelemetryComponent(this);
 		}
 
 		#endregion
