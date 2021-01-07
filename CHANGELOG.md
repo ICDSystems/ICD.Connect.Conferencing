@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [16.1.2] - 2021-01-07
+### Added
+ - ConferencePointSettings exposes const for factory name
+
 ## [16.1.1] - 2020-11-16
 ### Changed
  - Fixed ConferenceManager.GetBestDialer() to respect call types on conference points
