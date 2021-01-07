@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - The CameraEnabled property has been moved from AbstractWebConferenceDeviceControl to AbstractConferenceControl
  - Moved Cisco Codec telemetry from external telemetry provider to telemetry component, using Monitored Device Telemetry
  - Moved Cisco Camera telemetry to Monitored Device Telemetry
+ - CiscoCodecVolumeControl now reports the pre-mute volume level after being muted
 
 ## [17.1.2] - 2020-09-24
 ### Changed

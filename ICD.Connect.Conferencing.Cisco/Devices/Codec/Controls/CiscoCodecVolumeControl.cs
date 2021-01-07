@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Audio.Controls.Volume;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Audio;
@@ -10,6 +12,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private const int INCREMENT_VALUE = 5;
 
 		private readonly AudioComponent m_Component;
+
+		/// <summary>
+		/// Volume feedback from the device is bad when muting, and the feedback order is inconsistent.
+		/// We're going to track volume changes so we can report the correct feedback while muted.
+		/// </summary>
+		private readonly List<int> m_VolumeChanges;
 
 		#region Properties
 
@@ -35,6 +43,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public CiscoCodecVolumeControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
+			m_VolumeChanges = new List<int>();
+
 			m_Component = parent.Components.GetComponent<AudioComponent>();
 
 			SupportedVolumeFeatures = eVolumeFeatures.Mute |
@@ -46,7 +56,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			Subscribe(m_Component);
 
-			UpdateVolume();
+			Initialize();
 		}
 
 		/// <summary>
@@ -129,7 +139,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		#region Private Methods
 
-		private void UpdateVolume()
+		private void Initialize()
 		{
 			VolumeLevel = m_Component.Volume;
 			IsMuted = m_Component.Mute;
@@ -159,12 +169,41 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void ComponentOnVolumeChanged(object sender, IntEventArgs args)
 		{
-			UpdateVolume();
+			int current = m_Component.Volume;
+
+			if (current == 0)
+			{
+				// We're muted and volume changed to 0
+				if (m_Component.Mute)
+				{
+					current = m_VolumeChanges.LastOrDefault();
+					m_VolumeChanges.Clear();
+				}
+			}
+			else
+			{
+				m_VolumeChanges.Clear();
+			}
+
+			m_VolumeChanges.Add(current);
+
+			VolumeLevel = m_Component.Volume;
 		}
 
 		private void ComponentOnMuteChanged(object sender, BoolEventArgs args)
 		{
-			UpdateVolume();
+			// We muted so fix the bad volume feedback
+			if (m_Component.Volume == 0 && m_Component.Mute)
+			{
+				int secondLast = ((IEnumerable<int>)m_VolumeChanges)
+				                 .Reverse()
+				                 .Skip(1)
+				                 .FirstOrDefault();
+				m_VolumeChanges.Clear();
+				VolumeLevel = secondLast;
+			}
+
+			IsMuted = m_Component.Mute;
 		}
 
 		#endregion
