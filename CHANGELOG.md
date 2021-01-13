@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Moved Cisco Codec telemetry from external telemetry provider to telemetry component, using Monitored Device Telemetry
  - Moved Cisco Camera telemetry to Monitored Device Telemetry
  - CiscoCodecVolumeControl now reports the pre-mute volume level after being muted
+ - CiscoCodecCameraDevice correctly reflects the power state of the connected codec device
 
 ## [17.1.2] - 2020-09-24
 ### Changed

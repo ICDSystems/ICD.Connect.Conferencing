@@ -15,6 +15,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		private readonly SafeTimer m_Timer;
 
 		private SystemComponent m_SystemComponent;
+		private bool m_KeepAwake;
 
 		/// <summary>
 		/// Constructor.
@@ -49,10 +50,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		protected override void PowerOnFinal()
 		{
-			if (PowerState == ePowerState.PowerOn)
+			if (m_KeepAwake)
 				return;
 
-			PowerState = ePowerState.PowerOn;
+			m_KeepAwake = true;
 
 			m_Timer.Reset(0, KEEP_AWAKE_TICK_MS);
 		}
@@ -62,7 +63,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		/// </summary>
 		protected override void PowerOffFinal()
 		{
-			PowerState = ePowerState.PowerOff;
+			m_KeepAwake = false;
 
 			m_Timer.Stop();
 		}
@@ -83,6 +84,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 				m_SystemComponent.Wake();
 
 			m_SystemComponent.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
+		}
+
+		/// <summary>
+		/// Updates the PowerState property to reflect the wrapped system component.
+		/// </summary>
+		private void UpdatePowerState()
+		{
+			PowerState = m_SystemComponent == null
+				             ? ePowerState.Unknown
+				             : m_SystemComponent.Awake
+					               ? ePowerState.PowerOn
+					               : ePowerState.PowerOff;
 		}
 
 		#endregion
@@ -132,6 +145,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			m_SystemComponent = codec == null ? null : codec.Components.GetComponent<SystemComponent>();
 
 			Subscribe(m_SystemComponent);
+
+			UpdatePowerState();
 		}
 
 		private void Subscribe(SystemComponent systemComponent)
@@ -153,8 +168,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 		private void SystemComponentOnAwakeStateChanged(object sender, BoolEventArgs eventArgs)
 		{
 			// Force the codec to wake up if it goes to sleep and we are using this camera
-			if (PowerState == ePowerState.PowerOn && !eventArgs.Data)
+			if (m_KeepAwake && !eventArgs.Data)
 				KeepAwakeTimerExpired();
+
+			UpdatePowerState();
 		}
 
 		#endregion
