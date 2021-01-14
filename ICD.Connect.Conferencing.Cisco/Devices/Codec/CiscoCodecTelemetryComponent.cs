@@ -1,6 +1,7 @@
 ﻿using System;
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
@@ -36,7 +37,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4SubnetMask = systemComponent.SubnetMask;
 			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4Gateway = systemComponent.Gateway;
 			Codec.MonitoredDeviceInfo.FirmwareVersion = systemComponent.SoftwareVersion;
-			Codec.MonitoredDeviceInfo.FirmwareDate = DateTime.Parse(systemComponent.SoftwareVersionDate);
+
+			// Try to parse firmware date, and if it doesn't work, set to null
+			string firmwareDate = systemComponent.SoftwareVersionDate;
+			if (!string.IsNullOrEmpty(firmwareDate))
+			{
+				try
+				{
+					Codec.MonitoredDeviceInfo.FirmwareDate = DateTime.Parse(firmwareDate);
+				}
+				catch (FormatException e)
+				{
+					Codec.MonitoredDeviceInfo.FirmwareDate = null;
+					Codec.Logger.Log(eSeverity.Error, "CiscoCodecTelementry - FormatException parsing SoftwareVersionDate: {0}",
+					                 e.Message);
+				}
+			}
+			else
+				Codec.MonitoredDeviceInfo.FirmwareDate = null;
+
+
 			Codec.MonitoredDeviceInfo.Model = systemComponent.Platform;
 			Codec.MonitoredDeviceInfo.SerialNumber = systemComponent.SerialNumber;
 		}
