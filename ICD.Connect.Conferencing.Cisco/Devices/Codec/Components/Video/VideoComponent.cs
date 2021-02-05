@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -10,6 +11,8 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connectors;
 using ICD.Common.Logging.LoggingContexts;
+using ICD.Common.Utils.Comparers;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 {
@@ -113,6 +116,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 		/// Gets the number of output connections.
 		/// </summary>
 		public int VideoOutputConnectorCount { get { return m_VideoOutputConnectors.Count; } }
+
+		/// <summary>
+		/// Determines if the codec is capability of main video mute based on the software version of the system.
+		/// </summary>
+		public bool SupportsMainVideoMute
+		{
+			get
+			{
+				// Video mute is only supported in version CE 9.7+
+				return UndefinedVersionComparer.Instance
+				                               .Compare(Codec.Components.GetComponent<SystemComponent>().MilestoneVersion,
+				                                        new Version(9, 7)) >= 0;
+			}
+		}
 
 		/// <summary>
 		/// Gets the current enabled state of self-view.

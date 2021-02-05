@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -231,6 +232,39 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 				Codec.Logger.LogSetTo(eSeverity.Informational, "Awake", m_Awake);
 
 				OnAwakeStateChanged.Raise(this, new BoolEventArgs(m_Awake));
+			}
+		}
+
+		/// <summary>
+		/// Converts the software version string provided by the system to the Version type.
+		/// </summary>
+		[PublicAPI]
+		[CanBeNull]
+		public Version MilestoneVersion
+		{
+			get
+			{
+				try
+				{
+					// Build Regex
+					const string codecSoftwareVersionRegex = @"(?'prefix'[a-z]*)(?'version'\d+(?:\.\d+)+)(?'suffix'.*)";
+					Regex r = new Regex(codecSoftwareVersionRegex);
+
+					// Match against software version string
+					Match m = r.Match(SoftwareVersion);
+
+					// Convert to version data type, this will only preserve the decimal orders of the version
+					// Example: version string ce9.9.2.f2110f7eda7 would become 9.9.2
+					return new Version(m.Groups["version"].Value);
+				}
+				catch (Exception e)
+				{
+					Codec.Logger.Log(eSeverity.Error,
+					                 "Error determining Codec milestone version - {0} {1}",
+					                 e.Message,
+					                 e.StackTrace);
+					return null;
+				}
 			}
 		}
 
