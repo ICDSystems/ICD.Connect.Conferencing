@@ -96,6 +96,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				eConferenceFeatures.DoNotDisturb |
 				eConferenceFeatures.PrivacyMute |
 				eConferenceFeatures.CanDial |
+				eConferenceFeatures.Dtmf |
+				eConferenceFeatures.Hold |
+				eConferenceFeatures.CameraMute |
 				eConferenceFeatures.CanEnd;
 
 			Subscribe(m_DialingComponent);
@@ -189,7 +192,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		public override void SetCameraMute(bool mute)
 		{
-			throw new NotSupportedException();
+			m_VideoComponent.SetMainVideoMute(mute);
 		}
 
 		#endregion

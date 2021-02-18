@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Added property to Cisco Codec VideoComponent to determine if the codec supports video mute based on system software version.
 
+## [17.2.1] - 2021-02-18
+### Changed
+ - Fixed Cisco conference control supported features to be accurate
+ - Implemented camera mute correctly in Cisco conference control
+
 ## [17.2.0] - 2021-01-14
 ### Added
  - Vaddio AV Bridge device driver
