@@ -18,6 +18,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 	/// </summary>
 	public sealed class ConferenceManagerVolumePoints
 	{
+		/// <summary>
+		/// Raised when a volume point is registered/deregistered.
+		/// </summary>
+		public event EventHandler OnVolumePointsChanged; 
+
 		private readonly SafeCriticalSection m_PointsSection;
 		private readonly Dictionary<IVolumePoint, VolumePointHelper> m_Points;
 
@@ -47,17 +52,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Clear()
 		{
-			m_PointsSection.Enter();
-
-			try
-			{
-				foreach (IVolumePoint point in GetVolumePoints())
-					DeregisterVolumePoint(point);
-			}
-			finally
-			{
-				m_PointsSection.Leave();
-			}
+			foreach (IVolumePoint point in GetVolumePoints())
+				DeregisterVolumePoint(point);
 		}
 
 		/// <summary>
@@ -97,6 +93,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			UpdateVolumePoint(volumePoint);
+
+			OnVolumePointsChanged.Raise(this);
 			return true;
 		}
 
@@ -120,13 +118,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				m_Points.Remove(volumePoint);
 
 				Unsubscribe(helper);
-
-				return true;
 			}
 			finally
 			{
 				m_PointsSection.Leave();
 			}
+
+			OnVolumePointsChanged.Raise(this);
+			return true;
 		}
 
 		/// <summary>
