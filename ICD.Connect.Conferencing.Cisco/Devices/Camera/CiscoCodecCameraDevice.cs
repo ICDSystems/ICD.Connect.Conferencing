@@ -368,7 +368,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			{
 				m_IsConnected = false;
 				MonitoredDeviceInfo.FirmwareVersion = null;
-				MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).MacAddress = null;
+				MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = null;
 				return;
 			}
 
@@ -377,7 +377,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			MonitoredDeviceInfo.Model = camera.Model;
 			MonitoredDeviceInfo.SerialNumber = camera.SerialNumber;
 			MonitoredDeviceInfo.FirmwareVersion = camera.SoftwareId;
-			MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).MacAddress = camera.MacAddress;
+			MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = camera.MacAddress;
 
 		}
 
@@ -428,7 +428,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		private void CameraOnOnMacAddressChanged(object sender, StringEventArgs e)
 		{
-			MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).MacAddress = e.Data;
+			MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = e.Data;
 		}
 
 		#endregion

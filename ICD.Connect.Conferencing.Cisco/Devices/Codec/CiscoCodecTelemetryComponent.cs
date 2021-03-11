@@ -33,9 +33,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			if (systemComponent == null)
 				return;
 
-			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4Address = systemComponent.Address;
-			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4SubnetMask = systemComponent.SubnetMask;
-			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4Gateway = systemComponent.Gateway;
+			Codec.MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).Ipv4Address = systemComponent.Address;
+			Codec.MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).Ipv4SubnetMask = systemComponent.SubnetMask;
+			Codec.MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).Ipv4Gateway = systemComponent.Gateway;
 			Codec.MonitoredDeviceInfo.FirmwareVersion = systemComponent.SoftwareVersion;
 
 			// Try to parse firmware date, and if it doesn't work, set to null
@@ -85,17 +85,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 		private void SystemComponentOnAddressChanged(object sender, StringEventArgs e)
 		{
-			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4Address = e.Data;
+			Codec.MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).Ipv4Address = e.Data;
 		}
 
 		private void SystemComponentOnSubnetMaskChanged(object sender, StringEventArgs e)
 		{
-			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4SubnetMask = e.Data;
+			Codec.MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).Ipv4SubnetMask = e.Data;
 		}
 
 		private void SystemComponentOnGatewayChanged(object sender, StringEventArgs e)
 		{
-			Codec.MonitoredDeviceInfo.NetworkInfo.GetOrAddAdapter(1).Ipv4Gateway = e.Data;
+			Codec.MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).Ipv4Gateway = e.Data;
 		}
 
 		private void SystemComponentOnSoftwareVersionChanged(object sender, StringEventArgs e)
