@@ -1,9 +1,8 @@
-﻿using System;
-using ICD.Connect.Conferencing.Controls.Presentation;
+﻿using ICD.Connect.Conferencing.Controls.Presentation;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls
 {
-	public class VaddioAvBridgePresentationControl : AbstractPresentationControl<VaddioAvBridgeDevice>
+	public sealed class VaddioAvBridgePresentationControl : AbstractPresentationControl<VaddioAvBridgeDevice>
 	{
 		public VaddioAvBridgePresentationControl(VaddioAvBridgeDevice parent, int id) 
 			: base(parent, id)
