@@ -14,6 +14,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Devices.Controls;
 using ICD.Connect.Devices.EventArguments;
+using ICD.Connect.Devices.Telemetry.DeviceInfo;
 using ICD.Connect.Settings;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
@@ -364,20 +365,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 
 		private void Update(NearCamera camera)
 		{
-			if (camera == null)
-			{
-				m_IsConnected = false;
-				MonitoredDeviceInfo.FirmwareVersion = null;
-				MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = null;
-				return;
-			}
+			m_IsConnected = camera != null && camera.Connected;
 
-			m_IsConnected = camera.Connected;
+			string macAddress = camera == null ? string.Empty : camera.MacAddress ?? string.Empty;
+			IcdPhysicalAddress mac;
+			IcdPhysicalAddress.TryParse(macAddress, out mac);
 
-			MonitoredDeviceInfo.Model = camera.Model;
-			MonitoredDeviceInfo.SerialNumber = camera.SerialNumber;
-			MonitoredDeviceInfo.FirmwareVersion = camera.SoftwareId;
-			MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = camera.MacAddress;
+			MonitoredDeviceInfo.Model = camera == null ? null : camera.Model;
+			MonitoredDeviceInfo.SerialNumber = camera == null ? null : camera.SerialNumber;
+			MonitoredDeviceInfo.FirmwareVersion = camera == null ? null : camera.SoftwareId;
+			MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = mac;
 
 		}
 
@@ -386,11 +383,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			if (camera == null)
 				return;
 
-			camera.OnConnectedChanged += CameraOnOnConnectedChanged;
-			camera.OnModelChanged += CameraOnOnModelChanged;
-			camera.OnSerialNumberChanged += CameraOnOnSerialNumberChanged;
-			camera.OnSoftwareIdChanged += CameraOnOnSoftwareIdChanged;
-			camera.OnMacAddressChanged += CameraOnOnMacAddressChanged;
+			camera.OnConnectedChanged += CameraOnConnectedChanged;
+			camera.OnModelChanged += CameraOnModelChanged;
+			camera.OnSerialNumberChanged += CameraOnSerialNumberChanged;
+			camera.OnSoftwareIdChanged += CameraOnSoftwareIdChanged;
+			camera.OnMacAddressChanged += CameraOnMacAddressChanged;
 		}
 
 		private void Unsubscribe(NearCamera camera)
@@ -398,37 +395,41 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 			if (camera == null)
 				return;
 
-			camera.OnConnectedChanged -= CameraOnOnConnectedChanged;
-			camera.OnModelChanged -= CameraOnOnModelChanged;
-			camera.OnSerialNumberChanged -= CameraOnOnSerialNumberChanged;
-			camera.OnSoftwareIdChanged -= CameraOnOnSoftwareIdChanged;
-			camera.OnMacAddressChanged -= CameraOnOnMacAddressChanged;
+			camera.OnConnectedChanged -= CameraOnConnectedChanged;
+			camera.OnModelChanged -= CameraOnModelChanged;
+			camera.OnSerialNumberChanged -= CameraOnSerialNumberChanged;
+			camera.OnSoftwareIdChanged -= CameraOnSoftwareIdChanged;
+			camera.OnMacAddressChanged -= CameraOnMacAddressChanged;
 		}
 
-		private void CameraOnOnConnectedChanged(object sender, BoolEventArgs e)
+		private void CameraOnConnectedChanged(object sender, BoolEventArgs e)
 		{
 			m_IsConnected = e.Data;
 			UpdateCachedOnlineStatus();
 		}
 
-		private void CameraOnOnModelChanged(object sender, StringEventArgs e)
+		private void CameraOnModelChanged(object sender, StringEventArgs e)
 		{
 			MonitoredDeviceInfo.Model = e.Data;
 		}
 
-		private void CameraOnOnSerialNumberChanged(object sender, StringEventArgs e)
+		private void CameraOnSerialNumberChanged(object sender, StringEventArgs e)
 		{
 			MonitoredDeviceInfo.SerialNumber = e.Data;
 		}
 
-		private void CameraOnOnSoftwareIdChanged(object sender, StringEventArgs e)
+		private void CameraOnSoftwareIdChanged(object sender, StringEventArgs e)
 		{
 			MonitoredDeviceInfo.FirmwareVersion = e.Data;
 		}
 
-		private void CameraOnOnMacAddressChanged(object sender, StringEventArgs e)
+		private void CameraOnMacAddressChanged(object sender, StringEventArgs e)
 		{
-			MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = e.Data;
+			string macAddress = e.Data ?? string.Empty;
+			IcdPhysicalAddress mac;
+			IcdPhysicalAddress.TryParse(macAddress, out mac);
+
+			MonitoredDeviceInfo.NetworkInfo.Adapters.GetOrAddAdapter(1).MacAddress = mac;
 		}
 
 		#endregion
