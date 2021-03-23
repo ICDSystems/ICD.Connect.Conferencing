@@ -8,6 +8,7 @@ using ICD.Connect.API;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Zoom;
+using ICD.Connect.Conferencing.Zoom.Devices.ZoomMiddleware;
 using ICD.Connect.Protocol.Network.Devices.ConsoleServer;
 using ICD.Connect.Protocol.Network.Ports.Ssh;
 
