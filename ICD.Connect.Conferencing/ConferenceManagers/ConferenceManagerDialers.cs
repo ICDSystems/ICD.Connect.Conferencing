@@ -481,7 +481,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Updates the conference providers to match the state of the conference manager.
 		/// </summary>
-		public void UpdateProviders()
+		private void UpdateProviders()
 		{
 			foreach (IConferenceDeviceControl provider in GetDialingProviders())
 				UpdateProvider(provider);
@@ -519,6 +519,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (!m_ConferenceManager.IsActive)
 				return;
 
+			// Enforce auto-answer
 			if (conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.AutoAnswer))
 			{
 				switch (m_ConferenceManager.EnforceAutoAnswer)
@@ -536,6 +537,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				}
 			}
 
+			// Enforce do-not-disturb
 			if (conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.DoNotDisturb))
 			{
 				switch (m_ConferenceManager.EnforceDoNotDisturb)
@@ -553,9 +555,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				}
 			}
 
+			// Enforce privacy mute
 			bool privacyMute = m_ConferenceManager.PrivacyMuted;
 			if (conferenceControl.PrivacyMuted != privacyMute && conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute))
 				conferenceControl.SetPrivacyMute(privacyMute);
+
+			// Enforce camera privacy mute
+			bool cameraPrivacyMute = m_ConferenceManager.CameraPrivacyMuted;
+			if (conferenceControl.CameraMute != cameraPrivacyMute && conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.CameraMute))
+				conferenceControl.SetCameraMute(cameraPrivacyMute);
 		}
 
 		/// <summary>
@@ -594,18 +602,44 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conferenceManager.OnEnforceAutoAnswerChanged += ConferenceManagerOnEnforceAutoAnswerChanged;
 			conferenceManager.OnEnforceDoNotDisturbChanged += ConferenceManagerOnEnforceDoNotDisturbChanged;
 			conferenceManager.OnPrivacyMuteStatusChange += ConferenceManagerOnPrivacyMuteStatusChange;
+			conferenceManager.OnCameraPrivacyMuteStatusChange += ConferenceManagerOnCameraPrivacyMuteStatusChange;
 		}
 
+		/// <summary>
+		/// Called when the conference manager privacy mute status changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
 		private void ConferenceManagerOnPrivacyMuteStatusChange(object sender, BoolEventArgs boolEventArgs)
 		{
 			UpdateProviders();
 		}
 
+		/// <summary>
+		/// Called when the conference manager camera privacy mute status changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void ConferenceManagerOnCameraPrivacyMuteStatusChange(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateProviders();
+		}
+
+		/// <summary>
+		/// Called when the conference manager starts/stops enforcing do-not-disturb state.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="genericEventArgs"></param>
 		private void ConferenceManagerOnEnforceDoNotDisturbChanged(object sender, GenericEventArgs<eEnforceState> genericEventArgs)
 		{
 			UpdateProviders();
 		}
 
+		/// <summary>
+		/// Called when the conference manager starts/stops enforcing auto-answer state.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="genericEventArgs"></param>
 		private void ConferenceManagerOnEnforceAutoAnswerChanged(object sender, GenericEventArgs<eEnforceState> genericEventArgs)
 		{
 			UpdateProviders();
@@ -631,6 +665,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conferenceControl.OnPrivacyMuteChanged += ConferenceControlOnPrivacyMuteChanged;
 			conferenceControl.OnIncomingCallAdded += ConferenceControlOnIncomingCallAdded;
 			conferenceControl.OnIncomingCallRemoved += ConferenceControlOnIncomingCallRemoved;
+			conferenceControl.OnCameraMuteChanged += ConferenceControlOnCameraMuteChanged;
 
 			AddConferences(conferenceControl.GetConferences());
 		}
@@ -651,6 +686,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conferenceControl.OnPrivacyMuteChanged -= ConferenceControlOnPrivacyMuteChanged;
 			conferenceControl.OnIncomingCallAdded -= ConferenceControlOnIncomingCallAdded;
 			conferenceControl.OnIncomingCallRemoved -= ConferenceControlOnIncomingCallRemoved;
+			conferenceControl.OnCameraMuteChanged -= ConferenceControlOnCameraMuteChanged;
 
 			RemoveConferences(conferenceControl.GetConferences());
 		}
@@ -727,6 +763,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="sender"></param>
 		/// <param name="boolEventArgs"></param>
 		private void ConferenceControlOnAutoAnswerChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateProvider((IConferenceDeviceControl)sender);
+		}
+
+		/// <summary>
+		/// Called when a provider camera mute state changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
+		private void ConferenceControlOnCameraMuteChanged(object sender, BoolEventArgs boolEventArgs)
 		{
 			UpdateProvider((IConferenceDeviceControl)sender);
 		}

@@ -21,18 +21,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <summary>
 		/// Raised when a volume point is registered/deregistered.
 		/// </summary>
-		public event EventHandler OnVolumePointsChanged; 
+		public event EventHandler OnVolumePointsChanged;
 
 		private readonly SafeCriticalSection m_PointsSection;
 		private readonly Dictionary<IVolumePoint, VolumePointHelper> m_Points;
 
-		private readonly ConferenceManager m_ConferenceManager;
+		private readonly IConferenceManager m_ConferenceManager;
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="conferenceManager"></param>
-		public ConferenceManagerVolumePoints([NotNull] ConferenceManager conferenceManager)
+		public ConferenceManagerVolumePoints([NotNull] IConferenceManager conferenceManager)
 		{
 			if (conferenceManager == null)
 				throw new ArgumentNullException("conferenceManager");
@@ -128,19 +128,19 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			return true;
 		}
 
+		#endregion
+
+		#region Private Methods
+
 		/// <summary>
 		/// Updates the volume points to match the privacy mute state.
 		/// </summary>
-		public void UpdateVolumePoints()
+		private void UpdateVolumePoints()
 		{
 			VolumePointHelper[] helpers = m_PointsSection.Execute(() => m_Points.Values.ToArray());
 			foreach (VolumePointHelper helper in helpers)
 				UpdateVolumePoint(helper);
 		}
-
-		#endregion
-
-		#region Private Methods
 
 		/// <summary>
 		/// Updates the volume point to match the privacy mute state.

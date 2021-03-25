@@ -30,6 +30,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 
 		/// <summary>
+		/// Raised when the camera privacy mute status changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCameraPrivacyMuteStatusChange;
+
+		/// <summary>
 		/// Raised when the enforcement setting for do not disturb changes
 		/// </summary>
 		public event EventHandler<GenericEventArgs<eEnforceState>> OnEnforceDoNotDisturbChanged;
@@ -43,11 +48,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly ConferenceManagerVolumePoints m_VolumePoints;
 		private readonly DialingPlan m_DialingPlan;
 		private readonly ConferenceManagerHistory m_History;
+		private readonly ConferenceManagerCameras m_Cameras;
 
 		private eEnforceState m_EnforceDoNotDisturb;
 		private eEnforceState m_EnforceAutoAnswer;
 		private bool m_IsActive;
 		private bool m_PrivacyMuted;
+		private bool m_CameraPrivacyMuted;
 
 		#region Properties
 
@@ -75,6 +82,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		[NotNull]
 		public ConferenceManagerDialers Dialers { get { return m_Dialers; } }
 
+		/// <summary>
+		/// Gets the conference history.
+		/// </summary>
+		[NotNull]
 		public ConferenceManagerHistory History { get { return m_History; } }
 
 		/// <summary>
@@ -84,14 +95,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public ConferenceManagerVolumePoints VolumePoints { get { return m_VolumePoints; } }
 
 		/// <summary>
+		/// Gets the conference manager cameras collection.
+		/// </summary>
+		public ConferenceManagerCameras Cameras { get { return m_Cameras; } }
+
+		/// <summary>
 		/// Gets the dialing plan.
 		/// </summary>
 		public DialingPlan DialingPlan { get { return m_DialingPlan; } }
-
-		/// <summary>
-		/// Gets the logger.
-		/// </summary>
-		public ILoggerService Logger { get { return ServiceProvider.TryGetService<ILoggerService>(); } }
 
 		/// <summary>
 		/// Gets/sets the enforce do-not-disturb mode.
@@ -144,6 +155,23 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 		}
 
+		/// <summary>
+		/// Gets/sets the camera privacy mute state.
+		/// </summary>
+		public bool CameraPrivacyMuted
+		{
+			get { return m_CameraPrivacyMuted; }
+			set
+			{
+				if (value == m_CameraPrivacyMuted)
+					return;
+
+				m_CameraPrivacyMuted = value;
+
+				OnCameraPrivacyMuteStatusChange.Raise(this, new BoolEventArgs(m_CameraPrivacyMuted));
+			}
+		}
+
 		#endregion
 
 		/// <summary>
@@ -157,6 +185,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_Dialers = new ConferenceManagerDialers(this);
 			m_VolumePoints = new ConferenceManagerVolumePoints(this);
 			m_History = new ConferenceManagerHistory(this);
+			m_Cameras = new ConferenceManagerCameras(this);
 		}
 
 		#region Methods
@@ -182,6 +211,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			DialingPlan.ClearMatchers();
 			Dialers.Clear();
 			VolumePoints.Clear();
+			Cameras.Clear();
 		}
 
 		/// <summary>
@@ -193,10 +223,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			IConferenceDeviceControl conferenceControl = Dialers.GetBestDialer(dialContext);
 			if (conferenceControl == null)
 			{
-				Logger.AddEntry(eSeverity.Error,
-				                "{0} failed to dial {1} - No matching conference control could be found",
-				                GetType().Name,
-				                dialContext);
+				ServiceProvider.TryGetService<ILoggerService>()
+				               .AddEntry(eSeverity.Error,
+				                         "{0} failed to dial {1} - No matching conference control could be found",
+				                         GetType().Name,
+				                         dialContext);
 				return;
 			}
 

@@ -41,6 +41,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnPrivacyMuteStatusChange;
 
+		/// <summary>
+		/// Raised when the camera privacy mute status changes.
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnCameraPrivacyMuteStatusChange;
+
 		#endregion
 
 		#region Properties
@@ -51,6 +56,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		[NotNull]
 		ConferenceManagerDialers Dialers { get; }
 
+		/// <summary>
+		/// Gets the conference history.
+		/// </summary>
 		[NotNull]
 		ConferenceManagerHistory History { get; }
 
@@ -59,6 +67,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		[NotNull]
 		ConferenceManagerVolumePoints VolumePoints { get; }
+
+		/// <summary>
+		/// Gets the conference manager cameras collection.
+		/// </summary>
+		[NotNull]
+		ConferenceManagerCameras Cameras { get; }
 
 		/// <summary>
 		/// Indicates whether this conference manager should do anything. 
@@ -86,6 +100,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Gets/sets the privacy mute state.
 		/// </summary>
 		bool PrivacyMuted { get; set; }
+
+		/// <summary>
+		/// Gets/sets the camera privacy mute state.
+		/// </summary>
+		bool CameraPrivacyMuted { get; set; }
 
 		#endregion
 
