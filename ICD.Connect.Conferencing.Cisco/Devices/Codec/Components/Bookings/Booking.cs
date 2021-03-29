@@ -19,7 +19,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			Private
 		}
 
-		private readonly IcdOrderedDictionary<string, BookingCall> m_Calls;
+		private readonly IcdSortedDictionary<string, BookingCall> m_Calls;
 
 		public int Id { get; private set; }
 		public string Title { get; private set; }
@@ -52,7 +52,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// </summary>
 		private Booking()
 		{
-			m_Calls = new IcdOrderedDictionary<string, BookingCall>();
+			m_Calls = new IcdSortedDictionary<string, BookingCall>();
 		}
 
 		/// <summary>

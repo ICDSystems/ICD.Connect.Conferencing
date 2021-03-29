@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		public event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
 
-		private readonly IcdOrderedDictionary<string, ZoomWebParticipant> m_Participants;
+		private readonly IcdSortedDictionary<string, ZoomWebParticipant> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private readonly CallComponent m_CallComponent;
@@ -125,7 +125,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			if (callComponent == null)
 				throw new ArgumentNullException("callComponent");
 
-			m_Participants = new IcdOrderedDictionary<string, ZoomWebParticipant>();
+			m_Participants = new IcdSortedDictionary<string, ZoomWebParticipant>();
 			m_ParticipantsSection = new SafeCriticalSection();
 
 			m_CallComponent = callComponent;

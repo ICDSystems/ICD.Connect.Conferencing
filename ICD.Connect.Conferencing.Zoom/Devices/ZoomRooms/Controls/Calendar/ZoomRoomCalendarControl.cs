@@ -24,7 +24,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Calendar
 
 	    private readonly BookingsComponent m_BookingsComponent;
 	    private readonly SafeTimer m_RefreshTimer;
-		private readonly IcdOrderedDictionary<Booking, ZoomBooking> m_BookingToZoomBooking;
+		private readonly IcdSortedDictionary<Booking, ZoomBooking> m_BookingToZoomBooking;
 	    private readonly SafeCriticalSection m_CriticalSection;
 
 	    /// <summary>
@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Calendar
 		public ZoomRoomCalendarControl(ZoomRoom parent, int id)
 		    : base(parent, id)
 	    {
-		    m_BookingToZoomBooking = new IcdOrderedDictionary<Booking, ZoomBooking>(s_BookingComparer);
+		    m_BookingToZoomBooking = new IcdSortedDictionary<Booking, ZoomBooking>(s_BookingComparer);
 			m_CriticalSection = new SafeCriticalSection();
 
 		    m_BookingsComponent = Parent.Components.GetComponent<BookingsComponent>();

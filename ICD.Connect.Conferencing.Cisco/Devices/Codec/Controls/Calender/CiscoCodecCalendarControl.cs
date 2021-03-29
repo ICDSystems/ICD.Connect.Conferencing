@@ -24,7 +24,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 
 		private readonly BookingsComponent m_BookingsComponent;
 		private readonly SafeTimer m_RefreshTimer;
-		private readonly IcdOrderedDictionary<Booking, CiscoBooking> m_BookingToCiscoBookings;
+		private readonly IcdSortedDictionary<Booking, CiscoBooking> m_BookingToCiscoBookings;
 		private readonly SafeCriticalSection m_CriticalSection;
 
 		/// <summary>
@@ -50,7 +50,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 		{
 			m_RefreshTimer = new SafeTimer(Refresh, REFRESH_INTERVAL, REFRESH_INTERVAL);
 
-			m_BookingToCiscoBookings = new IcdOrderedDictionary<Booking, CiscoBooking>(s_BookingComparer);
+			m_BookingToCiscoBookings = new IcdSortedDictionary<Booking, CiscoBooking>(s_BookingComparer);
 			m_CriticalSection = new SafeCriticalSection();
 
 			SupportedCalendarFeatures = eCalendarFeatures.ListBookings;

@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 		private readonly CallComponent m_CallComponent;
 		private readonly TraditionalCallComponent m_TraditionalCallComponent;
-		private readonly IcdOrderedDictionary<string, ThinTraditionalParticipant> m_CallIdToParticipant;
+		private readonly IcdSortedDictionary<string, ThinTraditionalParticipant> m_CallIdToParticipant;
 		private readonly SafeCriticalSection m_ParticipantSection;
 
 		public override eCallType Supports { get { return eCallType.Audio; } }
@@ -57,7 +57,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		{
 			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
 			m_TraditionalCallComponent = Parent.Components.GetComponent<TraditionalCallComponent>();
-			m_CallIdToParticipant = new IcdOrderedDictionary<string, ThinTraditionalParticipant>();
+			m_CallIdToParticipant = new IcdSortedDictionary<string, ThinTraditionalParticipant>();
 			m_ParticipantSection = new SafeCriticalSection();
 
 			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;

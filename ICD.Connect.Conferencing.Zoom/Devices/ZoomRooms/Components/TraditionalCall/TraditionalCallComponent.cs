@@ -15,7 +15,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Traditional
 		public event EventHandler<GenericEventArgs<TraditionalZoomPhoneCallInfo>> OnCallTerminated;
 		public event EventHandler<GenericEventArgs<PhoneCallTerminated>> OnCallFailed; 
 
-		private readonly IcdOrderedDictionary<string, TraditionalZoomPhoneCallInfo> m_CallInfos;
+		private readonly IcdSortedDictionary<string, TraditionalZoomPhoneCallInfo> m_CallInfos;
 		private readonly SafeCriticalSection m_CallInfosSection;
 
 		#region Constructor
@@ -27,7 +27,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Traditional
 		public TraditionalCallComponent(ZoomRoom parent)
 			: base(parent)
 		{
-			m_CallInfos = new IcdOrderedDictionary<string, TraditionalZoomPhoneCallInfo>();
+			m_CallInfos = new IcdSortedDictionary<string, TraditionalZoomPhoneCallInfo>();
 			m_CallInfosSection = new SafeCriticalSection();
 
 			Subscribe(Parent);

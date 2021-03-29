@@ -64,8 +64,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// </summary>
 		public event EventHandler<IntEventArgs> OnSpeakerTrackWhiteboardDistanceChanged; 
 
-		private readonly IcdOrderedDictionary<int, NearCamera> m_Cameras;
-		private readonly IcdOrderedDictionary<int, CiscoCameraPreset> m_Presets;
+		private readonly IcdSortedDictionary<int, NearCamera> m_Cameras;
+		private readonly IcdSortedDictionary<int, CiscoCameraPreset> m_Presets;
 
 		private readonly SafeCriticalSection m_CamerasSection;
 		private readonly SafeCriticalSection m_PresetsSection;
@@ -244,8 +244,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		public NearCamerasComponent(CiscoCodecDevice codec)
 			: base(codec)
 		{
-			m_Cameras = new IcdOrderedDictionary<int, NearCamera>();
-			m_Presets = new IcdOrderedDictionary<int, CiscoCameraPreset>();
+			m_Cameras = new IcdSortedDictionary<int, NearCamera>();
+			m_Presets = new IcdSortedDictionary<int, CiscoCameraPreset>();
 
 			m_CamerasSection = new SafeCriticalSection();
 			m_PresetsSection = new SafeCriticalSection();

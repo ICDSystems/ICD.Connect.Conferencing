@@ -304,8 +304,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 	[XmlConverter(typeof(PhonebookSearchResultXmlConverter))]
 	public sealed class PhonebookSearchResult
 	{
-		private readonly IcdOrderedDictionary<string, CiscoFolder> m_Folders;
-		private readonly IcdOrderedDictionary<string, CiscoContact> m_Contacts;
+		private readonly IcdSortedDictionary<string, CiscoFolder> m_Folders;
+		private readonly IcdSortedDictionary<string, CiscoContact> m_Contacts;
 
 		/// <summary>
 		/// Gets the total number of folders and contacts.
@@ -317,8 +317,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// </summary>
 		public PhonebookSearchResult()
 		{
-			m_Folders = new IcdOrderedDictionary<string, CiscoFolder>();
-			m_Contacts = new IcdOrderedDictionary<string, CiscoContact>();
+			m_Folders = new IcdSortedDictionary<string, CiscoFolder>();
+			m_Contacts = new IcdSortedDictionary<string, CiscoContact>();
 		}
 
 		/// <summary>

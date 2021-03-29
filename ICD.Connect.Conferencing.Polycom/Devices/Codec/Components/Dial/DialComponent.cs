@@ -34,7 +34,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 				{eDialType.Gateway, "gateway"}
 			};
 
-		private readonly IcdOrderedDictionary<int, CallStatus> m_CallStates;
+		private readonly IcdSortedDictionary<int, CallStatus> m_CallStates;
 		private readonly SafeCriticalSection m_CallStatesSection;
 
 		/// <summary>
@@ -44,7 +44,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial
 		public DialComponent(PolycomGroupSeriesDevice codec)
 			: base(codec)
 		{
-			m_CallStates = new IcdOrderedDictionary<int, CallStatus>();
+			m_CallStates = new IcdSortedDictionary<int, CallStatus>();
 			m_CallStatesSection = new SafeCriticalSection();
 
 			Subscribe(Codec);

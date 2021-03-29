@@ -15,7 +15,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 	[XmlConverter(typeof(CiscoContactXmlConverter))]
 	public sealed class CiscoContact : IContact
 	{
-		private readonly IcdOrderedDictionary<int, CiscoContactDialContext> m_ContactMethods;
+		private readonly IcdSortedDictionary<int, CiscoContactDialContext> m_ContactMethods;
 
 		#region Properties
 
@@ -58,7 +58,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// </summary>
 		public CiscoContact()
 		{
-			m_ContactMethods = new IcdOrderedDictionary<int, CiscoContactDialContext>();
+			m_ContactMethods = new IcdSortedDictionary<int, CiscoContactDialContext>();
 		}
 
 		/// <summary>

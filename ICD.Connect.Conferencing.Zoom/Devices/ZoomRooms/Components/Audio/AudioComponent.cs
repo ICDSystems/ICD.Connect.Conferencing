@@ -49,8 +49,8 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Audio
 
 		#endregion
 
-		private readonly IcdOrderedDictionary<string, AudioInputLine> m_Microphones;
-		private readonly IcdOrderedDictionary<string, AudioOutputLine> m_Speakers;
+		private readonly IcdSortedDictionary<string, AudioInputLine> m_Microphones;
+		private readonly IcdSortedDictionary<string, AudioOutputLine> m_Speakers;
 
 		private bool m_IsSapDisabled;
 		private bool m_ReduceReverb;
@@ -138,8 +138,8 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Audio
 		public AudioComponent(ZoomRoom parent)
 			: base(parent)
 		{
-			m_Microphones = new IcdOrderedDictionary<string, AudioInputLine>();
-			m_Speakers = new IcdOrderedDictionary<string, AudioOutputLine>();
+			m_Microphones = new IcdSortedDictionary<string, AudioInputLine>();
+			m_Speakers = new IcdSortedDictionary<string, AudioOutputLine>();
 
 			Subscribe(Parent);
 		}

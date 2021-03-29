@@ -97,7 +97,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		[PublicAPI]
 		public event EventHandler<StringEventArgs> OnSerialNumberChanged;
 
-		private readonly IcdOrderedDictionary<int, SipRegistration> m_SipRegistrations;
+		private readonly IcdSortedDictionary<int, SipRegistration> m_SipRegistrations;
 		private readonly SafeCriticalSection m_SipRegistrationsSection;
 
 		private bool m_H323Enabled;
@@ -398,7 +398,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		/// <param name="codec"></param>
 		public SystemComponent(CiscoCodecDevice codec) : base(codec)
 		{
-			m_SipRegistrations = new IcdOrderedDictionary<int, SipRegistration>();
+			m_SipRegistrations = new IcdSortedDictionary<int, SipRegistration>();
 			m_SipRegistrationsSection = new SafeCriticalSection();
 
 			Subscribe(Codec);

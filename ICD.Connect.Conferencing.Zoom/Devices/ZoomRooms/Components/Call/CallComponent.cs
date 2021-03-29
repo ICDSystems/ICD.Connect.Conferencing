@@ -115,7 +115,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call
 
 		#endregion
 
-		private readonly IcdOrderedDictionary<string, ParticipantInfo> m_Participants;
+		private readonly IcdSortedDictionary<string, ParticipantInfo> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private bool m_CallLock;
@@ -310,7 +310,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call
 		public CallComponent(ZoomRoom parent)
 			: base(parent)
 		{
-			m_Participants = new IcdOrderedDictionary<string, ParticipantInfo>();
+			m_Participants = new IcdSortedDictionary<string, ParticipantInfo>();
 			m_ParticipantsSection = new SafeCriticalSection();
 
 			Subscribe(Parent);

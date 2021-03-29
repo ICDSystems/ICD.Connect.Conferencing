@@ -20,7 +20,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Camera
 		// We don't get a notification when we give up control so it is tracked in a different event.
 		public event EventHandler<StringEventArgs> OnZoomRoomGaveUpFarEndControl;
 
-		private readonly IcdOrderedDictionary<string, CameraInfo> m_Cameras;
+		private readonly IcdSortedDictionary<string, CameraInfo> m_Cameras;
 
 		private string m_SelectedUsbId;
 
@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Camera
 		public CameraComponent(ZoomRoom parent)
 			: base(parent)
 		{
-			m_Cameras = new IcdOrderedDictionary<string, CameraInfo>();
+			m_Cameras = new IcdSortedDictionary<string, CameraInfo>();
 
 			Subscribe(parent);
 		}

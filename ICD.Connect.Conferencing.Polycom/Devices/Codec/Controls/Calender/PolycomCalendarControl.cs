@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 
 	    private readonly CalendarComponent m_BookingsComponent;
 	    private readonly SafeTimer m_RefreshTimer;
-		private readonly IcdOrderedDictionary<MeetingInfo, PolycomBooking> m_MeetingInfoToBooking;
+		private readonly IcdSortedDictionary<MeetingInfo, PolycomBooking> m_MeetingInfoToBooking;
 	    private readonly SafeCriticalSection m_CriticalSection;
 
 	    /// <summary>
@@ -52,7 +52,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls.Calender
 	    {
 		    m_RefreshTimer = new SafeTimer(Refresh, REFRESH_INTERVAL, REFRESH_INTERVAL);
 
-		    m_MeetingInfoToBooking = new IcdOrderedDictionary<MeetingInfo, PolycomBooking>(s_MeetingInfoComparer);
+		    m_MeetingInfoToBooking = new IcdSortedDictionary<MeetingInfo, PolycomBooking>(s_MeetingInfoComparer);
 			m_CriticalSection = new SafeCriticalSection();
 
 			SupportedCalendarFeatures = eCalendarFeatures.ListBookings;

@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// </summary>
 		public event EventHandler OnBookingsChanged;
 
-		private readonly IcdOrderedDictionary<int, Booking> m_Bookings;
+		private readonly IcdSortedDictionary<int, Booking> m_Bookings;
 		private readonly SafeCriticalSection m_BookingsSection;
 
 		/// <summary>
@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		public BookingsComponent(CiscoCodecDevice codec)
 			: base(codec)
 		{
-			m_Bookings = new IcdOrderedDictionary<int, Booking>();
+			m_Bookings = new IcdSortedDictionary<int, Booking>();
 			m_BookingsSection = new SafeCriticalSection();
 
 			Subscribe(Codec);
