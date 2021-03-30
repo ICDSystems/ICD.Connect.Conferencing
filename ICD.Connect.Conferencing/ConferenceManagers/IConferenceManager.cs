@@ -207,6 +207,18 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		/// <summary>
+		/// Toggles the current camera privacy mute state.
+		/// </summary>
+		/// <param name="extends"></param>
+		public static void ToggleCameraPrivacyMute([NotNull] this IConferenceManager extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			extends.CameraPrivacyMuted = !extends.CameraPrivacyMuted;
+		}
+
+		/// <summary>
 		/// Returns the bitwise AND of the supported conference features for the active dialers.
 		/// </summary>
 		/// <param name="extends"></param>
