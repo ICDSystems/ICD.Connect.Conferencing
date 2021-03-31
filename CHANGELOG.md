@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
+ - Add IByodHubDevice & IByodHubDeviceSettings
  - Added property to Cisco Codec VideoComponent to determine if the codec supports video mute based on system software version.
  - Added cameras collection to IConferenceManager
  - Added features for room-wide camera privacy mute

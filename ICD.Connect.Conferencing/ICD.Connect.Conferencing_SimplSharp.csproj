@@ -75,6 +75,8 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BYOD\IByodHubDevice.cs" />
+    <Compile Include="BYOD\IByodHubDeviceSettings.cs" />
     <Compile Include="Cameras\IRemoteCamera.cs" />
     <Compile Include="Comparers\DirectoryFolderNameComparer.cs" />
     <Compile Include="ConferenceManagers\ConferenceManager.cs" />
