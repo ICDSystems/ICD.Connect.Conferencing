@@ -11,7 +11,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 		private static readonly char[] s_Delimiters =
 		{
 			'>',
-			':',
+			':'
 		};
 
 		/// <summary>
@@ -80,20 +80,19 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 							OnUsernamePrompt.Raise(this);
 							break;
 						}
-						else if (prompt.Contains("password"))
+
+						if (prompt.Contains("password"))
 						{
 							m_RxData.Clear();
 							OnPasswordPrompt.Raise(this);
 							break;
 						}
+						
 						// Unhandled colon, push it back onto the rx data
-						else
-						{
-							m_RxData.Append(':');
-							continue;
-						}
+						m_RxData.Append(':');
+						continue;
 
-					// Welcome prompt used to initialize
+						// Welcome prompt used to initialize
 					case '>':
 						if (prompt.Contains("vaddio interactive shell"))
 						{

@@ -954,11 +954,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void ServerOnSocketStateChange(object sender, SocketStateEventArgs args)
 		{
-			UpdateCachedOnlineStatus();
-		}
-
-		private void UpdateCachedOnlineStatus()
-		{
 			bool online = GetAreAdaptersOnlineStatus();
 			SetIsOnline(online);
 		}

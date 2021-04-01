@@ -29,7 +29,7 @@ namespace ICD.Connect.Conferencing.Mock
 		#region Private Memebers
 
 		private readonly List<ITraditionalParticipant> m_Sources;
-		private CodecInputTypes m_InputTypes;
+		private readonly CodecInputTypes m_InputTypes;
 
 		#endregion
 

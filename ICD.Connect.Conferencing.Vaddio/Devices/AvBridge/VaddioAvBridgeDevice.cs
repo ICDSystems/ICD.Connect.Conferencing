@@ -410,7 +410,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			SetPort(null);
 		}
 
-		protected override void ApplySettingsFinal(VaddioAvBridgeDeviceSettings settings, Settings.IDeviceFactory factory)
+		protected override void ApplySettingsFinal(VaddioAvBridgeDeviceSettings settings, IDeviceFactory factory)
 		{
 			base.ApplySettingsFinal(settings, factory);
 
