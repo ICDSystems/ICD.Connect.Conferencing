@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [17.2.2] - 2021-04-08
 ### Added
  - Cisco - added additional video connector signal states of "Unstable" "NotFound" and "Unsupported"
 
