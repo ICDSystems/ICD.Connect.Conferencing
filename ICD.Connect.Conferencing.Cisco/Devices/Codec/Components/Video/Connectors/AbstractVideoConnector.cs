@@ -28,7 +28,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video.Connecto
 	public enum eSignalState
 	{
 		[UsedImplicitly] Unknown,
-		[UsedImplicitly] Ok
+		[UsedImplicitly] Ok,
+		[UsedImplicitly] Unstable,
+		[UsedImplicitly] Unsupported,
+		[UsedImplicitly] NotFound
 	}
 #pragma warning restore 1591
 

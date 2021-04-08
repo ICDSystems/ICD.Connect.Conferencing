@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Added cameras collection to IConferenceManager
  - Added features for room-wide camera privacy mute
 
+## [17.2.2] - 2021-04-08
+### Added
+ - Cisco - added additional video connector signal states of "Unstable" "NotFound" and "Unsupported"
+
 ## [17.2.1] - 2021-02-18
 ### Changed
  - Fixed Cisco conference control supported features to be accurate

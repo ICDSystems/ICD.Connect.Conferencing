@@ -176,6 +176,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras
 		/// <summary>
 		/// Gets the speaker track status.
 		/// </summary>
+		/// <remarks>Sometimes this property will return Active, even if speakertrack is not available</remarks>
 		[PublicAPI]
 		public eSpeakerTrackStatus SpeakerTrackStatus
 		{
