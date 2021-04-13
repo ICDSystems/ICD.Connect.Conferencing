@@ -5,13 +5,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video
 {
 	public enum ePipPosition
 	{
-		[UsedImplicitly] CenterLeft,
-		[UsedImplicitly] CenterRight,
 		[UsedImplicitly] LowerLeft,
-		[UsedImplicitly] LowerRight,
-		[UsedImplicitly] UpperCenter,
+		[UsedImplicitly] CenterLeft,
 		[UsedImplicitly] UpperLeft,
-		[UsedImplicitly] UpperRight
+		[UsedImplicitly] UpperCenter,
+		[UsedImplicitly] UpperRight,
+		[UsedImplicitly] CenterRight,
+		[UsedImplicitly] LowerRight
 	}
 
 	/// <summary>
