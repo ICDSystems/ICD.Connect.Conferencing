@@ -10,6 +10,7 @@ using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Mute;

@@ -4,54 +4,6 @@ using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Participants
 {
-	public enum eCallDirection
-	{
-		Undefined = 0,
-		Incoming = 1,
-		Outgoing = 2
-	}
-
-	/// <summary>
-	/// Answer state
-	/// </summary>
-	public enum eCallAnswerState
-	{
-		/// <summary>
-		/// No known state
-		/// </summary>
-		Unknown = 0,
-
-		/// <summary>
-		/// Incoming: No decision has been made
-		/// Outgoing: Remote end has not answered call
-		/// </summary>
-		Unanswered = 1,
-
-		/// <summary>
-		/// Incoming: Call stopped without user action
-		/// Outgoing: N/A
-		/// </summary>
-		Ignored = 2,
-
-		/// <summary>
-		/// Incoming: When a call is actively rejected by the user, or DND setting
-		/// Outgoing: Call was rejected by far end - busy signal, DND, Error, etc
-		/// </summary>
-		Rejected = 3,
-
-		/// <summary>
-		/// Incoming: Automatically answered by the software
-		/// Outgoing: N/A
-		/// </summary>
-		AutoAnswered = 4,
-
-		/// <summary>
-		/// Incoming: Actively answered by the user
-		/// Outgoing: Call connected to far end
-		/// </summary>
-		Answered = 5
-	}
-
 	/// <summary>
 	/// A traditional participant represents a conference participant using traditional
 	/// conferencing protocols (SIP, H.323, PSTN/POTS)

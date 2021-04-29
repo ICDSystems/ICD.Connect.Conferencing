@@ -12,7 +12,7 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.System;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses;

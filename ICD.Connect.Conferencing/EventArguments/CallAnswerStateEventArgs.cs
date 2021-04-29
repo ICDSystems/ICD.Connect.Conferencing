@@ -1,5 +1,5 @@
-﻿using ICD.Connect.Conferencing.Participants;
-using ICD.Common.Utils.EventArguments;
+﻿using ICD.Common.Utils.EventArguments;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.EventArguments
 {

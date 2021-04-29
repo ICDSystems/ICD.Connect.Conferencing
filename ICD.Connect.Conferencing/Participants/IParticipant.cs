@@ -4,6 +4,7 @@ using ICD.Common.Utils.EventArguments;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Participants
 {

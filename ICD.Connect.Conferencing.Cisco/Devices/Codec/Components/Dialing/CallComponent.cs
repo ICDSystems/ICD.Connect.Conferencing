@@ -12,6 +12,7 @@ using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 {

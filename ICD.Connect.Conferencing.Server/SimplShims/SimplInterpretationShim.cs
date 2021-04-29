@@ -6,6 +6,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices.CrestronSPlus.SPlusShims;
 using ICD.Connect.Settings.CrestronSPlus.SPlusShims.EventArguments;

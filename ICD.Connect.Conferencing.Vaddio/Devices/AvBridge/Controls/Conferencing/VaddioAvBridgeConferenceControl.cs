@@ -11,6 +11,7 @@ using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
 

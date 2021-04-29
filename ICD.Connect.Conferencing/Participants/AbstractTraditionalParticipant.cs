@@ -6,6 +6,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Participants
 {
@@ -94,7 +95,6 @@ namespace ICD.Connect.Conferencing.Participants
 		public abstract void Resume();
 		public abstract void Hangup();
 		public abstract void SendDtmf(string data);
-
 
 		#region Console
 
