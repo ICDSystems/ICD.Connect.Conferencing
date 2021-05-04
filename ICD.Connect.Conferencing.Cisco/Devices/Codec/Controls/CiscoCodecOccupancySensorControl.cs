@@ -1,4 +1,5 @@
 ﻿using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.RoomAnalytics;
 using ICD.Connect.Partitioning.Commercial.Controls.Occupancy;
 
@@ -27,7 +28,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_Component = parent.Components.GetComponent<RoomAnalyticsComponent>();
 			Subscribe(m_Component);
 
-			UpdateOccupancyState();
+			UpdateState();
 		}
 
 		/// <summary>
@@ -46,10 +47,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <summary>
 		/// Updates the occupancy state to match the codec.
 		/// </summary>
-		private void UpdateOccupancyState()
+		private void UpdateState()
 		{
+			SetOccupancySupported(m_Component.PeoplePresenceDetectorEnabled);
+
 			ePeoplePresence peoplePresence = m_Component.PeoplePresence;
 			OccupancyState = s_PeoplePresenceToOccupancy.GetValue(peoplePresence);
+
+			UpdatePeopleCount(m_Component.PeopleCountCurrent);
+		}
+
+		private void UpdatePeopleCount(int peopleCount)
+		{
+			// <0 means people counting isn't turned on, so update supported features
+			bool supported = peopleCount >= 0;
+			
+			SetPeopleCountSupported(supported);
+			
+			PeopleCount = supported ? peopleCount : 0;
 		}
 
 		#endregion
@@ -62,7 +77,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="component"></param>
 		private void Subscribe(RoomAnalyticsComponent component)
 		{
+			component.OnPeoplePresenceDetectorEnabledChanged += ComponentOnOnPeoplePresenceDetectorEnabledChanged;
 			component.OnPeoplePresenceChanged += ComponentOnPeoplePresenceChanged;
+			component.OnPeopleCountCurrentChanged += ComponentOnOnPeopleCountCurrentChanged;
 		}
 
 		/// <summary>
@@ -71,7 +88,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="component"></param>
 		private void Unsubscribe(RoomAnalyticsComponent component)
 		{
+			component.OnPeoplePresenceDetectorEnabledChanged -= ComponentOnOnPeoplePresenceDetectorEnabledChanged;
 			component.OnPeoplePresenceChanged -= ComponentOnPeoplePresenceChanged;
+			component.OnPeopleCountCurrentChanged -= ComponentOnOnPeopleCountCurrentChanged;
+		}
+
+		private void ComponentOnOnPeoplePresenceDetectorEnabledChanged(object sender, BoolEventArgs args)
+		{
+			SetOccupancySupported(args.Data);
 		}
 
 		/// <summary>
@@ -81,7 +105,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="eventArgs"></param>
 		private void ComponentOnPeoplePresenceChanged(object sender, PeoplePresenceEventArgs eventArgs)
 		{
-			UpdateOccupancyState();
+			UpdateState();
+		}
+
+		private void ComponentOnOnPeopleCountCurrentChanged(object sender, IntEventArgs args)
+		{
+			UpdatePeopleCount(args.Data);
 		}
 
 		#endregion
