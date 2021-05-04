@@ -15,7 +15,7 @@ using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 {
-	public sealed class ZoomWebParticipant : AbstractWebParticipant
+	public sealed class ZoomParticipant : AbstractParticipant
 	{
 		/// <summary>
 		/// Raised when the participant can record state changes.
@@ -63,12 +63,22 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		/// <param name="callComponent"></param>
 		/// <param name="info"></param>
-		public ZoomWebParticipant(CallComponent callComponent, ParticipantInfo info)
+		public ZoomParticipant(CallComponent callComponent, ParticipantInfo info)
 		{
 			if (callComponent == null)
 				throw new ArgumentNullException("callComponent");
 
 			m_CallComponent = callComponent;
+
+			SupportedParticipantFeatures = eParticipantFeatures.GetName |
+			                               eParticipantFeatures.GetCallType |
+			                               eParticipantFeatures.GetCamera |
+			                               eParticipantFeatures.GetStatus |
+			                               eParticipantFeatures.GetIsMuted |
+			                               eParticipantFeatures.GetIsSelf |
+			                               eParticipantFeatures.GetIsHost |
+			                               eParticipantFeatures.Kick |
+			                               eParticipantFeatures.SetMute;
 
 			UserId = info.UserId;
 			StartTime = IcdEnvironment.GetUtcTime();
@@ -114,6 +124,11 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			}
 		}
 
+		public void AllowParticipantRecord(bool enabled)
+		{
+			m_CallComponent.AllowParticipantRecord(UserId, enabled);
+		}
+
 		public override void Kick()
 		{
 			m_CallComponent.ExpelParticipant(UserId);
@@ -124,9 +139,24 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			m_CallComponent.MuteParticipant(UserId, mute);
 		}
 
-		public void AllowParticipantRecord(bool enabled)
+		public override void Hold()
 		{
-			m_CallComponent.AllowParticipantRecord(UserId, enabled);
+			throw new NotSupportedException();
+		}
+
+		public override void Resume()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Hangup()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void SendDtmf(string data)
+		{
+			throw new NotSupportedException();
 		}
 
 		#endregion

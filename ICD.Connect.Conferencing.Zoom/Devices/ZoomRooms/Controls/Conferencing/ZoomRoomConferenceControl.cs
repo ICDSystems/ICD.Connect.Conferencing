@@ -6,36 +6,36 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Timers;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Participants.Enums;
+using ICD.Connect.Conferencing.Utils;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.System;
+using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.TraditionalCall;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses;
 using ICD.Connect.Protocol.Network.Ports.Web;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 {
-	public sealed class ZoomRoomConferenceControl : AbstractWebConferenceDeviceControl<ZoomRoom>
+	public sealed class ZoomRoomConferenceControl : AbstractConferenceDeviceControl<ZoomRoom, ZoomConference>
 	{
+		#region Constants
+
 		/// <summary>
 		/// How long to force the camera to stay muted after a meeting starts
 		/// </summary>
 		private const long KEEP_CAMERA_MUTED_DUE_TIME = 10 * 1000;
 
-		/// <summary>
-		/// Raised when a source is added to the conference component.
-		/// </summary>
-		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		#endregion
 
-		/// <summary>
-		/// Raised when a source is removed from the conference component.
-		/// </summary>
-		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
+		#region Events
 
 		/// <summary>
 		/// Raised when a source property changes.
@@ -47,16 +47,36 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
-		private static readonly Dictionary<string, string> s_PersonalToId;
+		/// <summary>
+		/// Raised when Zoom tells us the call out attempt failed.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<TraditionalZoomPhoneCallInfo>> OnCallOutFailed;
+
+		#endregion
+
+		#region Fields
 
 		private readonly CallComponent m_CallComponent;
 		private readonly SystemComponent m_SystemComponent;
+		private readonly TraditionalCallComponent m_TraditionalCallComponent;
 
-		private readonly ZoomWebConference m_Conference;
-		private readonly SafeCriticalSection m_IncomingCallsSection;
-		private readonly Dictionary<IIncomingCall, SafeTimer> m_IncomingCalls;
-		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
 		private readonly SafeCriticalSection m_InviteSection;
+		private readonly SafeCriticalSection m_IncomingCallsSection;
+		private readonly SafeCriticalSection m_ParticipantSection;
+
+		/// <summary>
+		/// Web based.
+		/// </summary>
+		private readonly Dictionary<IIncomingCall, SafeTimer> m_IncomingCalls;
+
+		/// <summary>
+		/// Traditional outgoing.
+		/// </summary>
+		private readonly IcdSortedDictionary<string, ThinParticipant> m_CallIdToParticipant;
+		private static readonly Dictionary<string, string> s_PersonalToId;
+		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
+
+		private readonly ZoomConference m_Conference;
 
 		private readonly HttpPort m_PersonalIdPort;
 
@@ -72,14 +92,18 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		private readonly SafeTimer m_KeepCameraMutedResetTimer;
 
+		#endregion
+
 		#region Properties
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
-		public override eCallType Supports { get { return eCallType.Video; } }
+		public override eCallType Supports { get { return eCallType.Audio | eCallType.Video; } }
 
 		#endregion
+
+		#region Constructors
 
 		/// <summary>
 		/// Static constructor.
@@ -99,26 +123,35 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		{
 			m_CallComponent = Parent.Components.GetComponent<CallComponent>();
 			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
+			m_TraditionalCallComponent = Parent.Components.GetComponent<TraditionalCallComponent>();
+
+			m_IncomingCallsSection = new SafeCriticalSection();
+			m_InviteSection = new SafeCriticalSection();
+			m_ParticipantSection = new SafeCriticalSection();
 
 			m_IncomingCalls = new Dictionary<IIncomingCall, SafeTimer>();
-			m_IncomingCallsSection = new SafeCriticalSection();
+			m_CallIdToParticipant = new IcdSortedDictionary<string, ThinParticipant>();
 			m_InviteOnMeetingStart = new IcdHashSet<string>();
-			m_InviteSection = new SafeCriticalSection();
+			
 			m_KeepCameraMutedResetTimer = SafeTimer.Stopped(ResetKeepCameraMuted);
 			m_PersonalIdPort = new HttpPort();
 
-			m_Conference = new ZoomWebConference(m_CallComponent);
+			m_Conference = new ZoomConference(m_CallComponent);
 			m_Conference.OnStatusChanged += ConferenceOnStatusChanged;
 
-			SupportedConferenceFeatures |= eConferenceFeatures.AutoAnswer;
-			SupportedConferenceFeatures |= eConferenceFeatures.DoNotDisturb;
-			SupportedConferenceFeatures |= eConferenceFeatures.PrivacyMute;
-			SupportedConferenceFeatures |= eConferenceFeatures.CameraMute;
-			SupportedConferenceFeatures |= eConferenceFeatures.CanDial;
-			SupportedConferenceFeatures |= eConferenceFeatures.CanEnd;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.AutoAnswer;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.DoNotDisturb;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.PrivacyMute;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.CameraMute;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.CanDial;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.CanEnd;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.Dtmf;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.CallLock;
+			SupportedConferenceControlFeatures |= eConferenceControlFeatures.HostInfoAvailable;
 
 			Subscribe(m_CallComponent);
 			Subscribe(m_SystemComponent);
+			Subscribe(m_TraditionalCallComponent);
 		}
 
 		/// <summary>
@@ -127,10 +160,9 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnConferenceAdded = null;
-			OnConferenceRemoved = null;
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
+			OnCallOutFailed = null;
 
 			base.DisposeFinal(disposing);
 
@@ -138,7 +170,10 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 			Unsubscribe(m_CallComponent);
 			Unsubscribe(m_SystemComponent);
+			Unsubscribe(m_TraditionalCallComponent);
 		}
+
+		#endregion
 
 		#region Methods
 
@@ -146,7 +181,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public override IEnumerable<IWebConference> GetConferences()
+		public override IEnumerable<ZoomConference> GetConferences()
 		{
 			yield return m_Conference;
 		}
@@ -165,7 +200,15 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			    dialContext.Protocol == eDialProtocol.ZoomPersonal)
 				return eDialContextSupport.Native;
 
-			return eDialContextSupport.Unsupported;
+			if (dialContext.Protocol == eDialProtocol.Sip && SipUtils.IsValidSipUri(dialContext.DialString))
+				return eDialContextSupport.Supported;
+
+			if (dialContext.Protocol == eDialProtocol.Pstn)
+				return eDialContextSupport.Supported;
+
+			return dialContext.Protocol == eDialProtocol.Unknown
+				       ? eDialContextSupport.Unknown
+				       : eDialContextSupport.Unsupported;
 		}
 
 		/// <summary>
@@ -174,6 +217,9 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <param name="dialContext"></param>
 		public override void Dial(IDialContext dialContext)
 		{
+			if (CanDial(dialContext) == eDialContextSupport.Unsupported)
+				throw new ArgumentException("The specified dial context is unsupported", "dialContext");
+
 			switch (dialContext.Protocol)
 			{
 				case eDialProtocol.Zoom:
@@ -208,6 +254,15 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 						m_CallComponent.StartMeeting(newDialString);
 					else
 						m_CallComponent.JoinMeeting(newDialString, dialContext.Password);
+					break;
+				case eDialProtocol.Pstn:
+				case eDialProtocol.Sip:
+					if (string.IsNullOrEmpty(dialContext.DialString) ||
+					    dialContext.DialString.Contains('*') ||
+					    dialContext.DialString.Contains('#'))
+						throw new ArgumentOutOfRangeException("dialContext", "Invalid Dial String");
+
+					PhoneCallOut(dialContext.DialString);
 					break;
 			}
 		}
@@ -398,6 +453,143 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			Match match = Regex.Match(response.ResponseUrl, zoomResponseRegex);
 			return s_PersonalToId[personal] = match.Groups["meeting"].Value;
 		}
+
+		#region PSTN/SIP
+
+		private void PhoneCallOut(string dialString)
+		{
+			if (m_CallIdToParticipant.Any())
+				throw new InvalidOperationException("Zoom Room only supports singular call out");
+
+			m_TraditionalCallComponent.PhoneCallOut(dialString);
+		}
+
+		private void Hangup(string callId)
+		{
+			if (!m_CallIdToParticipant.Any())
+				throw new InvalidOperationException("No active call to hangup");
+
+			m_TraditionalCallComponent.Hangup(callId);
+		}
+
+		private void SendDtmf(string callId, char data)
+		{
+			if (!m_CallIdToParticipant.Any())
+				throw new InvalidOperationException("No active call to send DTMF data to");
+
+			m_TraditionalCallComponent.SendDtmf(callId, data);
+		}
+
+		/// <summary>
+		/// Creates and/or updates a participant from the given call info.
+		/// </summary>
+		/// <param name="info"></param>
+		private void CreateOrUpdateCall(TraditionalZoomPhoneCallInfo info)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			ThinParticipant value;
+
+			m_ParticipantSection.Enter();
+
+			try
+			{
+				if (!m_CallIdToParticipant.TryGetValue(info.CallId, out value))
+				{
+					value = new ThinParticipant();
+					m_CallIdToParticipant.Add(info.CallId, value);
+					Subscribe(value);
+				}
+
+				UpdateCall(info);
+			}
+			finally
+			{
+				m_ParticipantSection.Leave();
+			}
+
+			AddParticipant(value);
+		}
+
+		/// <summary>
+		/// Removes the participants from the call info Id.
+		/// </summary>
+		/// <param name="info"></param>
+		private void RemoveCall(TraditionalZoomPhoneCallInfo info)
+		{
+			ThinParticipant value;
+
+			m_ParticipantSection.Enter();
+
+			try
+			{
+				if (!m_CallIdToParticipant.TryGetValue(info.CallId, out value))
+					return;
+
+				value.SetEnd(value.EndTime ?? IcdEnvironment.GetUtcTime());
+				value.SetStatus(eParticipantStatus.Disconnected);
+
+				Unsubscribe(value);
+
+				m_CallIdToParticipant.Remove(info.CallId);
+			}
+			finally
+			{
+				m_ParticipantSection.Leave();
+			}
+
+			RemoveParticipant(value);
+		}
+
+		/// <summary>
+		/// Updates the participant with the given call info.
+		/// </summary>
+		/// <param name="info"></param>
+		private void UpdateCall(TraditionalZoomPhoneCallInfo info)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			ThinParticipant value = m_ParticipantSection.Execute(() => m_CallIdToParticipant.GetDefault(info.CallId));
+			if (value == null)
+				return;
+
+			value.SetNumber(info.PeerNumber);
+			value.SetName(info.PeerDisplayName);
+			value.SetDirection(info.IsIncomingCall ? eCallDirection.Incoming : eCallDirection.Outgoing);
+			value.SetStatus(GetStatus(info.Status));
+			value.SetCallType(Supports);
+
+			if (value.GetIsOnline())
+				value.SetStart(value.StartTime ?? IcdEnvironment.GetUtcTime());
+		}
+
+		/// <summary>
+		/// Gets the participant status based on the zoom call status.
+		/// </summary>
+		/// <param name="status"></param>
+		/// <returns></returns>
+		private static eParticipantStatus GetStatus(eZoomPhoneCallStatus status)
+		{
+			switch (status)
+			{
+				case eZoomPhoneCallStatus.None:
+				case eZoomPhoneCallStatus.NotFound:
+				case eZoomPhoneCallStatus.Incoming:
+					return eParticipantStatus.Undefined;
+				case eZoomPhoneCallStatus.Ringing:
+					return eParticipantStatus.Ringing;
+				case eZoomPhoneCallStatus.Init:
+					return eParticipantStatus.Connecting;
+				case eZoomPhoneCallStatus.InCall:
+					return eParticipantStatus.Connected;
+				default:
+					throw new ArgumentOutOfRangeException("status");
+			}
+		}
+
+		#endregion
 
 		#endregion
 
@@ -606,6 +798,119 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 						CallType = eCallType.Video,
 						DialString = meetingNumber
 					};
+		}
+
+		#endregion
+
+		#region TraditionalCallComponent Callbacks
+
+		private void Subscribe(TraditionalCallComponent traditionalCallComponent)
+		{
+			traditionalCallComponent.OnCallStatusChanged += CallComponentOnCallStatusChanged;
+			traditionalCallComponent.OnCallTerminated += CallComponentOnCallTerminated;
+		}
+
+		private void Unsubscribe(TraditionalCallComponent traditionalCallComponent)
+		{
+			traditionalCallComponent.OnCallStatusChanged -= CallComponentOnCallStatusChanged;
+			traditionalCallComponent.OnCallTerminated -= CallComponentOnCallTerminated;
+		}
+
+		private void CallComponentOnCallStatusChanged(object sender, GenericEventArgs<TraditionalZoomPhoneCallInfo> args)
+		{
+			TraditionalZoomPhoneCallInfo data = args.Data;
+			if (data == null)
+				return;
+
+			switch (data.Status)
+			{
+				case eZoomPhoneCallStatus.None:
+				case eZoomPhoneCallStatus.NotFound:
+					break;
+
+				case eZoomPhoneCallStatus.CallOutFailed:
+					Parent.Logger.Log(eSeverity.Warning, "ZoomRoom PSTN Call Out Failed!");
+					OnCallOutFailed.Raise(this, new GenericEventArgs<TraditionalZoomPhoneCallInfo>(data));
+					break;
+
+				// Zoom doesn't support answering incoming calls so we pretend they don't exist
+				case eZoomPhoneCallStatus.Incoming:
+					break;
+
+				case eZoomPhoneCallStatus.Ringing:
+				case eZoomPhoneCallStatus.Init:
+				case eZoomPhoneCallStatus.InCall:
+					CreateOrUpdateCall(data);
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		private void CallComponentOnCallTerminated(object sender, GenericEventArgs<TraditionalZoomPhoneCallInfo> args)
+		{
+			TraditionalZoomPhoneCallInfo data = args.Data;
+			if (data != null)
+				RemoveCall(data);
+		}
+
+		#endregion
+
+		#region PSTN/SIP Participant Callbacks
+
+		/// <summary>
+		/// Subscribe to the participant events.
+		/// </summary>
+		/// <param name="value"></param>
+		private void Subscribe(ThinParticipant value)
+		{
+			value.HangupCallback = HangupCallback;
+			value.SendDtmfCallback = SendDtmfCallback;
+			value.HoldCallback = HoldCallback;
+			value.ResumeCallback = ResumeCallback;
+		}
+
+		/// <summary>
+		/// Unsubscribe from the participant events.
+		/// </summary>
+		/// <param name="value"></param>
+		private void Unsubscribe(ThinParticipant value)
+		{
+			value.HangupCallback = null;
+			value.SendDtmfCallback = null;
+			value.HoldCallback = null;
+			value.ResumeCallback = null;
+		}
+
+		private void SendDtmfCallback(ThinParticipant sender, string data)
+		{
+			string callId = GetIdForParticipant(sender);
+
+			foreach (char index in data)
+				SendDtmf(callId, index);
+		}
+
+		private void HangupCallback(ThinParticipant sender)
+		{
+			string callId = GetIdForParticipant(sender);
+
+			Hangup(callId);
+		}
+
+		private string GetIdForParticipant(ThinParticipant value)
+		{
+			return m_ParticipantSection.Execute(() => m_CallIdToParticipant.GetKey(value));
+		}
+
+		private void HoldCallback(ThinParticipant sender)
+		{
+			Parent.Logger.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
+		}
+
+		private void ResumeCallback(ThinParticipant sender)
+		{
+			Parent.Logger.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
 		}
 
 		#endregion

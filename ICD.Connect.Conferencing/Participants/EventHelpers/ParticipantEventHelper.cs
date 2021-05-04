@@ -10,21 +10,21 @@ namespace ICD.Connect.Conferencing.Participants.EventHelpers
 	/// <summary>
 	/// Used to easily subscribe to all IParticipant events with one common callback
 	/// </summary>
-	public abstract class AbstractParticipantEventHelper<T>: IDisposable where T: class, IParticipant
+	public sealed class ParticipantEventHelper
 	{
 		private readonly SafeCriticalSection m_ParticipantsSection;
-		private readonly List<T> m_SubscribedParticipants;
-		private readonly Action<T> m_Callback;
+		private readonly List<IParticipant> m_SubscribedParticipants;
+		private readonly Action<IParticipant> m_Callback;
 
-		protected Action<T> Callback
+		private Action<IParticipant> Callback
 		{
 			get { return m_Callback; }
 		}
 
-		protected AbstractParticipantEventHelper(Action<T> callback)
+		public ParticipantEventHelper(Action<IParticipant> callback)
 		{
 			m_ParticipantsSection = new SafeCriticalSection();
-			m_SubscribedParticipants = new List<T>();
+			m_SubscribedParticipants = new List<IParticipant>();
 			m_Callback = callback;
 		}
 
@@ -35,7 +35,7 @@ namespace ICD.Connect.Conferencing.Participants.EventHelpers
 
 		#region Methods
 
-		public void Subscribe(T participant)
+		public void Subscribe(IParticipant participant)
 		{
 			if (participant == null)
 				return;
@@ -55,7 +55,7 @@ namespace ICD.Connect.Conferencing.Participants.EventHelpers
 			}
 		}
 
-		public void Unsubscribe(T participant)
+		public void Unsubscribe(IParticipant participant)
 		{
 			if (participant == null)
 				return;
@@ -93,33 +93,40 @@ namespace ICD.Connect.Conferencing.Participants.EventHelpers
 
 		#region IParticipant Callbacks
 
-		protected virtual void SubscribeInternal(T participant)
+		private void SubscribeInternal(IParticipant participant)
 		{
 			participant.OnNameChanged += ParticipantOnNameChanged;
 			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
 			participant.OnStatusChanged += ParticipantOnStatusChanged;
+			participant.OnNumberChanged += ParticipantOnNumberChanged;
 		}
 
-		protected virtual void UnsubscribeInternal(T participant)
+		private void UnsubscribeInternal(IParticipant participant)
 		{
 			participant.OnNameChanged -= ParticipantOnNameChanged;
 			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
 			participant.OnStatusChanged -= ParticipantOnStatusChanged;
+			participant.OnNumberChanged -= ParticipantOnNumberChanged;
 		}
 
 		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs participantStatusEventArgs)
 		{
-			Callback(sender as T);
+			Callback(sender as IParticipant);
 		}
 
 		private void ParticipantOnParticipantTypeChanged(object sender, CallTypeEventArgs callTypeEventArgs)
 		{
-			Callback(sender as T);
+			Callback(sender as IParticipant);
 		}
 
 		private void ParticipantOnNameChanged(object sender, StringEventArgs e)
 		{
-			Callback(sender as T);
+			Callback(sender as IParticipant);
+		}
+
+		private void ParticipantOnNumberChanged(object sender, StringEventArgs stringEventArgs)
+		{
+			Callback(sender as IParticipant);
 		}
 
 		#endregion

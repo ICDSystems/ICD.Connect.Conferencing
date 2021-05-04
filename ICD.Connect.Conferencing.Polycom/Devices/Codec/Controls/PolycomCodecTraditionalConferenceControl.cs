@@ -5,6 +5,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -20,12 +21,12 @@ using eDialProtocol = ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
-	public sealed class PolycomCodecTraditionalConferenceControl : AbstractTraditionalConferenceDeviceControl<PolycomGroupSeriesDevice>
+	public sealed class PolycomCodecTraditionalConferenceControl : AbstractConferenceDeviceControl<PolycomGroupSeriesDevice, Conference>
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
-		private readonly BiDictionary<int, ThinTraditionalParticipant> m_Participants;
+		private readonly BiDictionary<int, ThinParticipant> m_Participants;
 		private readonly BiDictionary<int, TraditionalIncomingCall> m_IncomingCalls;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
@@ -54,7 +55,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public PolycomCodecTraditionalConferenceControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
-			m_Participants = new BiDictionary<int, ThinTraditionalParticipant>();
+			m_Participants = new BiDictionary<int, ThinParticipant>();
 			m_IncomingCalls = new BiDictionary<int, TraditionalIncomingCall>();
 			m_ParticipantsSection = new SafeCriticalSection();
 
@@ -63,15 +64,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			m_MuteComponent = parent.Components.GetComponent<MuteComponent>();
 			m_SystemSettingComponent = parent.Components.GetComponent<SystemSettingComponent>();
 
-			SupportedConferenceFeatures =
-				eConferenceFeatures.AutoAnswer |
-				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute |
-				eConferenceFeatures.CameraMute |
-				eConferenceFeatures.Hold |
-				eConferenceFeatures.Dtmf |
-				eConferenceFeatures.CanDial |
-				eConferenceFeatures.CanEnd;
+			SupportedConferenceControlFeatures =
+				eConferenceControlFeatures.AutoAnswer |
+				eConferenceControlFeatures.DoNotDisturb |
+				eConferenceControlFeatures.PrivacyMute |
+				eConferenceControlFeatures.CameraMute |
+				eConferenceControlFeatures.Hold |
+				eConferenceControlFeatures.Dtmf |
+				eConferenceControlFeatures.CanDial |
+				eConferenceControlFeatures.CanEnd;
 
 			Subscribe(m_DialComponent);
 			Subscribe(m_AutoAnswerComponent);
@@ -99,6 +100,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		}
 
 		#region Methods
+
+		public override IEnumerable<Conference> GetConferences()
+		{
+			// TODO - should this just yield break???
+			yield break;
+		}
 
 		/// <summary>
 		/// Returns the level of support the dialer has for the given booking.
@@ -179,6 +186,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public override void SetCameraMute(bool mute)
 		{
 			m_MuteComponent.MuteVideo(mute);
+		}
+
+		public override void StartPersonalMeeting()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void EnableCallLock(bool enabled)
+		{
+			throw new NotSupportedException();
 		}
 
 		#endregion
@@ -317,7 +334,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// <param name="id"></param>
 		private void RemoveSource(int id)
 		{
-			ThinTraditionalParticipant source;
+			ThinParticipant source;
 
 			m_ParticipantsSection.Enter();
 
@@ -356,7 +373,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinTraditionalParticipant source;
+			ThinParticipant source;
 
 			m_ParticipantsSection.Enter();
 
@@ -365,7 +382,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				if (m_Participants.ContainsKey(callStatus.CallId))
 					return;
 
-				source = new ThinTraditionalParticipant();
+				source = new ThinParticipant();
 				m_Participants.Add(callStatus.CallId, source);
 
 				UpdateSource(callStatus);
@@ -388,7 +405,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinTraditionalParticipant source = m_ParticipantsSection.Execute(() => m_Participants.GetDefault(callStatus.CallId, null));
+			ThinParticipant source = m_ParticipantsSection.Execute(() => m_Participants.GetDefault(callStatus.CallId, null));
 			if (source == null)
 				return;
 
@@ -551,7 +568,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// Subscribe to the source events.
 		/// </summary>
 		/// <param name="source"></param>
-		private void Subscribe(ThinTraditionalParticipant source)
+		private void Subscribe(ThinParticipant source)
 		{
 			
 			source.HoldCallback = HoldCallback;
@@ -564,7 +581,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// Unsubscribe from the source events.
 		/// </summary>
 		/// <param name="source"></param>
-		private void Unsubscribe(ThinTraditionalParticipant source)
+		private void Unsubscribe(ThinParticipant source)
 		{
 			source.HoldCallback = null;
 			source.ResumeCallback = null;
@@ -572,33 +589,33 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			source.HangupCallback = null;
 		}
 
-		private void HangupCallback(ThinTraditionalParticipant sender)
+		private void HangupCallback(ThinParticipant sender)
 		{
 			int id = GetIdForSource(sender);
 
 			m_DialComponent.HangupVideo(id);
 		}
 
-		private void SendDtmfCallback(ThinTraditionalParticipant sender, string data)
+		private void SendDtmfCallback(ThinParticipant sender, string data)
 		{
 			data.ForEach(c => m_DialComponent.Gendial(c));
 		}
 
-		private void ResumeCallback(ThinTraditionalParticipant sender)
+		private void ResumeCallback(ThinParticipant sender)
 		{
 			m_RequestedHold = false;
 
 			UpdateMute();
 		}
 
-		private void HoldCallback(ThinTraditionalParticipant sender)
+		private void HoldCallback(ThinParticipant sender)
 		{
 			m_RequestedHold = true;
 
 			UpdateMute();
 		}
 
-		private int GetIdForSource(ThinTraditionalParticipant source)
+		private int GetIdForSource(ThinParticipant source)
 		{
 			return m_ParticipantsSection.Execute(() => m_Participants.GetKey(source));
 		}

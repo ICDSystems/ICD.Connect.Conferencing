@@ -16,7 +16,7 @@ using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 {
-	public sealed class ZoomWebConference : IWebConference
+	public sealed class ZoomConference : IConference
 	{
 		/// <summary>
 		/// Raised when a participant is added to the conference.
@@ -48,7 +48,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		public event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
 
-		private readonly IcdSortedDictionary<string, ZoomWebParticipant> m_Participants;
+		private readonly IcdSortedDictionary<string, ZoomParticipant> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private readonly CallComponent m_CallComponent;
@@ -120,12 +120,12 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// Constructor.
 		/// </summary>
 		/// <param name="callComponent"></param>
-		public ZoomWebConference(CallComponent callComponent)
+		public ZoomConference(CallComponent callComponent)
 		{
 			if (callComponent == null)
 				throw new ArgumentNullException("callComponent");
 
-			m_Participants = new IcdSortedDictionary<string, ZoomWebParticipant>();
+			m_Participants = new IcdSortedDictionary<string, ZoomParticipant>();
 			m_ParticipantsSection = new SafeCriticalSection();
 
 			m_CallComponent = callComponent;
@@ -156,7 +156,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// Gets the sources in this conference.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<IWebParticipant> GetParticipants()
+		public IEnumerable<IParticipant> GetParticipants()
 		{
 			return m_ParticipantsSection.Execute(() => m_Participants.Values.ToArray());
 		}
@@ -167,7 +167,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <returns></returns>
 		IEnumerable<IParticipant> IConference.GetParticipants()
 		{
-			return GetParticipants().Cast<IParticipant>();
+			return GetParticipants();
 		}
 
 		#endregion
@@ -178,7 +178,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// Adds the participant to the conference.
 		/// </summary>
 		/// <param name="participant"></param>
-		private void AddParticipant([NotNull] ZoomWebParticipant participant)
+		private void AddParticipant([NotNull] ZoomParticipant participant)
 		{
 			if (participant == null)
 				throw new ArgumentNullException("participant");
@@ -192,7 +192,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// Removes the participant from the conference.
 		/// </summary>
 		/// <param name="participant"></param>
-		private void RemoveParticipant([NotNull] ZoomWebParticipant participant)
+		private void RemoveParticipant([NotNull] ZoomParticipant participant)
 		{
 			if (participant == null)
 				throw new ArgumentNullException("participant");
@@ -206,7 +206,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		private void Clear()
 		{
-			foreach (ZoomWebParticipant participant in GetParticipants().Cast<ZoomWebParticipant>())
+			foreach (ZoomParticipant participant in GetParticipants().Cast<ZoomParticipant>())
 				RemoveParticipant(participant);
 		}
 
@@ -234,7 +234,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <param name="eventArgs"></param>
 		private void CallComponentOnParticipantRemoved(object sender, GenericEventArgs<ParticipantInfo> eventArgs)
 		{
-			ZoomWebParticipant participant;
+			ZoomParticipant participant;
 
 			m_ParticipantsSection.Enter();
 
@@ -260,12 +260,12 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <param name="eventArgs"></param>
 		private void CallComponentOnParticipantAdded(object sender, GenericEventArgs<ParticipantInfo> eventArgs)
 		{
-			ZoomWebParticipant participant =
+			ZoomParticipant participant =
 				m_ParticipantsSection.Execute(() => m_Participants.GetDefault(eventArgs.Data.UserId));
 
 			if (participant == null)
 			{
-				participant = new ZoomWebParticipant(m_CallComponent, eventArgs.Data);
+				participant = new ZoomParticipant(m_CallComponent, eventArgs.Data);
 				AddParticipant(participant);
 			}
 			else
@@ -279,12 +279,12 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <param name="eventArgs"></param>
 		private void CallComponentOnParticipantUpdated(object sender, GenericEventArgs<ParticipantInfo> eventArgs)
 		{
-			ZoomWebParticipant participant =
+			ZoomParticipant participant =
 				m_ParticipantsSection.Execute(() => m_Participants.GetDefault(eventArgs.Data.UserId));
 
 			if (participant == null)
 			{
-				participant = new ZoomWebParticipant(m_CallComponent, eventArgs.Data);
+				participant = new ZoomParticipant(m_CallComponent, eventArgs.Data);
 				AddParticipant(participant);
 			}
 			else

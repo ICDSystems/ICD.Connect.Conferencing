@@ -467,7 +467,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			bool privacyMute = m_ConferenceManager.PrivacyMuted;
-			if (conferenceControl.PrivacyMuted != privacyMute && conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute))
+			if (conferenceControl.PrivacyMuted != privacyMute && conferenceControl.SupportedConferenceControlFeatures.HasFlag(eConferenceControlFeatures.PrivacyMute))
 				conferenceControl.SetPrivacyMute(privacyMute);
 		}
 
@@ -484,7 +484,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			// Enforce auto-answer
-			if (conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.AutoAnswer))
+			if (conferenceControl.SupportedConferenceControlFeatures.HasFlag(eConferenceControlFeatures.AutoAnswer))
 			{
 				switch (m_ConferenceManager.EnforceAutoAnswer)
 				{
@@ -502,7 +502,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			// Enforce do-not-disturb
-			if (conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.DoNotDisturb))
+			if (conferenceControl.SupportedConferenceControlFeatures.HasFlag(eConferenceControlFeatures.DoNotDisturb))
 			{
 				switch (m_ConferenceManager.EnforceDoNotDisturb)
 				{
@@ -523,14 +523,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 
 			// Enforce privacy mute
 			bool privacyMute = m_ConferenceManager.PrivacyMuted;
-			if (point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Set) &&
-				conferenceControl.PrivacyMuted != privacyMute &&
-			    conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute))
+			if (point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Set) && conferenceControl.PrivacyMuted != privacyMute && conferenceControl.SupportedConferenceControlFeatures.HasFlag(eConferenceControlFeatures.PrivacyMute))
 				conferenceControl.SetPrivacyMute(privacyMute);
 
 			// Enforce camera privacy mute
 			bool cameraPrivacyMute = m_ConferenceManager.CameraPrivacyMuted;
-			if (conferenceControl.CameraMute != cameraPrivacyMute && conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.CameraMute))
+			if (conferenceControl.CameraMute != cameraPrivacyMute && conferenceControl.SupportedConferenceControlFeatures.HasFlag(eConferenceControlFeatures.CameraMute))
 				conferenceControl.SetCameraMute(cameraPrivacyMute);
 		}
 

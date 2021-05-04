@@ -254,7 +254,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			// Can we mute the active conference controls?
 			return m_Dialers.GetActiveDialers()
 			                .AnyAndAll(d =>
-			                           d.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute));
+			                           d.SupportedConferenceControlFeatures.HasFlag(eConferenceControlFeatures.PrivacyMute));
 		}
 
 		#endregion

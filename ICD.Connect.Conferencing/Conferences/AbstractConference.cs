@@ -230,6 +230,20 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		/// <summary>
+		/// Leaves the conference, keeping the conference in tact for other participants.
+		/// </summary>
+		public virtual void LeaveConference()
+		{
+		}
+
+		/// <summary>
+		/// Ends the conference for all participants.
+		/// </summary>
+		public virtual void EndConference()
+		{
+		}
+
+		/// <summary>
 		/// Gets the sources in this conference.
 		/// </summary>
 		/// <returns></returns>

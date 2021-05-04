@@ -172,7 +172,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<ITraditionalParticipant> GetSources()
+		public IEnumerable<IParticipant> GetSources()
 		{
 			return m_CallComponentsSection.Execute(() => m_CallComponents.OrderValuesByKey().ToArray());
 		}

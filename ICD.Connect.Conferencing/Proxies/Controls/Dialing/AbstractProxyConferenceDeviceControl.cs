@@ -19,6 +19,8 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 	public abstract class AbstractProxyConferenceDeviceControl<T> : AbstractProxyDeviceControl, IProxyConferenceDeviceControl<T>
 		where T : IConference
 	{
+		#region Events
+
 		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 		public event EventHandler<GenericEventArgs<IDialContext>> OnCallInInfoChanged;
@@ -28,13 +30,25 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<BoolEventArgs> OnPrivacyMuteChanged;
 		public event EventHandler<BoolEventArgs> OnCameraMuteChanged;
+		public event EventHandler<BoolEventArgs> OnSipEnabledChanged;
+		public event EventHandler<StringEventArgs> OnSipLocalNameChanged;
+		public event EventHandler<StringEventArgs> OnSipRegistrationStatusChanged;
+		public event EventHandler<BoolEventArgs> OnCallLockChanged;
+		public event EventHandler<BoolEventArgs> OnAmIHostChanged;
 		public event EventHandler<ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs> OnSupportedConferenceFeaturesChanged;
+
+		#endregion
 
 		private bool m_AutoAnswer;
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
 		private bool m_CameraMute;
-		private eConferenceFeatures m_SupportedConferenceFeatures;
+		private bool m_SipIsRegistered;
+		private string m_SipLocalName;
+		private string m_SipRegistrationStatus;
+		private bool m_AmIHost;
+		private bool m_CallLock;
+		private eConferenceControlFeatures m_SupportedConferenceControlFeatures;
 		private IDialContext m_CallInInfo;
 
 		#region Properties
@@ -111,6 +125,9 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 			}
 		}
 
+		/// <summary>
+		/// Gets the current camera mute state.
+		/// </summary>
 		public bool CameraMute
 		{
 			get { return m_CameraMute; }
@@ -126,23 +143,104 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 			}
 		}
 
-		/// <summary>
-		/// Returns the features that are supported by this conference control.
-		/// </summary>
-		public eConferenceFeatures SupportedConferenceFeatures
+		public bool SipIsRegistered
 		{
-			get { return m_SupportedConferenceFeatures; }
+			get { return m_SipIsRegistered; }
 			[UsedImplicitly]
 			private set
 			{
-				if (value == m_SupportedConferenceFeatures)
+				if (value == m_SipIsRegistered)
 					return;
 
-				m_SupportedConferenceFeatures = value;
+				m_SipIsRegistered = value;
+
+				OnSipEnabledChanged.Raise(this, new BoolEventArgs(m_SipIsRegistered));
+			}
+		}
+
+		public string SipLocalName
+		{
+			get { return m_SipLocalName; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_SipLocalName)
+					return;
+
+				m_SipLocalName = value;
+
+				OnSipLocalNameChanged.Raise(this, new StringEventArgs(m_SipLocalName));
+			}
+		}
+
+		public string SipRegistrationStatus
+		{
+			get { return m_SipRegistrationStatus; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_SipRegistrationStatus)
+					return;
+
+				m_SipRegistrationStatus = value;
+
+				OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(m_SipRegistrationStatus));
+			}
+		}
+
+		/// <summary>
+		/// Returns true if we are the host of the active conference.
+		/// </summary>
+		public bool AmIHost
+		{
+			get { return m_AmIHost; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_AmIHost)
+					return;
+
+				m_AmIHost = value;
+
+				OnAmIHostChanged.Raise(this, new BoolEventArgs(m_AmIHost));
+			}
+		}
+
+		/// <summary>
+		/// Gets the CallLock State.
+		/// </summary>
+		public bool CallLock
+		{
+			get { return m_CallLock; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_CallLock)
+					return;
+
+				m_CallLock = value;
+
+				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
+			}
+		}
+
+		/// <summary>
+		/// Returns the features that are supported by this conference control.
+		/// </summary>
+		public eConferenceControlFeatures SupportedConferenceControlFeatures
+		{
+			get { return m_SupportedConferenceControlFeatures; }
+			[UsedImplicitly]
+			private set
+			{
+				if (value == m_SupportedConferenceControlFeatures)
+					return;
+
+				m_SupportedConferenceControlFeatures = value;
 
 				OnSupportedConferenceFeaturesChanged.Raise(this,
 				                                           new ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs(
-					                                           m_SupportedConferenceFeatures));
+					                                           m_SupportedConferenceControlFeatures));
 			}
 		}
 
@@ -178,6 +276,11 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 			OnPrivacyMuteChanged = null;
 			OnCallInInfoChanged = null;
 			OnCameraMuteChanged = null;
+			OnSipEnabledChanged = null;
+			OnSipLocalNameChanged = null;
+			OnSipRegistrationStatusChanged = null;
+			OnCallLockChanged = null;
+			OnAmIHostChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -255,8 +358,24 @@ namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 			CallMethod(ConferenceDeviceControlApi.METHOD_SET_CAMERA_MUTE, mute);
 		}
 
-		#endregion
+		/// <summary>
+		/// Starts a personal meeting.
+		/// </summary>
+		public void StartPersonalMeeting()
+		{
+			CallMethod(ConferenceDeviceControlApi.METHOD_START_PERSONAL_MEETING);
+		}
 
+		/// <summary>
+		/// Locks the current active conference so no more participants may join.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public void EnableCallLock(bool enabled)
+		{
+			CallMethod(ConferenceDeviceControlApi.METHOD_ENABLE_CALL_LOCK, enabled);
+		}
+
+		#endregion
 
 		#region Console
 

@@ -40,16 +40,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			if (participant == null)
 				throw new ArgumentNullException("participant");
 
-			var traditionalParticipant = participant as ITraditionalParticipant;
-
 			Name = participant.Name;
-			Number = traditionalParticipant == null ? null : traditionalParticipant.Number;
+			Number = participant.Number;
 			StartTime = participant.StartTime;
 			EndTime = participant.EndTime;
-			Direction = traditionalParticipant == null ? eCallDirection.Undefined : traditionalParticipant.Direction;
-			AnswerState = traditionalParticipant == null
-				              ? eCallAnswerState.Unknown
-				              : traditionalParticipant.AnswerState;
+			Direction = participant.Direction;
+			AnswerState = participant.AnswerState;
 			CallType = participant.CallType;
 		}
 
@@ -60,17 +56,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			if (participant == null)
 				return;
 
-			participant.OnNameChanged += ParticipantOnOnNameChanged;
-			participant.OnParticipantTypeChanged += ParticipantOnOnParticipantTypeChanged;
-			participant.OnStartTimeChanged += ParticipantOnOnStartTimeChanged;
-			participant.OnEndTimeChanged += ParticipantOnOnEndTimeChanged;
+			participant.OnNameChanged += ParticipantOnNameChanged;
+			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
+			participant.OnStartTimeChanged += ParticipantOnStartTimeChanged;
+			participant.OnEndTimeChanged += ParticipantOnEndTimeChanged;
+			participant.OnNumberChanged += ParticipantOnNumberChanged;
+			participant.OnAnswerStateChanged += ParticipantOnAnswerStateChanged;
 
-			var traditionalParticipant = participant as ITraditionalParticipant;
-			if (traditionalParticipant != null)
-			{
-				traditionalParticipant.OnNumberChanged += TraditionalParticipantOnOnNumberChanged;
-				traditionalParticipant.OnAnswerStateChanged += TraditionalParticipantOnOnAnswerStateChanged;
-			}
 		}
 
 		public void Unsubscribe(IParticipant participant)
@@ -78,45 +70,40 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			if (participant == null)
 				return;
 
-			participant.OnNameChanged -= ParticipantOnOnNameChanged;
-			participant.OnParticipantTypeChanged -= ParticipantOnOnParticipantTypeChanged;
-			participant.OnStartTimeChanged -= ParticipantOnOnStartTimeChanged;
-			participant.OnEndTimeChanged -= ParticipantOnOnEndTimeChanged;
-
-			var traditionalParticipant = participant as ITraditionalParticipant;
-			if (traditionalParticipant != null)
-			{
-				traditionalParticipant.OnNumberChanged -= TraditionalParticipantOnOnNumberChanged;
-				traditionalParticipant.OnAnswerStateChanged -= TraditionalParticipantOnOnAnswerStateChanged;
-			}
+			participant.OnNameChanged -= ParticipantOnNameChanged;
+			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
+			participant.OnStartTimeChanged -= ParticipantOnStartTimeChanged;
+			participant.OnEndTimeChanged -= ParticipantOnEndTimeChanged;
+			participant.OnNumberChanged -= ParticipantOnNumberChanged;
+			participant.OnAnswerStateChanged -= ParticipantOnAnswerStateChanged;
 		}
 
-		private void ParticipantOnOnNameChanged(object sender, StringEventArgs args)
+		private void ParticipantOnNameChanged(object sender, StringEventArgs args)
 		{
 			Name = args.Data;
 		}
 
-		private void ParticipantOnOnParticipantTypeChanged(object sender, CallTypeEventArgs args)
+		private void ParticipantOnParticipantTypeChanged(object sender, CallTypeEventArgs args)
 		{
 			CallType = args.Data;
 		}
 
-		private void ParticipantOnOnStartTimeChanged(object sender, DateTimeNullableEventArgs args)
+		private void ParticipantOnStartTimeChanged(object sender, DateTimeNullableEventArgs args)
 		{
 			StartTime = args.Data;
 		}
 
-		private void ParticipantOnOnEndTimeChanged(object sender, DateTimeNullableEventArgs args)
+		private void ParticipantOnEndTimeChanged(object sender, DateTimeNullableEventArgs args)
 		{
 			EndTime = args.Data;
 		}
 
-		private void TraditionalParticipantOnOnNumberChanged(object sender, StringEventArgs args)
+		private void ParticipantOnNumberChanged(object sender, StringEventArgs args)
 		{
 			Number = args.Data;
 		}
 
-		private void TraditionalParticipantOnOnAnswerStateChanged(object sender, CallAnswerStateEventArgs args)
+		private void ParticipantOnAnswerStateChanged(object sender, CallAnswerStateEventArgs args)
 		{
 			AnswerState = args.Data;
 		}

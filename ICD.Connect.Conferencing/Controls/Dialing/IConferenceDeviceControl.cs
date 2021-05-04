@@ -17,7 +17,7 @@ using ICD.Connect.Telemetry.Attributes;
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
 	[Flags]
-	public enum eConferenceFeatures
+	public enum eConferenceControlFeatures
 	{
 		None = 0,
 
@@ -59,7 +59,17 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Supports the ability to end conferences.
 		/// </summary>
-		CanEnd = 128
+		CanEnd = 128,
+
+		/// <summary>
+		/// Supports locking the call, preventing new participants from joining.
+		/// </summary>
+		CallLock = 256,
+
+		/// <summary>
+		/// Indicates if information about the call host is available.
+		/// </summary>
+		HostInfoAvailable = 512
 	}
 
 	/// <summary>
@@ -79,7 +89,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		#endregion
 	}
 
-	[ApiClass(typeof(ProxyTraditionalConferenceDeviceControl), typeof(IDeviceControl))]
+	[ApiClass(typeof(ProxyConferenceDeviceControl), typeof(IDeviceControl))]
 	[ExternalTelemetry("Conference Device", typeof(DialingDeviceExternalTelemetryProvider))]
 	public interface IConferenceDeviceControl : IDeviceControl
 	{
@@ -129,6 +139,31 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
 		/// <summary>
+		/// Raised when the Sip enabled state changes.
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnSipEnabledChanged;
+
+		/// <summary>
+		/// Raised when the Sip local name changes.
+		/// </summary>
+		event EventHandler<StringEventArgs> OnSipLocalNameChanged;
+
+		/// <summary>
+		/// Raised when the Sip registration status changes.
+		/// </summary>
+		event EventHandler<StringEventArgs> OnSipRegistrationStatusChanged;
+
+		/// <summary>
+		/// Raised when the call lock status changes.
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnCallLockChanged;
+
+		/// <summary>
+		/// Raised when we start/stop being the host of the active conference.
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnAmIHostChanged;
+
+		/// <summary>
 		/// Raised when the supported conference features change.
 		/// </summary>
 		[ApiEvent(ConferenceDeviceControlApi.EVENT_SUPPORTED_CONFERENCE_FEATURES_CHANGED,
@@ -142,7 +177,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_SUPPORTED_CONFERENCE_FEATURES,
 			ConferenceDeviceControlApi.HELP_PROPERTY_SUPPORTED_CONFERENCE_FEATURES)]
-		eConferenceFeatures SupportedConferenceFeatures { get; }
+		eConferenceControlFeatures SupportedConferenceControlFeatures { get; }
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
@@ -182,6 +217,20 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_CAMERA_MUTE, ConferenceDeviceControlApi.HELP_PROPERTY_CAMERA_MUTE)]
 		bool CameraMute { get; }
+
+		bool SipIsRegistered { get; }
+		string SipLocalName { get; }
+		string SipRegistrationStatus { get; }
+
+		/// <summary>
+		/// Returns true if we are the host of the active conference.
+		/// </summary>
+		bool AmIHost { get; }
+
+		/// <summary>
+		/// Gets the CallLock State.
+		/// </summary>
+		bool CallLock { get; }
 
 		#endregion
 
@@ -236,6 +285,17 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <param name="mute"></param>
 		[ApiMethod(ConferenceDeviceControlApi.METHOD_SET_CAMERA_MUTE, ConferenceDeviceControlApi.HELP_METHOD_SET_CAMERA_MUTE)]
 		void SetCameraMute(bool mute);
+
+		/// <summary>
+		/// Starts a personal meeting.
+		/// </summary>
+		void StartPersonalMeeting();
+
+		/// <summary>
+		/// Locks the current active conference so no more participants may join.
+		/// </summary>
+		/// <param name="enabled"></param>
+		void EnableCallLock(bool enabled);
 
 		#endregion
 	}

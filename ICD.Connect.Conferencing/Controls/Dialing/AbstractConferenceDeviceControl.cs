@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Logging.Activities;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -13,6 +14,7 @@ using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
 
@@ -35,12 +37,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Raised when a conference is added to the dialing control.
 		/// </summary>
-		public abstract event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 
 		/// <summary>
 		/// Raised when a conference is removed from the dialing control.
 		/// </summary>
-		public abstract event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
+		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		/// <summary>
 		/// Raised when the call-in info for the conference control changes.
@@ -68,6 +70,31 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
 		/// <summary>
+		/// Raised when the Sip enabled state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnSipEnabledChanged;
+
+		/// <summary>
+		/// Raised when the Sip local name changes.
+		/// </summary>
+		public event EventHandler<StringEventArgs> OnSipLocalNameChanged;
+
+		/// <summary>
+		/// Raised when the Sip registration status changes.
+		/// </summary>
+		public event EventHandler<StringEventArgs> OnSipRegistrationStatusChanged;
+
+		/// <summary>
+		/// Raised when the call lock status changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCallLockChanged;
+
+		/// <summary>
+		/// Raised when we start/stop being the host of the active conference.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnAmIHostChanged;
+
+		/// <summary>
 		/// Raised when the supported conference features change.
 		/// </summary>
 		public event EventHandler<ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs> OnSupportedConferenceFeaturesChanged;
@@ -78,8 +105,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private bool m_PrivacyMuted;
 		private bool m_DoNotDisturb;
 		private bool m_CameraMute;
-		private eConferenceFeatures m_SupportedConferenceFeatures;
+		private bool m_AmIHost;
+		private bool m_CallLock;
+		private eConferenceControlFeatures m_SupportedConferenceControlFeatures;
 		private IDialContext m_CallInInfo;
+		private Conference m_ActiveConference;
 
 		#region Properties
 
@@ -225,22 +255,86 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			}
 		}
 
+		public bool SipIsRegistered { get; }
+		public string SipLocalName { get; }
+		public string SipRegistrationStatus { get; }
+
+		/// <summary>
+		/// Returns true if we are the host of the current conference.
+		/// </summary>
+		public bool AmIHost
+		{
+			get { return m_AmIHost; }
+			protected set
+			{
+				m_StateSection.Enter();
+
+				try
+				{
+					if (value == m_AmIHost)
+						return;
+
+					m_AmIHost = value;
+
+					Logger.LogSetTo(eSeverity.Informational, "AmIHost", m_AmIHost);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+				}
+
+				OnAmIHostChanged.Raise(this, new BoolEventArgs(m_AmIHost));
+			}
+		}
+
+		/// <summary>
+		/// Gets the CallLock State.
+		/// </summary>
+		public bool CallLock
+		{
+			get { return m_CallLock; }
+			protected set
+			{
+				m_StateSection.Enter();
+
+				try
+				{
+					if (value == m_CallLock)
+						return;
+
+					m_CallLock = value;
+
+					Logger.LogSetTo(eSeverity.Informational, "CallLock", eSeverity.Informational);
+				}
+				finally
+				{
+					m_StateSection.Leave();
+
+					Activities.LogActivity(m_CallLock
+						                       ? new Activity(Activity.ePriority.Medium, "Call Lock", "Call Lock Enabled", eSeverity.Informational)
+						                       : new Activity(Activity.ePriority.Low, "Call Lock", "Call Lock Disabled", eSeverity.Informational));
+				}
+
+				OnCallLockChanged.Raise(this, new BoolEventArgs(m_CallLock));
+			}
+		}
+
 		/// <summary>
 		/// Returns the features that are supported by this conference control.
 		/// </summary>
-		public eConferenceFeatures SupportedConferenceFeatures
+		public eConferenceControlFeatures SupportedConferenceControlFeatures
 		{
-			get { return m_SupportedConferenceFeatures; }
+			get { return m_SupportedConferenceControlFeatures; }
 			protected set
 			{
-				if (value == m_SupportedConferenceFeatures)
+				if (value == m_SupportedConferenceControlFeatures)
 					return;
 
-				m_SupportedConferenceFeatures = value;
+				m_SupportedConferenceControlFeatures = value;
 
 				OnSupportedConferenceFeaturesChanged.Raise(this,
 				                                           new ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs(
-					                                           m_SupportedConferenceFeatures));
+					                                           m_SupportedConferenceControlFeatures));
 			}
 		}
 
@@ -258,6 +352,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 			// Initialize activities
 			PrivacyMuted = false;
+			CallLock = false;
 		}
 
 		/// <summary>
@@ -273,6 +368,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 			// Initialize activities
 			PrivacyMuted = false;
+			CallLock = false;
 		}
 
 		/// <summary>
@@ -281,12 +377,20 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
+			OnConferenceAdded = null;
+			OnConferenceRemoved = null;
 			OnDoNotDisturbChanged = null;
 			OnAutoAnswerChanged = null;
 			OnPrivacyMuteChanged = null;
 			OnSupportedConferenceFeaturesChanged = null;
 			OnCallInInfoChanged = null;
 			OnCameraMuteChanged = null;
+			OnSipEnabledChanged = null;
+			OnSipLocalNameChanged = null;
+			OnSipRegistrationStatusChanged = null;
+			OnSupportedConferenceFeaturesChanged = null;
+			OnCallLockChanged = null;
+			OnAmIHostChanged = null;
 
 			base.DisposeFinal(disposing);
 		}
@@ -299,7 +403,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <returns></returns>
 		IEnumerable<IConference> IConferenceDeviceControl.GetConferences()
 		{
-			return GetConferences().Cast<IConference>();
+			if (m_ActiveConference != null)
+				yield return m_ActiveConference;
+
+			foreach (IConference conference in GetConferences().Cast<IConference>())
+				yield return conference;
 		}
 
 		/// <summary>
@@ -344,6 +452,70 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		/// <param name="mute"></param>
 		public abstract void SetCameraMute(bool mute);
+
+		/// <summary>
+		/// Starts a personal meeting.
+		/// </summary>
+		public abstract void StartPersonalMeeting();
+
+		/// <summary>
+		/// Locks the current active conference so no more participants may join.
+		/// </summary>
+		/// <param name="enabled"></param>
+		public abstract void EnableCallLock(bool enabled);
+
+		#endregion
+
+		#region Conference Events
+
+		/// <summary>
+		/// Allows for child implementations to safely raise the OnConferenceAdded event.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		protected void RaiseOnConferenceAdded(object sender, ConferenceEventArgs args)
+		{
+			OnConferenceAdded.Raise(sender, args);
+		}
+
+		/// <summary>
+		/// Allows for child implementations to safely raise the OnConferenceRemoved event.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		protected void RaiseOnConferenceRemoved(object sender, ConferenceEventArgs args)
+		{
+			OnConferenceRemoved.Raise(sender, args);
+		}
+
+		#endregion
+
+		#region Source Events
+
+		protected void AddParticipant(IParticipant participant)
+		{
+			if (m_ActiveConference == null)
+			{
+				m_ActiveConference = new Conference();
+				OnConferenceAdded.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+			}
+
+			m_ActiveConference.AddParticipant(participant);
+		}
+
+		protected void RemoveParticipant(IParticipant participant)
+		{
+			if (m_ActiveConference == null)
+				return;
+
+			m_ActiveConference.RemoveParticipant(participant);
+
+			if (!m_ActiveConference.GetParticipants().Any())
+			{
+				OnConferenceRemoved.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+				m_ActiveConference = null;
+			}
+		}
 
 		#endregion
 

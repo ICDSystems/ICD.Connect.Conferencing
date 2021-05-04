@@ -94,7 +94,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		#region Private Members
 
-		private ThinTraditionalParticipant m_Source;
+		private ThinParticipant m_Source;
 
 		private readonly SafeCriticalSection m_SourceCriticalSection;
 
@@ -276,7 +276,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 				{
 					Originator.RemoveShimSource(m_Source);
 					Unsubscribe(m_Source);
-					m_Source = new ThinTraditionalParticipant();
+					m_Source = new ThinParticipant();
 
 					m_Source.SetName(name);
 					m_Source.SetNumber(number);
@@ -379,7 +379,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 					// Create a new source if null
 					Originator.RemoveShimSource(m_Source);
 					Unsubscribe(m_Source);
-					m_Source = new ThinTraditionalParticipant();
+					m_Source = new ThinParticipant();
 					m_Source.SetName(m_CallName);
 					m_Source.SetNumber(m_CallNumber);
 					m_Source.SetDirection(m_CallDirection);
@@ -515,7 +515,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		#region Source Callbacks
 
-		private void Subscribe(ThinTraditionalParticipant participant)
+		private void Subscribe(ThinParticipant participant)
 		{
 			if (participant == null)
 				return;
@@ -526,7 +526,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			participant.HangupCallback = ParticipantHangupCallback;
 		}
 
-		private void Unsubscribe(ThinTraditionalParticipant participant)
+		private void Unsubscribe(ThinParticipant participant)
 		{
 			if (participant == null)
 				return;
@@ -537,35 +537,35 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			participant.HangupCallback = null;
 		}
 
-		private void ParticipantAnswerCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantAnswerCallback(ThinParticipant thinParticipant)
 		{
 			SPlusDialerShimAnswerCallback handler = AnswerCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void ParticipantHoldCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantHoldCallback(ThinParticipant thinParticipant)
 		{
 			SPlusDialerShimSetHoldCallback handler = HoldCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void ParticipantResumeCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantResumeCallback(ThinParticipant thinParticipant)
 		{
 			SPlusDialerShimSetResumeCallback handler = ResumeCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void ParticipantSendDtmfCallback(ThinTraditionalParticipant thinParticipant, string data)
+		private void ParticipantSendDtmfCallback(ThinParticipant thinParticipant, string data)
 		{
 			SPlusDialerShimSendDtmfCallback handler = SendDtmfCallback;
 			if (handler != null)
 				handler(data);
 		}
 
-		private void ParticipantHangupCallback(ThinTraditionalParticipant thinParticipant)
+		private void ParticipantHangupCallback(ThinParticipant thinParticipant)
 		{
 			SPlusDialerShimEndCallCallback handler = EndCallCallback;
 			if (handler != null)

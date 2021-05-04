@@ -58,7 +58,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		private readonly Dictionary<ISimplInterpretationDevice, ushort> m_AdapterToBooth;
 
 		// key is guid id of source, value is the source
-		private readonly Dictionary<Guid, ITraditionalParticipant> m_Sources;
+		private readonly Dictionary<Guid, IParticipant> m_Sources;
 
 		// key is room id, value is booth number
 		private readonly Dictionary<int, ushort> m_RoomToBooth;
@@ -78,7 +78,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		{
 			m_RpcController = new ServerSerialRpcController(this);
 			m_AdapterToBooth = new Dictionary<ISimplInterpretationDevice, ushort>();
-			m_Sources = new Dictionary<Guid, ITraditionalParticipant>();
+			m_Sources = new Dictionary<Guid, IParticipant>();
 			m_RoomToBooth = new Dictionary<int, ushort>();
 			m_ClientToRoom = new Dictionary<uint, int>();
 			m_RoomToRoomInfo = new Dictionary<int, string>();
@@ -259,7 +259,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#region Private Helper Methods
 
-		private bool GetTargetSource(Guid sourceId, out ITraditionalParticipant targetSource)
+		private bool GetTargetSource(Guid sourceId, out IParticipant targetSource)
 		{
 			m_SafeCriticalSection.Enter();
 			try
@@ -279,7 +279,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			{
 				clientId = 0;
 
-				ITraditionalParticipant source;
+				IParticipant source;
 				if (!GetTargetSource(sourceId, out source))
 				{
 					Logger.Log(eSeverity.Error, "No Source with the given key found.");
@@ -462,7 +462,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				foreach (ISimplInterpretationDevice adapter in adapters)
 				{
-					foreach (ITraditionalParticipant source in adapter.GetSources())
+					foreach (IParticipant source in adapter.GetSources())
 					{
 						ParticipantState sourceState = ParticipantState.FromParticipant(source, adapter.Language);
 						Guid id = m_Sources.GetKey(source);
@@ -579,7 +579,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[Rpc(ANSWER_RPC), UsedImplicitly]
 		public void Answer(uint clientId, int roomId, Guid id)
 		{
-			ITraditionalParticipant source;
+			IParticipant source;
 			if (!GetTargetSource(id, out source))
 				return;
 
@@ -590,7 +590,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[Rpc(HOLD_ENABLE_RPC), UsedImplicitly]
 		public void HoldEnable(uint clientId, int roomId, Guid id)
 		{
-			ITraditionalParticipant source;
+			IParticipant source;
 			if (!GetTargetSource(id, out source))
 				return;
 
@@ -600,7 +600,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[Rpc(HOLD_RESUME_RPC), UsedImplicitly]
 		public void HoldResume(uint clientId, int roomId, Guid id)
 		{
-			ITraditionalParticipant source;
+			IParticipant source;
 			if (!GetTargetSource(id, out source))
 				return;
 
@@ -610,7 +610,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[Rpc(SEND_DTMF_RPC), UsedImplicitly]
 		public void SendDtmf(uint clientId, int roomId, Guid id, string data)
 		{
-			ITraditionalParticipant source;
+			IParticipant source;
 			if (!GetTargetSource(id, out source))
 				return;
 
@@ -620,7 +620,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		[Rpc(END_CALL_RPC), UsedImplicitly]
 		public void EndCall(uint clientId, int roomId, Guid id)
 		{
-			ITraditionalParticipant source;
+			IParticipant source;
 			if (!GetTargetSource(id, out source))
 				return;
 
@@ -719,13 +719,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private void AdapterOnSourceAdded(object sender, ParticipantEventArgs args)
 		{
-			AddSource(args.Data as ITraditionalParticipant);
+			AddSource(args.Data);
 		}
 
 		private void AdapterOnSourceRemoved(object sender, ParticipantEventArgs args)
 		{
 			var adapter = sender as SimplInterpretationDevice;
-			RemoveSource(args.Data as ITraditionalParticipant, adapter);
+			RemoveSource(args.Data, adapter);
 		}
 
 		private void AdapterOnAutoAnswerChanged(object sender, SPlusBoolEventArgs args)
@@ -780,7 +780,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#region Sources
 
-		private void AddSource(ITraditionalParticipant source)
+		private void AddSource(IParticipant source)
 		{
 			if (source == null)
 				throw new ArgumentNullException("source");
@@ -796,7 +796,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			ParticipantOnPropertyChanged(source, EventArgs.Empty);
 		}
 
-		private void RemoveSource(ITraditionalParticipant source)
+		private void RemoveSource(IParticipant source)
 		{
 			m_SafeCriticalSection.Enter();
 
@@ -831,7 +831,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		/// </summary>
 		/// <param name="source"></param>
 		/// <param name="adapter"></param>
-		private void RemoveSource(ITraditionalParticipant source, SimplInterpretationDevice adapter)
+		private void RemoveSource(IParticipant source, SimplInterpretationDevice adapter)
 		{
 			if (adapter == null)
 				throw new ArgumentNullException("adapter");
@@ -868,7 +868,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				foreach (ITraditionalParticipant source in m_Sources.Values.ToArray(m_Sources.Count))
+				foreach (IParticipant source in m_Sources.Values.ToArray(m_Sources.Count))
 					RemoveSource(source);
 			}
 			finally
@@ -877,7 +877,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		private void Subscribe(ITraditionalParticipant participant)
+		private void Subscribe(IParticipant participant)
 		{
 			participant.OnStatusChanged += ParticipantOnPropertyChanged;
 			participant.OnNameChanged += ParticipantOnPropertyChanged;
@@ -885,7 +885,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			participant.OnParticipantTypeChanged += ParticipantOnPropertyChanged;
 		}
 
-		private void Unsubscribe(ITraditionalParticipant participant)
+		private void Unsubscribe(IParticipant participant)
 		{
 			participant.OnStatusChanged -= ParticipantOnPropertyChanged;
 			participant.OnNameChanged -= ParticipantOnPropertyChanged;
@@ -899,7 +899,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			try
 			{
-				ITraditionalParticipant source = sender as ITraditionalParticipant;
+				IParticipant source = sender as IParticipant;
 				if (source == null)
 					return;
 

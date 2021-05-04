@@ -785,7 +785,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms
 			addControl(new ZoomRoomDirectoryControl(this, Controls.Count));
 			addControl(new ZoomRoomPresentationControl(this, Controls.Count));
 			addControl(new ZoomRoomConferenceControl(this, Controls.Count));
-			addControl(new ZoomRoomTraditionalConferenceControl(this, Controls.Count));
 			addControl(new ZoomRoomCalendarControl(this, Controls.Count));
 			addControl(new ZoomRoomLayoutControl(this, Controls.Count));
 			addControl(new ZoomRoomVolumeControl(this, Controls.Count));

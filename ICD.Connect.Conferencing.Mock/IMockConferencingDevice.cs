@@ -12,15 +12,17 @@ namespace ICD.Connect.Conferencing.Mock
 {
 	public interface IMockConferencingDevice : IVideoConferenceDevice, IMockDevice
 	{
-		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantAdded;
-		event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantRemoved;
+		event EventHandler<GenericEventArgs<IParticipant>> OnParticipantAdded;
+		event EventHandler<GenericEventArgs<IParticipant>> OnParticipantRemoved;
 		event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved; 
 
-		IEnumerable<ITraditionalParticipant> GetSources();
+		IEnumerable<IParticipant> GetSources();
 
 		eDialContextSupport CanDial(IDialContext dialContext);
 
 		void Dial(IDialContext dialContext);
+
+		void StartPersonalMeeting();
 	}
 }

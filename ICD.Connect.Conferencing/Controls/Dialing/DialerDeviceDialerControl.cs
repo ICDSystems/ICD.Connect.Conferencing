@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -9,7 +11,7 @@ using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
-	public sealed class DialerDeviceDialerControl : AbstractTraditionalConferenceDeviceControl<IDialerDevice>
+	public sealed class DialerDeviceDialerControl : AbstractConferenceDeviceControl<IDialerDevice, Conference>
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
@@ -19,12 +21,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public DialerDeviceDialerControl(IDialerDevice parent, int id)
 			: base(parent, id)
 		{
-			SupportedConferenceFeatures =
-				eConferenceFeatures.AutoAnswer |
-				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute |
-				eConferenceFeatures.CanDial |
-				eConferenceFeatures.CanEnd;
+			SupportedConferenceControlFeatures =
+				eConferenceControlFeatures.AutoAnswer |
+				eConferenceControlFeatures.DoNotDisturb |
+				eConferenceControlFeatures.PrivacyMute |
+				eConferenceControlFeatures.CanDial |
+				eConferenceControlFeatures.CanEnd;
 		}
 
 		protected override void Subscribe(IDialerDevice parent)
@@ -55,12 +57,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 
 		private void ParentOnParticipantAdded(object sender, ParticipantEventArgs eventArgs)
 		{
-			AddParticipant(eventArgs.Data as ITraditionalParticipant);
+			AddParticipant(eventArgs.Data);
 		}
 
 		private void ParentOnParticipantRemoved(object sender, ParticipantEventArgs eventArgs)
 		{
-			RemoveParticipant(eventArgs.Data as ITraditionalParticipant);
+			RemoveParticipant(eventArgs.Data);
 		}
 
 		private void ParentOnIncomingCallAdded(object sender, GenericEventArgs<IIncomingCall> args)
@@ -86,6 +88,11 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private void ParentOnAutoAnswerChanged(object sender, BoolEventArgs eventArgs)
 		{
 			AutoAnswer = Parent.AutoAnswer;
+		}
+
+		public override IEnumerable<Conference> GetConferences()
+		{
+			yield break;
 		}
 
 		public override eDialContextSupport CanDial(IDialContext dialContext)
@@ -114,6 +121,16 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		}
 
 		public override void SetCameraMute(bool mute)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void StartPersonalMeeting()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void EnableCallLock(bool enabled)
 		{
 			throw new NotSupportedException();
 		}

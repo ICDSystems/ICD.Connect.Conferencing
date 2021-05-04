@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -9,7 +11,7 @@ using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Mock
 {
-	public sealed class MockTraditionalConferenceDeviceControl : AbstractTraditionalConferenceDeviceControl<IMockConferencingDevice>
+	public sealed class MockTraditionalConferenceDeviceControl : AbstractConferenceDeviceControl<IMockConferencingDevice, Conference>
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
@@ -19,15 +21,15 @@ namespace ICD.Connect.Conferencing.Mock
 		public MockTraditionalConferenceDeviceControl(IMockConferencingDevice parent, int id)
 			: base(parent, id)
 		{
-			SupportedConferenceFeatures =
-				eConferenceFeatures.AutoAnswer |
-				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute |
-				eConferenceFeatures.CameraMute |
-				eConferenceFeatures.Hold |
-				eConferenceFeatures.Dtmf |
-				eConferenceFeatures.CanDial |
-				eConferenceFeatures.CanEnd;
+			SupportedConferenceControlFeatures =
+				eConferenceControlFeatures.AutoAnswer |
+				eConferenceControlFeatures.DoNotDisturb |
+				eConferenceControlFeatures.PrivacyMute |
+				eConferenceControlFeatures.CameraMute |
+				eConferenceControlFeatures.Hold |
+				eConferenceControlFeatures.Dtmf |
+				eConferenceControlFeatures.CanDial |
+				eConferenceControlFeatures.CanEnd;
 
 			parent.OnParticipantAdded += ParentOnParticipantAdded;
 			parent.OnParticipantRemoved += ParentOnParticipantRemoved;
@@ -35,12 +37,12 @@ namespace ICD.Connect.Conferencing.Mock
 			parent.OnIncomingCallRemoved += ParentOnIncomingCallRemoved;
 		}
 
-		private void ParentOnParticipantAdded(object sender, GenericEventArgs<ITraditionalParticipant> eventArgs)
+		private void ParentOnParticipantAdded(object sender, GenericEventArgs<IParticipant> eventArgs)
 		{
 			AddParticipant(eventArgs.Data);
 		}
 
-		private void ParentOnParticipantRemoved(object sender, GenericEventArgs<ITraditionalParticipant> eventArgs)
+		private void ParentOnParticipantRemoved(object sender, GenericEventArgs<IParticipant> eventArgs)
 		{
 			RemoveParticipant(eventArgs.Data);
 		}
@@ -53,6 +55,11 @@ namespace ICD.Connect.Conferencing.Mock
 		private void ParentOnIncomingCallRemoved(object sender, GenericEventArgs<IIncomingCall> args)
 		{
 			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(args.Data));
+		}
+
+		public override IEnumerable<Conference> GetConferences()
+		{
+			yield break;
 		}
 
 		public override eDialContextSupport CanDial(IDialContext dialContext)
@@ -83,6 +90,16 @@ namespace ICD.Connect.Conferencing.Mock
 		public override void SetCameraMute(bool mute)
 		{
 			CameraMute = mute;
+		}
+
+		public override void StartPersonalMeeting()
+		{
+			Parent.StartPersonalMeeting();
+		}
+
+		public override void EnableCallLock(bool enabled)
+		{
+			CallLock = enabled;
 		}
 	}
 }

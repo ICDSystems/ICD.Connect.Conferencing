@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.Server.Devices
 		{
 		}
 
-		public static ParticipantState FromParticipant(ITraditionalParticipant participant, string language)
+		public static ParticipantState FromParticipant(IParticipant participant, string language)
 		{
 			if (participant == null)
 				throw new ArgumentNullException("source");

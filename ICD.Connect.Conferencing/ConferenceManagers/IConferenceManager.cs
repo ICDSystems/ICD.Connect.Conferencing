@@ -163,7 +163,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="participant"></param>
-		public static void Dial([NotNull] this IConferenceManager extends, [NotNull] ITraditionalParticipant participant)
+		public static void Dial([NotNull] this IConferenceManager extends, [NotNull] IParticipant participant)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -223,14 +223,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static eConferenceFeatures ActiveConferenceFeaturesExclusive([NotNull] this IConferenceManager extends)
+		public static eConferenceControlFeatures ActiveConferenceFeaturesExclusive([NotNull] this IConferenceManager extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
 			return extends.Dialers
 			              .GetActiveDialers()
-			              .Select(c => c.SupportedConferenceFeatures)
+			              .Select(c => c.SupportedConferenceControlFeatures)
 			              .AggregateOrDefault((current, next) => current & next);
 		}
 
@@ -239,14 +239,14 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static eConferenceFeatures ActiveConferenceFeaturesInclusive([NotNull] this IConferenceManager extends)
+		public static eConferenceControlFeatures ActiveConferenceFeaturesInclusive([NotNull] this IConferenceManager extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
 			return extends.Dialers
 			              .GetActiveDialers()
-			              .Select(c => c.SupportedConferenceFeatures)
+			              .Select(c => c.SupportedConferenceControlFeatures)
 			              .AggregateOrDefault((current, next) => current | next);
 		}
 	}

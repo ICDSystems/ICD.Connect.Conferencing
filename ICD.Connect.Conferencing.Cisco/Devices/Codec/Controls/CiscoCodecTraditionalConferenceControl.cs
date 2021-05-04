@@ -18,7 +18,7 @@ using eDialProtocol = ICD.Connect.Conferencing.DialContexts.eDialProtocol;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
-	public sealed class CiscoCodecTraditionalConferenceControl : AbstractTraditionalConferenceDeviceControl<CiscoCodecDevice>, ISipDialingDeviceControl
+	public sealed class CiscoCodecTraditionalConferenceControl : AbstractTraditionalConferenceDeviceControl<CiscoCodecDevice>
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
@@ -91,15 +91,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_IncomingCalls = new BiDictionary<CallComponent, TraditionalIncomingCall>();
 			m_CriticalSection = new SafeCriticalSection();
 
-			SupportedConferenceFeatures =
-				eConferenceFeatures.AutoAnswer |
-				eConferenceFeatures.DoNotDisturb |
-				eConferenceFeatures.PrivacyMute |
-				eConferenceFeatures.CanDial |
-				eConferenceFeatures.Dtmf |
-				eConferenceFeatures.Hold |
-				eConferenceFeatures.CameraMute |
-				eConferenceFeatures.CanEnd;
+			SupportedConferenceControlFeatures =
+				eConferenceControlFeatures.AutoAnswer |
+				eConferenceControlFeatures.DoNotDisturb |
+				eConferenceControlFeatures.PrivacyMute |
+				eConferenceControlFeatures.CanDial |
+				eConferenceControlFeatures.Dtmf |
+				eConferenceControlFeatures.Hold |
+				eConferenceControlFeatures.CameraMute |
+				eConferenceControlFeatures.CanEnd;
 
 			Subscribe(m_DialingComponent);
 			Subscribe(m_SystemComponent);

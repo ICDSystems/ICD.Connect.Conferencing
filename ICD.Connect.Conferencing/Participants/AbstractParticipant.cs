@@ -9,6 +9,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Participants
 {
@@ -41,16 +42,56 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
 
+		/// <summary>
+		/// Raised when the source number changes.
+		/// </summary>
+		public event EventHandler<StringEventArgs> OnNumberChanged;
+
+		/// <summary>
+		/// Raised when the participant is answered, dismissed or ignored.
+		/// </summary>
+		public event EventHandler<CallAnswerStateEventArgs> OnAnswerStateChanged;
+
+		/// <summary>
+		/// Raised when the participant's mute state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnIsMutedChanged;
+
+		/// <summary>
+		/// Raised when the participant's host state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnIsHostChanged;
+
+		/// <summary>
+		/// Raised when the supported participant features changes.
+		/// </summary>
+		public event EventHandler<ConferenceParticipantSupportedFeaturesChangedApiEventArgs> OnSupportedParticipantFeaturesChanged;
+
 		#endregion
+
+		#region Fields
 
 		private string m_Name;
 		private eCallType m_SourceType;
 		private eParticipantStatus m_Status;
 		private DateTime? m_Start;
 		private DateTime? m_End;
+		private string m_Number;
+		private DateTime m_DialTime;
+		private eCallDirection m_Direction;
+		private eCallAnswerState m_AnswerState;
+		private bool m_IsMuted;
+		private bool m_IsHost;
+		private bool m_IsSelf;
+		private eParticipantFeatures m_SupportedParticipantFeatures;
+
+		#endregion
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the source name.
+		/// </summary>
 		public string Name
 		{
 			get { return m_Name; }
@@ -65,6 +106,9 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
+		/// <summary>
+		/// Gets the participant's source type.
+		/// </summary>
 		public eCallType CallType
 		{
 			get { return m_SourceType; }
@@ -79,6 +123,9 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
+		/// <summary>
+		/// Gets the participant's status (Idle, Dialing, Ringing, etc)
+		/// </summary>
 		public eParticipantStatus Status
 		{
 			get { return m_Status; }
@@ -93,6 +140,9 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
+		/// <summary>
+		/// The time when participant connected.
+		/// </summary>
 		public DateTime? StartTime
 		{
 			get { return m_Start; }
@@ -109,6 +159,9 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
+		/// <summary>
+		/// The time when participant disconnected.
+		/// </summary>
 		public DateTime? EndTime
 		{
 			get { return m_End; }
@@ -122,6 +175,147 @@ namespace ICD.Connect.Conferencing.Participants
 				Log(eSeverity.Informational, "EndTime set to {0}", m_End);
 
 				OnEndTimeChanged.Raise(this, new DateTimeNullableEventArgs(value));
+			}
+		}
+
+		/// <summary>
+		/// Gets the source number.
+		/// </summary>
+		public string Number
+		{
+			get { return m_Number; }
+			protected set
+			{
+				if (value == m_Number)
+					return;
+
+				m_Number = value;
+
+				Log(eSeverity.Informational, "Number set to {0}", m_Number);
+
+				OnNumberChanged.Raise(this, new StringEventArgs(m_Number));
+			}
+		}
+
+		/// <summary>
+		/// Source direction (Incoming, Outgoing, etc)
+		/// </summary>
+		public eCallDirection Direction
+		{
+			get { return m_Direction; }
+			protected set
+			{
+				if (value == m_Direction)
+					return;
+
+				m_Direction = value;
+
+				Log(eSeverity.Informational, "Direction set to {0}", m_Direction);
+			}
+		}
+
+		/// <summary>
+		/// Gets the time the call was dialed.
+		/// </summary>
+		public DateTime DialTime
+		{
+			get { return m_DialTime; }
+			protected set
+			{
+				if (value == m_DialTime)
+					return;
+
+				m_DialTime = value;
+
+				Log(eSeverity.Informational, "Initiated set to {0}", m_DialTime);
+			}
+		}
+
+		/// <summary>
+		/// Returns the answer state for the participant.
+		/// Note, in order for a participant to exist, the call must be answered, so this value will be either answered or auto-answered always.
+		/// </summary>
+		public eCallAnswerState AnswerState
+		{
+			get { return m_AnswerState; }
+			protected set
+			{
+				if (value == m_AnswerState)
+					return;
+
+				m_AnswerState = value;
+
+				Log(eSeverity.Informational, "AnswerState set to {0}", m_AnswerState);
+
+				OnAnswerStateChanged.Raise(this, new CallAnswerStateEventArgs(value));
+			}
+		}
+
+		/// <summary>
+		/// Whether or not the participant is muted.
+		/// </summary>
+		public bool IsMuted
+		{
+			get { return m_IsMuted; }
+			protected set
+			{
+				if (m_IsMuted == value)
+					return;
+
+				m_IsMuted = value;
+				Log(eSeverity.Informational, "IsMuted set to {0}", m_IsMuted);
+				OnIsMutedChanged.Raise(this, new BoolEventArgs(m_IsMuted));
+			}
+		}
+
+		/// <summary>
+		/// Whether or not the participant is the meeting host.
+		/// </summary>
+		public bool IsHost
+		{
+			get { return m_IsHost; }
+			protected set
+			{
+				if (m_IsHost == value)
+					return;
+
+				m_IsHost = value;
+				Log(eSeverity.Informational, "IsHost set to {0}", m_IsHost);
+				OnIsHostChanged.Raise(this, new BoolEventArgs(m_IsHost));
+			}
+		}
+
+		/// <summary>
+		/// The features supported by the participant.
+		/// </summary>
+		public eParticipantFeatures SupportedParticipantFeatures
+		{
+			get { return m_SupportedParticipantFeatures; }
+			protected set
+			{
+				if (value == m_SupportedParticipantFeatures)
+					return;
+
+				m_SupportedParticipantFeatures = value;
+
+				OnSupportedParticipantFeaturesChanged.Raise(this, new ConferenceParticipantSupportedFeaturesChangedApiEventArgs(m_SupportedParticipantFeatures));
+			}
+		}
+
+		/// <summary>
+		/// Whether or not the participant is the room itself.
+		/// </summary>
+		public bool IsSelf
+		{
+			get { return m_IsSelf; }
+			protected set
+			{
+				if (m_IsSelf == value)
+					return;
+
+				m_IsSelf = value;
+
+				Log(eSeverity.Informational, "IsSelf set to {0}", m_IsSelf);
 			}
 		}
 
@@ -139,6 +333,12 @@ namespace ICD.Connect.Conferencing.Participants
 			OnStatusChanged = null;
 			OnParticipantTypeChanged = null;
 			OnNameChanged = null;
+			OnStartTimeChanged = null;
+			OnEndTimeChanged = null;
+			OnNumberChanged = null;
+			OnAnswerStateChanged = null;
+			OnIsMutedChanged = null;
+			OnIsHostChanged = null;
 
 			DisposeFinal();
 		}
@@ -172,6 +372,13 @@ namespace ICD.Connect.Conferencing.Participants
 			message = string.Format("{0} - {1}", this, message);
 			logger.AddEntry(severity, message, args);
 		}
+
+		public abstract void Hold();
+		public abstract void Resume();
+		public abstract void Hangup();
+		public abstract void SendDtmf(string data);
+		public abstract void Kick();
+		public abstract void Mute(bool mute);
 
 		#endregion
 
@@ -208,6 +415,11 @@ namespace ICD.Connect.Conferencing.Participants
 			addRow("CallType", CallType);
 			addRow("StartTime", StartTime);
 			addRow("EndTime", EndTime);
+			addRow("Direction", Direction);
+			addRow("DialTime", DialTime);
+			addRow("Is Muted", IsMuted);
+			addRow("Is Self", IsSelf);
+			addRow("Is Host", IsHost);
 		}
 
 		/// <summary>
@@ -216,7 +428,12 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <returns></returns>
 		public virtual IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
-			yield break;
+			yield return new ConsoleCommand("Hold", "Holds the call", () => Hold());
+			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
+			yield return new ConsoleCommand("Hangup", "Ends the call", () => Hangup());
+			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
+			yield return new ConsoleCommand("Kick", "Kicks the participant", () => Kick());
+			yield return new GenericConsoleCommand<bool>("Mute", "Usage: Mute <true/false>", m => Mute(m));
 		}
 
 		#endregion

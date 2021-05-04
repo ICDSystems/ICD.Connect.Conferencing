@@ -199,7 +199,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			// Hard - Do the active conference endpoints support privacy mute?
 			return m_ConferenceManager.Dialers.GetActiveDialers()
 			                          .AnyAndAll(d =>
-			                                     d.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute));
+			                                     d.SupportedConferenceControlFeatures.HasFlag(eConferenceControlFeatures.PrivacyMute));
 		}
 
 		#endregion

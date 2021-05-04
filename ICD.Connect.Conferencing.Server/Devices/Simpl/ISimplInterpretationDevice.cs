@@ -44,10 +44,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		void SetDoNotDisturb(bool enabled);
 		void SetPrivacyMute(bool enabled);
 
-		void AddShimSource(ITraditionalParticipant source);
+		void AddShimSource(IParticipant source);
 		void RemoveShimSource(IParticipant source);
 
-		IEnumerable<ITraditionalParticipant> GetSources();
+		IEnumerable<IParticipant> GetSources();
 		bool ContainsSource(IParticipant source);
 	}
 }

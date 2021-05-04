@@ -3,14 +3,14 @@ using ICD.Connect.Devices.Proxies.Devices;
 
 namespace ICD.Connect.Conferencing.Proxies.Controls.Dialing
 {
-	public abstract class AbstractProxyTraditionalConferenceDeviceControl : AbstractProxyConferenceDeviceControl<ITraditionalConference>, IProxyTraditionalConferenceDeviceControl
+	public sealed class ProxyConferenceDeviceControl : AbstractProxyConferenceDeviceControl<IConference>
 	{
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		protected AbstractProxyTraditionalConferenceDeviceControl(IProxyDevice parent, int id)
+		public ProxyConferenceDeviceControl(IProxyDevice parent, int id)
 			: base(parent, id)
 		{
 		}

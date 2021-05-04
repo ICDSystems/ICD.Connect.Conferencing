@@ -22,14 +22,14 @@ namespace ICD.Connect.Conferencing.Mock
 {
 	public sealed class MockConferencingDevice : AbstractMockDevice<MockConferencingDeviceSettings>, IMockConferencingDevice
 	{
-		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantAdded;
-		public event EventHandler<GenericEventArgs<ITraditionalParticipant>> OnParticipantRemoved;
+		public event EventHandler<GenericEventArgs<IParticipant>> OnParticipantAdded;
+		public event EventHandler<GenericEventArgs<IParticipant>> OnParticipantRemoved;
 		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
 		#region Private Memebers
 
-		private readonly List<ITraditionalParticipant> m_Sources;
+		private readonly List<IParticipant> m_Sources;
 		private readonly CodecInputTypes m_InputTypes;
 
 		#endregion
@@ -49,7 +49,7 @@ namespace ICD.Connect.Conferencing.Mock
 		/// </summary>
 		public MockConferencingDevice()
 		{
-			m_Sources = new List<ITraditionalParticipant>();
+			m_Sources = new List<IParticipant>();
 
 			m_InputTypes = new CodecInputTypes();
 			m_InputTypes.SetInputType(1, eCodecInputType.Camera);
@@ -136,15 +136,15 @@ namespace ICD.Connect.Conferencing.Mock
 			m_InputTypes.SetInputType(address, type);
 		}
 
-		public IEnumerable<ITraditionalParticipant> GetSources()
+		public IEnumerable<IParticipant> GetSources()
 		{
 			return m_Sources.ToArray(m_Sources.Count);
 		}
 
 		private void Dial(string number, eCallType type)
 		{
-			ThinTraditionalParticipant participant =
-				new ThinTraditionalParticipant
+			ThinParticipant participant =
+				new ThinParticipant
 				{
 					HangupCallback = HangupCallback
 				};
@@ -158,14 +158,14 @@ namespace ICD.Connect.Conferencing.Mock
 
 			m_Sources.Add(participant);
 
-			OnParticipantAdded.Raise(this, new GenericEventArgs<ITraditionalParticipant>(participant));
+			OnParticipantAdded.Raise(this, new GenericEventArgs<IParticipant>(participant));
 		}
 
-		private void HangupCallback(ThinTraditionalParticipant sender)
+		private void HangupCallback(ThinParticipant sender)
 		{
 			m_Sources.Remove(sender);
 
-			OnParticipantRemoved.Raise(this, new GenericEventArgs<ITraditionalParticipant>(sender));
+			OnParticipantRemoved.Raise(this, new GenericEventArgs<IParticipant>(sender));
 		}
 
 		public eDialContextSupport CanDial(IDialContext dialContext)
@@ -176,6 +176,17 @@ namespace ICD.Connect.Conferencing.Mock
 		public void Dial(IDialContext dialContext)
 		{
 			Dial(dialContext.DialString, dialContext.CallType);
+		}
+
+		public void StartPersonalMeeting()
+		{
+			var context = new DialContext
+			{
+				CallType = eCallType.Audio | eCallType.Video,
+				DialString = "Mock Personal Meeting"
+			};
+
+			Dial(context);
 		}
 
 		private void MockIncomingCall()

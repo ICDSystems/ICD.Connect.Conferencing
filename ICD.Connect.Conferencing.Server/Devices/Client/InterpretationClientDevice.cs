@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		private readonly ClientSerialRpcController m_RpcController;
-		private readonly BiDictionary<Guid, ThinTraditionalParticipant> m_Sources;
+		private readonly BiDictionary<Guid, ThinParticipant> m_Sources;
 		private readonly SafeCriticalSection m_SourcesCriticalSection;
 
 		private bool m_IsConnected;
@@ -176,7 +176,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 			m_RpcController = new ClientSerialRpcController(this);
-			m_Sources = new BiDictionary<Guid, ThinTraditionalParticipant>();
+			m_Sources = new BiDictionary<Guid, ThinParticipant>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
 
 			m_RpcController.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
@@ -284,7 +284,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		}
 
 		[PublicAPI]
-		public IEnumerable<ITraditionalParticipant> GetSources()
+		public IEnumerable<IParticipant> GetSources()
 		{
 			return m_SourcesCriticalSection.Execute(() => m_Sources.Values.ToArray(m_Sources.Count));
 		}
@@ -298,7 +298,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_SourcesCriticalSection.Enter();
 			try
 			{
-				foreach (ThinTraditionalParticipant src in m_Sources.Values)
+				foreach (ThinParticipant src in m_Sources.Values)
 				{
 					src.SetStatus(eParticipantStatus.Disconnected);
 					Unsubscribe(src);
@@ -378,7 +378,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 				if (!m_Sources.ContainsKey(id))
 				{
-					var newSrc = new ThinTraditionalParticipant();
+					var newSrc = new ThinParticipant();
 					m_Sources.Set(id, newSrc);
 					Subscribe(newSrc);
 
@@ -424,7 +424,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region Participants
 
-		private void Subscribe(ThinTraditionalParticipant participant)
+		private void Subscribe(ThinParticipant participant)
 		{
 			participant.HoldCallback += ParticipantOnCallHeld;
 			participant.ResumeCallback += ParticipantOnCallResumed;
@@ -432,7 +432,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			participant.HangupCallback += ParticipantOnCallEnded;
 		}
 
-		private void Unsubscribe(ThinTraditionalParticipant participant)
+		private void Unsubscribe(ThinParticipant participant)
 		{
 			participant.HoldCallback = null;
 			participant.ResumeCallback = null;
@@ -440,7 +440,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			participant.HangupCallback = null;
 		}
 
-		private void ParticipantOnCallHeld(ThinTraditionalParticipant source)
+		private void ParticipantOnCallHeld(ThinParticipant source)
 		{
 			if (source == null)
 				return;
@@ -453,7 +453,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, m_RoomId, id);
 		}
 
-		private void ParticipantOnCallResumed(ThinTraditionalParticipant source)
+		private void ParticipantOnCallResumed(ThinParticipant source)
 		{
 			if (source == null)
 				return;
@@ -466,7 +466,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, m_RoomId, id);
 		}
 
-		private void ParticipantOnCallEnded(ThinTraditionalParticipant source)
+		private void ParticipantOnCallEnded(ThinParticipant source)
 		{
 			if (source == null)
 				return;
@@ -479,7 +479,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, m_RoomId, id);
 		}
 
-		private void ParticipantOnDtmfSent(ThinTraditionalParticipant source, string data)
+		private void ParticipantOnDtmfSent(ThinParticipant source, string data)
 		{
 			if (source == null)
 				return;
@@ -492,7 +492,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, m_RoomId, id, data);
 		}
 
-		private bool TryGetId(ThinTraditionalParticipant participant, out Guid id)
+		private bool TryGetId(ThinParticipant participant, out Guid id)
 		{
 			m_SourcesCriticalSection.Enter();
 

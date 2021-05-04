@@ -83,8 +83,8 @@
     <Compile Include="Devices\ZoomRooms\Controls\Camera\FarEndZoomCamera.cs" />
     <Compile Include="Devices\ZoomRooms\Controls\Camera\ZoomRoomCameraControl.cs" />
     <Compile Include="Devices\ZoomRooms\Controls\Camera\ZoomRoomCameraRepeater.cs" />
-    <Compile Include="Devices\ZoomRooms\Controls\Conferencing\ZoomWebConference.cs" />
-    <Compile Include="Devices\ZoomRooms\Controls\Conferencing\ZoomWebParticipant.cs" />
+    <Compile Include="Devices\ZoomRooms\Controls\Conferencing\ZoomConference.cs" />
+    <Compile Include="Devices\ZoomRooms\Controls\Conferencing\ZoomParticipant.cs" />
     <Compile Include="Devices\ZoomRooms\Components\Camera\CameraComponent.cs" />
     <Compile Include="Devices\ZoomRooms\Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Devices\ZoomRooms\Components\Layout\LayoutComponent.cs" />

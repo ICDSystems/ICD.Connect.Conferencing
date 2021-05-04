@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
@@ -17,14 +16,12 @@ using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 {
-	public sealed class VaddioAvBridgeConferenceControl : AbstractConferenceDeviceControl<VaddioAvBridgeDevice, TraditionalConference>
+	public sealed class VaddioAvBridgeConferenceControl : AbstractConferenceDeviceControl<VaddioAvBridgeDevice, Conference>
 	{
 		#region Events
 
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
-		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
-		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		#endregion
 
@@ -32,7 +29,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		private readonly VaddioAvBridgeVideoComponent m_VideoComponent;
 
 		[CanBeNull]
-		private TraditionalConference m_ActiveConference;
+		private Conference m_ActiveConference;
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
@@ -49,9 +46,9 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		public VaddioAvBridgeConferenceControl(VaddioAvBridgeDevice parent, int id) 
 			: base(parent, id)
 		{
-			SupportedConferenceFeatures = eConferenceFeatures.PrivacyMute |
-			                              eConferenceFeatures.CameraMute |
-			                              eConferenceFeatures.CanEnd;
+			SupportedConferenceControlFeatures = eConferenceControlFeatures.PrivacyMute |
+			                              eConferenceControlFeatures.CameraMute |
+			                              eConferenceControlFeatures.CanEnd;
 
 			m_AudioComponent = parent.Components.GetComponent<VaddioAvBridgeAudioComponent>();
 			m_VideoComponent = parent.Components.GetComponent<VaddioAvBridgeVideoComponent>();
@@ -86,7 +83,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 			DateTime now = IcdEnvironment.GetUtcTime();
 
-			ThinTraditionalParticipant participant = new ThinTraditionalParticipant
+			ThinParticipant participant = new ThinParticipant
 			{
 				HangupCallback = HangupParticipant
 			};
@@ -97,10 +94,10 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 			participant.SetStart(now);
 			participant.SetStatus(eParticipantStatus.Connected);
 
-			m_ActiveConference = new TraditionalConference();
+			m_ActiveConference = new Conference();
 			m_ActiveConference.AddParticipant(participant);
 
-			OnConferenceAdded.Raise(this, new ConferenceEventArgs(m_ActiveConference));
+			RaiseOnConferenceAdded(this, new ConferenceEventArgs(m_ActiveConference));
 		}
 
 		/// <summary>
@@ -116,14 +113,14 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 			var endedConference = m_ActiveConference;
 			m_ActiveConference = null;
 
-			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(endedConference));
+			RaiseOnConferenceRemoved(this, new ConferenceEventArgs(endedConference));
 		}
 
 		/// <summary>
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public override IEnumerable<TraditionalConference> GetConferences()
+		public override IEnumerable<Conference> GetConferences()
 		{
 			if (m_ActiveConference != null)
 				yield return m_ActiveConference;
@@ -184,11 +181,21 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 			m_VideoComponent.SetVideoMute(mute);
 		}
 
+		public override void StartPersonalMeeting()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void EnableCallLock(bool enabled)
+		{
+			throw new NotSupportedException();
+		}
+
 		#endregion
 
 		#region Private Methods
 
-		private void HangupParticipant(ThinTraditionalParticipant participant)
+		private void HangupParticipant(ThinParticipant participant)
 		{
 			participant.SetStatus(eParticipantStatus.Disconnected);
 			participant.SetEnd(IcdEnvironment.GetUtcTime());

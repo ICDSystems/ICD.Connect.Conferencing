@@ -10,6 +10,26 @@ using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Conferences
 {
+	[Flags]
+	public enum eConferenceFeatures
+	{
+		None = 0,
+
+		GetStatus = 1,
+
+		GetStartTime = 2,
+
+		GetEndTime = 4,
+
+		GetCallType = 8,
+
+		GetParticipants = 16,
+
+		LeaveConference = 32,
+
+		EndConference = 64
+	}
+
 	public interface IConference : IConsoleNode
 	{
 		/// <summary>
@@ -73,6 +93,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <returns></returns>
 		IEnumerable<IParticipant> GetParticipants();
+
+		/// <summary>
+		/// Leaves the conference, keeping the conference in tact for other participants.
+		/// </summary>
+		void LeaveConference();
+
+		/// <summary>
+		/// Ends the conference for all participants.
+		/// </summary>
+		void EndConference();
 
 		#endregion
 	}
@@ -149,6 +179,75 @@ namespace ICD.Connect.Conferencing.Conferences
 			DateTime end = extends.EndTime ?? IcdEnvironment.GetUtcTime();
 
 			return end - start;
+		}
+
+		public static void MuteAll(this IConference extends)
+		{
+			foreach (IParticipant participant in extends.GetParticipants().Reverse())
+				participant.Mute(true);
+		}
+
+		public static void UnmuteAll(this IConference extends)
+		{
+			foreach (IParticipant participant in extends.GetParticipants().Reverse())
+				participant.Mute(false);
+		}
+
+		public static void KickAll(this IConference extends)
+		{
+			foreach (IParticipant participant in extends.GetParticipants().Reverse())
+				participant.Kick();
+		}
+
+		/// <summary>
+		/// Holds all sources.
+		/// </summary>
+		/// <param name="extends"></param>
+		public static void Hold(this IConference extends)
+		{
+			foreach (IParticipant participant in extends.GetParticipants().Reverse())
+				participant.Hold();
+		}
+
+		/// <summary>
+		/// Resumes all sources.
+		/// </summary>
+		/// <param name="extends"></param>
+		public static void Resume(this IConference extends)
+		{
+			foreach (IParticipant participant in extends.GetParticipants().Reverse())
+				participant.Resume();
+		}
+
+		/// <summary>
+		/// Disconnects all sources.
+		/// </summary>
+		/// <param name="extends"></param>
+		public static void Hangup(this IConference extends)
+		{
+			foreach (IParticipant participant in extends.GetParticipants().Reverse())
+				participant.Hangup();
+		}
+
+		/// <summary>
+		/// Returns true if the conference contains the given participant.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="source"></param>
+		/// <returns></returns>
+		public static bool ContainsSource(this IConference extends, IParticipant source)
+		{
+			return extends.GetParticipants().Contains(source);
+		}
+
+		/// <summary>
+		/// Returns an array of online sources.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static IParticipant[] GetOnlineSources(this IConference extends)
+		{
+			return extends.GetParticipants().Where(s => s.GetIsOnline()).ToArray();
 		}
 	}
 }

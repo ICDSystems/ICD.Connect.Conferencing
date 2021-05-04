@@ -58,7 +58,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 	/// <summary>
 	/// CallComponent represents a single call.
 	/// </summary>
-	public sealed class CallComponent : AbstractCiscoComponent, ITraditionalParticipant
+	public sealed class CallComponent : AbstractCiscoComponent, IParticipant
 	{
 		/// <summary>
 		/// Raised when the answer state changes.

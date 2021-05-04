@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		#region Private Members
 
-		private ITraditionalParticipant m_Source;
+		private IParticipant m_Source;
 		private bool m_AutoAnswer;
 		private bool m_DoNotDisturb;
 		private bool m_PrivacyMute;
@@ -170,7 +170,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 				handler(this, enabled.ToUShort());
 		}
 
-		public void AddShimSource(ITraditionalParticipant source)
+		public void AddShimSource(IParticipant source)
 		{
 			SetShimSource(source);
 		}
@@ -180,7 +180,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 			SetShimSource(null);
 		}
 
-		private void SetShimSource(ITraditionalParticipant source)
+		private void SetShimSource(IParticipant source)
 		{
 			if (source == m_Source)
 				return;
@@ -196,7 +196,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 				OnSourceAdded.Raise(this, new ParticipantEventArgs(m_Source));
 		}
 
-		public IEnumerable<ITraditionalParticipant> GetSources()
+		public IEnumerable<IParticipant> GetSources()
 		{
 			if (m_Source != null)
 				yield return m_Source;

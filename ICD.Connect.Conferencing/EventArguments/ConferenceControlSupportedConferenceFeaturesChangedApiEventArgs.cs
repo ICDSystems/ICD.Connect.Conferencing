@@ -5,13 +5,13 @@ using ICD.Connect.Conferencing.Proxies.Controls.Dialing;
 namespace ICD.Connect.Conferencing.EventArguments
 {
 	public sealed class ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs :
-		AbstractGenericApiEventArgs<eConferenceFeatures>
+		AbstractGenericApiEventArgs<eConferenceControlFeatures>
 	{
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="data"></param>
-		public ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs(eConferenceFeatures data)
+		public ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs(eConferenceControlFeatures data)
 			: base(ConferenceDeviceControlApi.EVENT_SUPPORTED_CONFERENCE_FEATURES_CHANGED, data)
 		{
 		}
