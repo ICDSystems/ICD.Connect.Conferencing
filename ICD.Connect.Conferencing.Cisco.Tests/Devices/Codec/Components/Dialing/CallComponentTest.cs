@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Dialing
 {
-	[TestFixture]
+	/*[TestFixture]
 	public sealed class CallComponentTest : AbstractCiscoComponentTest
 	{
 		[Test]
@@ -105,5 +105,5 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Dialing
 
 			Assert.That(component.GetDuration().TotalMilliseconds, Is.EqualTo(1000).Within(1000));
 		}
-	}
+	}*/
 }

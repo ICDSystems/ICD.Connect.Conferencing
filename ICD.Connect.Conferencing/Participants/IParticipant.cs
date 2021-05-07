@@ -251,27 +251,7 @@ namespace ICD.Connect.Conferencing.Participants
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			switch (extends.Status)
-			{
-				case eParticipantStatus.Undefined:
-				case eParticipantStatus.Dialing:
-				case eParticipantStatus.Connecting:
-				case eParticipantStatus.Ringing:
-				case eParticipantStatus.Disconnecting:
-				case eParticipantStatus.Disconnected:
-				case eParticipantStatus.Idle:
-					return false;
-
-				case eParticipantStatus.Connected:
-				case eParticipantStatus.OnHold:
-				case eParticipantStatus.EarlyMedia:
-				case eParticipantStatus.Preserved:
-				case eParticipantStatus.RemotePreserved:
-					return true;
-
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			return extends.Status.GetIsOnline();
 		}
 
 		/// <summary>

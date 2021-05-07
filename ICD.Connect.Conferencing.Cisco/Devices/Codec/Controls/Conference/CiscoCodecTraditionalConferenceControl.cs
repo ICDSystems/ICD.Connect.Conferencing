@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -7,33 +8,38 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Utils;
-using eCallType = ICD.Connect.Conferencing.EventArguments.eCallType;
-using eDialProtocol = ICD.Connect.Conferencing.DialContexts.eDialProtocol;
 
-namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
-	public sealed class CiscoCodecTraditionalConferenceControl : AbstractTraditionalConferenceDeviceControl<CiscoCodecDevice>
+	public sealed class CiscoCodecTraditionalConferenceControl : AbstractConferenceDeviceControl<CiscoCodecDevice, CiscoConference>
 	{
+		#region Events
+
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
-		public event EventHandler<BoolEventArgs> OnSipEnabledChanged;
-		public event EventHandler<StringEventArgs> OnSipLocalNameChanged;
-		public event EventHandler<StringEventArgs> OnSipRegistrationStatusChanged;
+
+		#endregion
+
+		#region Members
 
 		private readonly DialingComponent m_DialingComponent;
 		private readonly SystemComponent m_SystemComponent;
 		private readonly VideoComponent m_VideoComponent;
 
 		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations;
-		private readonly BiDictionary<CallComponent, TraditionalIncomingCall> m_IncomingCalls;
+		private readonly BiDictionary<CallStatus, TraditionalIncomingCall> m_IncomingCalls;
+		private readonly Dictionary<CallStatus, CiscoConference> m_CallsToConferences;
 
 		private readonly SafeCriticalSection m_CriticalSection;
+
+		#endregion
 
 		#region Properties
 
@@ -42,7 +48,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// </summary>
 		public override eCallType Supports { get { return eCallType.Video | eCallType.Audio; } }
 
-		public bool SipIsRegistered
+		public override bool SipIsRegistered
 		{
 			get
 			{
@@ -52,7 +58,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			}
 		}
 
-		public string SipLocalName
+		public override string SipLocalName
 		{
 			get
 			{
@@ -62,7 +68,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			}
 		}
 
-		public string SipRegistrationStatus
+		public override string SipRegistrationStatus
 		{
 			get
 			{
@@ -74,6 +80,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		}
 
 		#endregion
+
+		#region Constructor
 
 		/// <summary>
 		/// Constructor.
@@ -88,7 +96,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_VideoComponent = Parent.Components.GetComponent<VideoComponent>();
 
 			m_SubscribedRegistrations = new IcdHashSet<SipRegistration>();
-			m_IncomingCalls = new BiDictionary<CallComponent, TraditionalIncomingCall>();
+			m_IncomingCalls = new BiDictionary<CallStatus, TraditionalIncomingCall>();
+			m_CallsToConferences = new Dictionary<CallStatus, CiscoConference>();
 			m_CriticalSection = new SafeCriticalSection();
 
 			SupportedConferenceControlFeatures =
@@ -119,9 +128,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
-			OnSipEnabledChanged = null;
-			OnSipLocalNameChanged = null;
-			OnSipRegistrationStatusChanged = null;
 
 			base.DisposeFinal(disposing);
 
@@ -130,7 +136,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			Unsubscribe(m_VideoComponent);
 		}
 
+		#endregion
+
 		#region Methods
+
+		public override IEnumerable<CiscoConference> GetConferences()
+		{
+			return m_CriticalSection.Execute(() => m_CallsToConferences.Values);
+		}
 
 		/// <summary>
 		/// Returns the level of support the dialer has for the given booking.
@@ -195,6 +208,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			m_VideoComponent.SetMainVideoMute(mute);
 		}
 
+		public override void StartPersonalMeeting()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void EnableCallLock(bool enabled)
+		{
+			throw new NotSupportedException();
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -241,9 +264,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			component.OnDoNotDisturbChanged -= ComponentOnDoNotDisturbChanged;
 		}
 
-		private void ComponentOnSourceAdded(object sender, GenericEventArgs<CallComponent> args)
+		private void ComponentOnSourceAdded(object sender, GenericEventArgs<CallStatus> args)
 		{
-			CallComponent source = args.Data;
+			CallStatus source = args.Data;
 
 			switch (source.Direction)
 			{
@@ -251,24 +274,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 					break;
 
 				case eCallDirection.Incoming:
-					//AddParticipant(source);
 					if (source.AnswerState == eCallAnswerState.Unanswered)
 						AddIncomingCall(source);
 					break;
 				case eCallDirection.Outgoing:
-					AddParticipant(source);
+					AddConference(source);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		private void ComponentOnSourceRemoved(object sender, GenericEventArgs<CallComponent> args)
+		private void ComponentOnSourceRemoved(object sender, GenericEventArgs<CallStatus> args)
 		{
-			CallComponent source = args.Data;
+			CallStatus source = args.Data;
 
 			RemoveIncomingCall(source);
-			RemoveParticipant(source);
+			RemoveConference(source);
 		}
 
 		private void ComponentOnPrivacyMuteChanged(object sender, BoolEventArgs args)
@@ -288,9 +310,51 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		#endregion
 
+		#region Conferences
+
+		private void AddConference(CallStatus source)
+		{
+			m_CriticalSection.Enter();
+
+			try
+			{
+				if (m_CallsToConferences.ContainsKey(source))
+					return;
+
+				CiscoConference conference = new CiscoConference(m_DialingComponent, source);
+				m_CallsToConferences.Add(source, conference);
+				RaiseOnConferenceAdded(this, new ConferenceEventArgs(conference));
+			}
+			finally
+			{
+				m_CriticalSection.Leave();
+			}
+		}
+
+		private void RemoveConference(CallStatus source)
+		{
+			m_CriticalSection.Enter();
+
+			try
+			{
+				if (!m_CallsToConferences.ContainsKey(source))
+					return;
+
+				CiscoConference conference = m_CallsToConferences[source];
+				m_CallsToConferences.Remove(source);
+				RaiseOnConferenceRemoved(this, new ConferenceEventArgs(conference));
+			}
+			finally
+			{
+				m_CriticalSection.Leave();
+			}
+		}
+
+		#endregion
+
 		#region Incoming Calls
 
-		private void AddIncomingCall(CallComponent source)
+		private void AddIncomingCall(CallStatus source)
 		{
 			TraditionalIncomingCall incoming;
 
@@ -301,7 +365,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				if (m_IncomingCalls.ContainsKey(source))
 					return;
 
-				incoming = new TraditionalIncomingCall(source.CallType)
+				incoming = new TraditionalIncomingCall(source.CiscoCallType.ToCallType())
 				{
 					Name = source.Name, 
 					Number = source.Number ?? source.RemoteNumber
@@ -319,7 +383,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(incoming));
 		}
 
-		private void RemoveIncomingCall(CallComponent source)
+		private void RemoveIncomingCall(CallStatus source)
 		{
 			TraditionalIncomingCall incoming;
 
@@ -363,8 +427,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			if (castCall == null)
 				return;
 
-			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(castCall));
-			source.Reject();
+			CallStatus source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(castCall));
+			m_DialingComponent.Reject(source);
 		}
 
 		private void AnswerCallback(IIncomingCall sender)
@@ -373,44 +437,44 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			if (castCall == null)
 				return;
 
-			CallComponent source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(castCall));
-			source.Answer();
+			CallStatus source = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(castCall));
+			m_DialingComponent.Answer(source);
 		}
 
 		#endregion
 
 		#region Source Callbacks
 
-		private void Subscribe(CallComponent source)
+		private void Subscribe(CallStatus source)
 		{
 			source.OnNameChanged += SourceOnNameChanged;
 			source.OnNumberChanged += SourceOnNumberChanged;
 			source.OnAnswerStateChanged += SourceOnAnswerStateChanged;
 		}
 
-		private void Unsubscribe(CallComponent source)
+		private void Unsubscribe(CallStatus source)
 		{
 			source.OnNameChanged -= SourceOnNameChanged;
 			source.OnNumberChanged -= SourceOnNumberChanged;
 			source.OnAnswerStateChanged -= SourceOnAnswerStateChanged;
 		}
 
-		private void SourceOnAnswerStateChanged(object sender, CallAnswerStateEventArgs args)
+		private void SourceOnAnswerStateChanged(object sender, GenericEventArgs<eCallAnswerState> args)
 		{
-			UpdateIncomingCall(sender as CallComponent);
+			UpdateIncomingCall(sender as CallStatus);
 		}
 
 		private void SourceOnNumberChanged(object sender, StringEventArgs args)
 		{
-			UpdateIncomingCall(sender as CallComponent);
+			UpdateIncomingCall(sender as CallStatus);
 		}
 
 		private void SourceOnNameChanged(object sender, StringEventArgs args)
 		{
-			UpdateIncomingCall(sender as CallComponent);
+			UpdateIncomingCall(sender as CallStatus);
 		}
 
-		private void UpdateIncomingCall(CallComponent source)
+		private void UpdateIncomingCall(CallStatus source)
 		{
 			TraditionalIncomingCall incomingCall = m_CriticalSection.Execute(() => m_IncomingCalls.GetValue(source));
 
@@ -423,7 +487,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				case eCallAnswerState.Ignored:
 				case eCallAnswerState.AutoAnswered:
 				case eCallAnswerState.Answered:
-					AddParticipant(m_IncomingCalls.GetKey(incomingCall));
+					AddConference(m_IncomingCalls.GetKey(incomingCall));
 					RemoveIncomingCall(source);
 					break;
 			}
@@ -466,9 +530,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 						DialString = first.Uri
 					};
 
-			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
-			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
-			OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(SipRegistrationStatus));
+			RaiseSipLocalName(this, new StringEventArgs(SipLocalName));
+			RaiseSipEnabledState(this, new BoolEventArgs(SipIsRegistered));
+			RaiseSipRegistrationStatus(this, new StringEventArgs(SipRegistrationStatus));
 		}
 
 		#endregion
@@ -510,13 +574,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private void RegistrationOnRegistrationChange(object sender, RegistrationEventArgs registrationEventArgs)
 		{
-			OnSipRegistrationStatusChanged.Raise(this, new StringEventArgs(SipRegistrationStatus));
-			OnSipEnabledChanged.Raise(this, new BoolEventArgs(SipIsRegistered));
+			RaiseSipRegistrationStatus(this, new StringEventArgs(SipRegistrationStatus));
+			RaiseSipEnabledState(this, new BoolEventArgs(SipIsRegistered));
 		}
 
 		private void RegistrationOnUriChange(object sender, StringEventArgs stringEventArgs)
 		{
-			OnSipLocalNameChanged.Raise(this, new StringEventArgs(SipLocalName));
+			RaiseSipLocalName(this, new StringEventArgs(SipLocalName));
 		}
 
 		#endregion

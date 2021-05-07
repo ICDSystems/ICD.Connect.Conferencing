@@ -147,7 +147,7 @@
     <Compile Include="Devices\Codec\Controls\CiscoCodecPowerControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
-    <Compile Include="Devices\Codec\Controls\CiscoCodecTraditionalConferenceControl.cs" />
+    <Compile Include="Devices\Codec\Controls\Conference\CiscoCodecTraditionalConferenceControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecVolumeControl.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

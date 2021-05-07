@@ -1,5 +1,5 @@
 ﻿using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference;
 using NUnit.Framework;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings

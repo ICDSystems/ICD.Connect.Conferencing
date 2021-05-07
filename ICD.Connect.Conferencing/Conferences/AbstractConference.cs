@@ -83,7 +83,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		public eConferenceStatus Status
 		{
 			get { return m_Status; }
-			private set
+			protected set
 			{
 				if(m_Status == value)
 					return;
@@ -100,7 +100,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		public DateTime? StartTime
 		{
 			get { return m_Start; }
-			private set
+			protected set
 			{
 				if (m_Start == value)
 					return;
@@ -117,7 +117,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		public DateTime? EndTime
 		{
 			get { return m_End; }
-			private set
+			protected set
 			{
 				if (m_End == value)
 					return;
@@ -249,7 +249,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <returns></returns>
 		IEnumerable<IParticipant> IConference.GetParticipants()
 		{
-			return GetParticipants().Cast<IParticipant>();
+			return GetParticipants();
 		}
 
 		/// <summary>
@@ -262,6 +262,15 @@ namespace ICD.Connect.Conferencing.Conferences
 			OnParticipantRemoved = null;
 
 			Clear();
+
+			DisposeFinal();
+		}
+
+		/// <summary>
+		/// Release resources.
+		/// </summary>
+		protected virtual void DisposeFinal()
+		{
 		}
 
 		#endregion
@@ -440,7 +449,10 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <returns></returns>
 		public virtual IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
-			yield break;
+			yield return new ConsoleCommand("Leave", "Leaves the conference", () => LeaveConference());
+			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
+			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
+			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
 		}
 
 		#endregion

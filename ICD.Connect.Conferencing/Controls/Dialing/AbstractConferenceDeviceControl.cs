@@ -255,9 +255,10 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			}
 		}
 
-		public bool SipIsRegistered { get; }
-		public string SipLocalName { get; }
-		public string SipRegistrationStatus { get; }
+		// TODO should these be virtual?
+		public virtual bool SipIsRegistered { get; }
+		public virtual string SipLocalName { get; }
+		public virtual string SipRegistrationStatus { get; }
 
 		/// <summary>
 		/// Returns true if we are the host of the current conference.
@@ -486,6 +487,40 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		protected void RaiseOnConferenceRemoved(object sender, ConferenceEventArgs args)
 		{
 			OnConferenceRemoved.Raise(sender, args);
+		}
+
+		#endregion
+
+		#region Sip Events
+
+		/// <summary>
+		/// Allows for child implementations to safely raise the OnSipEnabledChanged event.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		protected void RaiseSipEnabledState(object sender, BoolEventArgs args)
+		{
+			OnSipEnabledChanged.Raise(sender, args);
+		}
+
+		/// <summary>
+		/// Allows for child implementations to safely raise the OnSipLocalNameChanged event.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		protected void RaiseSipLocalName(object sender, StringEventArgs args)
+		{
+			OnSipLocalNameChanged.Raise(sender, args);
+		}
+
+		/// <summary>
+		/// Allows for child implementations to safely raise the OnSipRegistrationStatusChanged event.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="args"></param>
+		protected void RaiseSipRegistrationStatus(object sender, StringEventArgs args)
+		{
+			OnSipRegistrationStatusChanged.Raise(sender, args);
 		}
 
 		#endregion

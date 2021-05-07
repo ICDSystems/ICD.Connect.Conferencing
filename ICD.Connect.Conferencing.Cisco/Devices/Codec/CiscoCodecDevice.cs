@@ -14,6 +14,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Devices.Controls;
 using ICD.Connect.Protocol;

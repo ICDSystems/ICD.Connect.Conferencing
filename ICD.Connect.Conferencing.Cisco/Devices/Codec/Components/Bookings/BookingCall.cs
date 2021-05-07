@@ -1,6 +1,6 @@
 ﻿using System;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 {

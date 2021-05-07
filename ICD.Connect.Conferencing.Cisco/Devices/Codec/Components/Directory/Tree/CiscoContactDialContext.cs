@@ -1,6 +1,6 @@
 ﻿using ICD.Common.Properties;
 using ICD.Common.Utils.Xml;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference;
 using ICD.Connect.Conferencing.DialContexts;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree

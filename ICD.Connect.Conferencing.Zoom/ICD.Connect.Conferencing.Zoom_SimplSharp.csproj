@@ -108,7 +108,6 @@
     <Compile Include="Devices\ZoomRooms\Controls\ZoomRoomLayoutControl.cs" />
     <Compile Include="Devices\ZoomRooms\Controls\ZoomRoomPresentationControl.cs" />
     <Compile Include="Devices\ZoomRooms\Controls\ZoomRoomRoutingControl.cs" />
-    <Compile Include="Devices\ZoomRooms\Controls\Conferencing\ZoomRoomTraditionalConferenceControl.cs" />
     <Compile Include="Devices\ZoomRooms\Controls\ZoomRoomVolumeControl.cs" />
     <Compile Include="Devices\ZoomRooms\EventArguments\MeetingNeedsPasswordEventArgs.cs" />
     <Compile Include="KrangPlugin.cs" />

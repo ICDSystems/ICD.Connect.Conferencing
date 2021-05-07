@@ -1,4 +1,5 @@
-﻿using ICD.Common.Utils.EventArguments;
+﻿using System;
+using ICD.Common.Utils.EventArguments;
 
 namespace ICD.Connect.Conferencing.EventArguments
 {
@@ -29,6 +30,39 @@ namespace ICD.Connect.Conferencing.EventArguments
 		/// <param name="status"></param>
 		public ParticipantStatusEventArgs(eParticipantStatus status) : base(status)
 		{
+		}
+	}
+
+	public static class ParticipantStatusExtensions
+	{
+		/// <summary>
+		/// Returns true if the value is some type of connected.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static bool GetIsOnline(this eParticipantStatus extends)
+		{
+			switch (extends)
+			{
+				case eParticipantStatus.Undefined:
+				case eParticipantStatus.Idle:
+				case eParticipantStatus.Dialing:
+				case eParticipantStatus.Ringing:
+				case eParticipantStatus.Connecting:
+				case eParticipantStatus.Disconnecting:
+				case eParticipantStatus.Disconnected:
+					return false;
+
+				case eParticipantStatus.Connected:
+				case eParticipantStatus.OnHold:
+				case eParticipantStatus.EarlyMedia:
+				case eParticipantStatus.Preserved:
+				case eParticipantStatus.RemotePreserved:
+					return true;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 	}
 }

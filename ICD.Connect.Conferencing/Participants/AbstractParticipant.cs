@@ -102,6 +102,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 				m_Name = value;
 				Log(eSeverity.Informational, "Name set to {0}", m_Name);
+
 				OnNameChanged.Raise(this, new StringEventArgs(m_Name));
 			}
 		}
@@ -136,6 +137,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 				m_Status = value;
 				Log(eSeverity.Informational, "Status set to {0}", m_Status);
+
 				OnStatusChanged.Raise(this, new ParticipantStatusEventArgs(m_Status));
 			}
 		}
@@ -190,7 +192,6 @@ namespace ICD.Connect.Conferencing.Participants
 					return;
 
 				m_Number = value;
-
 				Log(eSeverity.Informational, "Number set to {0}", m_Number);
 
 				OnNumberChanged.Raise(this, new StringEventArgs(m_Number));
@@ -350,6 +351,16 @@ namespace ICD.Connect.Conferencing.Participants
 		{
 		}
 
+		protected void Log(eSeverity severity, string message, params object[] args)
+		{
+			var logger = ServiceProvider.TryGetService<ILoggerService>();
+			if (logger == null)
+				return;
+
+			message = string.Format("{0} - {1}", this, message);
+			logger.AddEntry(severity, message, args);
+		}
+
 		/// <summary>
 		/// Gets the string representation for this instance.
 		/// </summary>
@@ -361,16 +372,6 @@ namespace ICD.Connect.Conferencing.Participants
 			builder.AppendProperty("Name", Name);
 
 			return builder.ToString();
-		}
-
-		protected void Log(eSeverity severity, string message, params object[] args)
-		{
-			var logger = ServiceProvider.TryGetService<ILoggerService>();
-			if (logger == null)
-				return;
-
-			message = string.Format("{0} - {1}", this, message);
-			logger.AddEntry(severity, message, args);
 		}
 
 		public abstract void Hold();
