@@ -4,6 +4,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.DialContexts;
+using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
@@ -65,7 +66,8 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 				new DialContext
 				{
 					Protocol = protocol,
-					DialString = number
+					DialString = number,
+					CallType = instance.Supports
 				};
 
 			instance.Dial(context);

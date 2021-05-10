@@ -46,7 +46,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_DialingComponent = dialingComponent;
 			Subscribe(m_DialingComponent.Codec);
 
+			InitializeValues();
+		}
+
+		private void InitializeValues()
+		{
+			CallType = m_CallStatus.CiscoCallType.ToCallType();
+			AnswerState = m_CallStatus.AnswerState;
+			Number = m_CallStatus.Number;
+			Name = m_CallStatus.Name;
+			Direction = m_CallStatus.Direction;
+			Status = m_CallStatus.Status;
 			DialTime = IcdEnvironment.GetUtcTime();
+			StartTime = IcdEnvironment.GetUtcTime();
+			EndTime = null;
 		}
 
 		#endregion
@@ -103,7 +116,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			callStatus.OnCiscoCallTypeChanged += CallComponentOnCiscoCallTypeChanged;
+			callStatus.OnCiscoCallTypeChanged += CallStatusOnCiscoCallTypeChanged;
 			callStatus.OnAnswerStateChanged += CallStatusOnAnswerStateChanged;
 			callStatus.OnNumberChanged += CallStatusOnNumberChanged;
 			callStatus.OnNameChanged += CallStatusOnNameChanged;
@@ -117,7 +130,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			callStatus.OnCiscoCallTypeChanged -= CallComponentOnCiscoCallTypeChanged;
+			callStatus.OnCiscoCallTypeChanged -= CallStatusOnCiscoCallTypeChanged;
 			callStatus.OnAnswerStateChanged -= CallStatusOnAnswerStateChanged;
 			callStatus.OnNumberChanged -= CallStatusOnNumberChanged;
 			callStatus.OnNameChanged -= CallStatusOnNameChanged;
@@ -126,7 +139,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			callStatus.OnStatusChanged -= CallStatusOnStatusChanged;
 		}
 
-		private void CallComponentOnCiscoCallTypeChanged(object sender, GenericEventArgs<eCiscoCallType> args)
+		private void CallStatusOnCiscoCallTypeChanged(object sender, GenericEventArgs<eCiscoCallType> args)
 		{
 			CallType = args.Data.ToCallType();
 		}
@@ -153,12 +166,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void CallStatusOnDurationChanged(object sender, IntEventArgs args)
 		{
-			//TODO - time calculations
+			DateTime end = EndTime ?? IcdEnvironment.GetUtcTime();
+			StartTime = end - TimeSpan.FromSeconds(args.Data);
 		}
 
 		private void CallStatusOnStatusChanged(object sender, GenericEventArgs<eParticipantStatus> args)
 		{
 			Status = args.Data;
+			if (!args.Data.GetIsOnline())
+				EndTime = IcdEnvironment.GetUtcTime();
 		}
 
 		#endregion

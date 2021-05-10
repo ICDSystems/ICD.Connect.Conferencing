@@ -6,7 +6,6 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants.Enums;
@@ -103,7 +102,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				m_Number = value;
 
 				// Update the name from the cache if it hasn't been parsed yet.
-				if (string.IsNullOrEmpty(Name))
+				if (string.IsNullOrEmpty(Name) && m_Number != null)
 					Name = GetCachedName(m_Number);
 				CacheName(m_Number, Name);
 
@@ -338,24 +337,66 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <returns></returns>
 		public static CallStatus FromXml(string xml)
 		{
-			try
+			using (IcdXmlReader reader = new IcdXmlReader(xml))
 			{
-				// Attributes
-				int callId = XmlUtils.GetAttributeAsInt(xml, ATTRIBUTE_CALL_ID);
-				bool ghost = XmlUtils.GetAttributeAsBool(xml, ATTRIBUTE_GHOST);
+				reader.ReadToNextElement();
 
-				// Elements
-				eCallAnswerState answerState = EnumUtils.Parse<eCallAnswerState>(XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_ANSWER_STATE), true);
-				string number = XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_CALLBACK_NUMBER);
-				string name = XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_DISPLAY_NAME);
-				eCallDirection direction = EnumUtils.Parse<eCallDirection>(XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_DIRECTION), true);
-				string protocol = XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_PROTOCOL);
-				int receiveRate = XmlUtils.ReadChildElementContentAsInt(xml, ELEMENT_RECEIVE_CALL_RATE);
-				string remoteNumber = XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_REMOTE_NUMBER);
-				eParticipantStatus status = EnumUtils.Parse<eParticipantStatus>(ParseStatusElement(XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_STATUS)),true);
-				int transmitRate = XmlUtils.ReadChildElementContentAsInt(xml, ELEMENT_TRANSMIT_CALL_RATE);
-				eCiscoCallType ciscoCallType = EnumUtils.Parse<eCiscoCallType>(XmlUtils.ReadChildElementContentAsString(xml, ELEMENT_CALL_TYPE), true);
-				int duration = XmlUtils.ReadChildElementContentAsInt(xml, ELEMENT_DURATION);
+				int callId = reader.GetAttributeAsInt(ATTRIBUTE_CALL_ID);
+				bool ghost = reader.GetAttribute(ATTRIBUTE_GHOST) == "True";
+
+				eCallAnswerState answerState = eCallAnswerState.Unknown;
+				string number = null;
+				string name = null;
+				eCallDirection direction = eCallDirection.Undefined;
+				string protocol = null;
+				int receiveRate = 0;
+				string remoteNumber = null;
+				eParticipantStatus status = eParticipantStatus.Undefined;
+				int transmitRate = 0;
+				eCiscoCallType ciscoCallType = eCiscoCallType.Unknown;
+				int duration = 0;
+
+				foreach (IcdXmlReader child in reader.GetChildElements())
+				{
+					switch (child.Name)
+					{
+						case ELEMENT_ANSWER_STATE:
+							answerState = EnumUtils.Parse<eCallAnswerState>(child.ReadElementContentAsString(), true);
+							break;
+						case ELEMENT_CALLBACK_NUMBER:
+							number = child.ReadElementContentAsString();
+							break;
+						case ELEMENT_DISPLAY_NAME:
+							name = child.ReadElementContentAsString();
+							break;
+						case ELEMENT_DIRECTION:
+							direction = EnumUtils.Parse<eCallDirection>(child.ReadElementContentAsString(), true);
+							break;
+						case ELEMENT_PROTOCOL:
+							protocol = child.ReadElementContentAsString();
+							break;
+						case ELEMENT_RECEIVE_CALL_RATE:
+							receiveRate = child.ReadElementContentAsInt();
+							break;
+						case ELEMENT_REMOTE_NUMBER:
+							remoteNumber = child.ReadElementContentAsString();
+							break;
+						case ELEMENT_STATUS:
+							status = EnumUtils.Parse<eParticipantStatus>(ParseStatusElement(child.ReadElementContentAsString()), true);
+							break;
+						case ELEMENT_TRANSMIT_CALL_RATE:
+							transmitRate = child.ReadElementContentAsInt();
+							break;
+						case ELEMENT_CALL_TYPE:
+							ciscoCallType = EnumUtils.Parse<eCiscoCallType>(child.ReadElementContentAsString(), true);
+							break;
+						case ELEMENT_DURATION:
+							duration = child.ReadElementContentAsInt();
+							break;
+					}
+
+					child.Dispose();
+				}
 
 				// Static calculations
 				status = ghost ? eParticipantStatus.Disconnected : status;
@@ -363,11 +404,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				return new CallStatus(answerState, number, name, direction, duration, callId, protocol,
 				                      receiveRate, remoteNumber, status, transmitRate,
 				                      ciscoCallType);
-			}
-			catch (Exception e)
-			{
-				IcdErrorLog.Exception(e, "Error parsing Cisco call status from xml - {0}", xml);
-				return null;
 			}
 		}
 
@@ -385,20 +421,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (updated.CallId != CallId)
 				return;
 
-			// Dead calls rise up as ghosts.
-			bool ghost = XmlUtils.GetAttributeAsBool(xml, ATTRIBUTE_GHOST);
-
-			AnswerState = updated.AnswerState;
-			Number = updated.Number;
-			Name = updated.Name;
-			Direction = updated.Direction;
-			Duration = updated.Duration;
-			Protocol = updated.Protocol;
-			ReceiveRate = updated.ReceiveRate;
-			RemoteNumber = updated.RemoteNumber;
-			Status = ghost ? eParticipantStatus.Disconnected : updated.Status;
-			TransmitRate = updated.TransmitRate;
-			CiscoCallType = updated.CiscoCallType;
+			AnswerState = updated.AnswerState != eCallAnswerState.Unknown ? updated.AnswerState : AnswerState;
+			Number = updated.Number ?? Number;
+			Name = updated.Name ?? Name;
+			Direction = updated.Direction != eCallDirection.Undefined ? updated.Direction : Direction;
+			Duration = updated.Duration != 0 ? updated.Duration : Duration;
+			Protocol = updated.Protocol ?? Protocol;
+			ReceiveRate = updated.ReceiveRate != 0 ? updated.ReceiveRate : ReceiveRate;
+			RemoteNumber = updated.RemoteNumber ?? RemoteNumber;
+			Status = updated.Status != eParticipantStatus.Undefined ? updated.Status : Status;
+			TransmitRate = updated.TransmitRate != 0 ? updated.TransmitRate : TransmitRate;
+			CiscoCallType = updated.CiscoCallType != eCiscoCallType.Unknown ? updated.CiscoCallType : CiscoCallType;
 		}
 
 		#endregion
@@ -426,6 +459,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="name"></param>
 		private static void CacheName(string number, string name)
 		{
+			// Don't cache null keys.
+			if (number == null)
+				return;
+
 			s_CachedNumberToNameSection.Execute(() => s_CachedNumberToName[number] = name);
 		}
 

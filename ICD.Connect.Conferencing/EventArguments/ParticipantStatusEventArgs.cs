@@ -1,5 +1,6 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
+using ICD.Connect.Conferencing.Conferences;
 
 namespace ICD.Connect.Conferencing.EventArguments
 {
@@ -60,6 +61,44 @@ namespace ICD.Connect.Conferencing.EventArguments
 				case eParticipantStatus.RemotePreserved:
 					return true;
 
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		/// <summary>
+		/// Converts the participant status to an equivalent conference status.
+		/// Useful for conferences with 1 participant.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static eConferenceStatus ToConferenceStatus(this eParticipantStatus extends)
+		{
+			switch (extends)
+			{
+				case eParticipantStatus.Undefined:
+					return eConferenceStatus.Undefined;
+
+				case eParticipantStatus.Dialing:
+				case eParticipantStatus.Ringing:
+				case eParticipantStatus.Connecting:
+					return eConferenceStatus.Connecting;
+
+				case eParticipantStatus.Connected:
+				case eParticipantStatus.EarlyMedia:
+				case eParticipantStatus.Preserved:
+				case eParticipantStatus.RemotePreserved:
+					return eConferenceStatus.Connected;
+
+				case eParticipantStatus.OnHold:
+					return eConferenceStatus.OnHold;
+
+				case eParticipantStatus.Disconnecting:
+					return eConferenceStatus.Disconnecting;
+
+				case eParticipantStatus.Disconnected:
+				case eParticipantStatus.Idle:
+					return eConferenceStatus.Disconnected;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}

@@ -1,11 +1,8 @@
 ﻿using System;
 using ICD.Common.Properties;
-using ICD.Common.Utils.EventArguments;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
@@ -50,8 +47,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 	public sealed class CiscoConference : AbstractConference<CiscoParticipant>
 	{
 		private readonly DialingComponent m_DialingComponent;
-		private readonly CiscoParticipant m_Participant;
 		private readonly CallStatus m_CallStatus;
+
+		private CiscoParticipant m_Participant;
 
 		#region Constructor
 
@@ -67,14 +65,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			m_DialingComponent = dialingComponent;
 			m_CallStatus = callStatus;
-
-			m_Participant = new CiscoParticipant(m_CallStatus, dialingComponent);
-			Subscribe(m_Participant);
 		}
 
 		#endregion
 
 		#region Methods
+
+		public void InitializeConference()
+		{
+			m_Participant = new CiscoParticipant(m_CallStatus, m_DialingComponent);
+			Subscribe(m_Participant);
+			AddParticipant(m_Participant);
+		}
 
 		protected override void DisposeFinal()
 		{
@@ -98,12 +100,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#endregion
 
+		#region Participant Callbacks
+
 		private void Subscribe(CiscoParticipant participant)
 		{
+			participant.OnStatusChanged += ParticipantOnStatusChanged;
 		}
 
 		private void Unsubscribe(CiscoParticipant participant)
 		{
+			participant.OnStatusChanged -= ParticipantOnStatusChanged;
 		}
+
+		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
+		{
+			Status = args.Data.ToConferenceStatus();
+		}
+
+		#endregion
 	}
 }

@@ -324,6 +324,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				CiscoConference conference = new CiscoConference(m_DialingComponent, source);
 				m_CallsToConferences.Add(source, conference);
 				RaiseOnConferenceAdded(this, new ConferenceEventArgs(conference));
+
+				// Initialize conference participants after event raise.
+				conference.InitializeConference();
 			}
 			finally
 			{
