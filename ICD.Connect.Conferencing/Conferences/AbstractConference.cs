@@ -46,12 +46,18 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
 
+		/// <summary>
+		/// Raised when the supported conference features changes.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
+
 		private readonly IcdHashSet<T> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private eConferenceStatus m_Status;
 		private DateTime? m_Start;
 		private DateTime? m_End;
+		private eConferenceFeatures m_SupportedConferenceFeatures;
 
 		/// <summary>
 		/// Maps participant status to conference status.
@@ -134,6 +140,23 @@ namespace ICD.Connect.Conferencing.Conferences
 		public eCallType CallType
 		{
 			get { return this.GetOnlineParticipants().MaxOrDefault(p => p.CallType); }
+		}
+
+		/// <summary>
+		/// Gets the supported conference features.
+		/// </summary>
+		public eConferenceFeatures SupportedConferenceFeatures
+		{
+			get { return m_SupportedConferenceFeatures; }
+			protected set
+			{
+				if (m_SupportedConferenceFeatures == value)
+					return;
+
+				m_SupportedConferenceFeatures = value;
+
+				OnSupportedConferenceFeaturesChanged.Raise(this, new GenericEventArgs<eConferenceFeatures>(m_SupportedConferenceFeatures));
+			}
 		}
 
 		#endregion
@@ -249,7 +272,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <returns></returns>
 		IEnumerable<IParticipant> IConference.GetParticipants()
 		{
-			return GetParticipants();
+			return GetParticipants() as IEnumerable<IParticipant>;
 		}
 
 		/// <summary>

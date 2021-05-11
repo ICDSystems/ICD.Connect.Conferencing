@@ -96,6 +96,7 @@
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackAvailabilityEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackStatusEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackWhiteboardModeEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Dialing\CallStatus.cs" />
     <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoRootFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoFolder.cs" />
@@ -135,9 +136,10 @@
     <Compile Include="Devices\Codec\Components\Video\SelfViewMonitorRoleEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Video\PipPositionEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Video\VideoComponent.cs" />
-    <Compile Include="Devices\Codec\Components\Dialing\CallComponent.cs" />
     <Compile Include="Devices\Codec\Components\Dialing\DialingComponent.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDirectSharingControl.cs" />
+    <Compile Include="Devices\Codec\Controls\Conference\CiscoConference.cs" />
+    <Compile Include="Devices\Codec\Controls\Conference\CiscoParticipant.cs" />
     <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoBooking.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoCodecCalendarControl.cs" />

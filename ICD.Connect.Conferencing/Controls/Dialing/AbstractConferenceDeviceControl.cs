@@ -255,10 +255,9 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			}
 		}
 
-		// TODO should these be virtual?
-		public virtual bool SipIsRegistered { get; }
-		public virtual string SipLocalName { get; }
-		public virtual string SipRegistrationStatus { get; }
+		public virtual bool SipIsRegistered { get; private set; }
+		public virtual string SipLocalName { get; private set; }
+		public virtual string SipRegistrationStatus { get; private set; }
 
 		/// <summary>
 		/// Returns true if we are the host of the current conference.

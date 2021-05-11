@@ -65,6 +65,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			m_DialingComponent = dialingComponent;
 			m_CallStatus = callStatus;
+
+			SupportedConferenceFeatures = eConferenceFeatures.GetStatus |
+			                              eConferenceFeatures.GetStartTime |
+			                              eConferenceFeatures.GetEndTime |
+			                              eConferenceFeatures.GetCallType |
+			                              eConferenceFeatures.GetParticipants |
+			                              eConferenceFeatures.EndConference;
 		}
 
 		#endregion

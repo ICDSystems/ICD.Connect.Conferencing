@@ -62,6 +62,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
 
+		/// <summary>
+		/// Raised when the supported conference features changes.
+		/// </summary>
+		event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
+
 		#region Properties
 
 		/// <summary>
@@ -83,6 +88,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Gets the type of call.
 		/// </summary>
 		eCallType CallType { get; }
+
+		/// <summary>
+		/// Gets the supported conference features.
+		/// </summary>
+		eConferenceFeatures SupportedConferenceFeatures { get; }
 
 		#endregion
 
