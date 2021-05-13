@@ -438,6 +438,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			Codec.Logger.Log(eSeverity.Informational, "Resetting standby timer to {0} minutes", minutes);
 		}
 
+		[PublicAPI]
+		public void ResetHalfwakeTimer(int minutes)
+		{
+			Codec.SendCommand("xCommand Standby ResetHalfwakeTimer Delay:{0}", minutes);
+			Codec.Logger.Log(eSeverity.Informational, "Resetting halfwake timer to {0} minutes", minutes);
+		}
+
 		/// <summary>
 		/// Gets the sip registration infos.
 		/// </summary>

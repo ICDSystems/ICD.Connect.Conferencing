@@ -10,7 +10,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 	public sealed class CiscoCodecCameraDevicePowerControl : AbstractPowerDeviceControl<CiscoCodecCameraDevice>
 	{
 		private const int CODEC_SLEEP_TIMER_MIN = 120;
-		private const long KEEP_AWAKE_TICK_MS = 60 * 60 * 1000;
+		private const long KEEP_AWAKE_TICK_MS = 5 * 60 * 1000;
 
 		private readonly SafeTimer m_Timer;
 
@@ -84,6 +84,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Camera
 				m_SystemComponent.Wake();
 
 			m_SystemComponent.ResetSleepTimer(CODEC_SLEEP_TIMER_MIN);
+			m_SystemComponent.ResetHalfwakeTimer(CODEC_SLEEP_TIMER_MIN);
 		}
 
 		/// <summary>
