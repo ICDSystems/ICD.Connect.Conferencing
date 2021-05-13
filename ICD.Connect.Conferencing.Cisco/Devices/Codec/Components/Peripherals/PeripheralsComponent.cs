@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Timers;
+using ICD.Common.Utils.Xml;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Peripherals
 {
@@ -12,7 +15,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Peripherals
 	{
 		private const long HEARTBEAT_MILLISECONDS = 30 * 1000;
 
+		public event EventHandler<FloatEventArgs> OnAirQualityIndexChanged;
+
 		private readonly SafeTimer m_HeartbeatTimer;
+
+		private float m_AirQualityIndex;
+
+		public float AirQualityIndex
+		{
+			get { return m_AirQualityIndex; }
+			private set
+			{
+				value = MathUtils.Clamp(value, 0, 5);
+				if (Math.Abs(m_AirQualityIndex - value) < 0.01f)
+					return;
+
+				m_AirQualityIndex = value;
+				OnAirQualityIndexChanged.Raise(this, m_AirQualityIndex);
+			}
+		}
 
 		#region Constructors
 
@@ -77,6 +98,30 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Peripherals
 		{
 			//if (Codec.IsConnected)
 				Codec.SendCommand("xCommand Peripherals HeartBeat ID: \"{0}\"", Codec.PeripheralsId);
+		}
+
+		#endregion
+
+		#region Codec Callbacks
+
+		protected override void Subscribe(CiscoCodecDevice codec)
+		{
+			base.Subscribe(codec);
+
+			codec.RegisterParserCallback(ParseAirQualityIndex, CiscoCodecDevice.XSTATUS_ELEMENT, "Peripherals", "ConnectedDevice", "RoomAnalytics", "AirQuality", "Index");
+		}
+
+		protected override void Unsubscribe(CiscoCodecDevice codec)
+		{
+			base.Unsubscribe(codec);
+
+			codec.UnregisterParserCallback(ParseAirQualityIndex, CiscoCodecDevice.XSTATUS_ELEMENT, "Peripherals", "ConnectedDevice", "RoomAnalytics", "AirQuality", "Index");
+		}
+
+		private void ParseAirQualityIndex(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			string content = XmlUtils.GetInnerXml(xml);
+			AirQualityIndex = float.Parse(content);
 		}
 
 		#endregion

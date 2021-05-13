@@ -2,16 +2,36 @@
 using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Peripherals;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
+using ICD.Connect.Telemetry.Attributes;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 {
 	internal sealed class CiscoCodecTelemetryComponent
 	{
 		[NotNull] private readonly CiscoCodecDevice m_Codec;
-
 		[NotNull]
 		private CiscoCodecDevice Codec { get { return m_Codec; }}
+
+		[EventTelemetry("OnAirQualityIndexChanged")]
+		public event EventHandler<FloatEventArgs> OnAirQualityIndexChanged;
+
+		private float m_AirQualityIndex;
+
+		[PropertyTelemetry("AirQualityIndex", null, "OnAirQualityIndexChanged")]
+		public float AirQualityIndex
+		{
+			get { return m_AirQualityIndex; }
+			private set
+			{
+				if (Math.Abs(m_AirQualityIndex - value) < 0.01f)
+					return;
+
+				m_AirQualityIndex = value;
+				OnAirQualityIndexChanged.Raise(this, m_AirQualityIndex);
+			}
+		}
 
 		public CiscoCodecTelemetryComponent([NotNull] CiscoCodecDevice codec)
 		{
@@ -71,16 +91,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 				return;
 
 			SystemComponent systemComponent = codec.Components.GetComponent<SystemComponent>();
-			if (systemComponent == null)
+			if (systemComponent != null)
+			{
+				systemComponent.OnAddressChanged += SystemComponentOnAddressChanged;
+				systemComponent.OnSubnetMaskChanged += SystemComponentOnSubnetMaskChanged;
+				systemComponent.OnGatewayChanged += SystemComponentOnGatewayChanged;
+				systemComponent.OnSoftwareVersionChanged += SystemComponentOnSoftwareVersionChanged;
+				systemComponent.OnSoftwareVerisonDateChanged += SystemComponentOnSoftwareVerisonDateChanged;
+				systemComponent.OnPlatformChanged += SystemComponentOnPlatformChanged;
+				systemComponent.OnSerialNumberChanged += SystemComponentOnSerialNumberChanged;
+			}
+
+			PeripheralsComponent peripheralsComponent = codec.Components.GetComponent<PeripheralsComponent>();
+			if (peripheralsComponent == null)
 				return;
 
-			systemComponent.OnAddressChanged += SystemComponentOnAddressChanged;
-			systemComponent.OnSubnetMaskChanged += SystemComponentOnSubnetMaskChanged;
-			systemComponent.OnGatewayChanged += SystemComponentOnGatewayChanged;
-			systemComponent.OnSoftwareVersionChanged += SystemComponentOnSoftwareVersionChanged;
-			systemComponent.OnSoftwareVerisonDateChanged += SystemComponentOnSoftwareVerisonDateChanged;
-			systemComponent.OnPlatformChanged += SystemComponentOnPlatformChanged;
-			systemComponent.OnSerialNumberChanged += SystemComponentOnSerialNumberChanged;
+			peripheralsComponent.OnAirQualityIndexChanged += PeripheralsComponentOnAirQualityIndexChanged;
 		}
 
 		private void SystemComponentOnAddressChanged(object sender, StringEventArgs e)
@@ -116,6 +142,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private void SystemComponentOnSerialNumberChanged(object sender, StringEventArgs e)
 		{
 			Codec.MonitoredDeviceInfo.SerialNumber = e.Data;
+		}
+
+		private void PeripheralsComponentOnAirQualityIndexChanged(object sender, FloatEventArgs e)
+		{
+			AirQualityIndex = e.Data;
 		}
 
 		#endregion
