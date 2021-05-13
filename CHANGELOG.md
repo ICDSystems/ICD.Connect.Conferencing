@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - IConferencePoint implements IPoint<T>
  - Cisco Camera now resets halfwake timer and sleep timer when powered on
+ - Vaddio AV Bridge - fix null ref in console when no port is attached
 
 ## [17.2.2] - 2021-04-08
 ### Added

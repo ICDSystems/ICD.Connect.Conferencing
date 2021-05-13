@@ -450,7 +450,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			if (m_ConnectionStateManager != null)
+			if (m_ConnectionStateManager != null && m_ConnectionStateManager.Port != null)
 				yield return m_ConnectionStateManager.Port;
 
 			yield return ConsoleNodeGroup.IndexNodeMap("Components", m_Components.GetComponents()
