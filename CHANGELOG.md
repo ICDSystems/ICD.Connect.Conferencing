@@ -6,11 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [18.0.0] - 2021-05-14
 ### Added
  - Add IByodHubDevice & IByodHubDeviceSettings
  - Added property to Cisco Codec VideoComponent to determine if the codec supports video mute based on system software version.
  - Added cameras collection to IConferenceManager
  - Added features for room-wide camera privacy mute
+ - Added event to ConferenceManagerVolumePoints for when the collection changes
  
 ### Changed
  - IConferencePoint implements IPoint<T>
