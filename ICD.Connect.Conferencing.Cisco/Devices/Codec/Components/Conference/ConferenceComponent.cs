@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Services.Logging;
@@ -179,6 +180,59 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 		{
 			Codec.SendCommand("xCommand Conference Recording Resume CallId: {0}", callId);
 			Codec.Logger.Log(eSeverity.Informational, "Resuming Recording for call {0}", callId);
+		}
+
+		/// <summary>
+		/// Builds a search query for participants in the call with the specified ID.
+		/// </summary>
+		/// <param name="callId"></param>
+		/// <param name="limit"></param>
+		/// <param name="offset"></param>
+		/// <param name="search"></param>
+		public void ParticipantListSearch(int callId, int? limit, int? offset, [CanBeNull] string search)
+		{
+			string limitString = limit.HasValue ? string.Format(" Limit: {0}", limit) : "";
+			string offsetString = offset.HasValue ? string.Format(" Offset: {0}", offset) : "";
+			string searchString = search != null ? string.Format(" SearchString: {0}", search) : "";
+
+			Codec.SendCommand("xCommand Conference ParticipantList Search CallId: {0}{1}{2}{3}", callId, limitString, offsetString, searchString);
+			Codec.Logger.Log(eSeverity.Informational, "Querying call: {0} participants", callId);
+		}
+
+		/// <summary>
+		/// Admits the specified participant to the specified call.
+		/// </summary>
+		/// <param name="callId"></param>
+		/// <param name="participantId"></param>
+		public void ParticipantAdmit(int callId, int participantId)
+		{
+			Codec.SendCommand("xCommand Conference Participant Admit CallId: {0} ParticipantId: {1}", callId, participantId);
+			Codec.Logger.Log(eSeverity.Informational, "Admitting participant with ID: {0} to call with ID: {1}", participantId, callId);
+		}
+
+		/// <summary>
+		/// Disconnects the specified participant from the specified call.
+		/// </summary>
+		/// <param name="callId"></param>
+		/// <param name="participantId"></param>
+		public void ParticipantDisconnect(int callId, int participantId)
+		{
+			Codec.SendCommand("XCommand Conference Participant Disconnect CallId: {0} ParticipantId: {1}", callId, participantId);
+			Codec.Logger.Log(eSeverity.Informational, "Disconnecting participant with ID: {0} from call with ID: {1}", participantId, callId);
+		}
+
+		/// <summary>
+		/// Sets the mute state for the specified participant in the specified call.
+		/// </summary>
+		/// <param name="mute"></param>
+		/// <param name="callId"></param>
+		/// <param name="participantId"></param>
+		public void ParticipantMute(bool mute, int callId, int participantId)
+		{
+			string muteString = mute ? "On" : "Off";
+
+			Codec.SendCommand("xCommand Conference Participant Mute AudioMute: {0} CallId: {1} ParticipantId: {2}", muteString, callId, participantId);
+			Codec.Logger.Log(eSeverity.Informational, "Setting participant with ID: {0} in call with ID: {1} Mute state to: {2}", participantId, callId, muteString);
 		}
 
 		#endregion
