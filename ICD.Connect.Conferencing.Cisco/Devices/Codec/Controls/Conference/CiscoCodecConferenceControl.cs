@@ -18,7 +18,7 @@ using ICD.Connect.Conferencing.Utils;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
-	public sealed class CiscoCodecTraditionalConferenceControl : AbstractConferenceDeviceControl<CiscoCodecDevice, CiscoConference>
+	public sealed class CiscoCodecConferenceControl : AbstractConferenceDeviceControl<CiscoCodecDevice, CiscoConference>
 	{
 		#region Events
 
@@ -88,7 +88,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		/// </summary>
 		/// <param name="parent"></param>
 		/// <param name="id"></param>
-		public CiscoCodecTraditionalConferenceControl(CiscoCodecDevice parent, int id)
+		public CiscoCodecConferenceControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
 			m_DialingComponent = Parent.Components.GetComponent<DialingComponent>();

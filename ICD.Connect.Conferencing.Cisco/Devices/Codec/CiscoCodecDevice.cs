@@ -740,7 +740,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			base.AddControls(settings, factory, addControl);
 
 			addControl(new CiscoCodecRoutingControl(this, 0));
-			addControl(new CiscoCodecTraditionalConferenceControl(this, 1));
+			addControl(new CiscoCodecConferenceControl(this, 1));
 			addControl(new CiscoCodecDirectoryControl(this, 2));
 			addControl(new CiscoCodecLayoutControl(this, 3));
 			addControl(new CiscoCodecPresentationControl(this, 4));
