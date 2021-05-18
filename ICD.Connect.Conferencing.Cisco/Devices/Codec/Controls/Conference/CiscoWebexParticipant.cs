@@ -1,0 +1,139 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Properties;
+using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
+using ICD.Connect.Conferencing.Cameras;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference;
+using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
+
+namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
+{
+	public sealed class CiscoWebexParticipant : AbstractParticipant
+	{
+		private WebexParticipantInfo m_Info;
+
+		private readonly int m_CallId;
+		private readonly ConferenceComponent m_ConferenceComponent;
+
+		public override IRemoteCamera Camera { get { return null; } }
+
+		#region Constructor
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="callId"></param>
+		/// <param name="conferenceComponent"></param>
+		public CiscoWebexParticipant(WebexParticipantInfo info, int callId, [NotNull] ConferenceComponent conferenceComponent)
+		{
+			if (conferenceComponent == null)
+				throw new ArgumentNullException("conferenceComponent");
+
+			UpdateInfo(info);
+			m_CallId = callId;
+
+			m_ConferenceComponent = conferenceComponent;
+			Subscribe(m_ConferenceComponent);
+
+			CallType = eCallType.Audio | eCallType.Video;
+			StartTime = IcdEnvironment.GetUtcTime();
+			DialTime = IcdEnvironment.GetUtcTime();
+			AnswerState = eCallAnswerState.Answered;
+
+			SupportedParticipantFeatures = eParticipantFeatures.GetName |
+			                               eParticipantFeatures.GetCallType |
+			                               eParticipantFeatures.GetStatus |
+			                               eParticipantFeatures.GetIsMuted |
+			                               eParticipantFeatures.GetIsSelf |
+			                               eParticipantFeatures.GetIsHost |
+			                               eParticipantFeatures.Kick |
+			                               eParticipantFeatures.SetMute;
+		}
+
+		protected override void DisposeFinal()
+		{
+			Unsubscribe(m_ConferenceComponent);
+
+			base.DisposeFinal();
+		}
+
+		#endregion
+
+		#region Methods
+
+		public override void Hold()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Resume()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Hangup()
+		{
+			m_ConferenceComponent.ParticipantDisconnect(m_CallId, m_Info.ParticipantId);
+		}
+
+		public override void SendDtmf(string data)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Kick()
+		{
+			m_ConferenceComponent.ParticipantDisconnect(m_CallId, m_Info.ParticipantId);
+		}
+
+		public override void Mute(bool mute)
+		{
+			m_ConferenceComponent.ParticipantMute(mute, m_CallId, m_Info.ParticipantId);
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void UpdateInfo(WebexParticipantInfo newInfo)
+		{
+			m_Info = newInfo;
+
+			Name = m_Info.DisplayName;
+			Status = m_Info.Status;
+			IsMuted = m_Info.AudioMute;
+			IsHost = m_Info.IsHost;
+			IsSelf = m_Info.IsSelf;
+
+			if (EndTime != null && m_Info.Status == eParticipantStatus.Disconnected)
+				EndTime = IcdEnvironment.GetUtcTime();
+		}
+
+		#endregion
+
+		#region Conference Component Callbacks
+
+		private void Subscribe(ConferenceComponent conferenceComponent)
+		{
+			conferenceComponent.OnWebexParticipantsListSearchResult += ConferenceComponentOnWebexParticipantsListSearchResult;
+		}
+
+		private void Unsubscribe(ConferenceComponent conferenceComponent)
+		{
+			conferenceComponent.OnWebexParticipantsListSearchResult -= ConferenceComponentOnWebexParticipantsListSearchResult;
+		}
+
+		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
+		{
+			if (args.Data.Any(info => info.ParticipantId == m_Info.ParticipantId))
+				UpdateInfo(args.Data.First(info => info.ParticipantId == m_Info.ParticipantId));
+		}
+
+		#endregion
+	}
+}

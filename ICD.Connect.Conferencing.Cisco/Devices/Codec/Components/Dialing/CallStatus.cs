@@ -40,7 +40,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public event EventHandler<GenericEventArgs<eCallDirection>> OnDirectionChanged;
 		public event EventHandler<IntEventArgs> OnDurationChanged;
 		public event EventHandler<IntEventArgs> OnCallIdChanged;
-		public event EventHandler<StringEventArgs> OnProtocolChanged;
+		public event EventHandler<GenericEventArgs<eCiscoDialProtocol>> OnProtocolChanged;
 		public event EventHandler<IntEventArgs> OnReceiveRateChanged;
 		public event EventHandler<StringEventArgs> OnRemoteNumberChanged;
 		public event EventHandler<GenericEventArgs<eParticipantStatus>> OnStatusChanged;
@@ -57,7 +57,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private eCallDirection m_Direction;
 		private int m_Duration;
 		private int m_CallId;
-		private string m_Protocol;
+		private eCiscoDialProtocol m_Protocol;
 		private int m_ReceiveRate;
 		private string m_RemoteNumber;
 		private eParticipantStatus m_Status;
@@ -185,7 +185,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Protocol for call
 		/// </summary>
-		public string Protocol
+		public eCiscoDialProtocol Protocol
 		{
 			get { return m_Protocol; }
 			private set
@@ -313,7 +313,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="transmitRate"></param>
 		/// <param name="ciscoCallType"></param>
 		private CallStatus(eCallAnswerState answerState, string number, string name, eCallDirection direction, int duration, int callId,
-		                  string protocol, int receiveRate, string remoteNumber, eParticipantStatus status, int transmitRate,
+		                  eCiscoDialProtocol protocol, int receiveRate, string remoteNumber, eParticipantStatus status, int transmitRate,
 		                  eCiscoCallType ciscoCallType)
 		{
 			m_AnswerState = answerState;
@@ -348,7 +348,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				string number = null;
 				string name = null;
 				eCallDirection direction = eCallDirection.Undefined;
-				string protocol = null;
+				eCiscoDialProtocol protocol = eCiscoDialProtocol.Unknown;
 				int receiveRate = 0;
 				string remoteNumber = null;
 				eParticipantStatus status = eParticipantStatus.Undefined;
@@ -373,7 +373,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 							direction = EnumUtils.Parse<eCallDirection>(child.ReadElementContentAsString(), true);
 							break;
 						case ELEMENT_PROTOCOL:
-							protocol = child.ReadElementContentAsString();
+							protocol = EnumUtils.Parse<eCiscoDialProtocol>(child.ReadElementContentAsString(), true);
 							break;
 						case ELEMENT_RECEIVE_CALL_RATE:
 							receiveRate = child.ReadElementContentAsInt();
@@ -426,7 +426,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			Name = updated.Name ?? Name;
 			Direction = updated.Direction != eCallDirection.Undefined ? updated.Direction : Direction;
 			Duration = updated.Duration != 0 ? updated.Duration : Duration;
-			Protocol = updated.Protocol ?? Protocol;
+			Protocol = updated.Protocol != eCiscoDialProtocol.Unknown ? updated.Protocol : Protocol;
 			ReceiveRate = updated.ReceiveRate != 0 ? updated.ReceiveRate : ReceiveRate;
 			RemoteNumber = updated.RemoteNumber ?? RemoteNumber;
 			Status = updated.Status != eParticipantStatus.Undefined ? updated.Status : Status;

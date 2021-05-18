@@ -44,7 +44,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		}
 	}
 
-	public sealed class CiscoConference : AbstractConference<CiscoParticipant>
+	public sealed class CiscoConference : AbstractConference<CiscoParticipant>, ICiscoConference
 	{
 		private readonly DialingComponent m_DialingComponent;
 		private readonly CallStatus m_CallStatus;

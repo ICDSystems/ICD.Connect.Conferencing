@@ -96,6 +96,8 @@
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackAvailabilityEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackStatusEventArgs.cs" />
     <Compile Include="Devices\Codec\Components\Cameras\SpeakerTrackWhiteboardModeEventArgs.cs" />
+    <Compile Include="Devices\Codec\Components\Conference\ConferenceComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Conference\WebexParticipantInfo.cs" />
     <Compile Include="Devices\Codec\Components\Dialing\CallStatus.cs" />
     <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoRootFolder.cs" />
@@ -140,6 +142,9 @@
     <Compile Include="Devices\Codec\Controls\CiscoCodecDirectSharingControl.cs" />
     <Compile Include="Devices\Codec\Controls\Conference\CiscoConference.cs" />
     <Compile Include="Devices\Codec\Controls\Conference\CiscoParticipant.cs" />
+    <Compile Include="Devices\Codec\Controls\Conference\CiscoWebexConference.cs" />
+    <Compile Include="Devices\Codec\Controls\Conference\CiscoWebexParticipant.cs" />
+    <Compile Include="Devices\Codec\Controls\Conference\ICiscoConference.cs" />
     <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoBooking.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoCodecCalendarControl.cs" />
@@ -149,7 +154,7 @@
     <Compile Include="Devices\Codec\Controls\CiscoCodecPowerControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecPresentationControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecRoutingControl.cs" />
-    <Compile Include="Devices\Codec\Controls\Conference\CiscoCodecTraditionalConferenceControl.cs" />
+    <Compile Include="Devices\Codec\Controls\Conference\CiscoCodecConferenceControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecVolumeControl.cs" />
     <Compile Include="KrangPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

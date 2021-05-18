@@ -10,7 +10,6 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants.Enums;
 
@@ -20,9 +19,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 #pragma warning disable 1591
 	public enum eCiscoDialProtocol
 	{
+		[UsedImplicitly] Unknown,
 		[UsedImplicitly] H320,
 		[UsedImplicitly] H323,
-		[UsedImplicitly] Sip
+		[UsedImplicitly] Sip,
+		[UsedImplicitly] Spark
 	}
 #pragma warning restore 1591
 

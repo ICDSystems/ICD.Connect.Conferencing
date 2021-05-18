@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
@@ -76,6 +78,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 		#region Events
 
 		public event EventHandler<GenericEventArgs<eCallRecordingStatus>> OnCallRecordingStatusChanged;
+		public event EventHandler<GenericEventArgs<WebexParticipantInfo>> OnWebexParticipantListUpdated;
+		public event EventHandler<GenericEventArgs<IEnumerable<WebexParticipantInfo>>> OnWebexParticipantsListSearchResult;
 
 		#endregion
 
@@ -204,7 +208,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 		/// </summary>
 		/// <param name="callId"></param>
 		/// <param name="participantId"></param>
-		public void ParticipantAdmit(int callId, int participantId)
+		public void ParticipantAdmit(int callId, string participantId)
 		{
 			Codec.SendCommand("xCommand Conference Participant Admit CallId: {0} ParticipantId: {1}", callId, participantId);
 			Codec.Logger.Log(eSeverity.Informational, "Admitting participant with ID: {0} to call with ID: {1}", participantId, callId);
@@ -215,7 +219,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 		/// </summary>
 		/// <param name="callId"></param>
 		/// <param name="participantId"></param>
-		public void ParticipantDisconnect(int callId, int participantId)
+		public void ParticipantDisconnect(int callId, string participantId)
 		{
 			Codec.SendCommand("XCommand Conference Participant Disconnect CallId: {0} ParticipantId: {1}", callId, participantId);
 			Codec.Logger.Log(eSeverity.Informational, "Disconnecting participant with ID: {0} from call with ID: {1}", participantId, callId);
@@ -227,7 +231,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 		/// <param name="mute"></param>
 		/// <param name="callId"></param>
 		/// <param name="participantId"></param>
-		public void ParticipantMute(bool mute, int callId, int participantId)
+		public void ParticipantMute(bool mute, int callId, string participantId)
 		{
 			string muteString = mute ? "On" : "Off";
 
@@ -249,6 +253,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 
 			codec.RegisterParserCallback(ParseCallRecordingStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference",
 			                             "Call", "Recording");
+			codec.RegisterParserCallback(ParseParticipantsList, CiscoCodecDevice.XEVENT_ELEMENT, "Conference",
+			                             "ParticipantList", "ParticipantUpdated");
+			codec.RegisterParserCallback(ParseParticipantsListSearchresult, "ParticipantListSearchResult");
 		}
 
 		/// <summary>
@@ -261,12 +268,33 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 
 			codec.UnregisterParserCallback(ParseCallRecordingStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Conference",
 			                               "Call", "Recording");
+			codec.UnregisterParserCallback(ParseParticipantsList, CiscoCodecDevice.XEVENT_ELEMENT, "Conference",
+			                             "ParticipantList", "ParticipantUpdated");
+			codec.UnregisterParserCallback(ParseParticipantsListSearchresult, "ParticipantListSearchResult");
 		}
 
 		private void ParseCallRecordingStatus(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			string content = XmlUtils.GetInnerXml(xml);
 			CallRecordingStatus = EnumUtils.Parse<eCallRecordingStatus>(content, true);
+		}
+
+		private void ParseParticipantsList(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			WebexParticipantInfo info = WebexParticipantInfo.FromXml(xml);
+			OnWebexParticipantListUpdated.Raise(this, info);
+		}
+
+		private void ParseParticipantsListSearchresult(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			var participantInfos = XmlUtils.ReadListFromXml<WebexParticipantInfo>(xml, "Participant",
+			                                                                      s => WebexParticipantInfo.FromXml(s)).ToArray();
+
+			string selfId = XmlUtils.ReadChildElementContentAsString(xml, "ParticipantSelf");
+			foreach (WebexParticipantInfo info in participantInfos)
+				info.IsSelf = info.ParticipantId == selfId;
+
+			OnWebexParticipantsListSearchResult.Raise(this, participantInfos);
 		}
 
 		#endregion

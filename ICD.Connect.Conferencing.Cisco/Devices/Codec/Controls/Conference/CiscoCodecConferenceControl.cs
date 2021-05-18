@@ -5,6 +5,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Video;
@@ -18,7 +19,7 @@ using ICD.Connect.Conferencing.Utils;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
-	public sealed class CiscoCodecConferenceControl : AbstractConferenceDeviceControl<CiscoCodecDevice, CiscoConference>
+	public sealed class CiscoCodecConferenceControl : AbstractConferenceDeviceControl<CiscoCodecDevice, ICiscoConference>
 	{
 		#region Events
 
@@ -30,12 +31,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		#region Members
 
 		private readonly DialingComponent m_DialingComponent;
+		private readonly ConferenceComponent m_ConferenceComponent;
 		private readonly SystemComponent m_SystemComponent;
 		private readonly VideoComponent m_VideoComponent;
 
 		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations;
 		private readonly BiDictionary<CallStatus, TraditionalIncomingCall> m_IncomingCalls;
 		private readonly Dictionary<CallStatus, CiscoConference> m_CallsToConferences;
+		private readonly Dictionary<CallStatus, CiscoWebexConference> m_CallsToWebexConferences;
 
 		private readonly SafeCriticalSection m_CriticalSection;
 
@@ -92,12 +95,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			: base(parent, id)
 		{
 			m_DialingComponent = Parent.Components.GetComponent<DialingComponent>();
+			m_ConferenceComponent = Parent.Components.GetComponent<ConferenceComponent>();
 			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
 			m_VideoComponent = Parent.Components.GetComponent<VideoComponent>();
 
 			m_SubscribedRegistrations = new IcdHashSet<SipRegistration>();
 			m_IncomingCalls = new BiDictionary<CallStatus, TraditionalIncomingCall>();
 			m_CallsToConferences = new Dictionary<CallStatus, CiscoConference>();
+			m_CallsToWebexConferences = new Dictionary<CallStatus, CiscoWebexConference>();
 			m_CriticalSection = new SafeCriticalSection();
 
 			SupportedConferenceControlFeatures =
@@ -140,9 +145,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#region Methods
 
-		public override IEnumerable<CiscoConference> GetConferences()
+		public override IEnumerable<ICiscoConference> GetConferences()
 		{
-			return m_CriticalSection.Execute(() => m_CallsToConferences.Values);
+			m_CriticalSection.Enter();
+
+			try
+			{
+				foreach (CiscoConference c in m_CallsToConferences.Values)
+					yield return c;
+
+				foreach (CiscoWebexConference c in m_CallsToWebexConferences.Values)
+					yield return c;
+			}
+			finally
+			{
+				m_CriticalSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -314,43 +332,98 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void AddConference(CallStatus source)
 		{
+			ICiscoConference conference = null;
+			bool added = false;
 			m_CriticalSection.Enter();
 
 			try
 			{
-				if (m_CallsToConferences.ContainsKey(source))
-					return;
+				switch (source.Protocol)
+				{
+					case eCiscoDialProtocol.Unknown:
+						break;
 
-				CiscoConference conference = new CiscoConference(m_DialingComponent, source);
-				m_CallsToConferences.Add(source, conference);
-				RaiseOnConferenceAdded(this, new ConferenceEventArgs(conference));
+					case eCiscoDialProtocol.Spark:
+						if (m_CallsToWebexConferences.ContainsKey(source))
+							return;
 
-				// Initialize conference participants after event raise.
-				conference.InitializeConference();
+						CiscoWebexConference webexConference = new CiscoWebexConference(m_ConferenceComponent, m_DialingComponent, source);
+						conference = webexConference;
+						m_CallsToWebexConferences.Add(source, webexConference);
+						added = true;
+						break;
+
+					case eCiscoDialProtocol.H320:
+					case eCiscoDialProtocol.H323:
+					case eCiscoDialProtocol.Sip:
+						if (m_CallsToConferences.ContainsKey(source))
+							return;
+
+						CiscoConference traditionalConference = new CiscoConference(m_DialingComponent, source);
+						conference = traditionalConference;
+						m_CallsToConferences.Add(source, traditionalConference);
+						added = true;
+						break;
+				}
 			}
 			finally
 			{
 				m_CriticalSection.Leave();
 			}
+
+			if (!added)
+				return;
+
+			RaiseOnConferenceAdded(this, new ConferenceEventArgs(conference));
+
+			// Initialize traditional conference participants after event raise.
+			CiscoConference conf = conference as CiscoConference;
+			if (conf != null)
+				conf.InitializeConference();
 		}
 
 		private void RemoveConference(CallStatus source)
 		{
+			ICiscoConference conference = null;
+			bool removed = false;
+
 			m_CriticalSection.Enter();
 
 			try
 			{
-				if (!m_CallsToConferences.ContainsKey(source))
-					return;
+				switch (source.Protocol)
+				{
+					case eCiscoDialProtocol.Unknown:
+						break;
 
-				CiscoConference conference = m_CallsToConferences[source];
-				m_CallsToConferences.Remove(source);
-				RaiseOnConferenceRemoved(this, new ConferenceEventArgs(conference));
+					case eCiscoDialProtocol.Spark:
+						if (!m_CallsToWebexConferences.ContainsKey(source))
+							return;
+
+						conference = m_CallsToWebexConferences[source];
+						removed = m_CallsToWebexConferences.Remove(source);
+						break;
+
+					case eCiscoDialProtocol.H320:
+					case eCiscoDialProtocol.H323:
+					case eCiscoDialProtocol.Sip:
+						if (!m_CallsToConferences.ContainsKey(source))
+							return;
+
+						conference = m_CallsToConferences[source];
+						removed = m_CallsToConferences.Remove(source);
+						break;
+				}
+
+
 			}
 			finally
 			{
 				m_CriticalSection.Leave();
 			}
+
+			if (removed)
+				RaiseOnConferenceRemoved(this, new ConferenceEventArgs(conference));
 		}
 
 		#endregion
