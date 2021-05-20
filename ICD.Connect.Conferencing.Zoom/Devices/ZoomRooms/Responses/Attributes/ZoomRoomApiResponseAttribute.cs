@@ -5,7 +5,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses.Attributes
 {
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 	[MeansImplicitUse]
-	public class ZoomRoomApiResponseAttribute : Attribute
+	public sealed class ZoomRoomApiResponseAttribute : Attribute
 	{
 		public string ResponseKey { get; private set; }
 

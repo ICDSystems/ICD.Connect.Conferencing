@@ -8,7 +8,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses
 	[ZoomRoomApiResponse("Audio Output Line", eZoomRoomApiType.zStatus, false),
 	 ZoomRoomApiResponse("Audio Output Line", eZoomRoomApiType.zStatus, true)]
 	[JsonConverter(typeof(AudioOutputLineResponseConverter))]
-	public class AudioOutputLineResponse : AbstractZoomRoomResponse
+	public sealed class AudioOutputLineResponse : AbstractZoomRoomResponse
 	{
 		[CanBeNull]
 		public AudioOutputLine[] AudioOutputLines { get; set; }

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses.Converters
 {
-	public class VideoUnMuteRequestResponseConverter : AbstractZoomRoomResponseConverter<VideoUnMuteRequestResponse>
+	public sealed class VideoUnMuteRequestResponseConverter : AbstractZoomRoomResponseConverter<VideoUnMuteRequestResponse>
 	{
 		private const string ATTR_VIDEO_UNMUTE_REQUEST = "VideoUnMuteRequest";
 

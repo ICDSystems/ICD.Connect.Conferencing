@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses.Converters
 {
-	public class CameraControlNotificationResponseConverter : AbstractZoomRoomResponseConverter<CameraControlNotificationResponse>
+	public sealed class CameraControlNotificationResponseConverter : AbstractZoomRoomResponseConverter<CameraControlNotificationResponse>
 	{
 		private const string ATTR_CAMERA_CONTROL_NOTIFICATION = "CameraControlNotification";
 
@@ -36,7 +36,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses.Converters
 		}
 	}
 
-	public class CameraControlNotificationConverter : AbstractGenericJsonConverter<CameraControlNotification>
+	public sealed class CameraControlNotificationConverter : AbstractGenericJsonConverter<CameraControlNotification>
 	{
 		private const string ATTR_STATE = "state";
 		private const string ATTR_USER_ID = "user_id";

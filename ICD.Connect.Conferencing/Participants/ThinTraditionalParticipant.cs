@@ -155,7 +155,7 @@ namespace ICD.Connect.Conferencing.Participants
 			if (incomingCall == null)
 				throw new ArgumentNullException("incomingCall");
 
-			return new ThinTraditionalParticipant()
+			return new ThinTraditionalParticipant
 			{
 				DialTime = incomingCall.StartTime,
 				Name = incomingCall.Name,

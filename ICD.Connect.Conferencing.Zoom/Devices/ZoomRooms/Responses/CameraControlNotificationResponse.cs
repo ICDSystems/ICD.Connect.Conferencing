@@ -8,13 +8,13 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses
 	[ZoomRoomApiResponse("CameraControlNotification", eZoomRoomApiType.zEvent, false), 
 	 ZoomRoomApiResponse("CameraControlNotification", eZoomRoomApiType.zEvent, true)]
 	[JsonConverter(typeof(CameraControlNotificationResponseConverter))]
-	public class CameraControlNotificationResponse : AbstractZoomRoomResponse
+	public sealed class CameraControlNotificationResponse : AbstractZoomRoomResponse
 	{
 		public CameraControlNotification CameraControlNotification { get; set; }
 	}
 
 	[JsonConverter(typeof(CameraControlNotificationConverter))]
-	public class CameraControlNotification : EventArgs
+	public sealed class CameraControlNotification : EventArgs
 	{
 		public eCameraControlNotificationState State { get; set; }
 
