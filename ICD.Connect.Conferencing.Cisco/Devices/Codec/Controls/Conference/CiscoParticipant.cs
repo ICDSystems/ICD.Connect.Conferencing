@@ -107,6 +107,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			throw new NotSupportedException();
 		}
 
+		public override void ToggleHandRaise()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void RecordCallAction(bool stop)
+		{
+			throw new NotSupportedException();
+		}
+
 		#endregion
 
 		#region Call Status Callbacks

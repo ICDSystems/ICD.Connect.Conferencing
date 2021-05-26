@@ -17,35 +17,12 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 {
 	public sealed class ZoomParticipant : AbstractParticipant
 	{
-		/// <summary>
-		/// Raised when the participant can record state changes.
-		/// </summary>
-		public event EventHandler<BoolEventArgs> OnCanRecordChanged;
-
 		private readonly CallComponent m_CallComponent;
-
-		private bool m_CanRecord;
 
 		private FarEndZoomCamera m_FarEndCamera;
 
 		public string UserId { get; private set; }
 		public string AvatarUrl { get; private set; }
-
-		public bool CanRecord
-		{
-			get { return m_CanRecord; }
-			private set
-			{
-				if (value == m_CanRecord)
-					return;
-
-				m_CanRecord = value;
-
-				OnCanRecordChanged.Raise(this, new BoolEventArgs(m_CanRecord));
-			}
-		}
-
-		public bool IsRecording { get; private set; }
 
 		public override IRemoteCamera Camera
 		{
@@ -78,7 +55,8 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			                               eParticipantFeatures.GetIsSelf |
 			                               eParticipantFeatures.GetIsHost |
 			                               eParticipantFeatures.Kick |
-			                               eParticipantFeatures.SetMute;
+			                               eParticipantFeatures.SetMute |
+			                               eParticipantFeatures.Record;
 
 			UserId = info.UserId;
 			StartTime = IcdEnvironment.GetUtcTime();
@@ -92,8 +70,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		protected override void DisposeFinal()
 		{
-			OnCanRecordChanged = null;
-
 			base.DisposeFinal();
 
 			Unsubscribe(m_CallComponent);
@@ -159,6 +135,19 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			throw new NotSupportedException();
 		}
 
+		public override void ToggleHandRaise()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void RecordCallAction(bool stop)
+		{
+			if (IsRecording || stop)
+				m_CallComponent.EnableCallRecord(false);
+			else
+				m_CallComponent.EnableCallRecord(true);
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -202,8 +191,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 			addRow("User ID", UserId);
 			addRow("Avatar URL", AvatarUrl);
-			addRow("Can Record", CanRecord);
-			addRow("Is Recording", IsRecording);
 		}
 
 		public override IEnumerable<IConsoleCommand> GetConsoleCommands()

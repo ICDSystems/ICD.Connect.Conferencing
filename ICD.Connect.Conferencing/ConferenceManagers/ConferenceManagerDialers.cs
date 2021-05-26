@@ -59,6 +59,26 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
 
+		/// <summary>
+		/// Raised when the call record state changes.
+		/// </summary>
+		public event EventHandler OnCallRecordStateChanged;
+
+		/// <summary>
+		/// Raised when a participant's supported features changes.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<IParticipant>> OnParticipantSupportedFeaturesChanged;
+
+		/// <summary>
+		/// Raised when an active participant's virtual hand raised state changes.
+		/// </summary>
+		public event EventHandler OnParticipantHandRaiseStateChanged;
+
+		/// <summary>
+		/// Raised when an active participant's ability to record the call changes.
+		/// </summary>
+		public event EventHandler OnParticipantCanRecordChanged;
+
 		private readonly IConferenceManager m_ConferenceManager;
 
 		private readonly IcdHashSet<IConference> m_Conferences;
@@ -768,6 +788,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			participant.OnStatusChanged += ParticipantOnStatusChanged;
 			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
+			participant.OnHandRaisedChanged += ParticipantOnHandRaisedChanged;
+			participant.OnCanRecordChanged += ParticipantOnCanRecordChanged;
+			participant.OnIsRecordingChanged += ParticipantOnIsRecordingChanged;
+			participant.OnSupportedParticipantFeaturesChanged += ParticipantOnSupportedParticipantFeaturesChanged;
 		}
 
 		/// <summary>
@@ -778,6 +802,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		{
 			participant.OnStatusChanged -= ParticipantOnStatusChanged;
 			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
+			participant.OnHandRaisedChanged -= ParticipantOnHandRaisedChanged;
+			participant.OnCanRecordChanged -= ParticipantOnCanRecordChanged;
+			participant.OnIsRecordingChanged -= ParticipantOnIsRecordingChanged;
+			participant.OnSupportedParticipantFeaturesChanged -= ParticipantOnSupportedParticipantFeaturesChanged;
 		}
 
 		/// <summary>
@@ -800,6 +828,30 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private void ParticipantOnParticipantTypeChanged(object sender, EventArgs eventArgs)
 		{
 			UpdateIsInCall();
+		}
+
+		private void ParticipantOnHandRaisedChanged(object sender, BoolEventArgs e)
+		{
+			OnParticipantHandRaiseStateChanged.Raise(this);
+		}
+
+		private void ParticipantOnCanRecordChanged(object sender, BoolEventArgs e)
+		{
+			OnParticipantCanRecordChanged.Raise(this);
+		}
+
+		private void ParticipantOnIsRecordingChanged(object sender, BoolEventArgs e)
+		{
+			OnCallRecordStateChanged.Raise(this);
+		}
+
+		private void ParticipantOnSupportedParticipantFeaturesChanged(object sender, ConferenceParticipantSupportedFeaturesChangedApiEventArgs args)
+		{
+			var participant = sender as IParticipant;
+			if (participant == null)
+				return;
+
+			OnParticipantSupportedFeaturesChanged.Raise(this, participant);
 		}
 
 		#endregion

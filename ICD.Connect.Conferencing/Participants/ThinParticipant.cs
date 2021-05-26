@@ -20,6 +20,10 @@ namespace ICD.Connect.Conferencing.Participants
 
 	public delegate void ThinParticipantMuteCallback(ThinParticipant sender, bool mute);
 
+	public delegate void ThinParticipantToggleHandRaiseCallback(ThinParticipant sender);
+
+	public delegate void ThinParticipantToggleCallRecordActionCallback(ThinParticipant sender, bool stop);
+
 	public sealed class ThinParticipant : AbstractParticipant
 	{
 		#region Properties
@@ -30,6 +34,8 @@ namespace ICD.Connect.Conferencing.Participants
 		public ThinParticipantHangupCallback HangupCallback { get; set; }
 		public ThinParticipantKickCallback KickCallback { get; set; }
 		public ThinParticipantMuteCallback MuteCallback { get; set; }
+		public ThinParticipantToggleHandRaiseCallback HandRaiseCallback { get; set; }
+		public ThinParticipantToggleCallRecordActionCallback CallRecordCallback { get; set; }
 
 		public override IRemoteCamera Camera { get { return null; } }
 
@@ -54,6 +60,7 @@ namespace ICD.Connect.Conferencing.Participants
 			HangupCallback = null;
 			KickCallback = null;
 			MuteCallback = null;
+			HandRaiseCallback = null;
 
 			base.DisposeFinal();
 		}
@@ -111,6 +118,27 @@ namespace ICD.Connect.Conferencing.Participants
 			ThinParticipantMuteCallback handler = MuteCallback;
 			if (handler != null)
 				handler(this, mute);
+		}
+
+		/// <summary>
+		/// Raises/Lowers the participant's virtual hand.
+		/// </summary>
+		public override void ToggleHandRaise()
+		{
+			ThinParticipantToggleHandRaiseCallback handler = HandRaiseCallback;
+			if (handler != null)
+				handler(this);
+		}
+
+		/// <summary>
+		/// Based on the current call record state, does the next call record action.
+		/// </summary>
+		/// <param name="stop">If true stops any active recording</param>
+		public override void RecordCallAction(bool stop)
+		{
+			ThinParticipantToggleCallRecordActionCallback handler = CallRecordCallback;
+			if (handler != null)
+				handler(this, stop);
 		}
 
 		/// <summary>

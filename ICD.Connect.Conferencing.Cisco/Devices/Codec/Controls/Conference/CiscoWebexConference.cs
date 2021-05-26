@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Conferences;
@@ -50,7 +51,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ParticipantsSection = new SafeCriticalSection();
 			m_ParticipantsToInfos = new Dictionary<CiscoWebexParticipant, WebexParticipantInfo>();
 
-			// TODO - set supported conference features.
+			SupportedConferenceFeatures = eConferenceFeatures.GetStartTime |
+			                              eConferenceFeatures.GetEndTime |
+			                              eConferenceFeatures.GetCallType |
+			                              eConferenceFeatures.GetParticipants |
+			                              eConferenceFeatures.LeaveConference |
+			                              eConferenceFeatures.EndConference;
 		}
 
 		#endregion
@@ -59,7 +65,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		{
 			base.LeaveConference();
 
-			//m_ConferenceComponent.ParticipantDisconnect(m_CallStatus.CallId, );
+			var self = GetParticipants().FirstOrDefault(p => p.IsSelf);
+			if (self == null)
+				return;
+
+			m_ConferenceComponent.ParticipantDisconnect(m_CallStatus.CallId, self.WebexParticipantId);
 		}
 
 		public override void EndConference()
