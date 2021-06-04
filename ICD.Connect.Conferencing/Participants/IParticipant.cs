@@ -51,7 +51,9 @@ namespace ICD.Connect.Conferencing.Participants
 
 		RaiseLowerHand = 262144,
 
-		Record = 524288
+		Record = 524288,
+
+		Admit = 1048576
 	}
 
 
@@ -243,6 +245,11 @@ namespace ICD.Connect.Conferencing.Participants
 		void SendDtmf(string data);
 
 		/// <summary>
+		/// Admits the participant into the conference.
+		/// </summary>
+		void Admit();
+
+		/// <summary>
 		/// Kick the participant from the conference.
 		/// </summary>
 		/// <returns></returns>
@@ -315,6 +322,7 @@ namespace ICD.Connect.Conferencing.Participants
 				case eParticipantStatus.Idle:
 					return false;
 
+				case eParticipantStatus.Waiting:
 				case eParticipantStatus.Connected:
 				case eParticipantStatus.OnHold:
 				case eParticipantStatus.EarlyMedia:

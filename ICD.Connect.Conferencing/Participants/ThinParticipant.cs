@@ -24,6 +24,8 @@ namespace ICD.Connect.Conferencing.Participants
 
 	public delegate void ThinParticipantToggleCallRecordActionCallback(ThinParticipant sender, bool stop);
 
+	public delegate void ThinParticipantAdmitCallback(ThinParticipant sender);
+
 	public sealed class ThinParticipant : AbstractParticipant
 	{
 		#region Properties
@@ -36,6 +38,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public ThinParticipantMuteCallback MuteCallback { get; set; }
 		public ThinParticipantToggleHandRaiseCallback HandRaiseCallback { get; set; }
 		public ThinParticipantToggleCallRecordActionCallback CallRecordCallback { get; set; }
+		public ThinParticipantAdmitCallback AdmitCallback { get; set; }
 
 		public override IRemoteCamera Camera { get { return null; } }
 
@@ -61,6 +64,8 @@ namespace ICD.Connect.Conferencing.Participants
 			KickCallback = null;
 			MuteCallback = null;
 			HandRaiseCallback = null;
+			CallRecordCallback = null;
+			AdmitCallback = null;
 
 			base.DisposeFinal();
 		}
@@ -147,6 +152,16 @@ namespace ICD.Connect.Conferencing.Participants
 		public override void Hangup()
 		{
 			ThinParticipantHangupCallback handler = HangupCallback;
+			if (handler != null)
+				handler(this);
+		}
+
+		/// <summary>
+		/// Admits the participant into the conference.
+		/// </summary>
+		public override void Admit()
+		{
+			ThinParticipantAdmitCallback handler = AdmitCallback;
 			if (handler != null)
 				handler(this);
 		}

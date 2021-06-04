@@ -90,6 +90,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			throw new NotSupportedException();
 		}
 
+		public override void Admit()
+		{
+			m_ConferenceComponent.ParticipantAdmit(m_CallId, m_Info.ParticipantId);
+		}
+
 		public override void Kick()
 		{
 			m_ConferenceComponent.ParticipantDisconnect(m_CallId, m_Info.ParticipantId);

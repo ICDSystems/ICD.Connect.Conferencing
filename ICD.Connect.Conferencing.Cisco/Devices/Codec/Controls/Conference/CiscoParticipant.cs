@@ -97,6 +97,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_DialingComponent.SendDtmf(m_CallStatus, data);
 		}
 
+		public override void Admit()
+		{
+			throw new NotSupportedException();
+		}
+
 		public override void Kick()
 		{
 			throw new NotSupportedException();

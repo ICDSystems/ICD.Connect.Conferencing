@@ -105,6 +105,11 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			m_CallComponent.AllowParticipantRecord(UserId, enabled);
 		}
 
+		public override void Admit()
+		{
+			throw new NotSupportedException();
+		}
+
 		public override void Kick()
 		{
 			m_CallComponent.ExpelParticipant(UserId);

@@ -20,7 +20,8 @@ namespace ICD.Connect.Conferencing.EventArguments
 		EarlyMedia = 8,
 		Preserved = 9,
 		RemotePreserved = 10,
-		Disconnected = 11
+		Disconnected = 11,
+		Waiting = 12
 	}
 
 	public sealed class ParticipantStatusEventArgs : GenericEventArgs<eParticipantStatus>
@@ -54,6 +55,7 @@ namespace ICD.Connect.Conferencing.EventArguments
 				case eParticipantStatus.Disconnected:
 					return false;
 
+				case eParticipantStatus.Waiting:
 				case eParticipantStatus.Connected:
 				case eParticipantStatus.OnHold:
 				case eParticipantStatus.EarlyMedia:
@@ -84,6 +86,7 @@ namespace ICD.Connect.Conferencing.EventArguments
 				case eParticipantStatus.Connecting:
 					return eConferenceStatus.Connecting;
 
+				case eParticipantStatus.Waiting:
 				case eParticipantStatus.Connected:
 				case eParticipantStatus.EarlyMedia:
 				case eParticipantStatus.Preserved:

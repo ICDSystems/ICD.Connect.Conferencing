@@ -71,6 +71,7 @@ namespace ICD.Connect.Conferencing.Conferences
 				{eParticipantStatus.Dialing, eConferenceStatus.Connecting},
 				{eParticipantStatus.Ringing, eConferenceStatus.Connecting},
 				{eParticipantStatus.Connecting, eConferenceStatus.Connecting},
+				{eParticipantStatus.Waiting, eConferenceStatus.Connected},
 				{eParticipantStatus.Connected, eConferenceStatus.Connected},
 				{eParticipantStatus.EarlyMedia, eConferenceStatus.Connected},
 				{eParticipantStatus.Preserved, eConferenceStatus.Connected},

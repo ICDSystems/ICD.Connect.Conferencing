@@ -452,6 +452,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public abstract void Resume();
 		public abstract void Hangup();
 		public abstract void SendDtmf(string data);
+		public abstract void Admit();
 		public abstract void Kick();
 		public abstract void Mute(bool mute);
 		public abstract void ToggleHandRaise();
