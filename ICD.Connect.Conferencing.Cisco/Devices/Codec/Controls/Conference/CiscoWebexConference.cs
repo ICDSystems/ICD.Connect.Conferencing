@@ -69,7 +69,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (self == null)
 				return;
 
-			m_ConferenceComponent.ParticipantDisconnect(m_CallStatus.CallId, self.WebexParticipantId);
+			m_DialingComponent.Hangup(m_CallStatus);
 		}
 
 		public override void EndConference()
@@ -156,6 +156,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			Unsubscribe(participant);
 			RemoveParticipant(participant);
+
+			m_ParticipantsSection.Execute(() => m_ParticipantsToInfos.Remove(participant));
 		}
 
 		#endregion

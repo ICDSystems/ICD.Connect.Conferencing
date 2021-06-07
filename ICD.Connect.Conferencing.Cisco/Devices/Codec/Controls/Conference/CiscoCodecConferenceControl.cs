@@ -573,6 +573,34 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#endregion
 
+		#region Parent Callbacks
+
+		protected override void Subscribe(CiscoCodecDevice parent)
+		{
+			base.Subscribe(parent);
+
+			parent.OnConnectedStateChanged += ParentOnConnectedStateChanged;
+		}
+
+		protected override void Unsubscribe(CiscoCodecDevice parent)
+		{
+			base.Unsubscribe(parent);
+
+			parent.OnConnectedStateChanged -= ParentOnConnectedStateChanged;
+		}
+
+		private void ParentOnConnectedStateChanged(object sender, BoolEventArgs args)
+		{
+			if (!args.Data)
+				return;
+
+			// If we connected query for any active calls
+			Parent.SendCommand("xStatus Call");
+			Parent.SendCommand("xCommand Conference ParticipantList Search");
+		}
+
+		#endregion
+
 		#region System Component Callbacks
 
 		private void Subscribe(SystemComponent component)
