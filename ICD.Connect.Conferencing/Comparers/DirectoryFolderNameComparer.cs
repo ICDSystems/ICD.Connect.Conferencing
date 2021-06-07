@@ -12,11 +12,12 @@ namespace ICD.Connect.Conferencing.Comparers
 
 		public int Compare(IDirectoryFolder x, IDirectoryFolder y)
 		{
+			if (x == null && y == null)
+				return 0;
 			if (x == null)
-				throw new ArgumentNullException("x");
-
+				return -1;
 			if (y == null)
-				throw new ArgumentNullException("y");
+				return 1;
 
 			return string.Compare(x.Name, y.Name, StringComparison.Ordinal);
 		}

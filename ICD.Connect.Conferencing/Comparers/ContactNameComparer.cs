@@ -24,11 +24,12 @@ namespace ICD.Connect.Conferencing.Comparers
 
 		public int Compare(IContact x, IContact y)
 		{
+			if (x == null && y == null)
+				return 0;
 			if (x == null)
-				throw new ArgumentNullException("x");
-
+				return -1;
 			if (y == null)
-				throw new ArgumentNullException("y");
+				return 1;
 
 			// Compare names in reverse order
 			IEnumerable<string> xSplit = x.Name.Split().Where(s => !string.IsNullOrEmpty(s)).Reverse();
