@@ -246,12 +246,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			{
 				try
 				{
-					// Build Regex
-					const string codecSoftwareVersionRegex = @"(?'prefix'[a-z]*)(?'version'\d+(?:\.\d+)+)(?'suffix'.*)";
-					Regex r = new Regex(codecSoftwareVersionRegex);
+					// Regex: https://regex101.com/r/7MqECW/1
+					const string codecSoftwareVersionRegex = @"(?'prefix'[a-z]*)(?'version'\d+(?:\.\d+)+)(?'suffix'\.[^.]+)";
 
 					// Match against software version string
-					Match m = r.Match(SoftwareVersion);
+					Match m = Regex.Match(SoftwareVersion, codecSoftwareVersionRegex);
 
 					// Convert to version data type, this will only preserve the decimal orders of the version
 					// Example: version string ce9.9.2.f2110f7eda7 would become 9.9.2
