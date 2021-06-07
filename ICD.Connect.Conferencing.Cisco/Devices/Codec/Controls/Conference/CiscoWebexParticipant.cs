@@ -25,6 +25,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		public string WebexParticipantId { get { return m_Info.ParticipantId; } }
 
+		public bool IsCoHost { get { return m_Info.CoHost; } }
+
+		public bool IsPresenter { get { return m_Info.IsPresenter; } }
+
 		#region Constructor
 
 		/// <summary>
