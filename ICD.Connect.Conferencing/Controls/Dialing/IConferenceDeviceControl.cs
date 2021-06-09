@@ -64,12 +64,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Supports locking the call, preventing new participants from joining.
 		/// </summary>
-		CallLock = 256,
-
-		/// <summary>
-		/// Indicates if information about the call host is available.
-		/// </summary>
-		HostInfoAvailable = 512
+		CallLock = 256
 	}
 
 	/// <summary>
@@ -318,13 +313,13 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		[CanBeNull]
-		public static IConference GetActiveConference([NotNull] this IConferenceDeviceControl extends)
+		[NotNull]
+		public static IEnumerable<IConference> GetActiveConferences([NotNull] this IConferenceDeviceControl extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			return extends.GetConferences().FirstOrDefault(c => c.IsActive());
+			return extends.GetConferences().Where(c => c.IsActive());
 		}
 	}
 }

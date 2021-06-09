@@ -253,7 +253,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public IEnumerable<IConferenceDeviceControl> GetActiveDialers()
 		{
 			return GetDialingProviders().Concat(GetFeedbackDialingProviders())
-			                            .Where(d => d.GetActiveConference() != null);
+			                            .Where(d => d.GetActiveConferences().Any());
 		}
 
 		/// <summary>

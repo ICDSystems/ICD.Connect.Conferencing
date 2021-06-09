@@ -22,12 +22,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			if (callComponent == null)
 				throw new ArgumentNullException("callComponent");
 
-			SupportedConferenceFeatures = eConferenceFeatures.GetStatus |
-			                              eConferenceFeatures.GetStartTime |
-			                              eConferenceFeatures.GetEndTime |
-			                              eConferenceFeatures.GetCallType |
-			                              eConferenceFeatures.GetParticipants |
-			                              eConferenceFeatures.LeaveConference |
+			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
 			                              eConferenceFeatures.EndConference;
 
 			m_CallComponent = callComponent;

@@ -51,11 +51,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ParticipantsSection = new SafeCriticalSection();
 			m_ParticipantsToInfos = new Dictionary<CiscoWebexParticipant, WebexParticipantInfo>();
 
-			SupportedConferenceFeatures = eConferenceFeatures.GetStartTime |
-			                              eConferenceFeatures.GetEndTime |
-			                              eConferenceFeatures.GetCallType |
-			                              eConferenceFeatures.GetParticipants |
-			                              eConferenceFeatures.LeaveConference |
+			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
 			                              eConferenceFeatures.EndConference;
 		}
 
@@ -66,10 +62,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			base.LeaveConference();
 
 			var self = GetParticipants().FirstOrDefault(p => p.IsSelf);
-			if (self == null)
+			if (self == null || !self.IsHost)
+			{
+				m_DialingComponent.Hangup(m_CallStatus);
 				return;
+			}
 
-			m_DialingComponent.Hangup(m_CallStatus);
+			m_ConferenceComponent.ParticipantDisconnect(m_CallStatus.CallId, self.WebexParticipantId);
 		}
 
 		public override void EndConference()

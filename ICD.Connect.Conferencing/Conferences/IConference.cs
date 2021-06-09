@@ -15,19 +15,9 @@ namespace ICD.Connect.Conferencing.Conferences
 	{
 		None = 0,
 
-		GetStatus = 1,
+		LeaveConference = 1,
 
-		GetStartTime = 2,
-
-		GetEndTime = 4,
-
-		GetCallType = 8,
-
-		GetParticipants = 16,
-
-		LeaveConference = 32,
-
-		EndConference = 64
+		EndConference = 2
 	}
 
 	public interface IConference : IConsoleNode
@@ -258,6 +248,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		public static IParticipant[] GetOnlineSources(this IConference extends)
 		{
 			return extends.GetParticipants().Where(s => s.GetIsOnline()).ToArray();
+		}
+
+		/// <summary>
+		/// Returns true if the conference has more than 1 participant.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static bool HasMultipleParticipants(this IConference extends)
+		{
+			return extends.GetParticipants().Count() > 1;
 		}
 	}
 }

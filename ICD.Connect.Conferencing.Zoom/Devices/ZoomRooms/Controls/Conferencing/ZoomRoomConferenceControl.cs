@@ -147,7 +147,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			SupportedConferenceControlFeatures |= eConferenceControlFeatures.CanEnd;
 			SupportedConferenceControlFeatures |= eConferenceControlFeatures.Dtmf;
 			SupportedConferenceControlFeatures |= eConferenceControlFeatures.CallLock;
-			SupportedConferenceControlFeatures |= eConferenceControlFeatures.HostInfoAvailable;
 
 			Subscribe(m_CallComponent);
 			Subscribe(m_SystemComponent);
