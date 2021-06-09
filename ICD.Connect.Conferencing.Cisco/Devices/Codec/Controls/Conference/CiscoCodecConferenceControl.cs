@@ -35,7 +35,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private readonly SystemComponent m_SystemComponent;
 		private readonly VideoComponent m_VideoComponent;
 
-		private readonly IcdHashSet<SipRegistration> m_SubscribedRegistrations;
 		private readonly BiDictionary<CallStatus, TraditionalIncomingCall> m_IncomingCalls;
 		private readonly Dictionary<CallStatus, CiscoConference> m_CallsToConferences;
 		private readonly Dictionary<CallStatus, CiscoWebexConference> m_CallsToWebexConferences;
@@ -50,37 +49,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		/// Gets the type of conference this dialer supports.
 		/// </summary>
 		public override eCallType Supports { get { return eCallType.Video | eCallType.Audio; } }
-
-		public override bool SipIsRegistered
-		{
-			get
-			{
-				var registrations = m_SystemComponent.GetSipRegistrations().ToIcdHashSet();
-				return registrations.Any(r => r.Registration == eRegState.Registered)
-					&& registrations.All(r => r.Registration != eRegState.Failed);
-			}
-		}
-
-		public override string SipLocalName
-		{
-			get
-			{
-				return string.Join(", ", m_SystemComponent.GetSipRegistrations()
-														  .Select(r => r.Uri)
-														  .ToArray());
-			}
-		}
-
-		public override string SipRegistrationStatus
-		{
-			get
-			{
-				return string.Join(", ", m_SystemComponent.GetSipRegistrations()
-														  .Select(r => r.Registration
-																		.ToString())
-														  .ToArray());
-			}
-		}
 
 		#endregion
 
@@ -99,7 +67,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
 			m_VideoComponent = Parent.Components.GetComponent<VideoComponent>();
 
-			m_SubscribedRegistrations = new IcdHashSet<SipRegistration>();
 			m_IncomingCalls = new BiDictionary<CallStatus, TraditionalIncomingCall>();
 			m_CallsToConferences = new Dictionary<CallStatus, CiscoConference>();
 			m_CallsToWebexConferences = new Dictionary<CallStatus, CiscoWebexConference>();
@@ -611,17 +578,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private void Unsubscribe(SystemComponent component)
 		{
 			component.OnSipRegistrationAdded -= ComponentOnSipRegistrationAdded;
-
-			foreach (SipRegistration registration in m_SubscribedRegistrations)
-				Unsubscribe(registration);
-			m_SubscribedRegistrations.Clear();
 		}
 
 		private void ComponentOnSipRegistrationAdded(object sender, IntEventArgs args)
 		{
-			SipRegistration registration = m_SystemComponent.GetSipRegistration(args.Data);
-			Subscribe(registration);
-
 			SipRegistration first = m_SystemComponent.GetSipRegistrations().FirstOrDefault();
 
 			CallInInfo =
@@ -633,10 +593,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 						CallType = eCallType.Audio | eCallType.Video,
 						DialString = first.Uri
 					};
-
-			RaiseSipLocalName(this, new StringEventArgs(SipLocalName));
-			RaiseSipEnabledState(this, new BoolEventArgs(SipIsRegistered));
-			RaiseSipRegistrationStatus(this, new StringEventArgs(SipRegistrationStatus));
 		}
 
 		#endregion
@@ -656,35 +612,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private void VideoComponentOnMainVideoMutedChanged(object sender, BoolEventArgs e)
 		{
 			UpdateCameraMute();
-		}
-
-		#endregion
-
-		#region SIP Registration Callbacks
-
-		private void Subscribe(SipRegistration registration)
-		{
-			registration.OnRegistrationChange += RegistrationOnRegistrationChange;
-			registration.OnUriChange += RegistrationOnUriChange;
-
-			m_SubscribedRegistrations.Add(registration);
-		}
-
-		private void Unsubscribe(SipRegistration registration)
-		{
-			registration.OnRegistrationChange -= RegistrationOnRegistrationChange;
-			registration.OnUriChange -= RegistrationOnUriChange;
-		}
-
-		private void RegistrationOnRegistrationChange(object sender, RegistrationEventArgs registrationEventArgs)
-		{
-			RaiseSipRegistrationStatus(this, new StringEventArgs(SipRegistrationStatus));
-			RaiseSipEnabledState(this, new BoolEventArgs(SipIsRegistered));
-		}
-
-		private void RegistrationOnUriChange(object sender, StringEventArgs stringEventArgs)
-		{
-			RaiseSipLocalName(this, new StringEventArgs(SipLocalName));
 		}
 
 		#endregion

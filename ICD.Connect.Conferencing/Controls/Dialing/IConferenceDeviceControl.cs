@@ -139,21 +139,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
 		/// <summary>
-		/// Raised when the Sip enabled state changes.
-		/// </summary>
-		event EventHandler<BoolEventArgs> OnSipEnabledChanged;
-
-		/// <summary>
-		/// Raised when the Sip local name changes.
-		/// </summary>
-		event EventHandler<StringEventArgs> OnSipLocalNameChanged;
-
-		/// <summary>
-		/// Raised when the Sip registration status changes.
-		/// </summary>
-		event EventHandler<StringEventArgs> OnSipRegistrationStatusChanged;
-
-		/// <summary>
 		/// Raised when the call lock status changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnCallLockChanged;
@@ -217,10 +202,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		[ApiProperty(ConferenceDeviceControlApi.PROPERTY_CAMERA_MUTE, ConferenceDeviceControlApi.HELP_PROPERTY_CAMERA_MUTE)]
 		bool CameraMute { get; }
-
-		bool SipIsRegistered { get; }
-		string SipLocalName { get; }
-		string SipRegistrationStatus { get; }
 
 		/// <summary>
 		/// Returns true if we are the host of the active conference.

@@ -70,21 +70,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		public event EventHandler<BoolEventArgs> OnCameraMuteChanged;
 
 		/// <summary>
-		/// Raised when the Sip enabled state changes.
-		/// </summary>
-		public event EventHandler<BoolEventArgs> OnSipEnabledChanged;
-
-		/// <summary>
-		/// Raised when the Sip local name changes.
-		/// </summary>
-		public event EventHandler<StringEventArgs> OnSipLocalNameChanged;
-
-		/// <summary>
-		/// Raised when the Sip registration status changes.
-		/// </summary>
-		public event EventHandler<StringEventArgs> OnSipRegistrationStatusChanged;
-
-		/// <summary>
 		/// Raised when the call lock status changes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnCallLockChanged;
@@ -255,10 +240,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			}
 		}
 
-		public virtual bool SipIsRegistered { get; private set; }
-		public virtual string SipLocalName { get; private set; }
-		public virtual string SipRegistrationStatus { get; private set; }
-
 		/// <summary>
 		/// Returns true if we are the host of the current conference.
 		/// </summary>
@@ -385,9 +366,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			OnSupportedConferenceFeaturesChanged = null;
 			OnCallInInfoChanged = null;
 			OnCameraMuteChanged = null;
-			OnSipEnabledChanged = null;
-			OnSipLocalNameChanged = null;
-			OnSipRegistrationStatusChanged = null;
 			OnSupportedConferenceFeaturesChanged = null;
 			OnCallLockChanged = null;
 			OnAmIHostChanged = null;
@@ -486,40 +464,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		protected void RaiseOnConferenceRemoved(object sender, ConferenceEventArgs args)
 		{
 			OnConferenceRemoved.Raise(sender, args);
-		}
-
-		#endregion
-
-		#region Sip Events
-
-		/// <summary>
-		/// Allows for child implementations to safely raise the OnSipEnabledChanged event.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected void RaiseSipEnabledState(object sender, BoolEventArgs args)
-		{
-			OnSipEnabledChanged.Raise(sender, args);
-		}
-
-		/// <summary>
-		/// Allows for child implementations to safely raise the OnSipLocalNameChanged event.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected void RaiseSipLocalName(object sender, StringEventArgs args)
-		{
-			OnSipLocalNameChanged.Raise(sender, args);
-		}
-
-		/// <summary>
-		/// Allows for child implementations to safely raise the OnSipRegistrationStatusChanged event.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected void RaiseSipRegistrationStatus(object sender, StringEventArgs args)
-		{
-			OnSipRegistrationStatusChanged.Raise(sender, args);
 		}
 
 		#endregion
