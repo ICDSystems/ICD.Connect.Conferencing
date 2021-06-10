@@ -16,7 +16,7 @@ using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
 
 namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 {
-	public sealed class VaddioAvBridgeConferenceControl : AbstractConferenceDeviceControl<VaddioAvBridgeDevice, Conference>
+	public sealed class VaddioAvBridgeConferenceControl : AbstractConferenceDeviceControl<VaddioAvBridgeDevice, ThinConference>
 	{
 		#region Events
 
@@ -29,7 +29,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		private readonly VaddioAvBridgeVideoComponent m_VideoComponent;
 
 		[CanBeNull]
-		private Conference m_ActiveConference;
+		private ThinConference m_ActiveConference;
 
 		/// <summary>
 		/// Gets the type of conference this dialer supports.
@@ -94,7 +94,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 			participant.SetStart(now);
 			participant.SetStatus(eParticipantStatus.Connected);
 
-			m_ActiveConference = new Conference();
+			m_ActiveConference = new ThinConference();
 			m_ActiveConference.AddParticipant(participant);
 
 			RaiseOnConferenceAdded(this, new ConferenceEventArgs(m_ActiveConference));
@@ -120,7 +120,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public override IEnumerable<Conference> GetConferences()
+		public override IEnumerable<ThinConference> GetConferences()
 		{
 			if (m_ActiveConference != null)
 				yield return m_ActiveConference;

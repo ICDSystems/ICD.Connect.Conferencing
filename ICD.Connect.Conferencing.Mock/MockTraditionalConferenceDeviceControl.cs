@@ -11,7 +11,7 @@ using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Mock
 {
-	public sealed class MockTraditionalConferenceDeviceControl : AbstractConferenceDeviceControl<IMockConferencingDevice, Conference>
+	public sealed class MockTraditionalConferenceDeviceControl : AbstractConferenceDeviceControl<IMockConferencingDevice, ThinConference>
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
@@ -57,7 +57,7 @@ namespace ICD.Connect.Conferencing.Mock
 			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(args.Data));
 		}
 
-		public override IEnumerable<Conference> GetConferences()
+		public override IEnumerable<ThinConference> GetConferences()
 		{
 			yield break;
 		}

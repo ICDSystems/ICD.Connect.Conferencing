@@ -21,7 +21,7 @@ using eDialProtocol = ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.
 
 namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 {
-	public sealed class PolycomCodecTraditionalConferenceControl : AbstractConferenceDeviceControl<PolycomGroupSeriesDevice, Conference>
+	public sealed class PolycomCodecTraditionalConferenceControl : AbstractConferenceDeviceControl<PolycomGroupSeriesDevice, ThinConference>
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
@@ -101,7 +101,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		#region Methods
 
-		public override IEnumerable<Conference> GetConferences()
+		public override IEnumerable<ThinConference> GetConferences()
 		{
 			// TODO - should this just yield break???
 			yield break;

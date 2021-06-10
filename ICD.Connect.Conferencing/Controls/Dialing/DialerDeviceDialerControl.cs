@@ -11,7 +11,7 @@ using ICD.Connect.Conferencing.Participants;
 
 namespace ICD.Connect.Conferencing.Controls.Dialing
 {
-	public sealed class DialerDeviceDialerControl : AbstractConferenceDeviceControl<IDialerDevice, Conference>
+	public sealed class DialerDeviceDialerControl : AbstractConferenceDeviceControl<IDialerDevice, ThinConference>
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
@@ -90,7 +90,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 			AutoAnswer = Parent.AutoAnswer;
 		}
 
-		public override IEnumerable<Conference> GetConferences()
+		public override IEnumerable<ThinConference> GetConferences()
 		{
 			yield break;
 		}

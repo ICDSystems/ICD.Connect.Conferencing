@@ -94,7 +94,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private bool m_CallLock;
 		private eConferenceControlFeatures m_SupportedConferenceControlFeatures;
 		private IDialContext m_CallInInfo;
-		private Conference m_ActiveConference;
+		private ThinConference m_ActiveConference;
 
 		#region Properties
 
@@ -474,7 +474,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		{
 			if (m_ActiveConference == null)
 			{
-				m_ActiveConference = new Conference();
+				m_ActiveConference = new ThinConference();
 				OnConferenceAdded.Raise(this, new ConferenceEventArgs(m_ActiveConference));
 			}
 
