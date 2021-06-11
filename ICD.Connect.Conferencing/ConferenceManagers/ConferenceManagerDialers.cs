@@ -60,9 +60,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
 
 		/// <summary>
-		/// Raised when the call record state changes.
+		/// Raised when the recording status or capabilities of a conference changes.
 		/// </summary>
-		public event EventHandler OnCallRecordStateChanged;
+		public event EventHandler<GenericEventArgs<IConference>> OnConferenceRecordStateChanged;
 
 		/// <summary>
 		/// Raised when a participant's supported features changes.
@@ -73,11 +73,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Raised when an active participant's virtual hand raised state changes.
 		/// </summary>
 		public event EventHandler OnParticipantHandRaiseStateChanged;
-
-		/// <summary>
-		/// Raised when an active participant's ability to record the call changes.
-		/// </summary>
-		public event EventHandler OnParticipantCanRecordChanged;
 
 		private readonly IConferenceManager m_ConferenceManager;
 
@@ -789,8 +784,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			participant.OnStatusChanged += ParticipantOnStatusChanged;
 			participant.OnParticipantTypeChanged += ParticipantOnParticipantTypeChanged;
 			participant.OnHandRaisedChanged += ParticipantOnHandRaisedChanged;
-			participant.OnCanRecordChanged += ParticipantOnCanRecordChanged;
-			participant.OnIsRecordingChanged += ParticipantOnIsRecordingChanged;
 			participant.OnSupportedParticipantFeaturesChanged += ParticipantOnSupportedParticipantFeaturesChanged;
 		}
 
@@ -803,8 +796,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			participant.OnStatusChanged -= ParticipantOnStatusChanged;
 			participant.OnParticipantTypeChanged -= ParticipantOnParticipantTypeChanged;
 			participant.OnHandRaisedChanged -= ParticipantOnHandRaisedChanged;
-			participant.OnCanRecordChanged -= ParticipantOnCanRecordChanged;
-			participant.OnIsRecordingChanged -= ParticipantOnIsRecordingChanged;
 			participant.OnSupportedParticipantFeaturesChanged -= ParticipantOnSupportedParticipantFeaturesChanged;
 		}
 
@@ -835,16 +826,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			OnParticipantHandRaiseStateChanged.Raise(this);
 		}
 
-		private void ParticipantOnCanRecordChanged(object sender, BoolEventArgs e)
-		{
-			OnParticipantCanRecordChanged.Raise(this);
-		}
-
-		private void ParticipantOnIsRecordingChanged(object sender, BoolEventArgs e)
-		{
-			OnCallRecordStateChanged.Raise(this);
-		}
-
 		private void ParticipantOnSupportedParticipantFeaturesChanged(object sender, ConferenceParticipantSupportedFeaturesChangedApiEventArgs args)
 		{
 			var participant = sender as IParticipant;
@@ -871,6 +852,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantAdded += ConferenceOnParticipantAdded;
 			conference.OnParticipantRemoved += ConferenceOnParticipantRemoved;
 			conference.OnCallTypeChanged += ConferenceOnCallTypeChanged;
+			conference.OnConferenceRecordingStatusChanged += ConferenceOnConferenceRecordingStatusChanged;
+			conference.OnCanRecordChanged += ConferenceOnCanRecordChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Subscribe(participant);
@@ -889,6 +872,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantAdded -= ConferenceOnParticipantAdded;
 			conference.OnParticipantRemoved -= ConferenceOnParticipantRemoved;
 			conference.OnCallTypeChanged -= ConferenceOnCallTypeChanged;
+			conference.OnConferenceRecordingStatusChanged -= ConferenceOnConferenceRecordingStatusChanged;
+			conference.OnCanRecordChanged -= ConferenceOnCanRecordChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Unsubscribe(participant);
@@ -931,6 +916,24 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private void ConferenceOnCallTypeChanged(object sender, GenericEventArgs<eCallType> e)
 		{
 			UpdateIsInCall();
+		}
+
+		private void ConferenceOnConferenceRecordingStatusChanged(object sender, ConferenceRecordingStatusEventArgs e)
+		{
+			IConference conference = sender as IConference;
+			if (conference == null)
+				return;
+
+			OnConferenceRecordStateChanged.Raise(this, conference);
+		}
+
+		private void ConferenceOnCanRecordChanged(object sender, BoolEventArgs e)
+		{
+			IConference conference = sender as IConference;
+			if (conference == null)
+				return;
+
+			OnConferenceRecordStateChanged.Raise(this, conference);
 		}
 
 		#endregion

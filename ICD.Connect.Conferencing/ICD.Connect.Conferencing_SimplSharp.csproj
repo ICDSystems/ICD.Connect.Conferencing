@@ -117,6 +117,7 @@
     <Compile Include="EventArguments\ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceParticipantAddedOrRemovedEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceParticipantSupportedFeaturesChangedApiEventArgs.cs" />
+    <Compile Include="EventArguments\ConferenceRecordingStatusEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceRouteDestinationContentInputApiEventArgs.cs" />
     <Compile Include="EventArguments\DirectSharingActiveApiEventArgs.cs" />
     <Compile Include="EventArguments\DirectSharingCodeApiEventArgs.cs" />

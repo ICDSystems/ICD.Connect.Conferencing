@@ -4,6 +4,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
+using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses;
 
@@ -23,7 +24,9 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 				throw new ArgumentNullException("callComponent");
 
 			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
-			                              eConferenceFeatures.EndConference;
+			                              eConferenceFeatures.EndConference |
+			                              eConferenceFeatures.StartRecording |
+			                              eConferenceFeatures.StopRecording;
 
 			m_CallComponent = callComponent;
 			Subscribe(m_CallComponent);
@@ -43,8 +46,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		public override void LeaveConference()
 		{
-			base.LeaveConference();
-
 			Status = eConferenceStatus.Disconnecting;
 			m_CallComponent.CallLeave();
 		}
@@ -54,10 +55,23 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		public override void EndConference()
 		{
-			base.EndConference();
-
 			Status = eConferenceStatus.Disconnecting;
 			m_CallComponent.CallDisconnect();
+		}
+
+		public override void StartRecordingConference()
+		{
+			m_CallComponent.EnableCallRecord(true);
+		}
+
+		public override void StopRecordingConference()
+		{
+			m_CallComponent.EnableCallRecord(false);
+		}
+
+		public override void PauseRecordingConference()
+		{
+			throw new NotSupportedException();
 		}
 
 		#endregion
@@ -75,6 +89,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			callComponent.OnParticipantUpdated += CallComponentOnParticipantUpdated;
 			callComponent.OnParticipantRemoved += CallComponentOnParticipantRemoved;
 			callComponent.OnNeedWaitForHost += CallComponentOnNeedWaitForHost;
+			callComponent.OnCallRecordChanged += CallComponentOnCallRecordChanged;
 		}
 
 		/// <summary>
@@ -88,6 +103,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			callComponent.OnParticipantUpdated -= CallComponentOnParticipantUpdated;
 			callComponent.OnParticipantRemoved -= CallComponentOnParticipantRemoved;
 			callComponent.OnNeedWaitForHost -= CallComponentOnNeedWaitForHost;
+			callComponent.OnCallRecordChanged -= CallComponentOnCallRecordChanged;
 		}
 
 		/// <summary>
@@ -184,6 +200,11 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		{
 			if (e.Data)
 				Status = eConferenceStatus.Connected;
+		}
+
+		private void CallComponentOnCallRecordChanged(object sender, BoolEventArgs e)
+		{
+			RecordingStatus = e.Data ? eConferenceRecordingStatus.Recording : eConferenceRecordingStatus.Stopped;
 		}
 
 		#endregion

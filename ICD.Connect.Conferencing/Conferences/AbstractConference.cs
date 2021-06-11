@@ -47,6 +47,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		public event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
 
 		/// <summary>
+		/// Raised when the can record state changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCanRecordChanged;
+
+		/// <summary>
+		/// Raised when the conference's recording status changes.
+		/// </summary>
+		public event EventHandler<ConferenceRecordingStatusEventArgs> OnConferenceRecordingStatusChanged;
+
+		/// <summary>
 		/// Raised when the supported conference features changes.
 		/// </summary>
 		public event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
@@ -57,6 +67,8 @@ namespace ICD.Connect.Conferencing.Conferences
 		private eConferenceStatus m_Status;
 		private DateTime? m_Start;
 		private DateTime? m_End;
+		private bool m_CanRecord;
+		private eConferenceRecordingStatus m_RecordingStatus;
 		private eConferenceFeatures m_SupportedConferenceFeatures;
 
 		/// <summary>
@@ -142,6 +154,40 @@ namespace ICD.Connect.Conferencing.Conferences
 		public eCallType CallType
 		{
 			get { return this.GetOnlineParticipants().MaxOrDefault(p => p.CallType); }
+		}
+
+		/// <summary>
+		/// Whether or not the the conference can be recorded by the control system.
+		/// </summary>
+		public bool CanRecord
+		{
+			get { return m_CanRecord; }
+			protected set
+			{
+				if (m_CanRecord == value)
+					return;
+
+				m_CanRecord = value;
+
+				OnCanRecordChanged.Raise(this, m_CanRecord);
+			}
+		}
+
+		/// <summary>
+		/// Gets the status of the conference recording.
+		/// </summary>
+		public eConferenceRecordingStatus RecordingStatus
+		{
+			get { return m_RecordingStatus; }
+			protected set
+			{
+				if (m_RecordingStatus == value)
+					return;
+
+				m_RecordingStatus = value;
+
+				OnConferenceRecordingStatusChanged.Raise(this, new ConferenceRecordingStatusEventArgs(m_RecordingStatus));
+			}
 		}
 
 		/// <summary>
@@ -257,16 +303,27 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// Leaves the conference, keeping the conference in tact for other participants.
 		/// </summary>
-		public virtual void LeaveConference()
-		{
-		}
+		public abstract void LeaveConference();
 
 		/// <summary>
 		/// Ends the conference for all participants.
 		/// </summary>
-		public virtual void EndConference()
-		{
-		}
+		public abstract void EndConference();
+
+		/// <summary>
+		/// Starts recording the conference.
+		/// </summary>
+		public abstract void StartRecordingConference();
+
+		/// <summary>
+		/// Stops recording the conference.
+		/// </summary>
+		public abstract void StopRecordingConference();
+
+		/// <summary>
+		/// Pauses the current recording of the conference.
+		/// </summary>
+		public abstract void PauseRecordingConference();
 
 		/// <summary>
 		/// Gets the sources in this conference.

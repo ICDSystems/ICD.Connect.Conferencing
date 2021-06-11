@@ -52,15 +52,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ParticipantsToInfos = new Dictionary<CiscoWebexParticipant, WebexParticipantInfo>();
 
 			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
-			                              eConferenceFeatures.EndConference;
+			                              eConferenceFeatures.EndConference |
+			                              eConferenceFeatures.StartRecording |
+			                              eConferenceFeatures.StopRecording |
+			                              eConferenceFeatures.PauseRecording;
 		}
 
 		#endregion
 
 		public override void LeaveConference()
 		{
-			base.LeaveConference();
-
 			var self = GetParticipants().FirstOrDefault(p => p.IsSelf);
 			if (self == null || !self.IsHost)
 			{
@@ -73,9 +74,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		public override void EndConference()
 		{
-			base.EndConference();
-
 			m_DialingComponent.Hangup(m_CallStatus);
+		}
+
+		public override void StartRecordingConference()
+		{
+			m_ConferenceComponent.RecordingStart(m_CallStatus.CallId);
+		}
+
+		public override void StopRecordingConference()
+		{
+			m_ConferenceComponent.RecordingStop(m_CallStatus.CallId);
+		}
+
+		public override void PauseRecordingConference()
+		{
+			if (RecordingStatus == eConferenceRecordingStatus.Paused)
+				m_ConferenceComponent.RecordingResume(m_CallStatus.CallId);
+			else
+				m_ConferenceComponent.RecordingPause(m_CallStatus.CallId);
 		}
 
 		#region Private Methods
@@ -95,12 +112,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		{
 			conferenceComponent.OnWebexParticipantListUpdated += ConferenceComponentOnWebexParticipantListUpdated;
 			conferenceComponent.OnWebexParticipantsListSearchResult += ConferenceComponentOnWebexParticipantsListSearchResult;
+			conferenceComponent.OnCallRecordingStatusChanged += ConferenceComponentOnCallRecordingStatusChanged;
+
+			conferenceComponent.Codec.RegisterParserCallback(ConferenceCallCapabilitiesRecordStart,
+			                                                 CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call",
+			                                                 m_CallStatus.CallId.ToString(), "Capabilities",
+			                                                 "Recording", "Start");
 		}
 
 		private void Unsubscribe(ConferenceComponent conferenceComponent)
 		{
 			conferenceComponent.OnWebexParticipantListUpdated -= ConferenceComponentOnWebexParticipantListUpdated;
 			conferenceComponent.OnWebexParticipantsListSearchResult -= ConferenceComponentOnWebexParticipantsListSearchResult;
+			conferenceComponent.OnCallRecordingStatusChanged -= ConferenceComponentOnCallRecordingStatusChanged;
+
+			conferenceComponent.Codec.UnregisterParserCallback(ConferenceCallCapabilitiesRecordStart,
+			                                                   CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call",
+			                                                   m_CallStatus.CallId.ToString(), "Capabilities",
+			                                                   "Recording", "Start");
 		}
 
 		private void ConferenceComponentOnWebexParticipantListUpdated(object sender, GenericEventArgs<WebexParticipantInfo> args)
@@ -126,6 +155,30 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 				m_ParticipantsSection.Execute(() => m_ParticipantsToInfos.Add(participant, info));
 			}
+		}
+
+		private void ConferenceComponentOnCallRecordingStatusChanged(object sender, GenericEventArgs<eCallRecordingStatus> args)
+		{
+			switch (args.Data)
+			{
+				case eCallRecordingStatus.None:
+					RecordingStatus = eConferenceRecordingStatus.Stopped;
+					break;
+				case eCallRecordingStatus.Recording:
+					RecordingStatus = eConferenceRecordingStatus.Recording;
+					break;
+				case eCallRecordingStatus.Paused:
+					RecordingStatus = eConferenceRecordingStatus.Paused;
+					break;
+				default:
+					RecordingStatus = eConferenceRecordingStatus.Unknown;
+					break;
+			}
+		}
+
+		private void ConferenceCallCapabilitiesRecordStart(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			CanRecord = XmlUtils.GetInnerXml(xml) == "Available";
 		}
 
 		private void Subscribe(CiscoWebexParticipant participant)

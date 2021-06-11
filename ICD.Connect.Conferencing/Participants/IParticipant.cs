@@ -35,9 +35,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 		RaiseLowerHand = 1024,
 
-		Record = 2048,
-
-		Admit = 4096
+		Admit = 2048
 	}
 
 
@@ -97,16 +95,6 @@ namespace ICD.Connect.Conferencing.Participants
 		/// Raised when the participant's virtual hand raised state changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnHandRaisedChanged;
-
-		/// <summary>
-		/// Raised when the participant's ability to record calls changes.
-		/// </summary>
-		event EventHandler<BoolEventArgs> OnCanRecordChanged;
-
-		/// <summary>
-		/// Raised when the participant starts/stops recording a call.
-		/// </summary>
-		event EventHandler<BoolEventArgs> OnIsRecordingChanged;
 
 		/// <summary>
 		/// Raised when the supported participant features changes.
@@ -189,16 +177,6 @@ namespace ICD.Connect.Conferencing.Participants
 		bool HandRaised { get; }
 
 		/// <summary>
-		/// Whether or not the participant is currently allowed to record the call.
-		/// </summary>
-		bool CanRecord { get; }
-
-		/// <summary>
-		/// Whether or not the participant is actively recording the call.
-		/// </summary>
-		bool IsRecording { get; }
-
-		/// <summary>
 		/// The features supported by the participant.
 		/// </summary>
 		eParticipantFeatures SupportedParticipantFeatures { get; }
@@ -249,12 +227,6 @@ namespace ICD.Connect.Conferencing.Participants
 		/// Raises/Lowers the participant's virtual hand.
 		/// </summary>
 		void ToggleHandRaise();
-
-		/// <summary>
-		/// Based on the current call record state, does the next call record action.
-		/// </summary>
-		/// <param name="stop">If true stops any active recording</param>
-		void RecordCallAction(bool stop);
 
 		#endregion
 	}

@@ -17,12 +17,35 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 {
 	public sealed class ZoomParticipant : AbstractParticipant
 	{
+		public event EventHandler<BoolEventArgs> OnCanRecordChanged;
+
 		private readonly CallComponent m_CallComponent;
 
 		private FarEndZoomCamera m_FarEndCamera;
 
+		private bool m_CanRecord;
+
+		#region Properties
+
 		public string UserId { get; private set; }
 		public string AvatarUrl { get; private set; }
+
+		public bool CanRecord
+		{
+			get
+			{
+				return m_CanRecord;
+			}
+			private set
+			{
+				if (m_CanRecord == value)
+					return;
+
+				m_CanRecord = value;
+
+				OnCanRecordChanged.Raise(this, m_CanRecord);
+			}
+		}
 
 		public override IRemoteCamera Camera
 		{
@@ -34,6 +57,8 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 				return m_FarEndCamera ?? (m_FarEndCamera = new FarEndZoomCamera(cameraComponent, user));
 			}
 		}
+
+		#endregion
 
 		/// <summary>
 		/// Constructor.
@@ -52,24 +77,11 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			                               eParticipantFeatures.GetIsSelf |
 			                               eParticipantFeatures.GetIsHost |
 			                               eParticipantFeatures.Kick |
-			                               eParticipantFeatures.SetMute |
-			                               eParticipantFeatures.Record;
+			                               eParticipantFeatures.SetMute;
 
 			UserId = info.UserId;
 			StartTime = IcdEnvironment.GetUtcTime();
 			Update(info);
-
-			Subscribe(m_CallComponent);
-		}
-
-		/// <summary>
-		/// Release resources.
-		/// </summary>
-		protected override void DisposeFinal()
-		{
-			base.DisposeFinal();
-
-			Unsubscribe(m_CallComponent);
 		}
 
 		#region Methods
@@ -85,16 +97,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			AvatarUrl = info.AvatarUrl;
 
 			// ParticipantInfo doesn't track recording information if the Participant is the host.
-			if (IsHost)
-			{
-				CanRecord = true;
-				IsRecording = m_CallComponent.CallRecord;
-			}
-			else
-			{
-				CanRecord = info.CanRecord;
-				IsRecording = info.IsRecording;
-			}
+			CanRecord = IsHost || info.CanRecord;
 		}
 
 		public void AllowParticipantRecord(bool enabled)
@@ -142,14 +145,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			throw new NotSupportedException();
 		}
 
-		public override void RecordCallAction(bool stop)
-		{
-			if (IsRecording || stop)
-				m_CallComponent.EnableCallRecord(false);
-			else
-				m_CallComponent.EnableCallRecord(true);
-		}
-
 		#endregion
 
 		#region Private Methods
@@ -159,26 +154,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		internal void SetIsHost(bool isHost)
 		{
 			IsHost = isHost;
-		}
-
-		#endregion
-
-		#region Call Component Callbacks
-
-		private void Subscribe(CallComponent callComponent)
-		{
-			callComponent.OnCallRecordChanged += CallComponentOnCallRecordChanged;
-		}
-
-		private void Unsubscribe(CallComponent callComponent)
-		{
-			callComponent.OnCallRecordChanged -= CallComponentOnCallRecordChanged;
-		}
-
-		private void CallComponentOnCallRecordChanged(object sender, BoolEventArgs e)
-		{
-			if (IsHost)
-				IsRecording = e.Data;
 		}
 
 		#endregion

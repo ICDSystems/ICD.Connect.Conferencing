@@ -68,16 +68,6 @@ namespace ICD.Connect.Conferencing.Participants
 		public event EventHandler<BoolEventArgs> OnHandRaisedChanged;
 
 		/// <summary>
-		/// Raised when the participant's ability to record calls changes.
-		/// </summary>
-		public event EventHandler<BoolEventArgs> OnCanRecordChanged;
-
-		/// <summary>
-		/// Raised when the participant starts/stops recording a call.
-		/// </summary>
-		public event EventHandler<BoolEventArgs> OnIsRecordingChanged;
-
-		/// <summary>
 		/// Raised when the supported participant features changes.
 		/// </summary>
 		public event EventHandler<ConferenceParticipantSupportedFeaturesChangedApiEventArgs> OnSupportedParticipantFeaturesChanged;
@@ -356,40 +346,6 @@ namespace ICD.Connect.Conferencing.Participants
 			}
 		}
 
-		/// <summary>
-		/// Whether or not the participant is currently allowed to record the call.
-		/// </summary>
-		public bool CanRecord
-		{
-			get { return m_CanRecord; }
-			protected set
-			{
-				if (m_CanRecord == value)
-					return;
-
-				m_CanRecord = value;
-				Log(eSeverity.Informational, "CanRecord set to {0}", m_CanRecord);
-				OnCanRecordChanged.Raise(this, m_CanRecord);
-			}
-		}
-
-		/// <summary>
-		/// Whether or not the participant is actively recording the call.
-		/// </summary>
-		public bool IsRecording
-		{
-			get { return m_IsRecording; }
-			protected set
-			{
-				if (m_IsRecording == value)
-					return;
-
-				m_IsRecording = value;
-				Log(eSeverity.Informational, "IsRecording set to {0}", m_IsRecording);
-				OnIsRecordingChanged.Raise(this, m_IsRecording);
-			}
-		}
-
 		public abstract IRemoteCamera Camera { get; }
 
 		#endregion
@@ -411,8 +367,6 @@ namespace ICD.Connect.Conferencing.Participants
 			OnIsMutedChanged = null;
 			OnIsHostChanged = null;
 			OnHandRaisedChanged = null;
-			OnCanRecordChanged = null;
-			OnIsRecordingChanged = null;
 			OnSupportedParticipantFeaturesChanged = null;
 
 			DisposeFinal();
@@ -456,7 +410,6 @@ namespace ICD.Connect.Conferencing.Participants
 		public abstract void Kick();
 		public abstract void Mute(bool mute);
 		public abstract void ToggleHandRaise();
-		public abstract void RecordCallAction(bool stop);
 
 		#endregion
 
@@ -499,8 +452,6 @@ namespace ICD.Connect.Conferencing.Participants
 			addRow("Is Self", IsSelf);
 			addRow("Is Host", IsHost);
 			addRow("HandRaised", HandRaised);
-			addRow("Can Record", CanRecord);
-			addRow("Is Recording", IsRecording);
 		}
 
 		/// <summary>

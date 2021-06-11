@@ -89,9 +89,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		public override void EndConference()
 		{
-			base.EndConference();
-
 			m_DialingComponent.Hangup(m_CallStatus);
+		}
+
+		public override void StartRecordingConference()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void StopRecordingConference()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void PauseRecordingConference()
+		{
+			throw new NotSupportedException();
 		}
 
 		public override void LeaveConference()

@@ -22,8 +22,6 @@ namespace ICD.Connect.Conferencing.Participants
 
 	public delegate void ThinParticipantToggleHandRaiseCallback(ThinParticipant sender);
 
-	public delegate void ThinParticipantToggleCallRecordActionCallback(ThinParticipant sender, bool stop);
-
 	public delegate void ThinParticipantAdmitCallback(ThinParticipant sender);
 
 	public sealed class ThinParticipant : AbstractParticipant
@@ -37,7 +35,6 @@ namespace ICD.Connect.Conferencing.Participants
 		public ThinParticipantKickCallback KickCallback { get; set; }
 		public ThinParticipantMuteCallback MuteCallback { get; set; }
 		public ThinParticipantToggleHandRaiseCallback HandRaiseCallback { get; set; }
-		public ThinParticipantToggleCallRecordActionCallback CallRecordCallback { get; set; }
 		public ThinParticipantAdmitCallback AdmitCallback { get; set; }
 
 		public override IRemoteCamera Camera { get { return null; } }
@@ -64,7 +61,6 @@ namespace ICD.Connect.Conferencing.Participants
 			KickCallback = null;
 			MuteCallback = null;
 			HandRaiseCallback = null;
-			CallRecordCallback = null;
 			AdmitCallback = null;
 
 			base.DisposeFinal();
@@ -133,17 +129,6 @@ namespace ICD.Connect.Conferencing.Participants
 			ThinParticipantToggleHandRaiseCallback handler = HandRaiseCallback;
 			if (handler != null)
 				handler(this);
-		}
-
-		/// <summary>
-		/// Based on the current call record state, does the next call record action.
-		/// </summary>
-		/// <param name="stop">If true stops any active recording</param>
-		public override void RecordCallAction(bool stop)
-		{
-			ThinParticipantToggleCallRecordActionCallback handler = CallRecordCallback;
-			if (handler != null)
-				handler(this, stop);
 		}
 
 		/// <summary>

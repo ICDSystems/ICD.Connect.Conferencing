@@ -17,7 +17,13 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		LeaveConference = 1,
 
-		EndConference = 2
+		EndConference = 2,
+
+		StartRecording = 4,
+
+		StopRecording = 8,
+
+		PauseRecording = 16
 	}
 
 	public interface IConference : IConsoleNode
@@ -53,6 +59,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
 
 		/// <summary>
+		/// Raised when the can record state changes.
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnCanRecordChanged;
+
+		/// <summary>
+		/// Raised when the conference's recording status changes.
+		/// </summary>
+		event EventHandler<ConferenceRecordingStatusEventArgs> OnConferenceRecordingStatusChanged;
+
+		/// <summary>
 		/// Raised when the supported conference features changes.
 		/// </summary>
 		event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
@@ -80,6 +96,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		eCallType CallType { get; }
 
 		/// <summary>
+		/// Whether or not the the conference can be recorded by the control system.
+		/// </summary>
+		bool CanRecord { get; }
+
+		/// <summary>
+		/// Gets the status of the conference recording.
+		/// </summary>
+		eConferenceRecordingStatus RecordingStatus { get; }
+
+		/// <summary>
 		/// Gets the supported conference features.
 		/// </summary>
 		eConferenceFeatures SupportedConferenceFeatures { get; }
@@ -103,6 +129,21 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Ends the conference for all participants.
 		/// </summary>
 		void EndConference();
+
+		/// <summary>
+		/// Starts recording the conference.
+		/// </summary>
+		void StartRecordingConference();
+
+		/// <summary>
+		/// Stops recording the conference.
+		/// </summary>
+		void StopRecordingConference();
+
+		/// <summary>
+		/// Pauses the current recording of the conference.
+		/// </summary>
+		void PauseRecordingConference();
 
 		#endregion
 	}

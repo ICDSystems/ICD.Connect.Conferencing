@@ -16,7 +16,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 	public sealed class CiscoWebexParticipant : AbstractParticipant
 	{
 		private WebexParticipantInfo m_Info;
-		private eCallRecordingStatus m_RecordingStatus;
 
 		private readonly int m_CallId;
 		private readonly ConferenceComponent m_ConferenceComponent;
@@ -117,33 +116,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				m_ConferenceComponent.RaiseHand(m_CallId);
 		}
 
-		public override void RecordCallAction(bool stop)
-		{
-			if (!CanRecord)
-				throw new InvalidOperationException("Participant currently cannot record.");
-
-			switch (m_RecordingStatus)
-			{
-				case eCallRecordingStatus.None:
-					m_ConferenceComponent.RecordingStart(m_CallId);
-					break;
-				case eCallRecordingStatus.Recording:
-					if (stop)
-						m_ConferenceComponent.RecordingStop(m_CallId);
-					else
-						m_ConferenceComponent.RecordingPause(m_CallId);
-					break;
-				case eCallRecordingStatus.Paused:
-					if (stop)
-						m_ConferenceComponent.RecordingStop(m_CallId);
-					else
-						m_ConferenceComponent.RecordingResume(m_CallId);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
-		}
-
 		#endregion
 
 		#region Private Methods
@@ -175,40 +147,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private void Subscribe(ConferenceComponent conferenceComponent)
 		{
 			conferenceComponent.OnWebexParticipantsListSearchResult += ConferenceComponentOnWebexParticipantsListSearchResult;
-			conferenceComponent.OnCallRecordingStatusChanged += ConferenceComponentOnCallRecordingStatusChanged;
-
-			conferenceComponent.Codec.RegisterParserCallback(ConferenceCallCapabilitiesRecordStart,
-			                                                 CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call",
-			                                                 m_CallId.ToString(), "Capabilities",
-			                                                 "Recording", "Start");
 		}
 
 		private void Unsubscribe(ConferenceComponent conferenceComponent)
 		{
 			conferenceComponent.OnWebexParticipantsListSearchResult -= ConferenceComponentOnWebexParticipantsListSearchResult;
-			conferenceComponent.OnCallRecordingStatusChanged -= ConferenceComponentOnCallRecordingStatusChanged;
-
-			conferenceComponent.Codec.UnregisterParserCallback(ConferenceCallCapabilitiesRecordStart,
-			                                                   CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call",
-			                                                   m_CallId.ToString(), "Capabilities",
-			                                                   "Recording", "Start");
 		}
 
 		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
 		{
 			if (args.Data.Any(info => info.ParticipantId == m_Info.ParticipantId))
 				UpdateInfo(args.Data.First(info => info.ParticipantId == m_Info.ParticipantId));
-		}
-
-		private void ConferenceComponentOnCallRecordingStatusChanged(object sender, GenericEventArgs<eCallRecordingStatus> args)
-		{
-			IsRecording = IsSelf && args.Data != eCallRecordingStatus.None;
-			m_RecordingStatus = args.Data;
-		}
-
-		private void ConferenceCallCapabilitiesRecordStart(CiscoCodecDevice codec, string resultid, string xml)
-		{
-			CanRecord = IsSelf && XmlUtils.GetInnerXml(xml) == "Available";
 		}
 
 		#endregion
