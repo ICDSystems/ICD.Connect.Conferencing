@@ -21,7 +21,8 @@ namespace ICD.Connect.Conferencing.EventArguments
 		Preserved = 9,
 		RemotePreserved = 10,
 		Disconnected = 11,
-		Waiting = 12
+		Waiting = 12,
+		Invited = 13
 	}
 
 	public sealed class ParticipantStatusEventArgs : GenericEventArgs<eParticipantStatus>
@@ -50,6 +51,7 @@ namespace ICD.Connect.Conferencing.EventArguments
 				case eParticipantStatus.Idle:
 				case eParticipantStatus.Dialing:
 				case eParticipantStatus.Ringing:
+				case eParticipantStatus.Invited:
 				case eParticipantStatus.Connecting:
 				case eParticipantStatus.Disconnecting:
 				case eParticipantStatus.Disconnected:
@@ -84,6 +86,7 @@ namespace ICD.Connect.Conferencing.EventArguments
 				case eParticipantStatus.Dialing:
 				case eParticipantStatus.Ringing:
 				case eParticipantStatus.Connecting:
+				case eParticipantStatus.Invited:
 					return eConferenceStatus.Connecting;
 
 				case eParticipantStatus.Waiting:

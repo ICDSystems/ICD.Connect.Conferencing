@@ -70,6 +70,7 @@ namespace ICD.Connect.Conferencing.Conferences
 				{eParticipantStatus.Undefined, eConferenceStatus.Undefined},
 				{eParticipantStatus.Dialing, eConferenceStatus.Connecting},
 				{eParticipantStatus.Ringing, eConferenceStatus.Connecting},
+				{eParticipantStatus.Invited, eConferenceStatus.Connecting},
 				{eParticipantStatus.Connecting, eConferenceStatus.Connecting},
 				{eParticipantStatus.Waiting, eConferenceStatus.Connected},
 				{eParticipantStatus.Connected, eConferenceStatus.Connected},
