@@ -105,15 +105,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ConferenceComponent.ParticipantMute(mute, m_CallId, m_Info.ParticipantId);
 		}
 
-		public override void ToggleHandRaise()
+		public override void SetHandPosition(bool raised)
 		{
 			if (!IsSelf)
 				return;
 
-			if (m_Info.HandRaised)
-				m_ConferenceComponent.LowerHand(m_CallId);
-			else
+			if (raised)
 				m_ConferenceComponent.RaiseHand(m_CallId);
+			else
+				m_ConferenceComponent.LowerHand(m_CallId);
 		}
 
 		#endregion

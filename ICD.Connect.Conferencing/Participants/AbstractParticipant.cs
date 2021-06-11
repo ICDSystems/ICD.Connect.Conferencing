@@ -409,7 +409,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public abstract void Admit();
 		public abstract void Kick();
 		public abstract void Mute(bool mute);
-		public abstract void ToggleHandRaise();
+		public abstract void SetHandPosition(bool raised);
 
 		#endregion
 

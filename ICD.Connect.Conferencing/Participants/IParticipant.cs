@@ -224,9 +224,10 @@ namespace ICD.Connect.Conferencing.Participants
 		void Mute(bool mute);
 
 		/// <summary>
-		/// Raises/Lowers the participant's virtual hand.
+		/// Sets the position of the participants virtual hand.
 		/// </summary>
-		void ToggleHandRaise();
+		/// <param name="raised"></param>
+		void SetHandPosition(bool raised);
 
 		#endregion
 	}

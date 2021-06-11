@@ -112,7 +112,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			throw new NotSupportedException();
 		}
 
-		public override void ToggleHandRaise()
+		public override void SetHandPosition(bool raised)
 		{
 			throw new NotSupportedException();
 		}

@@ -120,6 +120,11 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			m_CallComponent.MuteParticipant(UserId, mute);
 		}
 
+		public override void SetHandPosition(bool raised)
+		{
+			throw new NotSupportedException();
+		}
+
 		public override void Hold()
 		{
 			throw new NotSupportedException();
@@ -136,11 +141,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		}
 
 		public override void SendDtmf(string data)
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void ToggleHandRaise()
 		{
 			throw new NotSupportedException();
 		}

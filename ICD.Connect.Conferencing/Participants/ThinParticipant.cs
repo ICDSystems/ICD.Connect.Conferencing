@@ -20,7 +20,7 @@ namespace ICD.Connect.Conferencing.Participants
 
 	public delegate void ThinParticipantMuteCallback(ThinParticipant sender, bool mute);
 
-	public delegate void ThinParticipantToggleHandRaiseCallback(ThinParticipant sender);
+	public delegate void ThinParticipantSetHandPositionCallback(ThinParticipant sender, bool raised);
 
 	public delegate void ThinParticipantAdmitCallback(ThinParticipant sender);
 
@@ -34,7 +34,7 @@ namespace ICD.Connect.Conferencing.Participants
 		public ThinParticipantHangupCallback HangupCallback { get; set; }
 		public ThinParticipantKickCallback KickCallback { get; set; }
 		public ThinParticipantMuteCallback MuteCallback { get; set; }
-		public ThinParticipantToggleHandRaiseCallback HandRaiseCallback { get; set; }
+		public ThinParticipantSetHandPositionCallback HandPositionCallback { get; set; }
 		public ThinParticipantAdmitCallback AdmitCallback { get; set; }
 
 		public override IRemoteCamera Camera { get { return null; } }
@@ -60,7 +60,7 @@ namespace ICD.Connect.Conferencing.Participants
 			HangupCallback = null;
 			KickCallback = null;
 			MuteCallback = null;
-			HandRaiseCallback = null;
+			HandPositionCallback = null;
 			AdmitCallback = null;
 
 			base.DisposeFinal();
@@ -124,11 +124,11 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <summary>
 		/// Raises/Lowers the participant's virtual hand.
 		/// </summary>
-		public override void ToggleHandRaise()
+		public override void SetHandPosition(bool raised)
 		{
-			ThinParticipantToggleHandRaiseCallback handler = HandRaiseCallback;
+			ThinParticipantSetHandPositionCallback handler = HandPositionCallback;
 			if (handler != null)
-				handler(this);
+				handler(this, raised);
 		}
 
 		/// <summary>
