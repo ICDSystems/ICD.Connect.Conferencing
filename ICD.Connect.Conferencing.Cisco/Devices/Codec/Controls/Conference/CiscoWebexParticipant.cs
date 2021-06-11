@@ -53,10 +53,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			DialTime = IcdEnvironment.GetUtcTime();
 			AnswerState = eCallAnswerState.Answered;
 
-			SupportedParticipantFeatures = eParticipantFeatures.GetName |
-			                               eParticipantFeatures.GetCallType |
-			                               eParticipantFeatures.GetStatus |
-			                               eParticipantFeatures.GetIsMuted |
+			SupportedParticipantFeatures = eParticipantFeatures.GetIsMuted |
 			                               eParticipantFeatures.GetIsSelf |
 			                               eParticipantFeatures.GetIsHost |
 			                               eParticipantFeatures.Kick |

@@ -13,47 +13,31 @@ namespace ICD.Connect.Conferencing.Participants
 	{
 		None = 0,
 
-		GetName = 1,
+		GetCamera = 1,
 
-		GetCallType = 2,
+		GetNumber = 2,
 
-		GetCamera = 4,
+		GetIsMuted = 4,
 
-		GetStatus = 8,
+		GetIsSelf = 8,
 
-		GetStartTime = 16,
+		GetIsHost = 16,
 
-		GetEndTime = 32,
+		Hold = 32,
 
-		GetNumber = 64,
+		Hangup = 64,
 
-		GetDirection = 128,
+		SendDtmf = 128,
 
-		GetDialTime = 256,
+		Kick = 256,
 
-		GetAnswerState = 512,
+		SetMute = 512,
 
-		GetIsMuted = 1024,
+		RaiseLowerHand = 1024,
 
-		GetIsSelf = 2048,
+		Record = 2048,
 
-		GetIsHost = 4096,
-
-		Holding = 8192,
-
-		Hangup = 16384,
-
-		SendDtmf = 32768,
-
-		Kick = 65536,
-
-		SetMute = 131072,
-
-		RaiseLowerHand = 262144,
-
-		Record = 524288,
-
-		Admit = 1048576
+		Admit = 4096
 	}
 
 

@@ -103,7 +103,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		public override IEnumerable<ThinConference> GetConferences()
 		{
-			// TODO - should this just yield break???
 			yield break;
 		}
 

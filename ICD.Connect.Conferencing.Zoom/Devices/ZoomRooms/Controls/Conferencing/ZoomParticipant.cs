@@ -47,10 +47,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 			m_CallComponent = callComponent;
 
-			SupportedParticipantFeatures = eParticipantFeatures.GetName |
-			                               eParticipantFeatures.GetCallType |
-			                               eParticipantFeatures.GetCamera |
-			                               eParticipantFeatures.GetStatus |
+			SupportedParticipantFeatures = eParticipantFeatures.GetCamera |
 			                               eParticipantFeatures.GetIsMuted |
 			                               eParticipantFeatures.GetIsSelf |
 			                               eParticipantFeatures.GetIsHost |
