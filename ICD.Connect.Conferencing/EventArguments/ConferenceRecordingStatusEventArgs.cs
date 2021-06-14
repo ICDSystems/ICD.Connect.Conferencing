@@ -10,7 +10,7 @@ namespace ICD.Connect.Conferencing.EventArguments
 		Paused = 3
 	}
 
-	public class ConferenceRecordingStatusEventArgs : GenericEventArgs<eConferenceRecordingStatus>
+	public sealed class ConferenceRecordingStatusEventArgs : GenericEventArgs<eConferenceRecordingStatus>
 	{
 		/// <summary>
 		/// Constructor.
