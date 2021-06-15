@@ -42,6 +42,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				throw new ArgumentNullException("conferenceComponent");
 
 			UpdateInfo(info);
+			IsSelf = info.IsSelf;
 			m_CallId = callId;
 
 			m_ConferenceComponent = conferenceComponent;
@@ -128,7 +129,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			Status = m_Info.Status;
 			IsMuted = m_Info.AudioMute;
 			IsHost = m_Info.IsHost;
-			IsSelf = m_Info.IsSelf;
 			HandRaised = m_Info.HandRaised;
 
 			if (EndTime != null && m_Info.Status == eParticipantStatus.Disconnected)
@@ -147,17 +147,27 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private void Subscribe(ConferenceComponent conferenceComponent)
 		{
 			conferenceComponent.OnWebexParticipantsListSearchResult += ConferenceComponentOnWebexParticipantsListSearchResult;
+			conferenceComponent.OnWebexParticipantListUpdated += ConferenceComponentOnWebexParticipantListUpdated;
 		}
 
 		private void Unsubscribe(ConferenceComponent conferenceComponent)
 		{
 			conferenceComponent.OnWebexParticipantsListSearchResult -= ConferenceComponentOnWebexParticipantsListSearchResult;
+			conferenceComponent.OnWebexParticipantListUpdated -= ConferenceComponentOnWebexParticipantListUpdated;
 		}
 
 		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
 		{
 			if (args.Data.Any(info => info.ParticipantId == m_Info.ParticipantId))
 				UpdateInfo(args.Data.First(info => info.ParticipantId == m_Info.ParticipantId));
+		}
+
+		private void ConferenceComponentOnWebexParticipantListUpdated(object sender, GenericEventArgs<WebexParticipantInfo> args)
+		{
+			if (args.Data.CallId != m_CallId || args.Data.ParticipantId != m_Info.ParticipantId)
+				return;
+
+			UpdateInfo(args.Data);
 		}
 
 		#endregion

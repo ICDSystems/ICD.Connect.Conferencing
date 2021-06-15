@@ -17,6 +17,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 	{
 		#region Private Members
 
+		private const int PARTICIPANT_SEARCH_LIMIT = 25;
+
 		private readonly ConferenceComponent m_ConferenceComponent;
 		private readonly DialingComponent m_DialingComponent;
 		private readonly CallStatus m_CallStatus;
@@ -137,7 +139,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (args.Data.CallId != m_CallStatus.CallId)
 				return;
 
-			m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, null, null, null);
+			m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
 		}
 
 		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
