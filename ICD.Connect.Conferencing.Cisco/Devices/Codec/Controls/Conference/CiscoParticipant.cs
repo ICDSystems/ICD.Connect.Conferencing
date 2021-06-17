@@ -77,26 +77,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			base.DisposeFinal();
 		}
 
-		public override void Hold()
-		{
-			m_DialingComponent.Hold(m_CallStatus);
-		}
-
-		public override void Resume()
-		{
-			m_DialingComponent.Resume(m_CallStatus);
-		}
-
-		public override void Hangup()
-		{
-			m_DialingComponent.Hangup(m_CallStatus);
-		}
-
-		public override void SendDtmf(string data)
-		{
-			m_DialingComponent.SendDtmf(m_CallStatus, data);
-		}
-
 		public override void Admit()
 		{
 			throw new NotSupportedException();

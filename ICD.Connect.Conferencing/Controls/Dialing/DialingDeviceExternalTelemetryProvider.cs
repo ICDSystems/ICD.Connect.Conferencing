@@ -110,14 +110,29 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 				EndConference(conference);
 		}
 
+		[MethodTelemetry(DialingTelemetryNames.LEAVE_CALL_COMMAND)]
+		public void LeaveCalls()
+		{
+			if (Parent == null)
+				return;
+
+			foreach (IConference conference in Parent.GetConferences())
+				LeaveConference(conference);
+		}
+
 		private static void EndConference(IConference conference)
 		{
 			if (conference == null)
 				throw new ArgumentNullException("conference");
 
-			//TODO Hangup vs Leave
+			conference.EndConference();
+		}
 
-			conference.Hangup();
+		private static void LeaveConference(IConference conference)
+		{
+			if (conference == null)
+				throw new ArgumentNullException("conference");
+
 			conference.LeaveConference();
 		}
 

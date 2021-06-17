@@ -313,6 +313,22 @@ namespace ICD.Connect.Conferencing.Conferences
 		public abstract void EndConference();
 
 		/// <summary>
+		/// Holds the conference
+		/// </summary>
+		public abstract void Hold();
+
+		/// <summary>
+		/// Resumes the conference
+		/// </summary>
+		public abstract void Resume();
+
+		/// <summary>
+		/// Sends DTMF to the participant.
+		/// </summary>
+		/// <param name="data"></param>
+		public abstract void SendDtmf(string data);
+
+		/// <summary>
 		/// Starts recording the conference.
 		/// </summary>
 		public abstract void StartRecordingConference();
@@ -537,6 +553,9 @@ namespace ICD.Connect.Conferencing.Conferences
 			yield return new ConsoleCommand("End", "Ends the conference", () => EndConference());
 			yield return new ConsoleCommand("MuteAll", "Mutes all participants", () => this.MuteAll());
 			yield return new ConsoleCommand("KickAll", "Kicks all participants", () => this.KickAll());
+			yield return new ConsoleCommand("Hold", "Holds the call", () => Hold());
+			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
+			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
 		}
 
 		#endregion

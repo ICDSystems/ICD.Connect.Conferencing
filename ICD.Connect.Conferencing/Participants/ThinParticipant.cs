@@ -8,14 +8,6 @@ using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Participants
 {
-	public delegate void ThinParticipantHoldCallback(ThinParticipant sender);
-
-	public delegate void ThinParticipantResumeCallback(ThinParticipant sender);
-
-	public delegate void ThinParticipantSendDtmfCallback(ThinParticipant sender, string data);
-
-	public delegate void ThinParticipantHangupCallback(ThinParticipant sender);
-
 	public delegate void ThinParticipantKickCallback(ThinParticipant sender);
 
 	public delegate void ThinParticipantMuteCallback(ThinParticipant sender, bool mute);
@@ -28,10 +20,6 @@ namespace ICD.Connect.Conferencing.Participants
 	{
 		#region Properties
 
-		public ThinParticipantHoldCallback HoldCallback { get; set; }
-		public ThinParticipantResumeCallback ResumeCallback { get; set; }
-		public ThinParticipantSendDtmfCallback SendDtmfCallback { get; set; }
-		public ThinParticipantHangupCallback HangupCallback { get; set; }
 		public ThinParticipantKickCallback KickCallback { get; set; }
 		public ThinParticipantMuteCallback MuteCallback { get; set; }
 		public ThinParticipantSetHandPositionCallback HandPositionCallback { get; set; }
@@ -54,10 +42,6 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		protected override void DisposeFinal()
 		{
-			HoldCallback = null;
-			ResumeCallback = null;
-			SendDtmfCallback = null;
-			HangupCallback = null;
 			KickCallback = null;
 			MuteCallback = null;
 			HandPositionCallback = null;
@@ -67,37 +51,6 @@ namespace ICD.Connect.Conferencing.Participants
 		}
 
 		#region Methods
-
-		/// <summary>
-		/// Holds the source.
-		/// </summary>
-		public override void Hold()
-		{
-			ThinParticipantHoldCallback handler = HoldCallback;
-			if (handler != null)
-				handler(this);
-		}
-
-		/// <summary>
-		/// Resumes the source.
-		/// </summary>
-		public override void Resume()
-		{
-			ThinParticipantResumeCallback handler = ResumeCallback;
-			if (handler != null)
-				handler(this);
-		}
-
-		/// <summary>
-		/// Sends DTMF to the source.
-		/// </summary>
-		/// <param name="data"></param>
-		public override void SendDtmf(string data)
-		{
-			ThinParticipantSendDtmfCallback handler = SendDtmfCallback;
-			if (handler != null)
-				handler(this, data ?? string.Empty);
-		}
 
 		/// <summary>
 		/// Kick the participant from the conference.
@@ -129,16 +82,6 @@ namespace ICD.Connect.Conferencing.Participants
 			ThinParticipantSetHandPositionCallback handler = HandPositionCallback;
 			if (handler != null)
 				handler(this, raised);
-		}
-
-		/// <summary>
-		/// Disconnects the source.
-		/// </summary>
-		public override void Hangup()
-		{
-			ThinParticipantHangupCallback handler = HangupCallback;
-			if (handler != null)
-				handler(this);
 		}
 
 		/// <summary>

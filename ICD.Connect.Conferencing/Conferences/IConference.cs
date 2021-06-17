@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
@@ -23,7 +24,11 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		StopRecording = 8,
 
-		PauseRecording = 16
+		PauseRecording = 16,
+		
+		Hold = 32,
+
+		SendDtmf = 64,
 	}
 
 	public interface IConference : IConsoleNode
@@ -129,6 +134,22 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Ends the conference for all participants.
 		/// </summary>
 		void EndConference();
+
+		/// <summary>
+		/// Holds the conference
+		/// </summary>
+		void Hold();
+
+		/// <summary>
+		/// Resumes the conference
+		/// </summary>
+		void Resume();
+
+		/// <summary>
+		/// Sends DTMF to the participant.
+		/// </summary>
+		/// <param name="data"></param>
+		void SendDtmf(string data);
 
 		/// <summary>
 		/// Starts recording the conference.
@@ -241,33 +262,16 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		/// <summary>
-		/// Holds all sources.
+		/// Allows sending data to dial-tone menus.
 		/// </summary>
 		/// <param name="extends"></param>
-		public static void Hold(this IConference extends)
+		/// <param name="data"></param>
+		public static void SendDtmf(this IConference extends, char data)
 		{
-			foreach (IParticipant participant in extends.GetParticipants().Reverse())
-				participant.Hold();
-		}
+			if (extends == null)
+				throw new ArgumentNullException("extends");
 
-		/// <summary>
-		/// Resumes all sources.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static void Resume(this IConference extends)
-		{
-			foreach (IParticipant participant in extends.GetParticipants().Reverse())
-				participant.Resume();
-		}
-
-		/// <summary>
-		/// Disconnects all sources.
-		/// </summary>
-		/// <param name="extends"></param>
-		public static void Hangup(this IConference extends)
-		{
-			foreach (IParticipant participant in extends.GetParticipants().Reverse())
-				participant.Hangup();
+			extends.SendDtmf(data.ToString());
 		}
 
 		/// <summary>
@@ -299,6 +303,58 @@ namespace ICD.Connect.Conferencing.Conferences
 		public static bool HasMultipleParticipants(this IConference extends)
 		{
 			return extends.GetParticipants().Count() > 1;
+		}
+
+		/// <summary>
+		/// Ends the conference if that is supported, if not, leaves the conference if that is supported
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns>true if the conference supports end or leave, false if not</returns>
+		public static bool EndOrLeaveConference([NotNull] this IConference extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (extends.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.EndConference))
+				extends.EndConference();
+			else if (extends.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.LeaveConference))
+				extends.LeaveConference();
+			else
+				return false;
+
+			return true;
+		}
+
+		/// <summary>
+		/// Leaves the conference if that is supported, if not, ends the conference if that is supported
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns>true if the conference supports leave or end, false if not</returns>
+		public static bool LeaveOrEndConference([NotNull] this IConference extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (extends.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.LeaveConference))
+				extends.LeaveConference();
+			else if (extends.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.EndConference))
+				extends.EndConference();
+			else
+				return false;
+
+			return true;
+		}
+
+		/// <summary>
+		/// Checks if the conference is not null, and can be left or ended
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		public static bool SupportsLeaveOrEnd([CanBeNull] this IConference extends)
+		{
+			return extends != null &&
+			       (extends.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.LeaveConference) ||
+			        extends.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.EndConference));
 		}
 	}
 }

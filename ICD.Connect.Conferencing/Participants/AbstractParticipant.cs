@@ -402,10 +402,6 @@ namespace ICD.Connect.Conferencing.Participants
 			return builder.ToString();
 		}
 
-		public abstract void Hold();
-		public abstract void Resume();
-		public abstract void Hangup();
-		public abstract void SendDtmf(string data);
 		public abstract void Admit();
 		public abstract void Kick();
 		public abstract void Mute(bool mute);
@@ -460,10 +456,6 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <returns></returns>
 		public virtual IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
-			yield return new ConsoleCommand("Hold", "Holds the call", () => Hold());
-			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
-			yield return new ConsoleCommand("Hangup", "Ends the call", () => Hangup());
-			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
 			yield return new ConsoleCommand("Kick", "Kicks the participant", () => Kick());
 			yield return new GenericConsoleCommand<bool>("Mute", "Usage: Mute <true/false>", m => Mute(m));
 		}

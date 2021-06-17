@@ -6,6 +6,7 @@
 		public const string CALL_IN_PROGRESS_CHANGED = "Call In Progress Changed";
 
 		public const string END_CALL_COMMAND = "End Call";
+		public const string LEAVE_CALL_COMMAND = "Leave Call";
 
 		public const string CALL_TYPE = "Call Type";
 		public const string CALL_TYPE_CHANGED = "Call Type Changed";

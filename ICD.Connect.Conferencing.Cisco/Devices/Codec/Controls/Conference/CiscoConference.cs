@@ -92,6 +92,31 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_DialingComponent.Hangup(m_CallStatus);
 		}
 
+		/// <summary>
+		/// Holds the conference
+		/// </summary>
+		public override void Hold()
+		{
+			m_DialingComponent.Hold(m_CallStatus);
+		}
+
+		/// <summary>
+		/// Resumes the conference
+		/// </summary>
+		public override void Resume()
+		{
+			m_DialingComponent.Resume(m_CallStatus);
+		}
+
+		/// <summary>
+		/// Sends DTMF to the participant.
+		/// </summary>
+		/// <param name="data"></param>
+		public override void SendDtmf(string data)
+		{
+			m_DialingComponent.SendDtmf(m_CallStatus, data);
+		}
+
 		public override void StartRecordingConference()
 		{
 			throw new NotSupportedException();

@@ -71,26 +71,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#region Methods
 
-		public override void Hold()
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void Resume()
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void Hangup()
-		{
-			m_ConferenceComponent.ParticipantDisconnect(m_CallId, m_Info.ParticipantId);
-		}
-
-		public override void SendDtmf(string data)
-		{
-			throw new NotSupportedException();
-		}
-
 		public override void Admit()
 		{
 			m_ConferenceComponent.ParticipantAdmit(m_CallId, m_Info.ParticipantId);

@@ -23,19 +23,13 @@ namespace ICD.Connect.Conferencing.Participants
 
 		GetIsHost = 16,
 
-		Hold = 32,
+		Kick = 32,
 
-		Hangup = 64,
+		SetMute = 64,
 
-		SendDtmf = 128,
+		RaiseLowerHand = 128,
 
-		Kick = 256,
-
-		SetMute = 512,
-
-		RaiseLowerHand = 1024,
-
-		Admit = 2048
+		Admit = 256
 	}
 
 
@@ -186,27 +180,6 @@ namespace ICD.Connect.Conferencing.Participants
 		#region Methods
 
 		/// <summary>
-		/// Holds the participant.
-		/// </summary>
-		void Hold();
-
-		/// <summary>
-		/// Resumes the participant.
-		/// </summary>
-		void Resume();
-
-		/// <summary>
-		/// Disconnects the participant.
-		/// </summary>
-		void Hangup();
-
-		/// <summary>
-		/// Sends DTMF to the participant.
-		/// </summary>
-		/// <param name="data"></param>
-		void SendDtmf(string data);
-
-		/// <summary>
 		/// Admits the participant into the conference.
 		/// </summary>
 		void Admit();
@@ -294,19 +267,6 @@ namespace ICD.Connect.Conferencing.Participants
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-		}
-
-		/// <summary>
-		/// Allows sending data to dial-tone menus.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="data"></param>
-		public static void SendDtmf(this IParticipant extends, char data)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			extends.SendDtmf(data.ToString());
 		}
 
 		/// <summary>
