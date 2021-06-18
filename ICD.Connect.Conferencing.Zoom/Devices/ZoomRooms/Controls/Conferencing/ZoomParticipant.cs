@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using ICD.Common.Utils;
+using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
@@ -15,14 +17,35 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 {
 	public sealed class ZoomParticipant : AbstractParticipant
 	{
+		public event EventHandler<BoolEventArgs> OnCanRecordChanged;
+
 		private readonly CallComponent m_CallComponent;
 
 		private FarEndZoomCamera m_FarEndCamera;
+
+		private bool m_CanRecord;
 
 		#region Properties
 
 		public string UserId { get; private set; }
 		public string AvatarUrl { get; private set; }
+
+		public bool CanRecord
+		{
+			get
+			{
+				return m_CanRecord;
+			}
+			private set
+			{
+				if (m_CanRecord == value)
+					return;
+
+				m_CanRecord = value;
+
+				OnCanRecordChanged.Raise(this, m_CanRecord);
+			}
+		}
 
 		public override IRemoteCamera Camera
 		{
@@ -72,6 +95,9 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			IsHost = info.IsHost;
 			IsSelf = info.IsMyself;
 			AvatarUrl = info.AvatarUrl;
+
+			// ParticipantInfo doesn't track recording information if the Participant is the host.
+			CanRecord = IsHost || info.CanRecord;
 		}
 
 		public void AllowParticipantRecord(bool enabled)
@@ -95,6 +121,26 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		}
 
 		public override void SetHandPosition(bool raised)
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Hold()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Resume()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Hangup()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void SendDtmf(string data)
 		{
 			throw new NotSupportedException();
 		}
