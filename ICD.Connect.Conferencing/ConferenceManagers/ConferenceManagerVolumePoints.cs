@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Audio.Utils;
@@ -24,7 +25,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler OnVolumePointsChanged;
 
 		private readonly SafeCriticalSection m_PointsSection;
-		private readonly Dictionary<IVolumePoint, VolumePointHelper> m_Points;
+		private readonly BiDictionary<IVolumePoint, VolumePointHelper> m_Points;
 
 		private readonly IConferenceManager m_ConferenceManager;
 
@@ -40,7 +41,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_ConferenceManager = conferenceManager;
 
 			m_PointsSection = new SafeCriticalSection();
-			m_Points = new Dictionary<IVolumePoint, VolumePointHelper>();
+			m_Points = new BiDictionary<IVolumePoint, VolumePointHelper>();
 
 			Subscribe(m_ConferenceManager);
 		}
@@ -115,7 +116,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				if (!m_Points.TryGetValue(volumePoint, out helper))
 					return false;
 
-				m_Points.Remove(volumePoint);
+				m_Points.RemoveKey(volumePoint);
 
 				Unsubscribe(helper);
 			}
@@ -137,9 +138,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		private void UpdateVolumePoints()
 		{
-			VolumePointHelper[] helpers = m_PointsSection.Execute(() => m_Points.Values.ToArray());
-			foreach (VolumePointHelper helper in helpers)
-				UpdateVolumePoint(helper);
+			IVolumePoint[] points = m_PointsSection.Execute(() => m_Points.Keys.ToArray());
+			foreach (IVolumePoint point in points)
+				UpdateVolumePoint(point);
 		}
 
 		/// <summary>
@@ -151,26 +152,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (volumePoint == null)
 				throw new ArgumentNullException("volumePoint");
 
+			if (!m_ConferenceManager.IsActive)
+				return;
+
+			if (!volumePoint.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Set))
+				return;
+
 			VolumePointHelper helper = null;
 			if (!m_PointsSection.Execute(() => m_Points.TryGetValue(volumePoint, out helper)))
 				throw new InvalidOperationException("Volume point is not registered");
 
-			UpdateVolumePoint(helper);
-		}
-
-		/// <summary>
-		/// Updates the volume point to match the privacy mute state.
-		/// </summary>
-		/// <param name="helper"></param>
-		private void UpdateVolumePoint([NotNull] VolumePointHelper helper)
-		{
-			if (helper == null)
-				throw new ArgumentNullException("helper");
-
-			IVolumePoint volumePoint = helper.VolumePoint;
-			if (volumePoint == null)
-				throw new InvalidOperationException("Helper has null volume point");
-                       
 			switch (volumePoint.MuteType)
 			{
 				case eMuteType.None:
@@ -224,6 +215,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conferenceManager.OnPrivacyMuteStatusChange += ConferenceManagerOnPrivacyMuteStatusChange;
 		}
 
+		/// <summary>
+		/// Called when the conference manager privacy mute status changes.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="boolEventArgs"></param>
 		private void ConferenceManagerOnPrivacyMuteStatusChange(object sender, BoolEventArgs boolEventArgs)
 		{
 			UpdateVolumePoints();
@@ -262,7 +258,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (helper == null)
 				throw new InvalidOperationException("Unexpected sender");
 
-			UpdateVolumePoint(helper);
+			// The volume point drives the room privacy mute state
+			IVolumePoint point = m_PointsSection.Execute(() => m_Points.GetKey(helper));
+			if (m_ConferenceManager.IsActive &&
+				point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Get))
+				m_ConferenceManager.PrivacyMuted = boolEventArgs.Data;
+
+			UpdateVolumePoint(point);
 		}
 
 		#endregion

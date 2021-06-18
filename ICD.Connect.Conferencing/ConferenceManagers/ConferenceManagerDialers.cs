@@ -6,6 +6,7 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.Audio.VolumePoints;
 using ICD.Connect.Conferencing.ConferencePoints;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
@@ -49,16 +50,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceParticipantAddedOrRemovedEventArgs> OnConferenceParticipantAddedOrRemoved;
 
 		/// <summary>
-		/// Raised when a conference control is added to the manager.
-		/// </summary>
-		public event EventHandler<ConferenceProviderEventArgs> OnProviderAdded;
-
-		/// <summary>
-		/// Raised when a conference control is removed from the manager.
-		/// </summary>
-		public event EventHandler<ConferenceProviderEventArgs> OnProviderRemoved;
-
-		/// <summary>
 		/// Called when an incoming call is added by a conference control.
 		/// </summary>
 		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallAdded;
@@ -71,11 +62,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly IConferenceManager m_ConferenceManager;
 
 		private readonly IcdHashSet<IConference> m_Conferences;
-		private readonly Dictionary<IConferenceDeviceControl, eCallType> m_DialingProviders;
+		private readonly BiDictionary<IConferencePoint, IConferenceDeviceControl> m_Points;
 		private readonly IcdHashSet<IConferenceDeviceControl> m_FeedbackProviders;
 
 		private readonly SafeCriticalSection m_ConferencesSection;
-		private readonly SafeCriticalSection m_DialingProviderSection;
+		private readonly SafeCriticalSection m_PointsSection;
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
 
 		private eInCall m_IsInCall;
@@ -104,11 +95,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 		}
 
-		/// <summary>
-		/// Gets the number of registered dialing providers.
-		/// </summary>
-		public int DialingProvidersCount { get { return m_DialingProviderSection.Execute(() => m_DialingProviders.Count); } }
-
 		#endregion
 
 		/// <summary>
@@ -123,11 +109,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_ConferenceManager = conferenceManager;
 
 			m_Conferences = new IcdHashSet<IConference>();
-			m_DialingProviders = new Dictionary<IConferenceDeviceControl, eCallType>();
+			m_Points = new BiDictionary<IConferencePoint, IConferenceDeviceControl>();
 			m_FeedbackProviders = new IcdHashSet<IConferenceDeviceControl>();
 
 			m_ConferencesSection = new SafeCriticalSection();
-			m_DialingProviderSection = new SafeCriticalSection();
+			m_PointsSection = new SafeCriticalSection();
 			m_FeedbackProviderSection = new SafeCriticalSection();
 
 			Subscribe(m_ConferenceManager);
@@ -140,16 +126,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		public void Clear()
 		{
-			m_DialingProviderSection.Enter();
+			m_PointsSection.Enter();
 
 			try
 			{
-				foreach (IConferenceDeviceControl conferenceControl in m_DialingProviders.Keys.ToArray(m_DialingProviders.Count))
-					DeregisterDialingProvider(conferenceControl);
+				foreach (IConferencePoint conferencePoint in m_Points.Keys.ToArray(m_Points.Count))
+					DeregisterConferencePoint(conferencePoint);
 			}
 			finally
 			{
-				m_DialingProviderSection.Leave();
+				m_PointsSection.Leave();
 			}
 
 			m_FeedbackProviderSection.Enter();
@@ -174,7 +160,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		[NotNull]
 		public IEnumerable<IConferenceDeviceControl> GetDialingProviders()
 		{
-			return m_DialingProviderSection.Execute(() => m_DialingProviders.Keys.ToArray());
+			return m_PointsSection.Execute(() => m_Points.Values.ToArray(m_Points.Count));
 		}
 
 		/// <summary>
@@ -182,19 +168,20 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="callType"></param>
 		/// <returns></returns>
+		[NotNull]
 		public IEnumerable<IConferenceDeviceControl> GetDialingProviders(eCallType callType)
 		{
-			m_DialingProviderSection.Enter();
+			m_PointsSection.Enter();
 
 			try
 			{
-				return m_DialingProviders.Where(kvp => kvp.Value.HasFlags(callType))
-										 .Select(kvp => kvp.Key)
-										 .ToArray();
+				return m_Points.Where(kvp => kvp.Key.Type.HasFlags(callType))
+				               .Select(kvp => kvp.Value)
+				               .ToArray();
 			}
 			finally
 			{
-				m_DialingProviderSection.Leave();
+				m_PointsSection.Leave();
 			}
 		}
 
@@ -209,23 +196,24 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (dialContext == null)
 				throw new ArgumentNullException("dialContext");
 
-			m_DialingProviderSection.Enter();
+			m_PointsSection.Enter();
 
 			try
 			{
 				IGrouping<eDialContextSupport, IConferenceDeviceControl> bestGroup =
-					m_DialingProviders.Where(kvp => kvp.Value.HasFlag(dialContext.CallType) && kvp.Key.Supports.HasFlags(dialContext.CallType))
-									  .Select(kvp => kvp.Key)
-					                  .GroupBy(c => c.CanDial(dialContext))
-					                  .Where(kvp => kvp.Key != eDialContextSupport.Unsupported)
-					                  .OrderByDescending(g => g.Key)
-					                  .FirstOrDefault();
+					m_Points.Where(kvp => kvp.Key.Type.HasFlag(dialContext.CallType) &&
+					                      kvp.Value.Supports.HasFlags(dialContext.CallType))
+					        .Select(kvp => kvp.Value)
+					        .GroupBy(c => c.CanDial(dialContext))
+					        .Where(kvp => kvp.Key != eDialContextSupport.Unsupported)
+					        .OrderByDescending(g => g.Key)
+					        .FirstOrDefault();
 
 				return bestGroup == null ? null : bestGroup.FirstOrDefault();
 			}
 			finally
 			{
-				m_DialingProviderSection.Leave();
+				m_PointsSection.Leave();
 			}
 		}
 
@@ -252,7 +240,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Registers the dialing provider at the given conference point.
 		/// </summary>
 		/// <param name="conferencePoint"></param>
-		public void RegisterDialingProvider([NotNull] IConferencePoint conferencePoint)
+		public void RegisterConferencePoint([NotNull] IConferencePoint conferencePoint)
 		{
 			if (conferencePoint == null)
 				throw new ArgumentNullException("conferencePoint");
@@ -260,75 +248,51 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			if (conferencePoint.Control == null)
 				throw new ArgumentException("Conference point does not have a conference control");
 
-			RegisterDialingProvider(conferencePoint.Control, conferencePoint.Type);
-		}
-
-		/// <summary>
-		/// Registers the conference provider.
-		/// </summary>
-		/// <param name="conferenceControl"></param>
-		/// <param name="callType"></param>
-		/// <returns></returns>
-		public bool RegisterDialingProvider([NotNull] IConferenceDeviceControl conferenceControl, eCallType callType)
-		{
-			if (conferenceControl == null)
-				throw new ArgumentNullException("conferenceControl");
-
-			m_DialingProviderSection.Enter();
+			m_PointsSection.Enter();
 
 			try
 			{
-				eCallType oldCallType;
-				if (m_DialingProviders.TryGetValue(conferenceControl, out oldCallType) && callType == oldCallType)
-					return false;
+				if (m_Points.ContainsKey(conferencePoint))
+					return;
 
-				Unsubscribe(conferenceControl);
-				m_DialingProviders.Add(conferenceControl, callType);
-				Subscribe(conferenceControl);
+				Unsubscribe(conferencePoint.Control);
+				m_Points.Add(conferencePoint, conferencePoint.Control);
+				Subscribe(conferencePoint.Control);
 
-				UpdateProvider(conferenceControl);
+				UpdateProvider(conferencePoint.Control);
 			}
 			finally
 			{
-				m_DialingProviderSection.Leave();
+				m_PointsSection.Leave();
 			}
-
-			OnProviderAdded.Raise(this, new ConferenceProviderEventArgs(callType, conferenceControl));
-
-			return true;
 		}
 
 		/// <summary>
-		/// Deregisters the conference provider.
+		/// Deregisters the conference point.
 		/// </summary>
-		/// <param name="conferenceControl"></param>
+		/// <param name="conferencePoint"></param>
 		/// <returns></returns>
-		public bool DeregisterDialingProvider(IConferenceDeviceControl conferenceControl)
+		public void DeregisterConferencePoint(IConferencePoint conferencePoint)
 		{
-			if (conferenceControl == null)
-				throw new ArgumentNullException("conferenceControl");
+			if (conferencePoint == null)
+				throw new ArgumentNullException("conferencePoint");
 
-			eCallType callType;
-
-			m_DialingProviderSection.Enter();
+			m_PointsSection.Enter();
 
 			try
 			{
-				if (!m_DialingProviders.TryGetValue(conferenceControl, out callType))
-					return false;
+				IConferenceDeviceControl conferenceControl;
+				if (!m_Points.TryGetValue(conferencePoint, out conferenceControl))
+					return;
 
 				Unsubscribe(conferenceControl);
 
-				m_DialingProviders.Remove(conferenceControl);
+				m_Points.RemoveKey(conferencePoint);
 			}
 			finally
 			{
-				m_DialingProviderSection.Leave();
+				m_PointsSection.Leave();
 			}
-
-			OnProviderRemoved.Raise(this, new ConferenceProviderEventArgs(callType, conferenceControl));
-
-			return true;
 		}
 
 		/// <summary>
@@ -555,9 +519,13 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				}
 			}
 
+			IConferencePoint point = m_PointsSection.Execute(() => m_Points.GetKey(conferenceControl));
+
 			// Enforce privacy mute
 			bool privacyMute = m_ConferenceManager.PrivacyMuted;
-			if (conferenceControl.PrivacyMuted != privacyMute && conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute))
+			if (point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Set) &&
+				conferenceControl.PrivacyMuted != privacyMute &&
+			    conferenceControl.SupportedConferenceFeatures.HasFlag(eConferenceFeatures.PrivacyMute))
 				conferenceControl.SetPrivacyMute(privacyMute);
 
 			// Enforce camera privacy mute
@@ -744,7 +712,20 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// <param name="boolEventArgs"></param>
 		private void ConferenceControlOnPrivacyMuteChanged(object sender, BoolEventArgs boolEventArgs)
 		{
-			UpdateProvider((IConferenceDeviceControl)sender);
+			IConferenceDeviceControl control = sender as IConferenceDeviceControl;
+			if (control == null)
+				throw new InvalidOperationException("Unexpected sender");
+
+			IConferencePoint point = null;
+			m_PointsSection.Execute(() => m_Points.TryGetKey(control, out point));
+
+			// The conference point drives the room privacy mute state
+			if (m_ConferenceManager.IsActive &&
+			    point != null &&
+			    point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Get))
+				m_ConferenceManager.PrivacyMuted = boolEventArgs.Data;
+
+			UpdateProvider(control);
 		}
 
 		/// <summary>

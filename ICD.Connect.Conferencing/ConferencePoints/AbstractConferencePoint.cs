@@ -1,4 +1,5 @@
 ﻿using ICD.Connect.API.Nodes;
+using ICD.Connect.Audio.VolumePoints;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Devices.Points;
@@ -21,7 +22,20 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 		/// </summary>
 		public eCallType Type { get; set; }
 
+		/// <summary>
+		/// Determines if the privacy mute control will be driven by the control system, and/or drive the control system.
+		/// </summary>
+		public ePrivacyMuteFeedback PrivacyMuteMask { get; set; }
+
 		#endregion
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		protected AbstractConferencePoint()
+		{
+			PrivacyMuteMask = ePrivacyMuteFeedback.Set;
+		}
 
 		#region Settings
 
@@ -34,6 +48,7 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 			base.CopySettingsFinal(settings);
 
 			settings.Type = Type;
+			settings.PrivacyMuteMask = PrivacyMuteMask;
 		}
 
 		/// <summary>
@@ -46,6 +61,7 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 			base.ApplySettingsFinal(settings, factory);
 
 			Type = settings.Type;
+			PrivacyMuteMask = settings.PrivacyMuteMask;
 		}
 
 		/// <summary>
@@ -56,9 +72,12 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 			base.ClearSettingsFinal();
 			
 			Type = eCallType.Unknown;
+			PrivacyMuteMask = ePrivacyMuteFeedback.Set;
 		}
 
 		#endregion
+
+		#region Console
 
 		/// <summary>
 		/// Calls the delegate for each console status item.
@@ -69,6 +88,9 @@ namespace ICD.Connect.Conferencing.ConferencePoints
 			base.BuildConsoleStatus(addRow);
 
 			addRow("Type", Type);
+			addRow("Privacy Mute Mask", PrivacyMuteMask);
 		}
+
+		#endregion
 	}
 }

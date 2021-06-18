@@ -5,9 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
 ### Added
  - Direct Sharing Control interfaces & abstractions
  - CiscoCodecDirectSharingControl to support Cisco Proximity sharing
+ - Added mask to ConferencePoint for configuring privacy mute authority
+ - ConferenceManager uses privacy mute masks to better handle privacy mute state changes
 
 ## [18.0.0] - 2021-05-14
 ### Added
