@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
-using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cameras;
@@ -121,26 +120,6 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		}
 
 		public override void SetHandPosition(bool raised)
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void Hold()
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void Resume()
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void Hangup()
-		{
-			throw new NotSupportedException();
-		}
-
-		public override void SendDtmf(string data)
 		{
 			throw new NotSupportedException();
 		}
