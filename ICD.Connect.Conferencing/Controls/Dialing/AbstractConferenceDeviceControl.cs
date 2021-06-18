@@ -14,7 +14,6 @@ using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices;
 using ICD.Connect.Devices.Controls;
 
@@ -37,12 +36,12 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Raised when a conference is added to the dialing control.
 		/// </summary>
-		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public abstract event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 
 		/// <summary>
 		/// Raised when a conference is removed from the dialing control.
 		/// </summary>
-		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
+		public abstract event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		/// <summary>
 		/// Raised when the call-in info for the conference control changes.
@@ -94,7 +93,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		private bool m_CallLock;
 		private eConferenceControlFeatures m_SupportedConferenceControlFeatures;
 		private IDialContext m_CallInInfo;
-		private ThinConference m_ActiveConference;
 
 		#region Properties
 
@@ -358,8 +356,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <param name="disposing"></param>
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnConferenceAdded = null;
-			OnConferenceRemoved = null;
 			OnDoNotDisturbChanged = null;
 			OnAutoAnswerChanged = null;
 			OnPrivacyMuteChanged = null;
@@ -379,20 +375,16 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<IConference> IConferenceDeviceControl.GetConferences()
-		{
-			if (m_ActiveConference != null)
-				yield return m_ActiveConference;
-
-			foreach (IConference conference in GetConferences().Cast<IConference>())
-				yield return conference;
-		}
+		public abstract IEnumerable<TConference> GetConferences();
 
 		/// <summary>
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public abstract IEnumerable<TConference> GetConferences();
+		IEnumerable<IConference> IConferenceDeviceControl.GetConferences()
+		{
+			return GetConferences().Cast<IConference>();
+		}
 
 		/// <summary>
 		/// Returns the level of support the device has for the given context.
@@ -441,59 +433,6 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// </summary>
 		/// <param name="enabled"></param>
 		public abstract void EnableCallLock(bool enabled);
-
-		#endregion
-
-		#region Conference Events
-
-		/// <summary>
-		/// Allows for child implementations to safely raise the OnConferenceAdded event.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected void RaiseOnConferenceAdded(object sender, ConferenceEventArgs args)
-		{
-			OnConferenceAdded.Raise(sender, args);
-		}
-
-		/// <summary>
-		/// Allows for child implementations to safely raise the OnConferenceRemoved event.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected void RaiseOnConferenceRemoved(object sender, ConferenceEventArgs args)
-		{
-			OnConferenceRemoved.Raise(sender, args);
-		}
-
-		#endregion
-
-		#region Source Events
-
-		protected void AddParticipant(IParticipant participant)
-		{
-			if (m_ActiveConference == null)
-			{
-				m_ActiveConference = new ThinConference();
-				OnConferenceAdded.Raise(this, new ConferenceEventArgs(m_ActiveConference));
-			}
-
-			m_ActiveConference.AddParticipant(participant);
-		}
-
-		protected void RemoveParticipant(IParticipant participant)
-		{
-			if (m_ActiveConference == null)
-				return;
-
-			m_ActiveConference.RemoveParticipant(participant);
-
-			if (!m_ActiveConference.GetParticipants().Any())
-			{
-				OnConferenceRemoved.Raise(this, new ConferenceEventArgs(m_ActiveConference));
-				m_ActiveConference = null;
-			}
-		}
 
 		#endregion
 

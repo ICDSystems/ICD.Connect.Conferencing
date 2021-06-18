@@ -24,6 +24,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
+		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		#endregion
 
@@ -340,7 +342,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (!added)
 				return;
 
-			RaiseOnConferenceAdded(this, new ConferenceEventArgs(conference));
+			OnConferenceAdded.Raise(this, conference);
 
 			// Initialize traditional conference participants after event raise.
 			CiscoConference conf = conference as CiscoConference;
@@ -389,7 +391,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			}
 
 			if (removed)
-				RaiseOnConferenceRemoved(this, new ConferenceEventArgs(conference));
+				OnConferenceRemoved.Raise(this, conference);
 		}
 
 		#endregion

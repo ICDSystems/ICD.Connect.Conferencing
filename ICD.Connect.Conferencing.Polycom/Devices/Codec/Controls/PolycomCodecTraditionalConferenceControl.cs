@@ -10,7 +10,6 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.AutoAnswer;
 using ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Dial;
@@ -25,10 +24,12 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 	{
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
+		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
-		private readonly BiDictionary<int, ThinParticipant> m_Participants;
+		private readonly BiDictionary<int, ThinConference> m_Conferences;
 		private readonly BiDictionary<int, TraditionalIncomingCall> m_IncomingCalls;
-		private readonly SafeCriticalSection m_ParticipantsSection;
+		private readonly SafeCriticalSection m_ConferencesSection;
 
 		private readonly DialComponent m_DialComponent;
 		private readonly AutoAnswerComponent m_AutoAnswerComponent;
@@ -55,9 +56,9 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		public PolycomCodecTraditionalConferenceControl(PolycomGroupSeriesDevice parent, int id)
 			: base(parent, id)
 		{
-			m_Participants = new BiDictionary<int, ThinParticipant>();
+			m_Conferences = new BiDictionary<int, ThinConference>();
 			m_IncomingCalls = new BiDictionary<int, TraditionalIncomingCall>();
-			m_ParticipantsSection = new SafeCriticalSection();
+			m_ConferencesSection = new SafeCriticalSection();
 
 			m_DialComponent = parent.Components.GetComponent<DialComponent>();
 			m_AutoAnswerComponent = parent.Components.GetComponent<AutoAnswerComponent>();
@@ -103,7 +104,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		public override IEnumerable<ThinConference> GetConferences()
 		{
-			yield break;
+			return m_ConferencesSection.Execute(() => m_Conferences.Values.ToArray(m_Conferences.Count));
 		}
 
 		/// <summary>
@@ -240,14 +241,14 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			Dictionary<int, CallStatus> statuses = m_DialComponent.GetCallStatuses().ToDictionary(s => s.CallId);
 
-			m_ParticipantsSection.Enter();
+			m_ConferencesSection.Enter();
 
 			try
 			{
 				// Clear out sources that are no longer online
 				IcdHashSet<int> remove =
 					m_IncomingCalls.Keys
-					               .Concat(m_Participants.Keys)
+					               .Concat(m_Conferences.Keys)
 					               .Where(id => !statuses.ContainsKey(id))
 					               .ToIcdHashSet();
 
@@ -260,8 +261,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 					if (m_IncomingCalls.ContainsKey(kvp.Key))
 						UpdateIncomingCall(kvp.Value);
 
-					if (m_Participants.ContainsKey(kvp.Key))
-						UpdateSource(kvp.Value);
+					if (m_Conferences.ContainsKey(kvp.Key))
+						UpdateConferenceFromCallStatus(kvp.Value);
 
 					switch (kvp.Value.ConnectionState)
 					{
@@ -282,19 +283,19 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 						case eConnectionState.Connecting:
 						case eConnectionState.Connected:
 						case eConnectionState.Disconnecting:
-							CreateSource(kvp.Value);
+							CreateConfereneFromCallStatus(kvp.Value);
 							break;
 
 						case eConnectionState.Disconnected:
 							RemoveIncomingCall(kvp.Key);
-							RemoveSource(kvp.Key);
+							RemoveConference(kvp.Key);
 							break;
 					}
 				}
 			}
 			finally
 			{
-				m_ParticipantsSection.Leave();
+				m_ConferencesSection.Leave();
 			}
 		}
 
@@ -303,15 +304,15 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		private void RemoveSources()
 		{
-			m_ParticipantsSection.Enter();
+			m_ConferencesSection.Enter();
 
 			try
 			{
-				RemoveSources(m_Participants.Keys.ToArray(m_Participants.Count));
+				RemoveSources(m_Conferences.Keys.ToArray(m_Conferences.Count));
 			}
 			finally
 			{
-				m_ParticipantsSection.Leave();
+				m_ConferencesSection.Leave();
 			}
 		}
 
@@ -324,32 +325,32 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				throw new ArgumentNullException("ids");
 
 			foreach (int id in ids)
-				RemoveSource(id);
+				RemoveConference(id);
 		}
 
 		/// <summary>
 		/// Removes the source with the given id.
 		/// </summary>
 		/// <param name="id"></param>
-		private void RemoveSource(int id)
+		private void RemoveConference(int id)
 		{
-			ThinParticipant source;
+			ThinConference conference;
 
-			m_ParticipantsSection.Enter();
+			m_ConferencesSection.Enter();
 
 			try
 			{
-				if (!m_Participants.TryGetValue(id, out source))
+				if (!m_Conferences.TryGetValue(id, out conference))
 					return;
 
-				source.SetStatus(eParticipantStatus.Disconnected);
+				conference.Status = eConferenceStatus.Disconnected;
 
-				Unsubscribe(source);
+				Unsubscribe(conference);
 
-				m_Participants.RemoveKey(id);
+				m_Conferences.RemoveKey(id);
 
 				// Leave hold state when out of calls
-				if (m_Participants.Count == 0)
+				if (m_Conferences.Count == 0)
 				{
 					m_RequestedPrivacyMute = false;
 					UpdateMute();
@@ -357,76 +358,76 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			}
 			finally
 			{
-				m_ParticipantsSection.Leave();
+				m_ConferencesSection.Leave();
 			}
 
-			RemoveParticipant(source);
+			OnConferenceRemoved.Raise(this, conference);
 		}
 
 		/// <summary>
 		/// Creates a source for the given call status.
 		/// </summary>
 		/// <param name="callStatus"></param>
-		private void CreateSource(CallStatus callStatus)
+		private void CreateConfereneFromCallStatus(CallStatus callStatus)
 		{
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinParticipant source;
+			ThinConference conference;
 
-			m_ParticipantsSection.Enter();
+			m_ConferencesSection.Enter();
 
 			try
 			{
-				if (m_Participants.ContainsKey(callStatus.CallId))
+				if (m_Conferences.ContainsKey(callStatus.CallId))
 					return;
 
-				source = new ThinParticipant();
-				m_Participants.Add(callStatus.CallId, source);
+				conference = new ThinConference();
+				m_Conferences.Add(callStatus.CallId, conference);
 
-				UpdateSource(callStatus);
-				Subscribe(source);
+				UpdateConferenceFromCallStatus(callStatus);
+				Subscribe(conference);
 			}
 			finally
 			{
-				m_ParticipantsSection.Leave();
+				m_ConferencesSection.Leave();
 			}
 
-			AddParticipant(source);
+			OnConferenceAdded.Raise(this, conference);
 		}
 
 		/// <summary>
 		/// Updates the source matching the given call status.
 		/// </summary>
 		/// <param name="callStatus"></param>
-		private void UpdateSource(CallStatus callStatus)
+		private void UpdateConferenceFromCallStatus(CallStatus callStatus)
 		{
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			ThinParticipant source = m_ParticipantsSection.Execute(() => m_Participants.GetDefault(callStatus.CallId, null));
-			if (source == null)
+			ThinConference conference = m_ConferencesSection.Execute(() => m_Conferences.GetDefault(callStatus.CallId, null));
+			if (conference == null)
 				return;
 
 			// Prevents overriding a resolved name with a number when the call disconnects
 			if (callStatus.FarSiteName != callStatus.FarSiteNumber)
-				source.SetName(callStatus.FarSiteName);
+				conference.Name = callStatus.FarSiteName;
 
-			source.SetNumber(callStatus.FarSiteNumber);
+			conference.Number = callStatus.FarSiteNumber;
 
 			bool? outgoing = callStatus.Outgoing;
 			if (outgoing == null)
-				source.SetDirection(eCallDirection.Undefined);
+				conference.Direction = eCallDirection.Undefined;
 			else
-				source.SetDirection((bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming);
+				conference.Direction = (bool)outgoing ? eCallDirection.Outgoing : eCallDirection.Incoming;
 
-			source.SetStatus(GetStatus(callStatus.ConnectionState));
-			source.SetCallType(callStatus.VideoCall ? eCallType.Video : eCallType.Audio);
+			conference.Status = GetStatus(callStatus.ConnectionState);
+			conference.CallType = callStatus.VideoCall ? eCallType.Video : eCallType.Audio;
 
-			if (source.GetIsOnline())
-				source.SetStart(source.StartTime ?? IcdEnvironment.GetUtcTime());
-			else if (source.StartTime != null)
-				source.SetEnd(source.EndTime ?? IcdEnvironment.GetUtcTime());
+			if (conference.IsActive())
+				conference.StartTime = conference.StartTime ?? IcdEnvironment.GetUtcTime();
+			else if (conference.StartTime != null)
+				conference.EndTime = conference.EndTime ?? IcdEnvironment.GetUtcTime();
 		}
 
 		/// <summary>
@@ -434,24 +435,23 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		/// </summary>
 		/// <param name="connectionState"></param>
 		/// <returns></returns>
-		private static eParticipantStatus GetStatus(eConnectionState connectionState)
+		private static eConferenceStatus GetStatus(eConnectionState connectionState)
 		{
 			switch (connectionState)
 			{
 				case eConnectionState.Unknown:
-					return eParticipantStatus.Undefined;
+					return eConferenceStatus.Undefined;
 				case eConnectionState.Opened:
 				case eConnectionState.Ringing:
-					return eParticipantStatus.Ringing;
 				case eConnectionState.Connecting:
-					return eParticipantStatus.Connecting;
+					return eConferenceStatus.Connecting;
 				case eConnectionState.Connected:
-					return eParticipantStatus.Connected;
+					return eConferenceStatus.Connected;
 				case eConnectionState.Inactive:
 				case eConnectionState.Disconnecting:
-					return eParticipantStatus.Disconnecting;
+					return eConferenceStatus.Disconnecting;
 				case eConnectionState.Disconnected:
-					return eParticipantStatus.Disconnected;
+					return eConferenceStatus.Disconnected;
 				default:
 					throw new ArgumentOutOfRangeException("connectionState");
 			}
@@ -477,7 +477,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 		{
 			TraditionalIncomingCall call;
 
-			m_ParticipantsSection.Enter();
+			m_ConferencesSection.Enter();
 
 			try
 			{
@@ -490,7 +490,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			}
 			finally
 			{
-				m_ParticipantsSection.Leave();
+				m_ConferencesSection.Leave();
 			}
 
 			OnIncomingCallRemoved.Raise(this, new GenericEventArgs<IIncomingCall>(call));
@@ -507,7 +507,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 			TraditionalIncomingCall call;
 
-			m_ParticipantsSection.Enter();
+			m_ConferencesSection.Enter();
 
 			try
 			{
@@ -522,7 +522,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			}
 			finally
 			{
-				m_ParticipantsSection.Leave();
+				m_ConferencesSection.Leave();
 			}
 
 			OnIncomingCallAdded.Raise(this, new GenericEventArgs<IIncomingCall>(call));
@@ -537,7 +537,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 			if (callStatus == null)
 				throw new ArgumentNullException("callStatus");
 
-			TraditionalIncomingCall call = m_ParticipantsSection.Execute(() => m_IncomingCalls.GetDefault(callStatus.CallId, null));
+			TraditionalIncomingCall call = m_ConferencesSection.Execute(() => m_IncomingCalls.GetDefault(callStatus.CallId, null));
 			if (call == null)
 				return;
 
@@ -561,62 +561,62 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		#endregion
 
-		#region Source Callbacks
+		#region Conference Callbacks
 
 		/// <summary>
 		/// Subscribe to the source events.
 		/// </summary>
-		/// <param name="source"></param>
-		private void Subscribe(ThinParticipant source)
+		/// <param name="conference"></param>
+		private void Subscribe(ThinConference conference)
 		{
 			
-			source.HoldCallback = HoldCallback;
-			source.ResumeCallback = ResumeCallback;
-			source.SendDtmfCallback = SendDtmfCallback;
-			source.HangupCallback = HangupCallback;
+			conference.HoldCallback = HoldCallback;
+			conference.ResumeCallback = ResumeCallback;
+			conference.SendDtmfCallback = SendDtmfCallback;
+			conference.LeaveConferenceCallback = HangupCallback;
 		}
 
 		/// <summary>
 		/// Unsubscribe from the source events.
 		/// </summary>
-		/// <param name="source"></param>
-		private void Unsubscribe(ThinParticipant source)
+		/// <param name="conference"></param>
+		private void Unsubscribe(ThinConference conference)
 		{
-			source.HoldCallback = null;
-			source.ResumeCallback = null;
-			source.SendDtmfCallback = null;
-			source.HangupCallback = null;
+			conference.HoldCallback = null;
+			conference.ResumeCallback = null;
+			conference.SendDtmfCallback = null;
+			conference.LeaveConferenceCallback = null;
 		}
 
-		private void HangupCallback(ThinParticipant sender)
+		private void HangupCallback(ThinConference sender)
 		{
-			int id = GetIdForSource(sender);
+			int id = GetIdForConference(sender);
 
 			m_DialComponent.HangupVideo(id);
 		}
 
-		private void SendDtmfCallback(ThinParticipant sender, string data)
+		private void SendDtmfCallback(ThinConference sender, string data)
 		{
 			data.ForEach(c => m_DialComponent.Gendial(c));
 		}
 
-		private void ResumeCallback(ThinParticipant sender)
+		private void ResumeCallback(ThinConference sender)
 		{
 			m_RequestedHold = false;
 
 			UpdateMute();
 		}
 
-		private void HoldCallback(ThinParticipant sender)
+		private void HoldCallback(ThinConference sender)
 		{
 			m_RequestedHold = true;
 
 			UpdateMute();
 		}
 
-		private int GetIdForSource(ThinParticipant source)
+		private int GetIdForConference(ThinConference source)
 		{
-			return m_ParticipantsSection.Execute(() => m_Participants.GetKey(source));
+			return m_ConferencesSection.Execute(() => m_Conferences.GetKey(source));
 		}
 
 		#endregion
@@ -649,7 +649,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 
 		private int GetIdForIncomingCall(TraditionalIncomingCall call)
 		{
-			return m_ParticipantsSection.Execute(() => m_IncomingCalls.GetKey(call));
+			return m_ConferencesSection.Execute(() => m_IncomingCalls.GetKey(call));
 		}
 
 		#endregion

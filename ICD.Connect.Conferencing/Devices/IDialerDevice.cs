@@ -1,5 +1,6 @@
 ﻿using System;
 using ICD.Common.Utils.EventArguments;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
@@ -13,12 +14,12 @@ namespace ICD.Connect.Conferencing.Devices
 		/// <summary>
 		/// Called when a participant is added to the dialing device.
 		/// </summary>
-		event EventHandler<ParticipantEventArgs> OnParticipantAdded;
+		event EventHandler<ConferenceEventArgs> OnConferenceAdded;
 
 		/// <summary>
 		/// Called when a participant is removed from the dialing device.
 		/// </summary>
-		event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
+		event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		/// <summary>
 		/// Called when an incoming call is added to the dialing device.

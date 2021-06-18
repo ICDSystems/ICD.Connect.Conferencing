@@ -1,6 +1,7 @@
 using System;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
@@ -8,24 +9,124 @@ using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Participants
 {
-	public delegate void ThinParticipantKickCallback(ThinParticipant sender);
+	public delegate void ThinParticipantActionCallback(ThinParticipant sender);
 
 	public delegate void ThinParticipantMuteCallback(ThinParticipant sender, bool mute);
 
 	public delegate void ThinParticipantSetHandPositionCallback(ThinParticipant sender, bool raised);
 
-	public delegate void ThinParticipantAdmitCallback(ThinParticipant sender);
-
 	public sealed class ThinParticipant : AbstractParticipant
 	{
+		#region Fields
+
+		private ThinParticipantActionCallback m_KickCallback;
+		private ThinParticipantMuteCallback m_MuteCallback;
+		private ThinParticipantSetHandPositionCallback m_HandPositionCallback;
+		private ThinParticipantActionCallback m_AdmitCallback;
+
+		#endregion
+
 		#region Properties
 
-		public ThinParticipantKickCallback KickCallback { get; set; }
-		public ThinParticipantMuteCallback MuteCallback { get; set; }
-		public ThinParticipantSetHandPositionCallback HandPositionCallback { get; set; }
-		public ThinParticipantAdmitCallback AdmitCallback { get; set; }
+		public ThinParticipantActionCallback KickCallback
+		{
+			get { return m_KickCallback; }
+			set
+			{
+				m_KickCallback = value;
+				SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.Kick,
+				                                                                     m_KickCallback != null);
+			}
+		}
+
+		public ThinParticipantMuteCallback MuteCallback
+		{
+			get { return m_MuteCallback; }
+			set
+			{
+				m_MuteCallback = value;
+				SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.SetMute,
+				                                                                     m_MuteCallback != null);
+			}
+		}
+
+		public ThinParticipantSetHandPositionCallback HandPositionCallback
+		{
+			get { return m_HandPositionCallback; }
+			set
+			{
+				m_HandPositionCallback = value;
+				SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.RaiseLowerHand,
+				                                                                     m_HandPositionCallback != null);
+			}
+		}
+
+		public ThinParticipantActionCallback AdmitCallback
+		{
+			get { return m_AdmitCallback; }
+			set
+			{
+				m_AdmitCallback = value;
+				SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.Admit,
+				                                                                     m_AdmitCallback != null);
+			}
+		}
 
 		public override IRemoteCamera Camera { get { return null; } }
+
+		public new eCallType CallType
+		{
+			get { return base.CallType; }
+			set { base.CallType = value; }
+		}
+
+		public new string Name
+		{
+			get { return base.Name; }
+			set { base.Name = value; }
+		}
+
+		public new string Number
+		{
+			get { return base.Number; }
+			set { base.Number = value; }
+		}
+
+		public new eParticipantStatus Status
+		{
+			get { return base.Status; }
+			set { base.Status = value; }
+		}
+
+		public new eCallDirection Direction
+		{
+			get { return base.Direction; }
+			set { base.Direction = value; }
+		}
+
+		public new DateTime? StartTime
+		{
+			get { return base.StartTime; }
+			set { base.StartTime = value; }
+		}
+
+		public new DateTime? EndTime
+		{
+			get { return base.EndTime; } 
+			set { base.EndTime = value; }
+		}
+
+		public new DateTime DialTime
+		{
+			get { return base.DialTime; }
+			set { base.DialTime = value; }
+		}
+
+		public new eCallAnswerState AnswerState
+		{
+			get { return base.AnswerState; }
+			set { base.AnswerState = value; }
+		}
 
 		#endregion
 
@@ -58,7 +159,7 @@ namespace ICD.Connect.Conferencing.Participants
 		/// <returns></returns>
 		public override void Kick()
 		{
-			ThinParticipantKickCallback handler = KickCallback;
+			ThinParticipantActionCallback handler = KickCallback;
 			if (handler != null)
 				handler(this);
 		}
@@ -89,82 +190,9 @@ namespace ICD.Connect.Conferencing.Participants
 		/// </summary>
 		public override void Admit()
 		{
-			ThinParticipantAdmitCallback handler = AdmitCallback;
+			ThinParticipantActionCallback handler = AdmitCallback;
 			if (handler != null)
 				handler(this);
-		}
-
-		#endregion
-
-		#region Property Setters
-
-		public void SetName(string callerName)
-		{
-			Name = callerName;
-		}
-
-		public void SetNumber(string callerNumber)
-		{
-			Number = callerNumber;
-		}
-
-		public void SetStatus(eParticipantStatus status)
-		{
-			Status = status;
-		}
-
-		public void SetDirection(eCallDirection direction)
-		{
-			Direction = direction;
-		}
-
-		public void SetCallType(eCallType type)
-		{
-			CallType = type;
-		}
-
-		public void SetStart(DateTime start)
-		{
-			StartTime = start;
-		}
-
-		public void SetEnd(DateTime end)
-		{
-			EndTime = end;
-		}
-
-		public void SetDialTime(DateTime dialTime)
-		{
-			DialTime = dialTime;
-		}
-
-		public void SetAnswerState(eCallAnswerState answerState)
-		{
-			AnswerState = answerState;
-		}
-
-		#endregion
-
-		#region Static Methods
-
-		/// <summary>
-		/// Generates a new ThinParticipant based on an incoming call
-		/// </summary>
-		/// <param name="incomingCall"></param>
-		/// <returns></returns>
-		public static ThinParticipant FromIncomingCall([NotNull] IIncomingCall incomingCall)
-		{
-			if (incomingCall == null)
-				throw new ArgumentNullException("incomingCall");
-
-			return new ThinParticipant
-			{
-				DialTime = incomingCall.StartTime,
-				Name = incomingCall.Name,
-				Number = incomingCall.Number,
-				AnswerState = incomingCall.AnswerState,
-				Direction = eCallDirection.Incoming
-			};
 		}
 
 		#endregion

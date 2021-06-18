@@ -207,7 +207,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void ConferenceCallCapabilitiesRecordStart(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			CanRecord = XmlUtils.GetInnerXml(xml) == "Available";
+			SupportedConferenceFeatures =
+				SupportedConferenceFeatures.SetFlags(eConferenceFeatures.StartRecording | 
+													 eConferenceFeatures.StopRecording,
+				                                     XmlUtils.GetInnerXml(xml) == "Available");
 		}
 
 		private void Subscribe(CiscoWebexParticipant participant)

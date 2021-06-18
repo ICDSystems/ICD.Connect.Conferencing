@@ -49,6 +49,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
 		/// <summary>
+		/// Raised when the conference name changes.
+		/// </summary>
+		event EventHandler<StringEventArgs> OnNameChanged; 
+		
+		/// <summary>
 		/// Raised when the start time changes
 		/// </summary>
 		event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
@@ -62,11 +67,6 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Raised when the conference's call type changes.
 		/// </summary>
 		event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
-
-		/// <summary>
-		/// Raised when the can record state changes.
-		/// </summary>
-		event EventHandler<BoolEventArgs> OnCanRecordChanged;
 
 		/// <summary>
 		/// Raised when the conference's recording status changes.
@@ -86,6 +86,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		eConferenceStatus Status { get; }
 
 		/// <summary>
+		/// Name of the conference
+		/// </summary>
+		string Name { get; }
+
+		/// <summary>
 		/// The time the conference started.
 		/// </summary>
 		DateTime? StartTime { get; }
@@ -99,11 +104,6 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Gets the type of call.
 		/// </summary>
 		eCallType CallType { get; }
-
-		/// <summary>
-		/// Whether or not the the conference can be recorded by the control system.
-		/// </summary>
-		bool CanRecord { get; }
 
 		/// <summary>
 		/// Gets the status of the conference recording.
@@ -198,6 +198,17 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		/// <summary>
+		/// Returns true if the conference contains the given participant.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="source"></param>
+		/// <returns></returns>
+		public static bool ContainsParticipant(this IConference extends, IParticipant source)
+		{
+			return extends.GetParticipants().Contains(source);
+		}
+
+		/// <summary>
 		/// Returns true if this conference is not disconnected.
 		/// </summary>
 		/// <param name="extends"></param>
@@ -272,27 +283,6 @@ namespace ICD.Connect.Conferencing.Conferences
 				throw new ArgumentNullException("extends");
 
 			extends.SendDtmf(data.ToString());
-		}
-
-		/// <summary>
-		/// Returns true if the conference contains the given participant.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="source"></param>
-		/// <returns></returns>
-		public static bool ContainsSource(this IConference extends, IParticipant source)
-		{
-			return extends.GetParticipants().Contains(source);
-		}
-
-		/// <summary>
-		/// Returns an array of online sources.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <returns></returns>
-		public static IParticipant[] GetOnlineSources(this IConference extends)
-		{
-			return extends.GetParticipants().Where(s => s.GetIsOnline()).ToArray();
 		}
 
 		/// <summary>

@@ -9,7 +9,6 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Audio;
 using ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Components.Video;
@@ -22,6 +21,8 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
+		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		#endregion
 
@@ -83,21 +84,18 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 			DateTime now = IcdEnvironment.GetUtcTime();
 
-			ThinParticipant participant = new ThinParticipant
+			m_ActiveConference = new ThinConference
 			{
-				HangupCallback = HangupParticipant
+				EndConferenceCallback = HangupParticipant,
+				Name = name,
+				AnswerState = eCallAnswerState.Answered,
+				CallType = Supports,
+				DialTime = now,
+				StartTime = now,
+				Status = (eConferenceStatus.Connected)
 			};
-			participant.SetName(name);
-			participant.SetAnswerState(eCallAnswerState.Answered);
-			participant.SetCallType(Supports);
-			participant.SetDialTime(now);
-			participant.SetStart(now);
-			participant.SetStatus(eParticipantStatus.Connected);
 
-			m_ActiveConference = new ThinConference();
-			m_ActiveConference.AddParticipant(participant);
-
-			RaiseOnConferenceAdded(this, new ConferenceEventArgs(m_ActiveConference));
+			OnConferenceAdded.Raise(this, m_ActiveConference);
 		}
 
 		/// <summary>
@@ -108,12 +106,7 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 			if (m_ActiveConference == null)
 				return;
 
-			m_ActiveConference.Hangup();
-
-			var endedConference = m_ActiveConference;
-			m_ActiveConference = null;
-
-			RaiseOnConferenceRemoved(this, new ConferenceEventArgs(endedConference));
+			m_ActiveConference.EndConference();
 		}
 
 		/// <summary>
@@ -195,13 +188,16 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge.Controls.Conferencing
 
 		#region Private Methods
 
-		private void HangupParticipant(ThinParticipant participant)
+		private void HangupParticipant(ThinConference conference)
 		{
-			participant.SetStatus(eParticipantStatus.Disconnected);
-			participant.SetEnd(IcdEnvironment.GetUtcTime());
+			if (conference != m_ActiveConference)
+				return;
 
-			if (m_ActiveConference != null)
-				m_ActiveConference.RemoveParticipant(participant);
+			conference.Status = eConferenceStatus.Disconnected;
+			conference.EndTime = IcdEnvironment.GetUtcTime();
+
+			m_ActiveConference = null;
+			OnConferenceRemoved.Raise(this, conference);
 		}
 
 		#endregion

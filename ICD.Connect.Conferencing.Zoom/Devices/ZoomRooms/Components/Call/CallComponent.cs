@@ -113,6 +113,11 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnNeedWaitForHost;
 
+		/// <summary>
+		/// Raised when the can record state changes
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnCanRecordChanged;
+
 		#endregion
 
 		private readonly IcdSortedDictionary<string, ParticipantInfo> m_Participants;
@@ -133,6 +138,8 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call
 		// We track the last time we set our microphone mute state so we can determine if the
 		// far end is trying to mute/unmute us.
 		private bool m_LastMicrophoneMute;
+
+		private bool m_CanRecord;
 
 		#region Properties
 
@@ -298,6 +305,20 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call
 		}
 
 		public CallInfo CallInfo { get; private set; }
+
+		public bool CanRecord
+		{
+			get { return m_CanRecord; }
+			set
+			{
+				if (m_CanRecord == value)
+					return;
+
+				m_CanRecord = value;
+
+				OnCanRecordChanged.Raise(this, value);
+			}
+		}
 
 		#endregion
 
@@ -771,6 +792,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call
 				return;
 
 			CallRecord = callRecordInfo.AmIRecording;
+			CanRecord = callRecordInfo.CanRecord && AmIHost;
 			OnUpdatedCallRecordInfo.Raise(this, new GenericEventArgs<UpdateCallRecordInfoEvent>(callRecordInfo));
 		}
 

@@ -300,7 +300,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			{
 				foreach (ThinParticipant src in m_Sources.Values)
 				{
-					src.SetStatus(eParticipantStatus.Disconnected);
+					src.Status = (eParticipantStatus.Disconnected);
 					Unsubscribe(src);
 
 					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(src));
@@ -355,7 +355,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 					return;
 
 				var sourceToRemove = m_Sources.GetValue(id);
-				sourceToRemove.SetStatus(eParticipantStatus.Disconnected);
+				sourceToRemove.Status = eParticipantStatus.Disconnected;
 				Unsubscribe(sourceToRemove);
 				m_Sources.RemoveKey(id);
 
@@ -387,16 +387,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 				var src = m_Sources.GetValue(id);
 
-				src.SetName(string.Format("({0}) {1}", participantState.Language, participantState.Name));
-				src.SetNumber(participantState.Number);
-				src.SetStatus(participantState.Status);
-				src.SetDialTime(participantState.DialTime);
-				src.SetDirection(participantState.Direction);
+				src.Name = string.Format("({0}) {1}", participantState.Language, participantState.Name);
+				src.Number = participantState.Number;
+				src.Status = participantState.Status;
+				src.DialTime = participantState.DialTime;
+				src.Direction = participantState.Direction;
 				if (participantState.End != null)
-					src.SetEnd((DateTime)participantState.End);
+					src.EndTime = participantState.End;
 				if (participantState.Start != null)
-					src.SetStart((DateTime)participantState.Start);
-				src.SetCallType(participantState.SourceType);
+					src.StartTime = participantState.Start;
+				src.CallType = participantState.SourceType;
 
 				if (added)
 				{

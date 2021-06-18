@@ -3,6 +3,7 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call;
@@ -59,6 +60,21 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			m_CallComponent.CallDisconnect();
 		}
 
+		public override void Hold()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void Resume()
+		{
+			throw new NotSupportedException();
+		}
+
+		public override void SendDtmf(string data)
+		{
+			throw new NotSupportedException();
+		}
+
 		public override void StartRecordingConference()
 		{
 			m_CallComponent.EnableCallRecord(true);
@@ -90,6 +106,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			callComponent.OnParticipantRemoved += CallComponentOnParticipantRemoved;
 			callComponent.OnNeedWaitForHost += CallComponentOnNeedWaitForHost;
 			callComponent.OnCallRecordChanged += CallComponentOnCallRecordChanged;
+			callComponent.OnCanRecordChanged += CallComponentOnCanRecordChanged;
 		}
 
 		/// <summary>
@@ -104,6 +121,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			callComponent.OnParticipantRemoved -= CallComponentOnParticipantRemoved;
 			callComponent.OnNeedWaitForHost -= CallComponentOnNeedWaitForHost;
 			callComponent.OnCallRecordChanged -= CallComponentOnCallRecordChanged;
+			callComponent.OnCanRecordChanged -= CallComponentOnCanRecordChanged;
 		}
 
 		/// <summary>
@@ -205,6 +223,15 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		private void CallComponentOnCallRecordChanged(object sender, BoolEventArgs e)
 		{
 			RecordingStatus = e.Data ? eConferenceRecordingStatus.Recording : eConferenceRecordingStatus.Stopped;
+		}
+
+		private void CallComponentOnCanRecordChanged(object sender, BoolEventArgs args)
+		{
+			SupportedConferenceFeatures =
+				SupportedConferenceFeatures.SetFlags(
+                         eConferenceFeatures.StartRecording |
+                         eConferenceFeatures.StopRecording,
+                         args.Data);
 		}
 
 		#endregion

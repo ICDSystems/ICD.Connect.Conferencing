@@ -60,7 +60,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		public event EventHandler<ConferenceControlIncomingCallEventArgs> OnIncomingCallRemoved;
 
 		/// <summary>
-		/// Raised when the recording status or capabilities of a conference changes.
+		/// Raised when the recording status of a conference changes.
 		/// </summary>
 		public event EventHandler<GenericEventArgs<IConference>> OnConferenceRecordStateChanged;
 
@@ -853,7 +853,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantRemoved += ConferenceOnParticipantRemoved;
 			conference.OnCallTypeChanged += ConferenceOnCallTypeChanged;
 			conference.OnConferenceRecordingStatusChanged += ConferenceOnConferenceRecordingStatusChanged;
-			conference.OnCanRecordChanged += ConferenceOnCanRecordChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Subscribe(participant);
@@ -873,7 +872,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantRemoved -= ConferenceOnParticipantRemoved;
 			conference.OnCallTypeChanged -= ConferenceOnCallTypeChanged;
 			conference.OnConferenceRecordingStatusChanged -= ConferenceOnConferenceRecordingStatusChanged;
-			conference.OnCanRecordChanged -= ConferenceOnCanRecordChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Unsubscribe(participant);
@@ -919,15 +917,6 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		}
 
 		private void ConferenceOnConferenceRecordingStatusChanged(object sender, ConferenceRecordingStatusEventArgs e)
-		{
-			IConference conference = sender as IConference;
-			if (conference == null)
-				return;
-
-			OnConferenceRecordStateChanged.Raise(this, conference);
-		}
-
-		private void ConferenceOnCanRecordChanged(object sender, BoolEventArgs e)
 		{
 			IConference conference = sender as IConference;
 			if (conference == null)

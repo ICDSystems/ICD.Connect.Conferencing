@@ -102,6 +102,7 @@
     <Compile Include="Conferences\AbstractConference.cs" />
     <Compile Include="Conferences\ThinConference.cs" />
     <Compile Include="Controls\Dialing\AbstractConferenceDeviceControl.cs" />
+    <Compile Include="Controls\Dialing\AbstractThinConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\ConferenceDeviceControlActivities.cs" />
     <Compile Include="Controls\DirectSharing\AbstractDirectSharingControl.cs" />
     <Compile Include="Controls\DirectSharing\DirectSharingControlConsole.cs" />

@@ -13,7 +13,6 @@ using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Utils;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call;
@@ -24,7 +23,7 @@ using ICD.Connect.Protocol.Network.Ports.Web;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 {
-	public sealed class ZoomRoomConferenceControl : AbstractConferenceDeviceControl<ZoomRoom, ZoomConference>
+	public sealed class ZoomRoomConferenceControl : AbstractConferenceDeviceControl<ZoomRoom, IConference>
 	{
 		#region Constants
 
@@ -47,6 +46,9 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		public override event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
+		public override event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public override event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
+
 		/// <summary>
 		/// Raised when Zoom tells us the call out attempt failed.
 		/// </summary>
@@ -62,7 +64,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 		private readonly SafeCriticalSection m_InviteSection;
 		private readonly SafeCriticalSection m_IncomingCallsSection;
-		private readonly SafeCriticalSection m_ParticipantSection;
+		private readonly SafeCriticalSection m_PstnConferencesSection;
 
 		/// <summary>
 		/// Web based.
@@ -72,11 +74,16 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <summary>
 		/// Traditional outgoing.
 		/// </summary>
-		private readonly IcdSortedDictionary<string, ThinParticipant> m_CallIdToParticipant;
+		private readonly IcdSortedDictionary<string, ThinConference> m_PstnCallIdToConference;
 		private static readonly Dictionary<string, string> s_PersonalToId;
 		private readonly IcdHashSet<string> m_InviteOnMeetingStart;
 
-		private readonly ZoomConference m_Conference;
+		/// <summary>
+		/// Conference to hold all the zoom call stuff
+		/// </summary>
+		private readonly ZoomConference m_ZoomConference;
+
+
 
 		private readonly HttpPort m_PersonalIdPort;
 
@@ -127,17 +134,17 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 			m_IncomingCallsSection = new SafeCriticalSection();
 			m_InviteSection = new SafeCriticalSection();
-			m_ParticipantSection = new SafeCriticalSection();
+			m_PstnConferencesSection = new SafeCriticalSection();
 
 			m_IncomingCalls = new Dictionary<IIncomingCall, SafeTimer>();
-			m_CallIdToParticipant = new IcdSortedDictionary<string, ThinParticipant>();
+			m_PstnCallIdToConference = new IcdSortedDictionary<string, ThinConference>();
 			m_InviteOnMeetingStart = new IcdHashSet<string>();
 			
 			m_KeepCameraMutedResetTimer = SafeTimer.Stopped(ResetKeepCameraMuted);
 			m_PersonalIdPort = new HttpPort();
 
-			m_Conference = new ZoomConference(m_CallComponent);
-			m_Conference.OnStatusChanged += ConferenceOnStatusChanged;
+			m_ZoomConference = new ZoomConference(m_CallComponent);
+			m_ZoomConference.OnStatusChanged += ZoomConferenceOnStatusChanged;
 
 			SupportedConferenceControlFeatures |= eConferenceControlFeatures.AutoAnswer;
 			SupportedConferenceControlFeatures |= eConferenceControlFeatures.DoNotDisturb;
@@ -165,7 +172,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 			base.DisposeFinal(disposing);
 
-			m_Conference.OnStatusChanged -= ConferenceOnStatusChanged;
+			m_ZoomConference.OnStatusChanged -= ZoomConferenceOnStatusChanged;
 
 			Unsubscribe(m_CallComponent);
 			Unsubscribe(m_SystemComponent);
@@ -180,9 +187,16 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public override IEnumerable<ZoomConference> GetConferences()
+		public override IEnumerable<IConference> GetConferences()
 		{
-			yield return m_Conference;
+			yield return m_ZoomConference;
+			foreach (ThinConference pstnConference in GetPstnConferences())
+				yield return pstnConference;
+		}
+
+		private IEnumerable<ThinConference> GetPstnConferences()
+		{
+			return m_PstnConferencesSection.Execute(() => m_PstnCallIdToConference.Values.ToArray(m_PstnCallIdToConference.Count));
 		}
 
 		/// <summary>
@@ -335,7 +349,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		private void ConferenceOnStatusChanged(object sender, ConferenceStatusEventArgs e)
+		private void ZoomConferenceOnStatusChanged(object sender, ConferenceStatusEventArgs e)
 		{
 			switch (e.Data)
 			{
@@ -457,7 +471,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 		private void PhoneCallOut(string dialString)
 		{
-			if (m_CallIdToParticipant.Any())
+			if (m_PstnCallIdToConference.Any())
 				throw new InvalidOperationException("Zoom Room only supports singular call out");
 
 			m_TraditionalCallComponent.PhoneCallOut(dialString);
@@ -465,7 +479,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 		private void Hangup(string callId)
 		{
-			if (!m_CallIdToParticipant.Any())
+			if (!m_PstnCallIdToConference.Any())
 				throw new InvalidOperationException("No active call to hangup");
 
 			m_TraditionalCallComponent.Hangup(callId);
@@ -473,7 +487,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 		private void SendDtmf(string callId, char data)
 		{
-			if (!m_CallIdToParticipant.Any())
+			if (!m_PstnCallIdToConference.Any())
 				throw new InvalidOperationException("No active call to send DTMF data to");
 
 			m_TraditionalCallComponent.SendDtmf(callId, data);
@@ -488,16 +502,16 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			if (info == null)
 				throw new ArgumentNullException("info");
 
-			ThinParticipant value;
+			ThinConference value;
 
-			m_ParticipantSection.Enter();
+			m_PstnConferencesSection.Enter();
 
 			try
 			{
-				if (!m_CallIdToParticipant.TryGetValue(info.CallId, out value))
+				if (!m_PstnCallIdToConference.TryGetValue(info.CallId, out value))
 				{
-					value = new ThinParticipant();
-					m_CallIdToParticipant.Add(info.CallId, value);
+					value = new ThinConference();
+					m_PstnCallIdToConference.Add(info.CallId, value);
 					Subscribe(value);
 				}
 
@@ -505,10 +519,10 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			}
 			finally
 			{
-				m_ParticipantSection.Leave();
+				m_PstnConferencesSection.Leave();
 			}
 
-			AddParticipant(value);
+			OnConferenceAdded.Raise(this, value);
 		}
 
 		/// <summary>
@@ -517,28 +531,28 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// <param name="info"></param>
 		private void RemoveCall(TraditionalZoomPhoneCallInfo info)
 		{
-			ThinParticipant value;
+			ThinConference value;
 
-			m_ParticipantSection.Enter();
+			m_PstnConferencesSection.Enter();
 
 			try
 			{
-				if (!m_CallIdToParticipant.TryGetValue(info.CallId, out value))
+				if (!m_PstnCallIdToConference.TryGetValue(info.CallId, out value))
 					return;
 
-				value.SetEnd(value.EndTime ?? IcdEnvironment.GetUtcTime());
-				value.SetStatus(eParticipantStatus.Disconnected);
+				value.EndTime = value.EndTime ?? IcdEnvironment.GetUtcTime();
+				value.Status = eConferenceStatus.Disconnected;
 
 				Unsubscribe(value);
 
-				m_CallIdToParticipant.Remove(info.CallId);
+				m_PstnCallIdToConference.Remove(info.CallId);
 			}
 			finally
 			{
-				m_ParticipantSection.Leave();
+				m_PstnConferencesSection.Leave();
 			}
 
-			RemoveParticipant(value);
+			OnConferenceRemoved.Raise(this, value);
 		}
 
 		/// <summary>
@@ -550,18 +564,18 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 			if (info == null)
 				throw new ArgumentNullException("info");
 
-			ThinParticipant value = m_ParticipantSection.Execute(() => m_CallIdToParticipant.GetDefault(info.CallId));
+			ThinConference value = m_PstnConferencesSection.Execute(() => m_PstnCallIdToConference.GetDefault(info.CallId));
 			if (value == null)
 				return;
 
-			value.SetNumber(info.PeerNumber);
-			value.SetName(info.PeerDisplayName);
-			value.SetDirection(info.IsIncomingCall ? eCallDirection.Incoming : eCallDirection.Outgoing);
-			value.SetStatus(GetStatus(info.Status));
-			value.SetCallType(Supports);
+			value.Number = info.PeerNumber;
+			value.Name = info.PeerDisplayName;
+			value.Direction = info.IsIncomingCall ? eCallDirection.Incoming : eCallDirection.Outgoing;
+			value.Status = GetPstnCallStatus(info.Status);
+			value.CallType = Supports;
 
-			if (value.GetIsOnline())
-				value.SetStart(value.StartTime ?? IcdEnvironment.GetUtcTime());
+			if (value.IsActive())
+				value.StartTime = value.StartTime ?? IcdEnvironment.GetUtcTime();
 		}
 
 		/// <summary>
@@ -569,20 +583,19 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		/// </summary>
 		/// <param name="status"></param>
 		/// <returns></returns>
-		private static eParticipantStatus GetStatus(eZoomPhoneCallStatus status)
+		private static eConferenceStatus GetPstnCallStatus(eZoomPhoneCallStatus status)
 		{
 			switch (status)
 			{
 				case eZoomPhoneCallStatus.None:
 				case eZoomPhoneCallStatus.NotFound:
 				case eZoomPhoneCallStatus.Incoming:
-					return eParticipantStatus.Undefined;
+					return eConferenceStatus.Undefined;
 				case eZoomPhoneCallStatus.Ringing:
-					return eParticipantStatus.Ringing;
 				case eZoomPhoneCallStatus.Init:
-					return eParticipantStatus.Connecting;
+					return eConferenceStatus.Connecting;
 				case eZoomPhoneCallStatus.InCall:
-					return eParticipantStatus.Connected;
+					return eConferenceStatus.Connected;
 				default:
 					throw new ArgumentOutOfRangeException("status");
 			}
@@ -859,30 +872,26 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 		#region PSTN/SIP Participant Callbacks
 
 		/// <summary>
-		/// Subscribe to the participant events.
+		/// Subscribe to the PSTN Conference events.
 		/// </summary>
 		/// <param name="value"></param>
-		private void Subscribe(ThinParticipant value)
+		private void Subscribe(ThinConference value)
 		{
-			value.HangupCallback = HangupCallback;
+			value.LeaveConferenceCallback = LeaveConferenceCallback;
 			value.SendDtmfCallback = SendDtmfCallback;
-			value.HoldCallback = HoldCallback;
-			value.ResumeCallback = ResumeCallback;
 		}
 
 		/// <summary>
-		/// Unsubscribe from the participant events.
+		/// Unsubscribe from the PSTN Conference events.
 		/// </summary>
 		/// <param name="value"></param>
-		private void Unsubscribe(ThinParticipant value)
+		private void Unsubscribe(ThinConference value)
 		{
-			value.HangupCallback = null;
+			value.LeaveConferenceCallback = null;
 			value.SendDtmfCallback = null;
-			value.HoldCallback = null;
-			value.ResumeCallback = null;
 		}
 
-		private void SendDtmfCallback(ThinParticipant sender, string data)
+		private void SendDtmfCallback(ThinConference sender, string data)
 		{
 			string callId = GetIdForParticipant(sender);
 
@@ -890,26 +899,16 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 				SendDtmf(callId, index);
 		}
 
-		private void HangupCallback(ThinParticipant sender)
+		private void LeaveConferenceCallback(ThinConference sender)
 		{
 			string callId = GetIdForParticipant(sender);
 
 			Hangup(callId);
 		}
 
-		private string GetIdForParticipant(ThinParticipant value)
+		private string GetIdForParticipant(ThinConference value)
 		{
-			return m_ParticipantSection.Execute(() => m_CallIdToParticipant.GetKey(value));
-		}
-
-		private void HoldCallback(ThinParticipant sender)
-		{
-			Parent.Logger.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
-		}
-
-		private void ResumeCallback(ThinParticipant sender)
-		{
-			Parent.Logger.Log(eSeverity.Warning, "Zoom Room PSTN does not support call hold/resume feature");
+			return m_PstnConferencesSection.Execute(() => m_PstnCallIdToConference.GetKey(value));
 		}
 
 		#endregion
