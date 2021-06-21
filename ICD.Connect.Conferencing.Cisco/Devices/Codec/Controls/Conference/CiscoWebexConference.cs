@@ -67,11 +67,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			var self = GetParticipants().FirstOrDefault(p => p.IsSelf);
 			if (self == null || !self.IsHost)
 			{
+				// Hangup if we are not the host.
 				m_DialingComponent.Hangup(m_CallStatus);
 				return;
 			}
 
-			m_ConferenceComponent.ParticipantDisconnect(m_CallStatus.CallId, self.WebexParticipantId);
+			// Transfer host and leave if we are the host.
+			m_ConferenceComponent.TransferHostAndLeave(m_CallStatus.CallId);
 		}
 
 		public override void EndConference()

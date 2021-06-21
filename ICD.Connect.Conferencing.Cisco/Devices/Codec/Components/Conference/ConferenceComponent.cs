@@ -239,6 +239,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 			Codec.Logger.Log(eSeverity.Informational, "Setting participant with ID: {0} in call with ID: {1} Mute state to: {2}", participantId, callId, muteString);
 		}
 
+		/// <summary>
+		/// Leaves a meeting in progress, allowing other participants to continue the meeting.
+		/// If user is the host a new host is assigned automatically.
+		/// </summary>
+		/// <param name="callId"></param>
+		public void TransferHostAndLeave(int callId)
+        {
+			Codec.SendCommand("xCommand Conference TransferHostAndLeave CallId: {0}", callId);
+			Codec.Logger.Log(eSeverity.Informational, "Transferring host and leaving meeting with ID: {0}", callId);
+        }
+
 		#endregion
 
 		#region Codec Callbacks
