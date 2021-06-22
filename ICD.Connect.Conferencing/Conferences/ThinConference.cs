@@ -41,18 +41,22 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		#endregion
 
-		private readonly Participants.ThinParticipant m_Participant;
+		private readonly ThinParticipant m_Participant;
 
 		#endregion
 
 		#region Properties
 
-		public Participants.ThinParticipant Participant {get { return m_Participant; }}
+		public ThinParticipant Participant {get { return m_Participant; }}
 
 		public new eConferenceStatus Status
 		{
 			get { return base.Status; }
-			set { base.Status = value; }
+			set
+			{
+				base.Status = value;
+				Participant.Status = ParticipantStatusFromConferenceStatus(value);
+			}
 		}
 
 		public new string Name
@@ -83,8 +87,8 @@ namespace ICD.Connect.Conferencing.Conferences
 			get { return Participant.StartTime; }
 			set
 			{
-				Participant.StartTime = value;
 				base.StartTime = value;
+				Participant.StartTime = value;
 			}
 		}
 
@@ -107,12 +111,6 @@ namespace ICD.Connect.Conferencing.Conferences
 				if (string.IsNullOrEmpty(Name))
 					Name = value;
 			}
-		}
-
-		public eParticipantStatus ParticipantStatus
-		{
-			get { return Participant.Status; }
-			set { Participant.Status = value; }
 		}
 
 		public eCallDirection Direction
@@ -231,11 +229,11 @@ namespace ICD.Connect.Conferencing.Conferences
 
 		public ThinConference()
 		{
-			m_Participant = new Participants.ThinParticipant();
+			m_Participant = new ThinParticipant();
 			StartTime = DateTime.UtcNow;
 		}
 
-		private ThinConference(Participants.ThinParticipant participant)
+		private ThinConference(ThinParticipant participant)
 		{
 			m_Participant = participant;
 			StartTime = m_Participant.StartTime ?? DateTime.UtcNow;
@@ -263,7 +261,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Gets the participants in this conference.
 		/// </summary>
 		/// <returns></returns>
-		public override IEnumerable<Participants.ThinParticipant> GetParticipants()
+		public override IEnumerable<ThinParticipant> GetParticipants()
 		{
 			yield return m_Participant;
 		}
@@ -353,12 +351,12 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="incomingCall"></param>
 		/// <returns></returns>
-		private static Participants.ThinParticipant ParticipantFromIncomingCall([NotNull] IIncomingCall incomingCall)
+		private static ThinParticipant ParticipantFromIncomingCall([NotNull] IIncomingCall incomingCall)
 		{
 			if (incomingCall == null)
 				throw new ArgumentNullException("incomingCall");
 
-			return new Participants.ThinParticipant
+			return new ThinParticipant
 			{
 				DialTime = incomingCall.StartTime,
 				Name = incomingCall.Name,
@@ -379,6 +377,25 @@ namespace ICD.Connect.Conferencing.Conferences
 				Name = incomingCall.Name ?? incomingCall.Number,
 				StartTime = incomingCall.StartTime
 			};
+		}
+
+		private static eParticipantStatus ParticipantStatusFromConferenceStatus(eConferenceStatus status)
+		{
+			switch (status)
+			{
+				case eConferenceStatus.Connecting:
+					return eParticipantStatus.Connecting;
+				case eConferenceStatus.Connected:
+					return eParticipantStatus.Connecting;
+				case eConferenceStatus.Disconnecting:
+					return eParticipantStatus.Disconnecting;
+				case eConferenceStatus.Disconnected:
+					return eParticipantStatus.Disconnected;
+				case eConferenceStatus.OnHold:
+					return eParticipantStatus.OnHold;
+				default:
+					return eParticipantStatus.Undefined;
+			}
 		}
 
 		#endregion

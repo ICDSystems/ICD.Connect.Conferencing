@@ -11,11 +11,12 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.IncomingCalls;
-using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Server.Conferences;
 using ICD.Connect.Conferencing.Server.Devices.Server;
 using ICD.Connect.Conferencing.Utils;
 using ICD.Connect.Devices;
@@ -37,9 +38,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		public event EventHandler OnInterpretationActiveChanged;
 
-		public event EventHandler<ParticipantEventArgs> OnParticipantAdded;
-		public event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
-
+		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallAdded;
 		public event EventHandler<GenericEventArgs<IIncomingCall>> OnIncomingCallRemoved;
 
@@ -57,8 +57,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		public const string SET_CACHED_AUTO_ANSWER_STATE = "SetCachedAutoAnswerState";
 		public const string SET_CACHED_DO_NOT_DISTURB_STATE = "SetCachedDoNotDisturbState";
 
-		public const string UPDATE_CACHED_PARTICIPANT_STATE = "UpdateCachedSourceState";
-		public const string REMOVE_CACHED_PARTICIPANT = "RemoveCachedSource";
+		public const string UPDATE_CACHED_CONFERENCE_STATE = "UpdateCachedConferenceState";
+		public const string REMOVE_CACHED_CONFERENCE = "RemoveCachedConference";
 
 		#endregion
 
@@ -67,7 +67,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		private readonly SecureNetworkProperties m_NetworkProperties;
 
 		private readonly ClientSerialRpcController m_RpcController;
-		private readonly BiDictionary<Guid, ThinParticipant> m_Sources;
+		private readonly BiDictionary<Guid, InterpretationThinConference> m_Conferences;
 		private readonly SafeCriticalSection m_SourcesCriticalSection;
 
 		private bool m_IsConnected;
@@ -176,7 +176,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			m_NetworkProperties = new SecureNetworkProperties();
 			m_RpcController = new ClientSerialRpcController(this);
-			m_Sources = new BiDictionary<Guid, ThinParticipant>();
+			m_Conferences = new BiDictionary<Guid, InterpretationThinConference>();
 			m_SourcesCriticalSection = new SafeCriticalSection();
 
 			m_RpcController.OnIsOnlineStateChanged += PortOnIsOnlineStateChanged;
@@ -189,8 +189,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		protected override void DisposeFinal(bool disposing)
 		{
 			OnInterpretationActiveChanged = null;
-			OnParticipantAdded = null;
-			OnParticipantRemoved = null;
+			OnConferenceAdded = null;
+			OnConferenceRemoved = null;
 			OnIncomingCallAdded = null;
 			OnIncomingCallRemoved = null;
 			OnDoNotDisturbChanged = null;
@@ -284,9 +284,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		}
 
 		[PublicAPI]
-		public IEnumerable<IParticipant> GetSources()
+		public IEnumerable<IConference> GetConferences()
 		{
-			return m_SourcesCriticalSection.Execute(() => m_Sources.Values.ToArray(m_Sources.Count));
+			return m_SourcesCriticalSection.Execute(() => m_Conferences.Values.ToArray(m_Conferences.Count));
 		}
 
 		#endregion
@@ -298,15 +298,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			m_SourcesCriticalSection.Enter();
 			try
 			{
-				foreach (ThinParticipant src in m_Sources.Values)
+				foreach (var conference in m_Conferences.Values)
 				{
-					src.Status = (eParticipantStatus.Disconnected);
-					Unsubscribe(src);
+					conference.Status = (eConferenceStatus.Disconnected);
+					Unsubscribe(conference);
 
-					OnParticipantRemoved.Raise(this, new ParticipantEventArgs(src));
+					OnConferenceRemoved.Raise(this, conference);
 				}
 
-				m_Sources.Clear();
+				m_Conferences.Clear();
 			}
 			finally
 			{
@@ -344,22 +344,22 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			DoNotDisturb = state;
 		}
 
-		[Rpc(REMOVE_CACHED_PARTICIPANT), UsedImplicitly]
+		[Rpc(REMOVE_CACHED_CONFERENCE), UsedImplicitly]
 		private void RemoveCachedSource(Guid id)
 		{
 			m_SourcesCriticalSection.Enter();
 
 			try
 			{
-				if (!m_Sources.ContainsKey(id))
+				if (!m_Conferences.ContainsKey(id))
 					return;
 
-				var sourceToRemove = m_Sources.GetValue(id);
-				sourceToRemove.Status = eParticipantStatus.Disconnected;
+				var sourceToRemove = m_Conferences.GetValue(id);
+				sourceToRemove.Status = eConferenceStatus.Disconnected;
 				Unsubscribe(sourceToRemove);
-				m_Sources.RemoveKey(id);
+				m_Conferences.RemoveKey(id);
 
-				OnParticipantRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
+				OnConferenceRemoved.Raise(this, sourceToRemove);
 			}
 			finally
 			{
@@ -367,52 +367,65 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 		}
 
-		[Rpc(UPDATE_CACHED_PARTICIPANT_STATE), UsedImplicitly]
-		private void UpdateCachedSourceState(Guid id, ParticipantState participantState)
+		[Rpc(UPDATE_CACHED_CONFERENCE_STATE), UsedImplicitly]
+		private void UpdateCachedSourceState(Guid id, ConferenceState conferenceState)
+		{
+			InterpretationThinConference added = null;
+			InterpretationThinConference removed = null;
+
+			m_SourcesCriticalSection.Enter();
+
+			try
+			{
+				
+
+				InterpretationThinConference conference;
+
+				if (!m_Conferences.TryGetValue(id, out conference))
+				{
+					conference = InterpretationThinConference.FromConferenceState(conferenceState);
+					m_Conferences.Set(id, conference);
+					Subscribe(conference);
+
+					added = conference;
+				}
+				else
+				{
+					conference.UpdateFromConferenceState(conferenceState);
+				}
+
+
+				if (conference.Status == eConferenceStatus.Disconnected)
+				{
+					removed = conference;
+					Unsubscribe(removed);
+					m_Conferences.RemoveKey(id);
+				}
+			}
+			finally
+			{
+				m_SourcesCriticalSection.Leave();
+			}
+
+			if (added != null)
+				OnConferenceAdded.Raise(this, added);
+
+			if (removed != null)
+				OnConferenceRemoved.Raise(this, removed);
+
+		}
+
+		#endregion
+
+		#region Conferences
+
+		private bool TryGetId(InterpretationThinConference participant, out Guid id)
 		{
 			m_SourcesCriticalSection.Enter();
 
 			try
 			{
-				bool added = false;
-
-				if (!m_Sources.ContainsKey(id))
-				{
-					var newSrc = new ThinParticipant();
-					m_Sources.Set(id, newSrc);
-					Subscribe(newSrc);
-
-					added = true;
-				}
-
-				var src = m_Sources.GetValue(id);
-
-				src.Name = string.Format("({0}) {1}", participantState.Language, participantState.Name);
-				src.Number = participantState.Number;
-				src.Status = participantState.Status;
-				src.DialTime = participantState.DialTime;
-				src.Direction = participantState.Direction;
-				if (participantState.End != null)
-					src.EndTime = participantState.End;
-				if (participantState.Start != null)
-					src.StartTime = participantState.Start;
-				src.CallType = participantState.SourceType;
-
-				if (added)
-				{
-					var control = Controls.GetControl<DialerDeviceDialerControl>();
-					if (control != null)
-						OnParticipantAdded.Raise(this, new ParticipantEventArgs(src));
-				}
-
-				if (participantState.Status != eParticipantStatus.Disconnected)
-					return;
-
-				var sourceToRemove = m_Sources.GetValue(id);
-				Unsubscribe(sourceToRemove);
-				m_Sources.RemoveKey(id);
-
-				OnParticipantRemoved.Raise(this, new ParticipantEventArgs(sourceToRemove));
+				return m_Conferences.TryGetKey(participant, out id);
 			}
 			finally
 			{
@@ -420,27 +433,31 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			}
 		}
 
-		#endregion
-
-		#region Participants
-
-		private void Subscribe(ThinParticipant participant)
+		private void Subscribe(InterpretationThinConference conference)
 		{
-			participant.HoldCallback += ParticipantOnCallHeld;
-			participant.ResumeCallback += ParticipantOnCallResumed;
-			participant.SendDtmfCallback += ParticipantOnDtmfSent;
-			participant.HangupCallback += ParticipantOnCallEnded;
+			conference.HoldCallback += ConferenceHoldCallCallback;
+			conference.ResumeCallback += ConferenceResumeCallCallback;
+			conference.SendDtmfCallback += ConferenceSendDtmfCallback;
+			conference.LeaveConferenceCallback += ConferenceLeaveConferenceCallback;
+			conference.EndConferenceCallback += ConferenceEndConferenceCallback;
+			conference.StartRecordingCallback += ConferenceStartRecordingCallback;
+			conference.StopRecordingCallback += ConferenceStopRecordingCallback;
+			conference.PauseRecordingCallback += ConferencePauseRecordingCallback;
 		}
 
-		private void Unsubscribe(ThinParticipant participant)
+		private void Unsubscribe(InterpretationThinConference conference)
 		{
-			participant.HoldCallback = null;
-			participant.ResumeCallback = null;
-			participant.SendDtmfCallback = null;
-			participant.HangupCallback = null;
+			conference.HoldCallback = null;
+			conference.ResumeCallback = null;
+			conference.SendDtmfCallback = null;
+			conference.LeaveConferenceCallback = null;
+			conference.EndConferenceCallback = null;
+			conference.StartRecordingCallback = null;
+			conference.StopRecordingCallback = null;
+			conference.PauseRecordingCallback = null;
 		}
 
-		private void ParticipantOnCallHeld(ThinParticipant source)
+		private void ConferenceHoldCallCallback(InterpretationThinConference source)
 		{
 			if (source == null)
 				return;
@@ -453,7 +470,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, m_RoomId, id);
 		}
 
-		private void ParticipantOnCallResumed(ThinParticipant source)
+		private void ConferenceResumeCallCallback(InterpretationThinConference source)
 		{
 			if (source == null)
 				return;
@@ -466,20 +483,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, m_RoomId, id);
 		}
 
-		private void ParticipantOnCallEnded(ThinParticipant source)
-		{
-			if (source == null)
-				return;
-
-			Guid id;
-			if (!TryGetId(source, out id))
-				return;
-
-			if (IsConnected)
-				m_RpcController.CallMethod(InterpretationServerDevice.END_CALL_RPC, m_RoomId, id);
-		}
-
-		private void ParticipantOnDtmfSent(ThinParticipant source, string data)
+		private void ConferenceSendDtmfCallback(InterpretationThinConference source, string data)
 		{
 			if (source == null)
 				return;
@@ -492,19 +496,73 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, m_RoomId, id, data);
 		}
 
-		private bool TryGetId(ThinParticipant participant, out Guid id)
+		private void ConferenceLeaveConferenceCallback(InterpretationThinConference source)
 		{
-			m_SourcesCriticalSection.Enter();
+			if (source == null)
+				return;
 
-			try
-			{
-				return m_Sources.TryGetKey(participant, out id);
-			}
-			finally
-			{
-				m_SourcesCriticalSection.Leave();
-			}
+			Guid id;
+			if (!TryGetId(source, out id))
+				return;
+
+			if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.LEAVE_CONFERENCE_RPC, m_RoomId, id);
 		}
+
+		private void ConferenceEndConferenceCallback(InterpretationThinConference sender)
+		{
+			if (sender == null)
+				return;
+
+			Guid id;
+			if (!TryGetId(sender, out id))
+				return;
+
+			if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.END_CONFERENCE_RPC, m_RoomId, id);
+		}
+
+		private void ConferenceStartRecordingCallback(InterpretationThinConference sender)
+		{
+			if (sender == null)
+				return;
+
+			Guid id;
+			if (!TryGetId(sender, out id))
+				return;
+
+			if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.START_RECORDING_RPC, m_RoomId, id);
+		}
+
+		private void ConferenceStopRecordingCallback(InterpretationThinConference sender)
+		{
+			if (sender == null)
+				return;
+
+			Guid id;
+			if (!TryGetId(sender, out id))
+				return;
+
+			if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.STOP_RECORDING_RPC, m_RoomId, id);
+		}
+
+		private void ConferencePauseRecordingCallback(InterpretationThinConference sender)
+		{
+			if (sender == null)
+				return;
+
+			Guid id;
+			if (!TryGetId(sender, out id))
+				return;
+
+			if (IsConnected)
+				m_RpcController.CallMethod(InterpretationServerDevice.PAUSE_RECORDING_RPC, m_RoomId, id);
+		}
+
+
+		
 
 		#endregion
 
@@ -651,16 +709,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		{
 			base.BuildConsoleStatus(addRow);
 
-			var sources = GetSources();
+			var sources = GetConferences();
 			addRow("Interpretation Active", m_IsInterpretationActive);
 			addRow("Remote Sources", "Count: " + sources.Count());
-			foreach (var src in GetSources())
+			foreach (var src in GetConferences())
 			{
 				addRow("-----", "-----");
 				addRow("Name", src.Name);
-				addRow("Number", src.Number);
+				//addRow("Number", src.Number);
 				addRow("Status", src.Status);
-				addRow("Start", src.GetStartOrDialTime());
+				addRow("Start", src.StartTime);
 			}
 			addRow("-----", "-----");
 		}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Conferences;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers.History
@@ -10,6 +11,10 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		/// Raised when the conference status changes.
 		/// </summary>
 		event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
+
+		event EventHandler<StringEventArgs> OnNameChanged;
+
+		string Name { get; }
 
 		DateTime? StartTime { get; }
 		DateTime? EndTime { get; }

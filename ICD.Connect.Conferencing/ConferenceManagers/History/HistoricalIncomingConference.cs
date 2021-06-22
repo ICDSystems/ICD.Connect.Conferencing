@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.IncomingCalls;
@@ -11,6 +12,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 	{
 		private readonly HistoricalIncomingParticipant m_Participant;
 		private eConferenceStatus m_Status;
+		private string m_Name;
 
 		#region Properties
 
@@ -20,6 +22,23 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		/// Raised when the conference status changes.
 		/// </summary>
 		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
+
+		public event EventHandler<StringEventArgs> OnNameChanged;
+
+		public string Name
+		{
+			get { return m_Name; }
+			private set
+			{
+				if (m_Name == value)
+					return;
+
+				m_Name = value;
+
+				OnNameChanged.Raise(this, value);
+			}
+		}
+
 		public DateTime? StartTime { get; private set; }
 		public DateTime? EndTime { get; private set; }
 
@@ -36,7 +55,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 
 				m_Status = value;
 
-				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(value));
+				OnStatusChanged.Raise(this, value);
 			}
 		}
 
@@ -59,6 +78,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 
 		public HistoricalIncomingConference(IIncomingCall incomingCall)
 		{
+			Name = incomingCall.Name;
 			m_Participant = new HistoricalIncomingParticipant(incomingCall);
 		}
 	}

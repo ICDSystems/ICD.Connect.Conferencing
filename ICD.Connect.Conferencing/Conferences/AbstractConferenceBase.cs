@@ -78,7 +78,7 @@ namespace ICD.Connect.Conferencing.Conferences
 
 				m_Status = value;
 
-				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(value));
+				OnStatusChanged.Raise(this, value);
 			}
 		}
 

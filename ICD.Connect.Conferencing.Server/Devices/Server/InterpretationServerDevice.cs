@@ -8,8 +8,9 @@ using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Server.Conferences;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices.CrestronSPlus.Devices.SPlus;
@@ -39,11 +40,14 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		public const string AUTO_ANSWER_RPC = "AutoAnswer";
 		public const string DO_NOT_DISTURB_RPC = "DoNotDisturb";
 
-		public const string ANSWER_RPC = "Answer";
 		public const string HOLD_ENABLE_RPC = "HoldEnable";
 		public const string HOLD_RESUME_RPC = "HoldResume";
 		public const string SEND_DTMF_RPC = "SendDTMF";
-		public const string END_CALL_RPC = "EndCall";
+		public const string LEAVE_CONFERENCE_RPC = "LeaveConference";
+		public const string END_CONFERENCE_RPC = "EndConference";
+		public const string START_RECORDING_RPC = "StartRecording";
+		public const string STOP_RECORDING_RPC = "StopRecording";
+		public const string PAUSE_RECORDING_RPC = "PauseRecording";
 
 		#endregion
 
@@ -57,8 +61,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		// key is interpretation device, value is booth id for that device.
 		private readonly Dictionary<ISimplInterpretationDevice, ushort> m_AdapterToBooth;
 
-		// key is guid id of source, value is the source
-		private readonly Dictionary<Guid, IParticipant> m_Sources;
+		// key is guid id of conference, value is the conference
+		private readonly Dictionary<Guid, IConference> m_Conferences;
 
 		// key is room id, value is booth number
 		private readonly Dictionary<int, ushort> m_RoomToBooth;
@@ -78,7 +82,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		{
 			m_RpcController = new ServerSerialRpcController(this);
 			m_AdapterToBooth = new Dictionary<ISimplInterpretationDevice, ushort>();
-			m_Sources = new Dictionary<Guid, IParticipant>();
+			m_Conferences = new Dictionary<Guid, IConference>();
 			m_RoomToBooth = new Dictionary<int, ushort>();
 			m_ClientToRoom = new Dictionary<uint, int>();
 			m_RoomToRoomInfo = new Dictionary<int, string>();
@@ -259,12 +263,12 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#region Private Helper Methods
 
-		private bool GetTargetSource(Guid sourceId, out IParticipant targetSource)
+		private bool GetTargetConference(Guid conferenceId, out IConference targetConference)
 		{
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				return m_Sources.TryGetValue(sourceId, out targetSource);
+				return m_Conferences.TryGetValue(conferenceId, out targetConference);
 			}
 			finally
 			{
@@ -272,21 +276,21 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		private bool GetClientIdForSource(Guid sourceId, out uint clientId)
+		private bool GetClientIdForConference(Guid conferenceId, out uint clientId)
 		{
 			m_SafeCriticalSection.Enter();
 			try
 			{
 				clientId = 0;
 
-				IParticipant source;
-				if (!GetTargetSource(sourceId, out source))
+				IConference conference;
+				if (!GetTargetConference(conferenceId, out conference))
 				{
-					Logger.Log(eSeverity.Error, "No Source with the given key found.");
+					Logger.Log(eSeverity.Error, "No Conference with the given key found.");
 					return false;
 				}
 
-				ushort targetBooth = m_AdapterToBooth.Where(kvp => kvp.Key.ContainsSource(source))
+				ushort targetBooth = m_AdapterToBooth.Where(kvp => kvp.Key.ContainsConference(conference))
 													 .Select(kvp => kvp.Value)
 													 .FirstOrDefault();
 
@@ -462,11 +466,11 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 				foreach (ISimplInterpretationDevice adapter in adapters)
 				{
-					foreach (IParticipant source in adapter.GetSources())
+					foreach (IConference conference in adapter.GetConferences())
 					{
-						ParticipantState sourceState = ParticipantState.FromParticipant(source, adapter.Language);
-						Guid id = m_Sources.GetKey(source);
-						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_PARTICIPANT_STATE, id, sourceState);
+						ConferenceState conferenceState = ConferenceState.FromConference(conference, adapter.Language);
+						Guid id = m_Conferences.GetKey(conference);
+						m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_CONFERENCE_STATE, id, conferenceState);
 					}
 				}
 			}
@@ -480,7 +484,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#region RPCs
 
-		[Rpc(REGISTER_ROOM_RPC), UsedImplicitly]
+		[Rpc(REGISTER_ROOM_RPC)]
 		public void RegisterRoom(uint clientId, int roomId, string roomName)
 		{
 			m_SafeCriticalSection.Enter();
@@ -505,7 +509,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		[Rpc(UNREGISTER_ROOM_RPC), UsedImplicitly]
+		[Rpc(UNREGISTER_ROOM_RPC)]
 		public void UnregisterRoom(uint clientId, int roomId)
 		{
 			m_SafeCriticalSection.Enter();
@@ -527,7 +531,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		[Rpc(DIAL_RPC), UsedImplicitly]
+		[Rpc(DIAL_RPC)]
 		public void Dial(uint clientId, int roomId, string number)
 		{
 			ISimplInterpretationDevice device;
@@ -535,7 +539,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				device.Dial(number);
 		}
 
-		[Rpc(DIAL_TYPE_RPC), UsedImplicitly]
+		[Rpc(DIAL_TYPE_RPC)]
 		public void Dial(uint clientId, int roomId, string number, eCallType type)
 		{
 			ISimplInterpretationDevice device;
@@ -543,7 +547,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				device.Dial(number, type);
 		}
 
-		[Rpc(AUTO_ANSWER_RPC), UsedImplicitly]
+		[Rpc(AUTO_ANSWER_RPC)]
 		public void SetAutoAnswer(uint clientId, int roomId, bool enabled)
 		{
 			IcdHashSet<ISimplInterpretationDevice> devices;
@@ -554,7 +558,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				device.SetAutoAnswer(enabled);
 		}
 
-		[Rpc(DO_NOT_DISTURB_RPC), UsedImplicitly]
+		[Rpc(DO_NOT_DISTURB_RPC)]
 		public void SetDoNotDisturb(uint clientId, int roomId, bool enabled)
 		{
 			IcdHashSet<ISimplInterpretationDevice> devices;
@@ -565,7 +569,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				device.SetDoNotDisturb(enabled);
 		}
 
-		[Rpc(PRIVACY_MUTE_RPC), UsedImplicitly]
+		[Rpc(PRIVACY_MUTE_RPC)]
 		public void SetPrivacyMute(uint clientId, int roomId, bool enabled)
 		{
 			IcdHashSet<ISimplInterpretationDevice> devices;
@@ -576,55 +580,84 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				device.SetPrivacyMute(enabled);
 		}
 
-		[Rpc(ANSWER_RPC), UsedImplicitly]
-		public void Answer(uint clientId, int roomId, Guid id)
-		{
-			IParticipant source;
-			if (!GetTargetSource(id, out source))
-				return;
-
-			//source.Answer();
-			throw new NotImplementedException();
-		}
-
-		[Rpc(HOLD_ENABLE_RPC), UsedImplicitly]
+		[Rpc(HOLD_ENABLE_RPC)]
 		public void HoldEnable(uint clientId, int roomId, Guid id)
 		{
-			IParticipant source;
-			if (!GetTargetSource(id, out source))
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
 				return;
 
-			source.Hold();
+			conference.Hold();
 		}
 
-		[Rpc(HOLD_RESUME_RPC), UsedImplicitly]
+		[Rpc(HOLD_RESUME_RPC)]
 		public void HoldResume(uint clientId, int roomId, Guid id)
 		{
-			IParticipant source;
-			if (!GetTargetSource(id, out source))
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
 				return;
 
-			source.Resume();
+			conference.Resume();
 		}
 
-		[Rpc(SEND_DTMF_RPC), UsedImplicitly]
+		[Rpc(SEND_DTMF_RPC)]
 		public void SendDtmf(uint clientId, int roomId, Guid id, string data)
 		{
-			IParticipant source;
-			if (!GetTargetSource(id, out source))
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
 				return;
 
-			source.SendDtmf(data);
+			conference.SendDtmf(data);
 		}
 
-		[Rpc(END_CALL_RPC), UsedImplicitly]
-		public void EndCall(uint clientId, int roomId, Guid id)
+		[Rpc(LEAVE_CONFERENCE_RPC)]
+		public void LeaveConference(uint clientId, int roomId, Guid id)
 		{
-			IParticipant source;
-			if (!GetTargetSource(id, out source))
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
 				return;
 
-			source.Hangup();
+			conference.LeaveConference();
+		}
+
+		[Rpc(END_CONFERENCE_RPC)]
+		public void EndConference(uint clientId, int roomId, Guid id)
+		{
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
+				return;
+
+			conference.EndConference();
+		}
+
+		[Rpc(START_RECORDING_RPC)]
+		public void StartRecording(uint clientId, int roomId, Guid id)
+		{
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
+				return;
+
+			conference.StartRecordingConference();
+		}
+
+		[Rpc(STOP_RECORDING_RPC)]
+		public void StopRecording(uint clientId, int roomId, Guid id)
+		{
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
+				return;
+
+			conference.StopRecordingConference();
+		}
+
+		[Rpc(PAUSE_RECORDING_RPC)]
+		public void PauseRecording(uint clientId, int roomId, Guid id)
+		{
+			IConference conference;
+			if (!GetTargetConference(id, out conference))
+				return;
+
+			conference.PauseRecordingConference();
 		}
 
 		#endregion
@@ -694,8 +727,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			if (device == null)
 				return;
 
-			device.OnSourceAdded += AdapterOnSourceAdded;
-			device.OnSourceRemoved += AdapterOnSourceRemoved;
+			device.OnConferenceAdded += AdapterOnConferenceAdded;
+			device.OnConferenceRemoved += AdapterOnConferenceRemoved;
 			device.OnAutoAnswerChanged += AdapterOnAutoAnswerChanged;
 			device.OnDoNotDisturbChanged += AdapterOnDoNotDisturbChanged;
 			device.OnPrivacyMuteChanged += AdapterOnPrivacyMuteChanged;
@@ -708,8 +741,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			if (device == null)
 				return;
 
-			device.OnSourceAdded -= AdapterOnSourceAdded;
-			device.OnSourceRemoved -= AdapterOnSourceRemoved;
+			device.OnConferenceAdded -= AdapterOnConferenceAdded;
+			device.OnConferenceRemoved -= AdapterOnConferenceRemoved;
 			device.OnAutoAnswerChanged -= AdapterOnAutoAnswerChanged;
 			device.OnDoNotDisturbChanged -= AdapterOnDoNotDisturbChanged;
 			device.OnPrivacyMuteChanged -= AdapterOnPrivacyMuteChanged;
@@ -717,15 +750,15 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			device.OnBoothIdChanged -= AdapterOnBoothIdChanged;
 		}
 
-		private void AdapterOnSourceAdded(object sender, ParticipantEventArgs args)
+		private void AdapterOnConferenceAdded(object sender, ConferenceEventArgs args)
 		{
-			AddSource(args.Data);
+			AddConference(args.Data);
 		}
 
-		private void AdapterOnSourceRemoved(object sender, ParticipantEventArgs args)
+		private void AdapterOnConferenceRemoved(object sender, ConferenceEventArgs args)
 		{
 			var adapter = sender as SimplInterpretationDevice;
-			RemoveSource(args.Data, adapter);
+			RemoveConference(args.Data, adapter);
 		}
 
 		private void AdapterOnAutoAnswerChanged(object sender, SPlusBoolEventArgs args)
@@ -778,43 +811,43 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		#endregion
 
-		#region Sources
+		#region Conferences
 
-		private void AddSource(IParticipant source)
+		private void AddConference(IConference conference)
 		{
-			if (source == null)
-				throw new ArgumentNullException("source");
+			if (conference == null)
+				throw new ArgumentNullException("conference");
 
-			if (m_Sources.ContainsValue(source))
+			if (m_Conferences.ContainsValue(conference))
 				return;
 
 			Guid newId = Guid.NewGuid();
-			m_SafeCriticalSection.Execute(() => m_Sources.Add(newId, source));
+			m_SafeCriticalSection.Execute(() => m_Conferences.Add(newId, conference));
 
-			Subscribe(source);
+			Subscribe(conference);
 
-			ParticipantOnPropertyChanged(source, EventArgs.Empty);
+			ConferenceOnPropertyChanged(conference, EventArgs.Empty);
 		}
 
-		private void RemoveSource(IParticipant source)
+		private void RemoveConference(IConference conference)
 		{
 			m_SafeCriticalSection.Enter();
 
 			try
 			{
-				if (!m_Sources.ContainsValue(source))
+				if (!m_Conferences.ContainsValue(conference))
 					return;
 
-				Guid id = m_Sources.GetKey(source);
+				Guid id = m_Conferences.GetKey(conference);
 
 				uint clientId;
-				if (!GetClientIdForSource(id, out clientId))
+				if (!GetClientIdForConference(id, out clientId))
 					return;
 
-				const string key = InterpretationClientDevice.REMOVE_CACHED_PARTICIPANT;
+				const string key = InterpretationClientDevice.REMOVE_CACHED_CONFERENCE;
 				m_RpcController.CallMethod(clientId, key, id);
 
-				m_Sources.RemoveAllValues(source);
+				m_Conferences.RemoveAllValues(conference);
 
 			}
 			finally
@@ -822,16 +855,16 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				m_SafeCriticalSection.Leave();
 			}
 
-			Unsubscribe(source);
+			Unsubscribe(conference);
 		}
 
 		/// <summary>
-		/// Removes the source, speficying the adapter (used to look up a source the adapter has already removed)
+		/// Removes the conference, speficying the adapter (used to look up a conference the adapter has already removed)
 		/// todo: un-jank this
 		/// </summary>
-		/// <param name="source"></param>
+		/// <param name="conference"></param>
 		/// <param name="adapter"></param>
-		private void RemoveSource(IParticipant source, SimplInterpretationDevice adapter)
+		private void RemoveConference(IConference conference, SimplInterpretationDevice adapter)
 		{
 			if (adapter == null)
 				throw new ArgumentNullException("adapter");
@@ -840,19 +873,19 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			try
 			{
-				if (!m_Sources.ContainsValue(source))
+				if (!m_Conferences.ContainsValue(conference))
 					return;
 
-				Guid id = m_Sources.GetKey(source);
+				Guid id = m_Conferences.GetKey(conference);
 
 				uint clientId;
 				if (!GetClientIdForAdapter(adapter, out clientId))
 					return;
 
-				const string key = InterpretationClientDevice.REMOVE_CACHED_PARTICIPANT;
+				const string key = InterpretationClientDevice.REMOVE_CACHED_CONFERENCE;
 				m_RpcController.CallMethod(clientId, key, id);
 
-				m_Sources.RemoveAllValues(source);
+				m_Conferences.RemoveAllValues(conference);
 
 			}
 			finally
@@ -860,7 +893,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				m_SafeCriticalSection.Leave();
 			}
 
-			Unsubscribe(source);
+			Unsubscribe(conference);
 		}
 
 		private void ClearSources()
@@ -868,8 +901,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_SafeCriticalSection.Enter();
 			try
 			{
-				foreach (IParticipant source in m_Sources.Values.ToArray(m_Sources.Count))
-					RemoveSource(source);
+				foreach (IConference conference in m_Conferences.Values.ToArray(m_Conferences.Count))
+					RemoveConference(conference);
 			}
 			finally
 			{
@@ -877,58 +910,70 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			}
 		}
 
-		private void Subscribe(IParticipant participant)
+
+		private void Subscribe(IConference conference)
 		{
-			participant.OnStatusChanged += ParticipantOnPropertyChanged;
-			participant.OnNameChanged += ParticipantOnPropertyChanged;
-			participant.OnNumberChanged += ParticipantOnPropertyChanged;
-			participant.OnParticipantTypeChanged += ParticipantOnPropertyChanged;
+			//todo: break out participants vs properties to make sync data smaller
+			conference.OnSupportedConferenceFeaturesChanged += ConferenceOnPropertyChanged;
+			conference.OnStatusChanged += ConferenceOnPropertyChanged;
+			conference.OnNameChanged += ConferenceOnPropertyChanged;
+			conference.OnCallTypeChanged += ConferenceOnPropertyChanged;
+			conference.OnConferenceRecordingStatusChanged += ConferenceOnPropertyChanged;
+			conference.OnStartTimeChanged += ConferenceOnPropertyChanged;
+			conference.OnEndTimeChanged += ConferenceOnPropertyChanged;
+			conference.OnParticipantAdded += ConferenceOnPropertyChanged;
+			conference.OnParticipantRemoved += ConferenceOnPropertyChanged;
 		}
 
-		private void Unsubscribe(IParticipant participant)
+		private void Unsubscribe(IConference conference)
 		{
-			participant.OnStatusChanged -= ParticipantOnPropertyChanged;
-			participant.OnNameChanged -= ParticipantOnPropertyChanged;
-			participant.OnNumberChanged -= ParticipantOnPropertyChanged;
-			participant.OnParticipantTypeChanged -= ParticipantOnPropertyChanged;
+			conference.OnSupportedConferenceFeaturesChanged -= ConferenceOnPropertyChanged;
+			conference.OnStatusChanged -= ConferenceOnPropertyChanged;
+			conference.OnNameChanged -= ConferenceOnPropertyChanged;
+			conference.OnCallTypeChanged -= ConferenceOnPropertyChanged;
+			conference.OnConferenceRecordingStatusChanged -= ConferenceOnPropertyChanged;
+			conference.OnStartTimeChanged -= ConferenceOnPropertyChanged;
+			conference.OnEndTimeChanged -= ConferenceOnPropertyChanged;
+			conference.OnParticipantAdded -= ConferenceOnPropertyChanged;
+			conference.OnParticipantRemoved -= ConferenceOnPropertyChanged;
 		}
 
-		private void ParticipantOnPropertyChanged(object sender, EventArgs args)
+		private void ConferenceOnPropertyChanged(object sender, EventArgs args)
 		{
 			m_SafeCriticalSection.Enter();
 
 			try
 			{
-				IParticipant source = sender as IParticipant;
-				if (source == null)
+				IConference conference = sender as IConference;
+				if (conference == null)
 					return;
 
-				if (!m_Sources.ContainsValue(source))
+				if (!m_Conferences.ContainsValue(conference))
 				{
-					Logger.Log(eSeverity.Error, "Unknown sourceState {0}", source.Name);
+					Logger.Log(eSeverity.Error, "Unknown sourceState {0}", conference.Name);
 					return;
 				}
 
-				Guid id = m_Sources.GetKey(source);
+				Guid id = m_Conferences.GetKey(conference);
 
 				uint clientId;
-				if (!GetClientIdForSource(id, out clientId))
+				if (!GetClientIdForConference(id, out clientId))
 					return;
 
 				IcdHashSet<ISimplInterpretationDevice> adapters;
 				GetAdaptersForClientId(clientId, out adapters);
 
-				ISimplInterpretationDevice targetAdapter = adapters.FirstOrDefault(a => a.ContainsSource(source));
+				ISimplInterpretationDevice targetAdapter = adapters.FirstOrDefault(a => a.ContainsConference(conference));
 
-				ParticipantState sourceState = ParticipantState.FromParticipant(source, targetAdapter != null
+				ConferenceState sourceState = ConferenceState.FromConference(conference, targetAdapter != null
 					                                                                             ? targetAdapter.Language
 					                                                                             : null);
 
-				const string key = InterpretationClientDevice.UPDATE_CACHED_PARTICIPANT_STATE;
+				const string key = InterpretationClientDevice.UPDATE_CACHED_CONFERENCE_STATE;
 				m_RpcController.CallMethod(clientId, key, id, sourceState);
 
-				if (source.Status == eParticipantStatus.Disconnected)
-					RemoveSource(source);
+				if (conference.Status == eConferenceStatus.Disconnected)
+					RemoveConference(conference);
 			}
 			finally
 			{

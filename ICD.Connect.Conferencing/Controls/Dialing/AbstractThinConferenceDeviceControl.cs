@@ -76,7 +76,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// Gets the active conference sources.
 		/// </summary>
 		/// <returns></returns>
-		public override IEnumerable<ThinConference> GetConferences()
+		public sealed override IEnumerable<ThinConference> GetConferences()
 		{
 			return m_ConferencesSection.Execute(() => m_Conferences.ToArray(m_Conferences.Count));
 		}

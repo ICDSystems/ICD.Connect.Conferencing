@@ -25,6 +25,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		private eConferenceStatus m_Status;
+		private string m_Name;
 
 		#endregion
 
@@ -34,6 +35,23 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		/// Raised when the conference status changes.
 		/// </summary>
 		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
+
+		public event EventHandler<StringEventArgs> OnNameChanged;
+
+		public string Name
+		{
+			get { return m_Name; }
+			private set
+			{
+				if (m_Name == value)
+					return;
+
+				m_Name = value;
+
+				OnNameChanged.Raise(this, value);
+			}
+		}
+
 		public DateTime? StartTime { get; private set; }
 		public DateTime? EndTime { get; private set; }
 
@@ -50,7 +68,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 
 				m_Status = value;
 
-				OnStatusChanged.Raise(this, new ConferenceStatusEventArgs(value));
+				OnStatusChanged.Raise(this, value);
 			}
 		}
 
@@ -153,6 +171,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			if (conference == null)
 				return;
 
+			conference.OnNameChanged += ConferenceOnNameChanged;
 			conference.OnStatusChanged += ConferenceOnOnStatusChanged;
 			conference.OnParticipantAdded += ConferenceOnOnParticipantAdded;
 			conference.OnParticipantRemoved += ConferenceOnOnParticipantRemoved;
@@ -165,11 +184,17 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			if (conference == null)
 				return;
 
+			conference.OnNameChanged -= ConferenceOnNameChanged;
 			conference.OnStatusChanged -= ConferenceOnOnStatusChanged;
 			conference.OnParticipantAdded -= ConferenceOnOnParticipantAdded;
 			conference.OnParticipantRemoved -= ConferenceOnOnParticipantRemoved;
 			conference.OnStartTimeChanged -= ConferenceOnOnStartTimeChanged;
 			conference.OnEndTimeChanged -= ConferenceOnOnEndTimeChanged;
+		}
+
+		private void ConferenceOnNameChanged(object sender, StringEventArgs args)
+		{
+			Name = args.Data;
 		}
 
 		private void ConferenceOnOnStatusChanged(object sender, ConferenceStatusEventArgs args)

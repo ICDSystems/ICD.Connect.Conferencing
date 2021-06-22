@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices.CrestronSPlus.Devices.SPlus;
 using ICD.Connect.Settings.CrestronSPlus.SPlusShims.EventArguments;
 
@@ -15,8 +15,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 	public interface ISimplInterpretationDevice : ISPlusDevice
 	{
-		event EventHandler<ParticipantEventArgs> OnSourceAdded;
-		event EventHandler<ParticipantEventArgs> OnSourceRemoved;
+		event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		event EventHandler<SPlusBoolEventArgs> OnAutoAnswerChanged;
 		event EventHandler<SPlusBoolEventArgs> OnDoNotDisturbChanged;
@@ -44,10 +44,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		void SetDoNotDisturb(bool enabled);
 		void SetPrivacyMute(bool enabled);
 
-		void AddShimSource(IParticipant source);
-		void RemoveShimSource(IParticipant source);
+		void AddShimConference(IConference conference);
+		void RemoveShimConference(IConference conference);
 
-		IEnumerable<IParticipant> GetSources();
-		bool ContainsSource(IParticipant source);
+		IEnumerable<IConference> GetConferences();
+		bool ContainsConference(IConference conference);
 	}
 }

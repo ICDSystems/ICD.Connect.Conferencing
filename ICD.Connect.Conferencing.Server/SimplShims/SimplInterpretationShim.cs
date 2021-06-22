@@ -4,8 +4,8 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Participants.Enums;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
 using ICD.Connect.Devices.CrestronSPlus.SPlusShims;
@@ -22,16 +22,9 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 	public sealed class SimplInterpretationShim : AbstractSPlusDeviceShim<ISimplInterpretationDevice>
 	{
 
-		public delegate void SPlusDialerShimDialCallback(ICDPlatformString number);
-		public delegate void SPlusDialerShimSetAutoAnswerCallback(ushort enabled);
-		public delegate void SPlusDialerShimSetDoNotDisturbCallback(ushort enabled);
-		public delegate void SPlusDialerShimSetPrivacyMuteCallback(ushort enabled);
-
-		public delegate void SPlusDialerShimAnswerCallback();
-		public delegate void SPlusDialerShimSetHoldCallback();
-		public delegate void SPlusDialerShimSetResumeCallback();
-		public delegate void SPlusDialerShimSendDtmfCallback(ICDPlatformString data);
-		public delegate void SPlusDialerShimEndCallCallback();
+		public delegate void SPlusDialerShimStringCallback(ICDPlatformString number);
+		public delegate void SPlusDialerShimUshortCallback(ushort enabled);       
+		public delegate void SPlusDialerShimActionCallback();
 
 		#region Events
 		//Events for S+
@@ -64,37 +57,34 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		#region Callbacks
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimDialCallback DialCallback { get; set; }
+		public SPlusDialerShimStringCallback DialCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSetAutoAnswerCallback SetAutoAnswerCallback { get; set; }
+		public SPlusDialerShimUshortCallback SetAutoAnswerCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSetDoNotDisturbCallback SetDoNotDisturbCallback { get; set; }
+		public SPlusDialerShimUshortCallback SetDoNotDisturbCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSetPrivacyMuteCallback SetPrivacyMuteCallback { get; set; }
+		public SPlusDialerShimUshortCallback SetPrivacyMuteCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimAnswerCallback AnswerCallCallback { get; set; }
+		public SPlusDialerShimActionCallback HoldCallCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSetHoldCallback HoldCallCallback { get; set; }
+		public SPlusDialerShimActionCallback ResumeCallCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSetResumeCallback ResumeCallCallback { get; set; }
+		public SPlusDialerShimStringCallback SendDtmfCallback { get; set; }
 
 		[PublicAPI("S+")]
-		public SPlusDialerShimSendDtmfCallback SendDtmfCallback { get; set; }
-
-		[PublicAPI("S+")]
-		public SPlusDialerShimEndCallCallback EndCallCallback { get; set; }
+		public SPlusDialerShimActionCallback EndCallCallback { get; set; }
 
 		#endregion
 
 		#region Private Members
 
-		private ThinParticipant m_Source;
+		private ThinConference m_Conference;
 
 		private readonly SafeCriticalSection m_SourceCriticalSection;
 
@@ -102,11 +92,9 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		private string m_CallNumber;
 
-		private eCallAnswerState m_CallAnswerState;
-
 		private eCallDirection m_CallDirection;
 
-		private eParticipantStatus m_CallStatus;
+		private eConferenceStatus m_CallStatus;
 
 		#endregion
 
@@ -232,14 +220,14 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			get
 			{
-				return m_Source == null ? (ushort)0 : (m_Source.Status == eParticipantStatus.OnHold).ToUShort();
+				return m_Conference == null ? (ushort)0 : (m_Conference.Status == eConferenceStatus.OnHold).ToUShort();
 			}
 			set
 			{
-				if (m_Source == null)
+				if (m_Conference == null)
 					return;
 
-				m_Source.SetStatus(value.ToBool() ? eParticipantStatus.OnHold : eParticipantStatus.Connected);
+				m_Conference.Status = value.ToBool() ? eConferenceStatus.OnHold : eConferenceStatus.Connected;
 
 				OnHoldChanged.Raise(this, new SPlusUShortEventArgs(value));
 			}
@@ -264,30 +252,31 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			m_SourceCriticalSection.Enter();
 			try
 			{
-				if (m_Source != null)
+				if (m_Conference != null)
 				{
-					m_Source.SetName(name);
-					m_Source.SetNumber(number);
-					m_Source.SetDirection((eCallDirection)direction);
-					m_Source.SetStatus((eParticipantStatus)status);
-					m_Source.SetCallType(eCallType.Audio);
+					m_Conference.Name = name;
+					m_Conference.Number = number;
+					m_Conference.Direction = (eCallDirection)direction;
+					m_Conference.Status = (eConferenceStatus)status;
+					m_Conference.CallType = eCallType.Audio;
 				}
 				else
 				{
-					Originator.RemoveShimSource(m_Source);
-					Unsubscribe(m_Source);
-					m_Source = new ThinParticipant();
+					Originator.RemoveShimConference(m_Conference);
+					Unsubscribe(m_Conference);
+					m_Conference = new ThinConference
+					{
+						Name = name,
+						Number = number,
+						Direction = (eCallDirection)direction,
+						Status = (eConferenceStatus)status,
+						StartTime = IcdEnvironment.GetUtcTime(),
+						CallType = eCallType.Audio
+					};
 
-					m_Source.SetName(name);
-					m_Source.SetNumber(number);
-					m_Source.SetDirection((eCallDirection)direction);
-					m_Source.SetStatus((eParticipantStatus)status);
-					m_Source.SetStart(IcdEnvironment.GetUtcTime());
-					m_Source.SetCallType(eCallType.Audio);
+					Subscribe(m_Conference);
 
-					Subscribe(m_Source);
-
-					Originator.AddShimSource(m_Source);
+					Originator.AddShimConference(m_Conference);
 				}
 			}
 			finally
@@ -305,8 +294,8 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			try
 			{
 				m_CallName = name;
-				if (m_Source != null)
-					m_Source.SetName(m_CallName);
+				if (m_Conference != null)
+					m_Conference.Name = m_CallName;
 			}
 			finally
 			{
@@ -323,25 +312,8 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			try
 			{
 				m_CallNumber = number;
-				if (m_Source != null)
-					m_Source.SetNumber(m_CallNumber);
-			}
-			finally
-			{
-				m_SourceCriticalSection.Leave();
-			}
-		}
-
-		[PublicAPI("S+")]
-		public void SetCallAnswerState(ushort answerState)
-		{
-			m_SourceCriticalSection.Enter();
-			try
-			{
-				m_CallAnswerState = (eCallAnswerState)answerState;
-				//if (m_Source != null)
-				//	m_Source.AnswerState = m_CallAnswerState;
-				throw new NotImplementedException();
+				if (m_Conference != null)
+					m_Conference.Number = m_CallNumber;
 			}
 			finally
 			{
@@ -356,8 +328,8 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			try
 			{
 				m_CallDirection = (eCallDirection)callDirection;
-				if (m_Source != null)
-					m_Source.SetDirection(m_CallDirection);
+				if (m_Conference != null)
+					m_Conference.Direction = m_CallDirection;
 			}
 			finally
 			{
@@ -371,24 +343,27 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			m_SourceCriticalSection.Enter();
 			try
 			{
-				m_CallStatus = (eParticipantStatus)status;
-				if (m_Source != null)
-					m_Source.SetStatus(m_CallStatus);
+				m_CallStatus = (eConferenceStatus)status;
+				if (m_Conference != null)
+					m_Conference.Status = (m_CallStatus);
 				else
 				{
 					// Create a new source if null
-					Originator.RemoveShimSource(m_Source);
-					Unsubscribe(m_Source);
-					m_Source = new ThinParticipant();
-					m_Source.SetName(m_CallName);
-					m_Source.SetNumber(m_CallNumber);
-					m_Source.SetDirection(m_CallDirection);
-					m_Source.SetStatus(m_CallStatus);
-					m_Source.SetStart(IcdEnvironment.GetUtcTime());
-					m_Source.SetCallType(eCallType.Audio);
-					Subscribe(m_Source);
+					Originator.RemoveShimConference(m_Conference);
+					Unsubscribe(m_Conference);
+					m_Conference = new ThinConference
+					{
+						Name = m_CallName,
+						Number = m_CallNumber,
+						Direction = m_CallDirection,
+						Status = m_CallStatus,
+						StartTime = IcdEnvironment.GetUtcTime(),
+						CallType = eCallType.Audio
+					};
 
-					Originator.AddShimSource(m_Source);
+					Subscribe(m_Conference);
+
+					Originator.AddShimConference(m_Conference);
 				}
 			}
 			finally
@@ -403,17 +378,16 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			m_SourceCriticalSection.Enter();
 			try
 			{
-				if (m_Source == null || Originator == null)
+				if (m_Conference == null || Originator == null)
 					return;
 
-				Originator.RemoveShimSource(m_Source);
-				Unsubscribe(m_Source);
-				m_Source = null;
+				Originator.RemoveShimConference(m_Conference);
+				Unsubscribe(m_Conference);
+				m_Conference = null;
 				m_CallName = null;
 				m_CallNumber = null;
-				m_CallAnswerState = eCallAnswerState.Unknown;
 				m_CallDirection = eCallDirection.Undefined;
-				m_CallStatus = eParticipantStatus.Undefined;
+				m_CallStatus = eConferenceStatus.Undefined;
 			}
 			finally
 			{
@@ -476,7 +450,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 
 		private void OriginatorDialCallback(ISimplInterpretationDevice sender, string number)
 		{
-			SPlusDialerShimDialCallback handler = DialCallback;
+			SPlusDialerShimStringCallback handler = DialCallback;
 			if (handler != null)
 				handler(number);
 		}
@@ -485,48 +459,48 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 		{
 			if (type == eCallType.Video.ToUShort())
 				return;
-			SPlusDialerShimDialCallback handler = DialCallback;
+			SPlusDialerShimStringCallback handler = DialCallback;
 			if (handler != null)
 				handler(number);
 		}
 
 		private void OriginatorSetAutoAnswerCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
-			SPlusDialerShimSetAutoAnswerCallback handler = SetAutoAnswerCallback;
+			SPlusDialerShimUshortCallback handler = SetAutoAnswerCallback;
 			if (handler != null)
 				handler(enabled);
 		}
 
 		private void OriginatorSetDoNotDisturbCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
-			SPlusDialerShimSetDoNotDisturbCallback handler = SetDoNotDisturbCallback;
+			SPlusDialerShimUshortCallback handler = SetDoNotDisturbCallback;
 			if (handler != null)
 				handler(enabled);
 		}
 
 		private void OriginatorSetPrivacyMuteCallback(ISimplInterpretationDevice sender, ushort enabled)
 		{
-			SPlusDialerShimSetPrivacyMuteCallback handler = SetPrivacyMuteCallback;
+			SPlusDialerShimUshortCallback handler = SetPrivacyMuteCallback;
 			if (handler != null)
 				handler(enabled);
 		}
 
 		#endregion
 
-		#region Source Callbacks
+		#region Conference Callbacks
 
-		private void Subscribe(ThinParticipant participant)
+		private void Subscribe(ThinConference participant)
 		{
 			if (participant == null)
 				return;
 
-			participant.HoldCallback = ParticipantHoldCallback;
-			participant.ResumeCallback = ParticipantResumeCallback;
-			participant.SendDtmfCallback = ParticipantSendDtmfCallback;
-			participant.HangupCallback = ParticipantHangupCallback;
+			participant.HoldCallback = ConferenceHoldCallback;
+			participant.ResumeCallback = ConferenceResumeCallback;
+			participant.SendDtmfCallback = ConferenceSendDtmfCallback;
+			participant.LeaveConferenceCallback = ConferenceHangupCallback;
 		}
 
-		private void Unsubscribe(ThinParticipant participant)
+		private void Unsubscribe(ThinConference participant)
 		{
 			if (participant == null)
 				return;
@@ -534,40 +508,33 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			participant.HoldCallback = null;
 			participant.ResumeCallback = null;
 			participant.SendDtmfCallback = null;
-			participant.HangupCallback = null;
+			participant.LeaveConferenceCallback = null;
 		}
 
-		private void ParticipantAnswerCallback(ThinParticipant thinParticipant)
+		private void ConferenceHoldCallback(ThinConference thinConference)
 		{
-			SPlusDialerShimAnswerCallback handler = AnswerCallCallback;
+			SPlusDialerShimActionCallback handler = HoldCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void ParticipantHoldCallback(ThinParticipant thinParticipant)
+		private void ConferenceResumeCallback(ThinConference thinConference)
 		{
-			SPlusDialerShimSetHoldCallback handler = HoldCallCallback;
+			SPlusDialerShimActionCallback handler = ResumeCallCallback;
 			if (handler != null)
 				handler();
 		}
 
-		private void ParticipantResumeCallback(ThinParticipant thinParticipant)
+		private void ConferenceSendDtmfCallback(ThinConference thinConference, string data)
 		{
-			SPlusDialerShimSetResumeCallback handler = ResumeCallCallback;
-			if (handler != null)
-				handler();
-		}
-
-		private void ParticipantSendDtmfCallback(ThinParticipant thinParticipant, string data)
-		{
-			SPlusDialerShimSendDtmfCallback handler = SendDtmfCallback;
+			SPlusDialerShimStringCallback handler = SendDtmfCallback;
 			if (handler != null)
 				handler(data);
 		}
 
-		private void ParticipantHangupCallback(ThinParticipant thinParticipant)
+		private void ConferenceHangupCallback(ThinConference thinConference)
 		{
-			SPlusDialerShimEndCallCallback handler = EndCallCallback;
+			SPlusDialerShimActionCallback handler = EndCallCallback;
 			if (handler != null)
 				handler();
 		}
@@ -585,7 +552,7 @@ namespace ICD.Connect.Conferencing.Server.SimplShims
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			var source = m_Source;
+			var source = m_Conference;
 			if (source != null)
 				yield return source;
 		}

@@ -885,7 +885,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private void ConferenceOnStatusChanged(object sender, ConferenceStatusEventArgs args)
 		{
 			UpdateIsInCall();
-			OnActiveConferenceStatusChanged.Raise(this, new ConferenceStatusEventArgs(args.Data));
+			OnActiveConferenceStatusChanged.Raise(this, args.Data);
 		}
 
 		/// <summary>

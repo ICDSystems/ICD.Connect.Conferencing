@@ -1,10 +1,8 @@
 using System;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.IncomingCalls;
 using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Participants
@@ -126,6 +124,30 @@ namespace ICD.Connect.Conferencing.Participants
 		{
 			get { return base.AnswerState; }
 			set { base.AnswerState = value; }
+		}
+
+		public new bool IsMuted
+		{
+			get { return base.IsMuted; }
+			set { base.IsMuted = value; }
+		}
+
+		public new bool IsHost
+		{
+			get { return base.IsHost; }
+			set { base.IsHost = value; }
+		}
+
+		public new bool IsSelf
+		{
+			get { return base.IsSelf; }
+			set { base.IsSelf = value; }
+		}
+
+		public new eParticipantFeatures SupportedParticipantFeatures
+		{
+			get { return base.SupportedParticipantFeatures; }
+			set { base.SupportedParticipantFeatures = value; }
 		}
 
 		#endregion

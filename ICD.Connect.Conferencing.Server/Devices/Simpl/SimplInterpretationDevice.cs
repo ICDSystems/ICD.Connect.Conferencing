@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Devices.CrestronSPlus.Devices.SPlus;
 using ICD.Connect.Settings.CrestronSPlus.SPlusShims.EventArguments;
 
@@ -11,8 +11,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 {
 	public sealed class SimplInterpretationDevice : AbstractSPlusDevice<SimplInterpretationDeviceSettings>, ISimplInterpretationDevice
 	{
-		public event EventHandler<ParticipantEventArgs> OnSourceAdded;
-		public event EventHandler<ParticipantEventArgs> OnSourceRemoved;
+		public event EventHandler<ConferenceEventArgs> OnConferenceAdded;
+		public event EventHandler<ConferenceEventArgs> OnConferenceRemoved;
 
 		public event EventHandler<SPlusBoolEventArgs> OnAutoAnswerChanged;
 		public event EventHandler<SPlusBoolEventArgs> OnDoNotDisturbChanged;
@@ -23,7 +23,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		#region Private Members
 
-		private IParticipant m_Source;
+		private IConference m_Conference;
 		private bool m_AutoAnswer;
 		private bool m_DoNotDisturb;
 		private bool m_PrivacyMute;
@@ -116,8 +116,8 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 		protected override void DisposeFinal(bool disposing)
 		{
-			OnSourceAdded = null;
-			OnSourceRemoved = null;
+			OnConferenceAdded = null;
+			OnConferenceRemoved = null;
 			OnAutoAnswerChanged = null;
 			OnDoNotDisturbChanged = null;
 			OnPrivacyMuteChanged = null;
@@ -130,7 +130,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 
 			base.DisposeFinal(disposing);
 
-			SetShimSource(null);
+			SetShimConference(null);
 		}
 
 		#region Public Methods
@@ -170,41 +170,41 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 				handler(this, enabled.ToUShort());
 		}
 
-		public void AddShimSource(IParticipant source)
+		public void AddShimConference(IConference conference)
 		{
-			SetShimSource(source);
+			SetShimConference(conference);
 		}
 
-		public void RemoveShimSource(IParticipant source)
+		public void RemoveShimConference(IConference conference)
 		{
-			SetShimSource(null);
+			SetShimConference(null);
 		}
 
-		private void SetShimSource(IParticipant source)
+		private void SetShimConference(IConference source)
 		{
-			if (source == m_Source)
+			if (source == m_Conference)
 				return;
 
-			IParticipant oldSource = m_Source;
+			IConference oldSource = m_Conference;
 
-			m_Source = source;
+			m_Conference = source;
 
 			if(oldSource != null)
-				OnSourceRemoved.Raise(this, new ParticipantEventArgs(oldSource));
+				OnConferenceRemoved.Raise(this, oldSource);
 
-			if (m_Source != null)
-				OnSourceAdded.Raise(this, new ParticipantEventArgs(m_Source));
+			if (m_Conference != null)
+				ConferenceEventArgsExtensions.Raise(OnConferenceAdded, this, m_Conference);
 		}
 
-		public IEnumerable<IParticipant> GetSources()
+		public IEnumerable<IConference> GetConferences()
 		{
-			if (m_Source != null)
-				yield return m_Source;
+			if (m_Conference != null)
+				yield return m_Conference;
 		}
 
-		public bool ContainsSource(IParticipant source)
+		public bool ContainsConference(IConference source)
 		{
-			return source == m_Source;
+			return source == m_Conference;
 		}
 
 		#endregion
@@ -234,7 +234,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Simpl
 		{
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
-			var source = m_Source;
+			var source = m_Conference;
 			if (source != null)
 				yield return source;
 		}
