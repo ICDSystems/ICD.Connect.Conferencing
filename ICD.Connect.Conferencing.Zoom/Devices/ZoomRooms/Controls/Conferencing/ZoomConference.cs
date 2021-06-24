@@ -196,7 +196,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 				case eCallStatus.NOT_IN_MEETING:
 				case eCallStatus.LOGGED_OUT:
-					Clear();
+					ClearParticipants();
 					Status = eConferenceStatus.Disconnected;
 					EndTime = IcdEnvironment.GetUtcTime();
 					break;

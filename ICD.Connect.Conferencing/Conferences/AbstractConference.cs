@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// Clears the sources from the conference.
 		/// </summary>
-		public void Clear()
+		protected void ClearParticipants()
 		{
 			foreach (T participant in GetParticipants())
 				RemoveParticipant(participant);
@@ -90,7 +90,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="participant"></param>
 		/// <returns>False if the participant is already in the conference.</returns>
-		public bool AddParticipant([NotNull] T participant)
+		protected bool AddParticipant([NotNull] T participant)
 		{
 			if (participant == null)
 				throw new ArgumentNullException("participant");
@@ -121,7 +121,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		/// <param name="participant"></param>
 		/// <returns>False if the participant is not in the conference.</returns>
-		public bool RemoveParticipant([NotNull] T participant)
+		protected bool RemoveParticipant([NotNull] T participant)
 		{
 			if (participant == null)
 				throw new ArgumentNullException("participant");
