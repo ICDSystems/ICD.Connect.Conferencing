@@ -4,7 +4,6 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
-using ICD.Connect.Conferencing.Server.Devices;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Server.Conferences

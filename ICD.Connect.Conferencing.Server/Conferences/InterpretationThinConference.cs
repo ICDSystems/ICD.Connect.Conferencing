@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 using ICD.Connect.Conferencing.Conferences;
+using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
 using ICD.Common.Utils.Extensions;
 
@@ -18,8 +18,18 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 
 	public sealed class InterpretationThinConference : AbstractConference<ThinParticipant>
 	{
+		/// <summary>
+		/// Raised when a participant is added to the conference.
+		/// </summary>
+		public override event EventHandler<ParticipantEventArgs> OnParticipantAdded;
 
-		private readonly BiDictionary<string, ThinParticipant> m_Participants;
+		/// <summary>
+		/// Raised when a participant is removed from the conference.
+		/// </summary>
+		public override event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
+
+
+		private readonly Dictionary<ParticipantInfo, ThinParticipant> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
 		public new eConferenceStatus Status
@@ -45,15 +55,13 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 
 		public InterpretationThinConference()
 		{
-			m_Participants = new BiDictionary<string, ThinParticipant>();
+			m_Participants = new Dictionary<ParticipantInfo, ThinParticipant>(ParticipantInfoEqualityComparer.Instance);
 			m_ParticipantsSection = new SafeCriticalSection();
 		}
 
-		public InterpretationThinConference(IEnumerable<ThinParticipant> participants)
+		public InterpretationThinConference(IEnumerable<ThinParticipant> participants):this()
 		{
-			m_ParticipantsSection = new SafeCriticalSection();
-			m_Participants = new BiDictionary<string, ThinParticipant>();
-			m_Participants.AddRange(participants, p => p.Name);
+			m_Participants.AddRange(participants, p => new ParticipantInfo(p.Name, p.Number));
 		}
 
 		/// <summary>
@@ -159,8 +167,65 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 			CallType = state.CallType;
 			RecordingStatus = state.RecordingStatus;
 
+			var stateParticipants = new Dictionary<ParticipantInfo, ParticipantState>();
+			stateParticipants.AddRange(state.ParticipantStates, p => new ParticipantInfo(p));
 
-			//todo: Update participants
+			//Used to update things outside the ParticipantsSection for thread safety
+			List<ThinParticipant> participantsToUpdate;
+			List<ThinParticipant> newParticipants = new List<ThinParticipant>();
+			List<ThinParticipant> removedParticipants = new List<ThinParticipant>();
+
+
+			m_ParticipantsSection.Enter();
+			try
+			{
+				// Find new and removed participants
+				List<ParticipantInfo> newParticipantInfos = stateParticipants.Keys.Except(m_Participants.Keys).ToList();
+				List<ParticipantInfo> removedParticipantInfos = m_Participants.Keys.Except(stateParticipants.Keys).ToList();
+				
+				// Drop removed participants
+				foreach (var participantInfo in removedParticipantInfos)
+				{
+					removedParticipants.Add(m_Participants[participantInfo]);
+					m_Participants.Remove(participantInfo);
+				}
+
+				// Get list to update so we can update outside the critical section
+				participantsToUpdate = m_Participants.Values.ToList(m_Participants.Count);
+
+				// Add new participants
+				foreach (var participantInfo in newParticipantInfos)
+				{
+					var participant = stateParticipants[participantInfo].ToThinParticipant();
+					newParticipants.Add(participant);
+					m_Participants.Add(participantInfo, participant);
+				}
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+
+			//Fire removed event
+			foreach (var participant in removedParticipants)
+			{
+				OnParticipantRemoved.Raise(this, participant);
+				participant.Dispose();
+			}
+
+			// Update existing participants
+			foreach (var participant in participantsToUpdate)
+			{
+				ParticipantState updatedState;
+				if (stateParticipants.TryGetValue(new ParticipantInfo(participant), out updatedState))
+					participant.UpdateFromParticipantState(updatedState);
+			}
+
+			//Fire added event
+			foreach (var participant in newParticipants)
+			{
+				OnParticipantAdded.Raise(this, participant);
+			}
 		}
 
 		/// <summary>

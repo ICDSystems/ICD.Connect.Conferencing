@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="Conferences\ConferenceState.cs" />
     <Compile Include="Conferences\InterpretationThinConference.cs" />
+    <Compile Include="Conferences\ParticipantInfo.cs" />
     <Compile Include="Conferences\ParticipantState.cs" />
     <Compile Include="Devices\Client\IClientInterpretationDevice.cs" />
     <Compile Include="Devices\Server\IInterpretationServerDevice.cs" />
