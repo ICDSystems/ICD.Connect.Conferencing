@@ -59,10 +59,12 @@ namespace ICD.Connect.Conferencing.Vaddio.Devices.AvBridge
 			// Scrub delimiters from the data.
 			for (int i = 0; i < content.Length; i++)
 			{
-				content[i] = content[i].Replace("\r", "");
-				content[i] = content[i].Trim();
-				if (string.IsNullOrEmpty(content[i]))
-					content = content.Where((source, index) => index != i).ToArray();
+				content[i] = content[i].Replace("\r", "").Trim();
+				if (!string.IsNullOrEmpty(content[i]))
+					continue;
+
+				int iClosure = i;
+				content = content.Where((source, index) => index != iClosure).ToArray();
 			}
 
 			KeyValuePair<string, string> commandAndValue;
