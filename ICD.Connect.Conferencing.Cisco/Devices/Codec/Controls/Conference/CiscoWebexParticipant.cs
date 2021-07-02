@@ -4,6 +4,7 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference;
@@ -41,8 +42,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (conferenceComponent == null)
 				throw new ArgumentNullException("conferenceComponent");
 
-			UpdateInfo(info);
 			IsSelf = info.IsSelf;
+			UpdateInfo(info);
 			m_CallId = callId;
 
 			m_ConferenceComponent = conferenceComponent;
@@ -114,10 +115,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (EndTime != null && m_Info.Status == eParticipantStatus.Disconnected)
 				EndTime = IcdEnvironment.GetUtcTime();
 
-			if (IsSelf)
-				SupportedParticipantFeatures |= eParticipantFeatures.RaiseLowerHand;
-			else
-				SupportedParticipantFeatures &= ~eParticipantFeatures.RaiseLowerHand;
+			SupportedParticipantFeatures.SetFlags(eParticipantFeatures.RaiseLowerHand, IsSelf);
 		}
 
 		#endregion
