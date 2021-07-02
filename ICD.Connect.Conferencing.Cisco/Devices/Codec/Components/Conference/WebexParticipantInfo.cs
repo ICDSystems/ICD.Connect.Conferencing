@@ -170,7 +170,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 							displayName = child.ReadElementContentAsString();
 							break;
 						case ELEMENT_STATUS:
-							status = EnumUtils.Parse<eParticipantStatus>(child.ReadElementContentAsString(), true);
+							status = EnumUtils.Parse<eParticipantStatus>(ParseStatusElement(child.ReadElementContentAsString()), true);
 							break;
 						case ELEMENT_TYPE:
 							type = child.ReadElementContentAsString();
@@ -211,6 +211,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 				                                audioMute, observesParticipantId, orgId, hardMuted, isHost, coHost, isPresenter,
 				                                handRaised, isPairedToHostUser);
 			}
+		}
+
+		private static string ParseStatusElement(string status)
+		{
+			// 2 different statuses for the same thing..
+			return status == "unknown" ? "undefined" : status;
 		}
 
 		#endregion

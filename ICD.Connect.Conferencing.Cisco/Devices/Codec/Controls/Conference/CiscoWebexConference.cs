@@ -54,13 +54,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ParticipantsToInfos = new Dictionary<CiscoWebexParticipant, WebexParticipantInfo>();
 
 			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
-			                              eConferenceFeatures.EndConference |
-			                              eConferenceFeatures.StartRecording |
-			                              eConferenceFeatures.StopRecording |
-			                              eConferenceFeatures.PauseRecording;
+			                              eConferenceFeatures.EndConference;
 		}
 
 		#endregion
+
+		#region Methods
 
 		public override void LeaveConference()
 		{
@@ -123,6 +122,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			else
 				m_ConferenceComponent.RecordingPause(m_CallStatus.CallId);
 		}
+
+		#endregion
 
 		#region Private Methods
 
@@ -208,8 +209,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private void ConferenceCallCapabilitiesRecordStart(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			SupportedConferenceFeatures =
-				SupportedConferenceFeatures.SetFlags(eConferenceFeatures.StartRecording | 
-													 eConferenceFeatures.StopRecording,
+				SupportedConferenceFeatures.SetFlags(eConferenceFeatures.StartRecording |
+				                                     eConferenceFeatures.StopRecording |
+				                                     eConferenceFeatures.PauseRecording,
 				                                     XmlUtils.GetInnerXml(xml) == "Available");
 		}
 
