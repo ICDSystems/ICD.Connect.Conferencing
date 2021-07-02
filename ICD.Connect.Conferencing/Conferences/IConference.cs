@@ -8,6 +8,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Conferences
 {
@@ -51,7 +52,22 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// Raised when the conference name changes.
 		/// </summary>
-		event EventHandler<StringEventArgs> OnNameChanged; 
+		event EventHandler<StringEventArgs> OnNameChanged;
+
+		/// <summary>
+		/// Raised when the conference number changes.
+		/// </summary>
+		event EventHandler<StringEventArgs> OnNumberChanged;
+
+		/// <summary>
+		/// Raised when the conference direction changes.
+		/// </summary>
+		event EventHandler<GenericEventArgs<eCallDirection>> OnDirectionChanged;
+
+		/// <summary>
+		/// Raised when the conference answer state changes.
+		/// </summary>
+		event EventHandler<GenericEventArgs<eCallAnswerState>> OnAnswerStateChanged;
 		
 		/// <summary>
 		/// Raised when the start time changes
@@ -89,6 +105,21 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Name of the conference
 		/// </summary>
 		string Name { get; }
+
+		/// <summary>
+		/// Number of the conferenc for redial, etc
+		/// </summary>
+		string Number { get; }
+
+		/// <summary>
+		/// Direction
+		/// </summary>
+		eCallDirection Direction { get; }
+
+		/// <summary>
+		/// Answer State
+		/// </summary>
+		eCallAnswerState AnswerState { get; }
 
 		/// <summary>
 		/// The time the conference started.

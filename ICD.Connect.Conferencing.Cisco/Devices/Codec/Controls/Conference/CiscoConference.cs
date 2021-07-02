@@ -1,8 +1,10 @@
 ﻿using System;
 using ICD.Common.Properties;
+using ICD.Common.Utils.EventArguments;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
@@ -66,12 +68,28 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_DialingComponent = dialingComponent;
 			m_CallStatus = callStatus;
 
+			UpdateCallStatus(m_CallStatus);
+
+			Subscribe(m_CallStatus);
+
 			SupportedConferenceFeatures = eConferenceFeatures.EndConference;
 		}
 
 		#endregion
 
 		#region Methods
+
+		private void UpdateCallStatus(CallStatus callStatus)
+		{
+			if (callStatus == null)
+				return;
+
+			Name = callStatus.Name;
+			Number = callStatus.Number;
+			Direction = callStatus.Direction;
+			AnswerState = callStatus.AnswerState;
+			Status = callStatus.Status.ToConferenceStatus();
+		}
 
 		public void InitializeConference()
 		{
@@ -82,6 +100,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		protected override void DisposeFinal()
 		{
+			Unsubscribe(m_CallStatus);
 			Unsubscribe(m_Participant);
 
 			base.DisposeFinal();
@@ -137,6 +156,59 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			throw new NotSupportedException();
 		}
 
+
+		#endregion
+
+		#region CallStatus Callback
+
+		private void Subscribe(CallStatus callStatus)
+		{
+			if (callStatus == null)
+				return;
+
+			callStatus.OnNameChanged += CallStatusOnNameChanged;
+			callStatus.OnNumberChanged += CallStatusOnNumberChanged;
+			callStatus.OnDirectionChanged += CallStatusOnDirectionChanged;
+			callStatus.OnAnswerStateChanged += CallStatusOnAnswerStateChanged;
+			callStatus.OnStatusChanged += CallStatusOnStatusChanged;
+		}
+
+		private void Unsubscribe(CallStatus callStatus)
+		{
+			if (callStatus == null)
+				return;
+
+			callStatus.OnNameChanged -= CallStatusOnNameChanged;
+			callStatus.OnNumberChanged -= CallStatusOnNumberChanged;
+			callStatus.OnDirectionChanged -= CallStatusOnDirectionChanged;
+			callStatus.OnAnswerStateChanged -= CallStatusOnAnswerStateChanged;
+			callStatus.OnStatusChanged -= CallStatusOnStatusChanged;
+		}
+
+		private void CallStatusOnNameChanged(object sender, StringEventArgs args)
+		{
+			Name = args.Data;
+		}
+
+		private void CallStatusOnNumberChanged(object sender, StringEventArgs args)
+		{
+			Number = args.Data;
+		}
+
+		private void CallStatusOnDirectionChanged(object sender, GenericEventArgs<eCallDirection> args)
+		{
+			Direction = args.Data;
+		}
+
+		private void CallStatusOnAnswerStateChanged(object sender, GenericEventArgs<eCallAnswerState> args)
+		{
+			AnswerState = args.Data;
+		}
+
+		private void CallStatusOnStatusChanged(object sender, GenericEventArgs<eParticipantStatus> args)
+		{
+			Status = args.Data.ToConferenceStatus();
+		}
 
 		#endregion
 

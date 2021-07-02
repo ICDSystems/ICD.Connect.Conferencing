@@ -9,6 +9,7 @@ using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.ConferenceManagers.History
 {
@@ -26,6 +27,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 
 		private eConferenceStatus m_Status;
 		private string m_Name;
+		private string m_Number;
+		private eCallDirection m_Direction;
+		private eCallAnswerState m_AnswerState;
 
 		#endregion
 
@@ -37,6 +41,9 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
 		public event EventHandler<StringEventArgs> OnNameChanged;
+		public event EventHandler<StringEventArgs> OnNumberChanged;
+		public event EventHandler<GenericEventArgs<eCallDirection>> OnDirectionChanged;
+		public event EventHandler<GenericEventArgs<eCallAnswerState>> OnAnswerStateChanged;
 
 		public string Name
 		{
@@ -51,6 +58,62 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 				OnNameChanged.Raise(this, value);
 			}
 		}
+
+		/// <summary>
+		/// Number of the conferenc for redial, etc
+		/// </summary>
+		public string Number
+		{
+			get { return m_Number; }
+			private set
+			{
+				if (m_Number == value)
+					return;
+
+				m_Number = value;
+
+				OnNumberChanged.Raise(this, value);
+			}
+		}
+
+		/// <summary>
+		/// Direction
+		/// </summary>
+		public eCallDirection Direction
+		{
+			get { return m_Direction; }
+			private set
+			{
+				if (m_Direction == value)
+					return;
+
+				m_Direction = value;
+
+				OnDirectionChanged.Raise(this, value);
+			}
+		}
+
+		/// <summary>
+		/// Answer State
+		/// </summary>
+		public eCallAnswerState AnswerState
+		{
+			get { return m_AnswerState; }
+			private set
+			{
+				if (m_AnswerState == value)
+					return;
+
+				m_AnswerState = value;
+
+				OnAnswerStateChanged.Raise(this, value);
+			}
+		}
+
+		/// <summary>
+		/// Call Type
+		/// </summary>
+		public eCallType CallType { get; private set; }
 
 		public DateTime? StartTime { get; private set; }
 		public DateTime? EndTime { get; private set; }
@@ -160,6 +223,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 
 		private void UpdateConferenceValues(IConference conference)
 		{
+			Name = conference.Name;
+			Number = conference.Number;
+			AnswerState = conference.AnswerState;
+			Direction = conference.Direction;
+			Status = conference.Status;
+			CallType = conference.CallType;
 			foreach(IParticipant participant in conference.GetParticipants())
 				AddParticipant(participant);
 		}
@@ -172,11 +241,15 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 				return;
 
 			conference.OnNameChanged += ConferenceOnNameChanged;
+			conference.OnNumberChanged += ConferenceOnNumberChanged;
+			conference.OnAnswerStateChanged += ConferenceOnAnswerStateChanged;
+			conference.OnDirectionChanged += ConferenceOnDirectionChanged;
 			conference.OnStatusChanged += ConferenceOnOnStatusChanged;
 			conference.OnParticipantAdded += ConferenceOnOnParticipantAdded;
 			conference.OnParticipantRemoved += ConferenceOnOnParticipantRemoved;
 			conference.OnStartTimeChanged += ConferenceOnOnStartTimeChanged;
 			conference.OnEndTimeChanged += ConferenceOnOnEndTimeChanged;
+			conference.OnCallTypeChanged += ConferenceOnCallTypeChanged;
 		}
 
 		private void Unsubscribe(IConference conference)
@@ -185,16 +258,35 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 				return;
 
 			conference.OnNameChanged -= ConferenceOnNameChanged;
+			conference.OnNumberChanged -= ConferenceOnNumberChanged;
+			conference.OnAnswerStateChanged -= ConferenceOnAnswerStateChanged;
+			conference.OnDirectionChanged -= ConferenceOnDirectionChanged;
 			conference.OnStatusChanged -= ConferenceOnOnStatusChanged;
 			conference.OnParticipantAdded -= ConferenceOnOnParticipantAdded;
 			conference.OnParticipantRemoved -= ConferenceOnOnParticipantRemoved;
 			conference.OnStartTimeChanged -= ConferenceOnOnStartTimeChanged;
 			conference.OnEndTimeChanged -= ConferenceOnOnEndTimeChanged;
+			conference.OnCallTypeChanged -= ConferenceOnCallTypeChanged;
 		}
 
 		private void ConferenceOnNameChanged(object sender, StringEventArgs args)
 		{
 			Name = args.Data;
+		}
+
+		private void ConferenceOnNumberChanged(object sender, StringEventArgs args)
+		{
+			Number = args.Data;
+		}
+
+		private void ConferenceOnAnswerStateChanged(object sender, GenericEventArgs<eCallAnswerState> args)
+		{
+			AnswerState = args.Data;
+		}
+
+		private void ConferenceOnDirectionChanged(object sender, GenericEventArgs<eCallDirection> args)
+		{
+			Direction = args.Data;
 		}
 
 		private void ConferenceOnOnStatusChanged(object sender, ConferenceStatusEventArgs args)
@@ -220,6 +312,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		private void ConferenceOnOnEndTimeChanged(object sender, DateTimeNullableEventArgs args)
 		{
 			EndTime = args.Data;
+		}
+
+		private void ConferenceOnCallTypeChanged(object sender, GenericEventArgs<eCallType> args)
+		{
+			CallType = args.Data;
 		}
 
 		#endregion

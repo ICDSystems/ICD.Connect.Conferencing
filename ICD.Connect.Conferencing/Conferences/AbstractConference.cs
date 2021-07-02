@@ -19,8 +19,6 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public override event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
-		public override event EventHandler<StringEventArgs> OnNameChanged;
-
 		/// <summary>
 		/// Raised when a participant is added to the conference.
 		/// </summary>

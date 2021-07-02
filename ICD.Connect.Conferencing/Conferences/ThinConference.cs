@@ -102,21 +102,26 @@ namespace ICD.Connect.Conferencing.Conferences
 			}
 		}
 
-		public string Number
+		public new string Number
 		{
-			get { return Participant.Number; }
+			get { return base.Number; }
 			set
 			{
+				base.Number = value;
 				Participant.Number = value;
 				if (string.IsNullOrEmpty(Name))
 					Name = value;
 			}
 		}
 
-		public eCallDirection Direction
+		public new eCallDirection Direction
 		{
-			get { return Participant.Direction; }
-			set { Participant.Direction = value; }
+			get { return base.Direction; }
+			set
+			{
+				base.Direction = value;
+				Participant.Direction = value;
+			}
 		}
 
 		public DateTime DialTime
@@ -125,10 +130,14 @@ namespace ICD.Connect.Conferencing.Conferences
 			set { Participant.DialTime = value; }
 		}
 
-		public eCallAnswerState AnswerState
+		public new eCallAnswerState AnswerState
 		{
-			get { return Participant.AnswerState; }
-			set { Participant.AnswerState = value; }
+			get { return base.AnswerState; }
+			set
+			{
+				base.AnswerState = value;
+				Participant.AnswerState = value;
+			}
 		}
 
 		#region Callbacks

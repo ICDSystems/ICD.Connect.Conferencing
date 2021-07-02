@@ -7,6 +7,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants;
+using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Conferences
 {
@@ -21,6 +22,9 @@ namespace ICD.Connect.Conferencing.Conferences
 		private eConferenceFeatures m_SupportedConferenceFeatures;
 		private string m_Name;
 		private eCallType m_CallType;
+		private string m_Number;
+		private eCallDirection m_Direction;
+		private eCallAnswerState m_AnswerState;
 
 		#endregion
 
@@ -34,7 +38,10 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public virtual event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 
-		public virtual event EventHandler<StringEventArgs> OnNameChanged;
+		public event EventHandler<StringEventArgs> OnNameChanged;
+		public event EventHandler<StringEventArgs> OnNumberChanged;
+		public event EventHandler<GenericEventArgs<eCallDirection>> OnDirectionChanged;
+		public event EventHandler<GenericEventArgs<eCallAnswerState>> OnAnswerStateChanged;
 
 		/// <summary>
 		/// Raised when the start time changes
@@ -96,6 +103,57 @@ namespace ICD.Connect.Conferencing.Conferences
 				m_Name = value;
 
 				OnNameChanged.Raise(this, value);
+			}
+		}
+
+		/// <summary>
+		/// Number of the conferenc for redial, etc
+		/// </summary>
+		public string Number
+		{
+			get { return m_Number; }
+			protected set
+			{
+				if (m_Number == value)
+					return;
+
+				m_Number = value;
+
+				OnNumberChanged.Raise(this, value);
+			}
+		}
+
+		/// <summary>
+		/// Direction
+		/// </summary>
+		public eCallDirection Direction
+		{
+			get { return m_Direction; }
+			protected set
+			{
+				if (m_Direction == value)
+					return;
+
+				m_Direction = value;
+
+				OnDirectionChanged.Raise(this, value);
+			}
+		}
+
+		/// <summary>
+		/// Answer State
+		/// </summary>
+		public eCallAnswerState AnswerState
+		{
+			get { return m_AnswerState; }
+			protected set
+			{
+				if (m_AnswerState == value)
+					return;
+
+				m_AnswerState = value;
+
+				OnAnswerStateChanged.Raise(this, value);
 			}
 		}
 
