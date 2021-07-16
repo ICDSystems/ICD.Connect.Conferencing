@@ -13,7 +13,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		#region Constants
 
 		private const int DIRECT_SHARE_INPUT = 10;
-		private const string DIRECT_SHARE_SOURCE_NAME = "Cisco Proximity Share";
+		private const string DIRECT_SHARE_SOURCE_NAME = "Cisco Proximity";
 
 		#endregion
 
