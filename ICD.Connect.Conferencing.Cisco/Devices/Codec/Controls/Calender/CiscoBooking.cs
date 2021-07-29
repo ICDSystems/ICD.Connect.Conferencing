@@ -6,6 +6,7 @@ using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
+using ICD.Connect.Conferencing.EventArguments;
 using Booking = ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings.Booking;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
@@ -71,6 +72,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 							Protocol = eDialProtocol.Sip,
 							DialString = call.Number,
 							CallType = call.CiscoCallType.ToCallType()
+						};
+						continue;
+					case "SPARK":
+						yield return new DialContext
+						{
+							Protocol = eDialProtocol.Sip,
+							DialString = call.Number,
+							//Spark calls are all video, even though they don't tell us that
+							CallType = eCallType.Video
 						};
 						continue;
 			    }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
@@ -21,7 +22,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 
 		private readonly IcdSortedDictionary<string, BookingCall> m_Calls;
 
-		public int Id { get; private set; }
+		public string Id { get; private set; }
+		public Guid MeetingId { get; private set; }
 		public string Title { get; private set; }
 		public string Agenda { get; private set; }
 		public ePrivacy Privacy { get; private set; }
@@ -62,9 +64,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// <returns></returns>
 		public static Booking FromXml(string xml)
 		{
+			Guid meetingId;
+			StringUtils.TryParse(XmlUtils.TryReadChildElementContentAsString(xml, "MeetingId") ?? string.Empty, out meetingId);
+
 			Booking booking = new Booking
 			{
-				Id = XmlUtils.TryReadChildElementContentAsInt(xml, "Id") ?? 0,
+				Id = XmlUtils.TryReadChildElementContentAsString(xml, "Id"),
+				MeetingId = meetingId,
 				Title = XmlUtils.TryReadChildElementContentAsString(xml, "Title"),
 				Agenda = XmlUtils.TryReadChildElementContentAsString(xml, "Agenda"),
 				Privacy = XmlUtils.TryReadChildElementContentAsEnum<ePrivacy>(xml, "Privacy", true) ?? ePrivacy.Public
@@ -127,6 +133,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			return m_Calls.Values.ToArray(m_Calls.Count);
 		}
 
+		public string GetUniqueBookingIdentifier()
+		{
+			return MeetingId != Guid.Empty ? MeetingId.ToString() : Id;
+		}
+
 		/// <summary>Indicates whether the current object is equal to another object of the same type.</summary>
 		/// <param name="other">An object to compare with this object.</param>
 		/// <returns>true if the current object is equal to the <paramref name="other">other</paramref> parameter; otherwise, false.</returns>
@@ -177,7 +188,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		{
 			unchecked
 			{
-				int hashCode = Id;
+				int hashCode = 389;
+
+				hashCode = (hashCode * 397) ^ (Id != null ? Id.GetHashCode() : 0);
+				hashCode = (hashCode * 397) ^ MeetingId.GetHashCode();
 				hashCode = (hashCode * 397) ^ (Title != null ? Title.GetHashCode() : 0);
 				hashCode = (hashCode * 397) ^ (Agenda != null ? Agenda.GetHashCode() : 0);
 				hashCode = (hashCode * 397) ^ (int)Privacy;

@@ -16,7 +16,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		/// </summary>
 		public event EventHandler OnBookingsChanged;
 
-		private readonly IcdSortedDictionary<int, Booking> m_Bookings;
+		private readonly IcdSortedDictionary<string, Booking> m_Bookings;
 		private readonly SafeCriticalSection m_BookingsSection;
 
 		/// <summary>
@@ -26,7 +26,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 		public BookingsComponent(CiscoCodecDevice codec)
 			: base(codec)
 		{
-			m_Bookings = new IcdSortedDictionary<int, Booking>();
+			m_Bookings = new IcdSortedDictionary<string, Booking>();
 			m_BookingsSection = new SafeCriticalSection();
 
 			Subscribe(Codec);
@@ -156,13 +156,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			                                       .Select(x => Booking.FromXml(x))
 			                                       .ToIcdHashSet();
 
-			IcdHashSet<int> bookingIds = bookings.Select(b => b.Id).ToIcdHashSet();
+			IcdHashSet<string> bookingIds = bookings.Select(b => b.GetUniqueBookingIdentifier()).ToIcdHashSet();
 
 			m_BookingsSection.Enter();
 
 			try
 			{
-				IcdHashSet<int> removeIds =
+				IcdHashSet<string> removeIds =
 					m_Bookings.Keys
 					          .ToIcdHashSet()
 					          .Subtract(bookingIds);
@@ -217,10 +217,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings
 			try
 			{
 				Booking existing;
-				if (m_Bookings.TryGetValue(booking.Id, out existing) && booking.Equals(existing))
+				if (m_Bookings.TryGetValue(booking.GetUniqueBookingIdentifier(), out existing) && booking.Equals(existing))
 					return false;
 
-				m_Bookings[booking.Id] = booking;
+				m_Bookings[booking.GetUniqueBookingIdentifier()] = booking;
 
 				return true;
 			}
