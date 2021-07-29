@@ -1,6 +1,5 @@
 ﻿using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
-using ICD.Connect.Conferencing.EventArguments;
 using NUnit.Framework;
 
 namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
@@ -8,22 +7,48 @@ namespace ICD.Connect.Conferencing.Cisco.Tests.Devices.Codec.Components.Bookings
 	[TestFixture]
 	public sealed class BookingCallTest
 	{
-		[Test]
-		public void FromXmlTest()
+		private static readonly object[] s_FromXmlTestCaseOldFormat =
 		{
-			const string xml = @"        <Call item=""1"" maxOccurrence=""n"">
+			new object[]
+			{
+				@"        <Call item=""1"" maxOccurrence=""n"">
           <Number>432@firstrepublic.com</Number>
           <Protocol>SIP</Protocol>
           <CallRate>4096</CallRate>
           <CallType>Video</CallType>
-        </Call>";
+        </Call>",
+				"432@firstrepublic.com",
+				"SIP",
+				4096,
+				eCiscoCallType.Video
+			}
+		};
 
+		private static readonly object[] s_FromXmlTestCaseNewFormat =
+		{
+			new object[]
+			{
+				@"						<Call item=""1"" maxOccurrence=""n"">
+						<Number>1457559328@onemetlife.webex.com</Number>
+						<Protocol>Spark</Protocol>
+					</Call>",
+				"1457559328@onemetlife.webex.com",
+				"Spark",
+				0,
+				eCiscoCallType.Unknown
+			}
+		};
+
+		[TestCaseSource(nameof(s_FromXmlTestCaseOldFormat))]
+		[TestCaseSource(nameof(s_FromXmlTestCaseNewFormat))]
+		public void FromXmlTest(string xml, string expectedNumber, string expectedProtocol, int expectedCallRate, eCiscoCallType expectedCallType)
+		{
 			BookingCall info = BookingCall.FromXml(xml);
 
-			Assert.AreEqual("432@firstrepublic.com", info.Number);
-			Assert.AreEqual("SIP", info.Protocol);
-			Assert.AreEqual(4096, info.CallRate);
-			Assert.AreEqual(eCiscoCallType.Video, info.CiscoCallType);
+			Assert.AreEqual(expectedNumber, info.Number);
+			Assert.AreEqual(expectedProtocol, info.Protocol);
+			Assert.AreEqual(expectedCallRate, info.CallRate);
+			Assert.AreEqual(expectedCallType, info.CiscoCallType);
 		}
 	}
 }
