@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [19.0.0] - 2021-08-03
 ### Added
  - Direct Sharing Control interfaces & abstractions
  - CiscoCodecDirectSharingControl to support Cisco Proximity sharing
