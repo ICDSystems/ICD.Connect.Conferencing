@@ -154,6 +154,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Gets the sources in this conference.
 		/// </summary>
 		/// <returns></returns>
+		[NotNull]
 		IEnumerable<IParticipant> GetParticipants();
 
 		/// <summary>

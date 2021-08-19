@@ -8,9 +8,8 @@ using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Server.Conferences
 {
-	public class ConferenceState
+	public sealed class ConferenceState
 	{
-
 		/// <summary>
 		/// Current conference status.
 		/// </summary>
@@ -53,11 +52,11 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 		[PublicAPI, JsonProperty]
 		public eConferenceFeatures SupportedConferenceFeatures { get; private set; }
 
-		public List<ParticipantState> ParticipantStates { get; private set; }
-			
-			
 		[PublicAPI, JsonProperty]
 		public string Language { get; set; }
+
+		[PublicAPI, JsonProperty]
+		public List<ParticipantState> ParticipantStates { get; private set; }
 
 		public static ConferenceState FromConference([NotNull] IConference conference, [CanBeNull] string language)
 		{
