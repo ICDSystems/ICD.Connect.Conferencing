@@ -10,6 +10,7 @@ using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.EventArguments;
+using ICD.Connect.Conferencing.Participants;
 using ICD.Connect.Conferencing.Server.Conferences;
 using ICD.Connect.Conferencing.Server.Devices.Client;
 using ICD.Connect.Conferencing.Server.Devices.Simpl;
@@ -64,6 +65,9 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 		// key is guid id of conference, value is the conference
 		private readonly Dictionary<Guid, IConference> m_Conferences;
 
+		// Track participants per conference to get updates.
+		private readonly Dictionary<IConference, IcdHashSet<IParticipant>> m_ConferencesToParticipants;
+
 		// key is room id, value is booth number
 		private readonly Dictionary<int, ushort> m_RoomToBooth;
 
@@ -83,6 +87,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			m_RpcController = new ServerSerialRpcController(this);
 			m_AdapterToBooth = new Dictionary<ISimplInterpretationDevice, ushort>();
 			m_Conferences = new Dictionary<Guid, IConference>();
+			m_ConferencesToParticipants = new Dictionary<IConference, IcdHashSet<IParticipant>>();
 			m_RoomToBooth = new Dictionary<int, ushort>();
 			m_ClientToRoom = new Dictionary<uint, int>();
 			m_RoomToRoomInfo = new Dictionary<int, string>();
@@ -806,7 +811,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			{
 				m_SafeCriticalSection.Leave();
 			}
-
 		}
 
 		#endregion
@@ -823,6 +827,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 			Guid newId = Guid.NewGuid();
 			m_SafeCriticalSection.Execute(() => m_Conferences.Add(newId, conference));
+			m_SafeCriticalSection.Execute(() => m_ConferencesToParticipants.Add(conference, new IcdHashSet<IParticipant>()));
 
 			Subscribe(conference);
 
@@ -848,7 +853,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 				m_RpcController.CallMethod(clientId, key, id);
 
 				m_Conferences.RemoveAllValues(conference);
-
+				m_ConferencesToParticipants.Remove(conference);
 			}
 			finally
 			{
@@ -921,8 +926,25 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			conference.OnConferenceRecordingStatusChanged += ConferenceOnPropertyChanged;
 			conference.OnStartTimeChanged += ConferenceOnPropertyChanged;
 			conference.OnEndTimeChanged += ConferenceOnPropertyChanged;
-			conference.OnParticipantAdded += ConferenceOnPropertyChanged;
-			conference.OnParticipantRemoved += ConferenceOnPropertyChanged;
+			conference.OnParticipantAdded += ConferenceOnParticipantAdded;
+			conference.OnParticipantRemoved += ConferenceOnParticipantRemoved;
+
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				foreach (IParticipant participant in conference.GetParticipants())
+				{
+					if (m_ConferencesToParticipants[conference].Contains(participant))
+						continue;
+
+					m_ConferencesToParticipants[conference].Add(participant);
+					Subscribe(participant);
+				}
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
 		}
 
 		private void Unsubscribe(IConference conference)
@@ -934,8 +956,25 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			conference.OnConferenceRecordingStatusChanged -= ConferenceOnPropertyChanged;
 			conference.OnStartTimeChanged -= ConferenceOnPropertyChanged;
 			conference.OnEndTimeChanged -= ConferenceOnPropertyChanged;
-			conference.OnParticipantAdded -= ConferenceOnPropertyChanged;
-			conference.OnParticipantRemoved -= ConferenceOnPropertyChanged;
+			conference.OnParticipantAdded -= ConferenceOnParticipantAdded;
+			conference.OnParticipantRemoved -= ConferenceOnParticipantRemoved;
+
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				foreach (IParticipant participant in conference.GetParticipants())
+				{
+					if (!m_ConferencesToParticipants[conference].Contains(participant))
+						continue;
+
+					m_ConferencesToParticipants[conference].Remove(participant);
+					Unsubscribe(participant);
+				}
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
 		}
 
 		private void ConferenceOnPropertyChanged(object sender, EventArgs args)
@@ -969,8 +1008,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 					                                                                             ? targetAdapter.Language
 					                                                                             : null);
 
-				const string key = InterpretationClientDevice.UPDATE_CACHED_CONFERENCE_STATE;
-				m_RpcController.CallMethod(clientId, key, id, sourceState);
+				m_RpcController.CallMethod(clientId, InterpretationClientDevice.UPDATE_CACHED_CONFERENCE_STATE, id, sourceState);
 
 				if (conference.Status == eConferenceStatus.Disconnected)
 					RemoveConference(conference);
@@ -979,6 +1017,103 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 			{
 				m_SafeCriticalSection.Leave();
 			}
+		}
+
+		private void ConferenceOnParticipantAdded(object sender, ParticipantEventArgs args)
+        {
+			IConference conf = sender as IConference;
+			IParticipant part = args.Data;
+			if (conf == null)
+				return;
+
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				if (m_ConferencesToParticipants[conf].Contains(part))
+					return;
+
+				m_ConferencesToParticipants[conf].Add(part);
+				Subscribe(part);
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+
+			// Whenever any property changes we need to update.
+			ConferenceOnPropertyChanged(sender, args);
+        }
+
+		private void ConferenceOnParticipantRemoved(object sender, ParticipantEventArgs args)
+		{
+			IConference conf = sender as IConference;
+			IParticipant part = args.Data;
+			if (conf == null)
+				return;
+
+			m_SafeCriticalSection.Enter();
+			try
+			{
+				if (!m_ConferencesToParticipants[conf].Contains(part))
+					return;
+
+				m_ConferencesToParticipants[conf].Remove(part);
+				Unsubscribe(part);
+			}
+			finally
+			{
+				m_SafeCriticalSection.Leave();
+			}
+
+			// Whenever any property changes we need to update.
+			ConferenceOnPropertyChanged(sender, args);
+		}
+
+		#endregion
+
+		#region Participants
+
+		private void Subscribe(IParticipant participant)
+		{
+			participant.OnStatusChanged += ParticipantOnPropertyChanged;
+			participant.OnParticipantTypeChanged += ParticipantOnPropertyChanged;
+			participant.OnNameChanged += ParticipantOnPropertyChanged;
+			participant.OnStartTimeChanged += ParticipantOnPropertyChanged;
+			participant.OnEndTimeChanged += ParticipantOnPropertyChanged;
+			participant.OnNumberChanged += ParticipantOnPropertyChanged;
+			participant.OnAnswerStateChanged += ParticipantOnPropertyChanged;
+			participant.OnIsMutedChanged += ParticipantOnPropertyChanged;
+			participant.OnIsHostChanged += ParticipantOnPropertyChanged;
+			participant.OnHandRaisedChanged += ParticipantOnPropertyChanged;
+			participant.OnSupportedParticipantFeaturesChanged += ParticipantOnPropertyChanged;
+		}
+
+		private void Unsubscribe(IParticipant participant)
+		{
+			participant.OnStatusChanged -= ParticipantOnPropertyChanged;
+			participant.OnParticipantTypeChanged -= ParticipantOnPropertyChanged;
+			participant.OnNameChanged -= ParticipantOnPropertyChanged;
+			participant.OnStartTimeChanged -= ParticipantOnPropertyChanged;
+			participant.OnEndTimeChanged -= ParticipantOnPropertyChanged;
+			participant.OnNumberChanged -= ParticipantOnPropertyChanged;
+			participant.OnAnswerStateChanged -= ParticipantOnPropertyChanged;
+			participant.OnIsMutedChanged -= ParticipantOnPropertyChanged;
+			participant.OnIsHostChanged -= ParticipantOnPropertyChanged;
+			participant.OnHandRaisedChanged -= ParticipantOnPropertyChanged;
+			participant.OnSupportedParticipantFeaturesChanged -= ParticipantOnPropertyChanged;
+		}
+
+		private void ParticipantOnPropertyChanged(object sender, EventArgs args)
+		{
+			IParticipant part = sender as IParticipant;
+			if (part == null)
+				return;
+
+			IConference conf = m_ConferencesToParticipants.FirstOrDefault(kvp => kvp.Value.Contains(part)).Key;
+			if (conf == null)
+				return;
+
+			ConferenceOnPropertyChanged(conf, EventArgs.Empty);
 		}
 
 		#endregion

@@ -272,9 +272,5 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		#endregion
-
-		#region Console
-
-		#endregion
 	}
 }

@@ -345,7 +345,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		}
 
 		[Rpc(REMOVE_CACHED_CONFERENCE), UsedImplicitly]
-		private void RemoveCachedSource(Guid id)
+		private void RemoveCachedConference(Guid id)
 		{
 			m_SourcesCriticalSection.Enter();
 
@@ -368,7 +368,7 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 		}
 
 		[Rpc(UPDATE_CACHED_CONFERENCE_STATE), UsedImplicitly]
-		private void UpdateCachedSourceState(Guid id, ConferenceState conferenceState)
+		private void UpdateCachedConferenceState(Guid id, ConferenceState conferenceState)
 		{
 			InterpretationThinConference added = null;
 			InterpretationThinConference removed = null;
@@ -377,8 +377,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 			try
 			{
-				
-
 				InterpretationThinConference conference;
 
 				if (!m_Conferences.TryGetValue(id, out conference))
@@ -393,7 +391,6 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 				{
 					conference.UpdateFromConferenceState(conferenceState);
 				}
-
 
 				if (conference.Status == eConferenceStatus.Disconnected)
 				{
@@ -419,13 +416,13 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 
 		#region Conferences
 
-		private bool TryGetId(InterpretationThinConference participant, out Guid id)
+		private bool TryGetId(InterpretationThinConference conference, out Guid id)
 		{
 			m_SourcesCriticalSection.Enter();
 
 			try
 			{
-				return m_Conferences.TryGetKey(participant, out id);
+				return m_Conferences.TryGetKey(conference, out id);
 			}
 			finally
 			{
@@ -457,104 +454,104 @@ namespace ICD.Connect.Conferencing.Server.Devices.Client
 			conference.PauseRecordingCallback = null;
 		}
 
-		private void ConferenceHoldCallCallback(InterpretationThinConference source)
+		private void ConferenceHoldCallCallback(InterpretationThinConference conference)
 		{
-			if (source == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(source, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_ENABLE_RPC, m_RoomId, id);
 		}
 
-		private void ConferenceResumeCallCallback(InterpretationThinConference source)
+		private void ConferenceResumeCallCallback(InterpretationThinConference conference)
 		{
-			if (source == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(source, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.HOLD_RESUME_RPC, m_RoomId, id);
 		}
 
-		private void ConferenceSendDtmfCallback(InterpretationThinConference source, string data)
+		private void ConferenceSendDtmfCallback(InterpretationThinConference conference, string data)
 		{
-			if (source == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(source, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.SEND_DTMF_RPC, m_RoomId, id, data);
 		}
 
-		private void ConferenceLeaveConferenceCallback(InterpretationThinConference source)
+		private void ConferenceLeaveConferenceCallback(InterpretationThinConference conference)
 		{
-			if (source == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(source, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.LEAVE_CONFERENCE_RPC, m_RoomId, id);
 		}
 
-		private void ConferenceEndConferenceCallback(InterpretationThinConference sender)
+		private void ConferenceEndConferenceCallback(InterpretationThinConference conference)
 		{
-			if (sender == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(sender, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.END_CONFERENCE_RPC, m_RoomId, id);
 		}
 
-		private void ConferenceStartRecordingCallback(InterpretationThinConference sender)
+		private void ConferenceStartRecordingCallback(InterpretationThinConference conference)
 		{
-			if (sender == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(sender, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.START_RECORDING_RPC, m_RoomId, id);
 		}
 
-		private void ConferenceStopRecordingCallback(InterpretationThinConference sender)
+		private void ConferenceStopRecordingCallback(InterpretationThinConference conference)
 		{
-			if (sender == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(sender, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)
 				m_RpcController.CallMethod(InterpretationServerDevice.STOP_RECORDING_RPC, m_RoomId, id);
 		}
 
-		private void ConferencePauseRecordingCallback(InterpretationThinConference sender)
+		private void ConferencePauseRecordingCallback(InterpretationThinConference conference)
 		{
-			if (sender == null)
+			if (conference == null)
 				return;
 
 			Guid id;
-			if (!TryGetId(sender, out id))
+			if (!TryGetId(conference, out id))
 				return;
 
 			if (IsConnected)

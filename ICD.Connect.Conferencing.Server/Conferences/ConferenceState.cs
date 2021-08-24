@@ -17,10 +17,16 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 		public eConferenceStatus Status { get; private set; }
 
 		/// <summary>
-		/// Name of the conference
+		/// Name of the conference.
 		/// </summary>
 		[PublicAPI, JsonProperty]
 		public string Name { get; private set; }
+
+		/// <summary>
+		/// Number of the conference.
+		/// </summary>
+		[PublicAPI, JsonProperty]
+		public string Number { get; private set; }
 
 		/// <summary>
 		/// The time the conference started.
@@ -56,25 +62,30 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 		public string Language { get; set; }
 
 		[PublicAPI, JsonProperty]
-		public List<ParticipantState> ParticipantStates { get; private set; }
+		public ParticipantState ParticipantStates { get; private set; }
 
 		public static ConferenceState FromConference([NotNull] IConference conference, [CanBeNull] string language)
 		{
 			if (conference == null)
 				throw new ArgumentNullException("conference");
 
+			if (!(conference is ThinConference))
+				throw new ArgumentOutOfRangeException("conference");
+
+			var participant = conference.GetParticipants().First();
+
 			ConferenceState conferenceState = new ConferenceState
 			{
 				Status = conference.Status,
 				Name = string.Format("({0}) {1}", language, conference.Name),
+				Number = conference.Number,
 				StartTime = conference.StartTime,
 				EndTime = conference.EndTime,
 				CallType = conference.CallType,
 				RecordingStatus = conference.RecordingStatus,
 				SupportedConferenceFeatures = conference.SupportedConferenceFeatures,
 				Language = language,
-				ParticipantStates =
-					conference.GetParticipants().Select(participant => ParticipantState.FromParticipant(participant)).ToList()
+				ParticipantStates = ParticipantState.FromParticipant(participant)
 			};
 
 			return conferenceState;

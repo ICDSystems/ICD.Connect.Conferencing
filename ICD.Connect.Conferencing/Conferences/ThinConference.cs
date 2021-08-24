@@ -395,7 +395,7 @@ namespace ICD.Connect.Conferencing.Conferences
 				case eConferenceStatus.Connecting:
 					return eParticipantStatus.Connecting;
 				case eConferenceStatus.Connected:
-					return eParticipantStatus.Connecting;
+					return eParticipantStatus.Connected;
 				case eConferenceStatus.Disconnecting:
 					return eParticipantStatus.Disconnecting;
 				case eConferenceStatus.Disconnected:

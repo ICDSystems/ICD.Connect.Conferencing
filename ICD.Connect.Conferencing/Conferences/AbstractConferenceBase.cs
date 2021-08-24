@@ -378,6 +378,8 @@ namespace ICD.Connect.Conferencing.Conferences
 		public virtual void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
 			addRow("Status", Status);
+			addRow("Name", Name);
+			addRow("Number", Number);
 			addRow("StartTime", StartTime);
 			addRow("EndTime", EndTime);
 			addRow("CallType", CallType);

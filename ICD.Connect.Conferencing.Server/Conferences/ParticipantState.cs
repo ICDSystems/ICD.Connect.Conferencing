@@ -70,7 +70,7 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 		public static ParticipantState FromParticipant(IParticipant participant)
 		{
 			if (participant == null)
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException("participant");
 
 			return new ParticipantState
 			{
@@ -109,7 +109,7 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 			if (state == null)
-				throw new ArgumentNullException("participantState");
+				throw new ArgumentNullException("state");
 
 			
 			extends.Name = state.Name;
