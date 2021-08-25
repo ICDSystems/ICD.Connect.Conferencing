@@ -1,5 +1,10 @@
-﻿using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call;
+﻿#if NETFRAMEWORK
+extern alias RealNewtonsoft;
+using RealNewtonsoft.Newtonsoft.Json;
+#else
 using Newtonsoft.Json;
+#endif
+using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Call;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses.Converters
 {

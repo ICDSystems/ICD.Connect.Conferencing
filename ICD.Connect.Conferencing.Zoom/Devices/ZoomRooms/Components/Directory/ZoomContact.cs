@@ -1,11 +1,16 @@
-﻿using System;
+﻿#if NETFRAMEWORK
+extern alias RealNewtonsoft;
+using RealNewtonsoft.Newtonsoft.Json;
+#else
+using Newtonsoft.Json;
+#endif
+using System;
 using System.Collections.Generic;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.DialContexts;
 using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses.Converters;
-using Newtonsoft.Json;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Components.Directory
 {

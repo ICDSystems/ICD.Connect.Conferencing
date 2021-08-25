@@ -1,6 +1,11 @@
-﻿using System.Linq;
-using ICD.Common.Utils.Extensions;
+﻿#if NETFRAMEWORK
+extern alias RealNewtonsoft;
+using RealNewtonsoft.Newtonsoft.Json;
+#else
 using Newtonsoft.Json;
+#endif
+using System.Linq;
+using ICD.Common.Utils.Extensions;
 
 namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Responses.Converters
 {
