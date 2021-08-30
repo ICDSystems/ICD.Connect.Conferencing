@@ -3,7 +3,7 @@
   <Import Condition=" '$(EAZFUSCATOR_NET_HOME)' != '' and Exists('$(EAZFUSCATOR_NET_HOME)\Integration\MSBuild\Eazfuscator.NET.targets') " Project="$(EAZFUSCATOR_NET_HOME)\Integration\MSBuild\Eazfuscator.NET.targets" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>ICD.Connect.Conferencing.ZoomMiddleware</RootNamespace>
     <AssemblyName>ICD.Connect.Conferencing.ZoomMiddleware</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -14,11 +14,11 @@
     <EazfuscatorCompatibilityVersion>2018.2</EazfuscatorCompatibilityVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;DEBUG;STANDARD</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <OutputPath>binNetCoreApp\$(Configuration)\</OutputPath>
-    <DefineConstants>TRACE;STANDARD</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="binNetCoreApp\**" />
