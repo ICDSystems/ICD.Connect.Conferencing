@@ -63,7 +63,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		private readonly Dictionary<string, IcdHashSet<Action<string>>> m_FeedbackHandlers;
 		private readonly Dictionary<string, IcdHashSet<Action<IEnumerable<string>>>> m_RangeFeedbackHandlers;
 
-		private readonly RateLimitedEventQueue<string> m_CommandQueue;
+		private readonly ThreadedWorkerQueue<string> m_CommandQueue;
 		private readonly SafeTimer m_FeedbackTimer;
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
@@ -152,11 +152,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 
 			m_FeedbackTimer = new SafeTimer(ReSubscribeToFeedbacks, TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL, TIMER_RESUBSCRIBE_FEEDBACK_INTERVAL);
 
-			m_CommandQueue = new RateLimitedEventQueue<string>
-			{
-				BetweenMilliseconds = RATE_LIMIT_MS
-			};
-			m_CommandQueue.OnItemDequeued += CommandQueueOnItemDequeued;
+			m_CommandQueue = new ThreadedWorkerQueue<string>(CommandQueueProcessAction, false, RATE_LIMIT_MS);
 
 			m_Components = new PolycomComponentFactory(this);
 
@@ -346,11 +342,10 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <summary>
 		/// Called to send the next command to the device.
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="eventArgs"></param>
-		private void CommandQueueOnItemDequeued(object sender, GenericEventArgs<string> eventArgs)
+		/// <param name="data"></param>
+		private void CommandQueueProcessAction(string data)
 		{
-			SendCommand(eventArgs.Data);
+			SendCommand(data);
 		}
 
 		#endregion
@@ -374,6 +369,7 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 		/// <param name="args"></param>
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs args)
 		{
+			m_CommandQueue.SetRunProcess(args.Data);
 			if (args.Data)
 			{
 				if (m_ConnectionStateManager.Port is IComPort)
@@ -716,6 +712,8 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec
 			base.StartSettingsFinal();
 
 			m_ConnectionStateManager.Start();
+
+			m_CommandQueue.SetRunProcess(m_ConnectionStateManager.IsConnected);
 		}
 
 		#endregion
