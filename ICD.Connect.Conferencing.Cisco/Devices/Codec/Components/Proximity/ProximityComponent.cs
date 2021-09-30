@@ -184,6 +184,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Proximity
 		[PublicAPI]
 		public void SetProximityMode(eProximityMode mode)
 		{
+			if (mode == eProximityMode.Unknown)
+				throw new ArgumentOutOfRangeException("mode", "Can not set proximity mode to Unknown");
+
 			Codec.SendCommand("xConfiguration Proximity Mode: {0}", mode);
 			Codec.Logger.Log(eSeverity.Informational, "Setting Proximity Mode to: {0}", mode);
 		}
