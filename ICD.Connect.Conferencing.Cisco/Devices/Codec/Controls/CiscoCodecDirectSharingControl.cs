@@ -44,6 +44,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 			Subscribe(m_Presentation);
 			Subscribe(m_Proximity);
+
+			UpdateDirectShareEnabled();
+			UpdateDirectShareActive();
 		}
 
 		/// <summary>
@@ -61,6 +64,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		#endregion
 
 		#region Private Methods
+
+		/// <summary>
+		/// Updats the direct share enabled state by checking
+		/// that proximity mode isn't off, and that the share
+		/// from clients service is enabled.
+		/// </summary>
+		private void UpdateDirectShareEnabled()
+		{
+			DirectShareEnabled = m_Proximity.ProximityMode != eProximityMode.Off &&
+			m_Proximity.ContentShareFromClientsServiceState == eProximityServiceState.Enabled;
+		}
 
 		/// <summary>
 		/// Updates the direct share active state by checking
@@ -117,6 +131,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private void Subscribe(ProximityComponent proximity)
 		{
 			proximity.OnProximityModeChanged += ProximityOnProximityModeChanged;
+			proximity.OnProximityContentShareFromClientsChanged += ProximityOnProximityContentShareFromClientsChanged;
 		}
 
 		/// <summary>
@@ -126,11 +141,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private void Unsubscribe(ProximityComponent proximity)
 		{
 			proximity.OnProximityModeChanged -= ProximityOnProximityModeChanged;
+			proximity.OnProximityContentShareFromClientsChanged -= ProximityOnProximityContentShareFromClientsChanged;
 		}
 
 		private void ProximityOnProximityModeChanged(object sender, ProximityModeEventArgs args)
 		{
-			DirectShareEnabled = args.Data == eProximityMode.On;
+			UpdateDirectShareEnabled();
+		}
+
+		private void ProximityOnProximityContentShareFromClientsChanged(object sender, ProximityServicesEventArgs e)
+		{
+			UpdateDirectShareEnabled();
 		}
 
 		#endregion
