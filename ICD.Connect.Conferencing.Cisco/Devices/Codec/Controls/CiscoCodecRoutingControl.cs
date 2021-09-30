@@ -187,7 +187,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				return true;
 
 			// Check presentation inputs if it's not the camera input
-
 			return m_PresentationInputsActiveCacheSection.Execute(() => m_PresentationInputsActiveCache.Contains(input));
 		}
 
