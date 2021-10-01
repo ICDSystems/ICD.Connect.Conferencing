@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Changed
  - Polycom now uses ThreadedWorkerQueue instead of RateLimitedEventQueue
+ - CiscoCodec - Occupancy Control now reports people counts when available
+ - CiscoCodec - Added unknown proximity mode for webex registred codecs
+ - CiscoCodec - DirectShare sources enable/disable based on avalibility
+ - CiscoCodec - RoutingControl - removed RouterCache and implemented InputActive
+ - CiscoCodec - limit phonebook search results to 200
 
 ## [19.1.0] - 2021-08-17
 ### Changed
@@ -19,9 +24,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - CiscoCodecDirectSharingControl to support Cisco Proximity sharing
  - Added mask to ConferencePoint for configuring privacy mute authority
  - ConferenceManager uses privacy mute masks to better handle privacy mute state changes
- 
-### Changed
- - Cisco Codec Occupancy Control now reports people counts when available
 
 ## [18.0.0] - 2021-05-14
 ### Added
