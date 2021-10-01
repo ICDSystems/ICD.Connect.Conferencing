@@ -51,7 +51,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// <returns></returns>
 		public string GetSearchCommand()
 		{
-			string command = "xcommand phonebook search Limit: 50 Recursive: False";
+			string command = "xcommand phonebook search Limit: 200 Recursive: False";
 			command += " PhonebookType: " + PhonebookType;
 
 			if (!string.IsNullOrEmpty(FolderId))
