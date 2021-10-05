@@ -39,7 +39,7 @@ namespace ICD.Connect.Conferencing.Controls.Routing
 		/// <summary>
 		/// Gets the input address for the camera feed.
 		/// </summary>
-		public int? CameraInput
+		public virtual int? CameraInput
 		{
 			get { return m_CameraInput; }
 			protected set

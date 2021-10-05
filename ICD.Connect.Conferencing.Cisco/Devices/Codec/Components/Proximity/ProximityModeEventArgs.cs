@@ -5,6 +5,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Proximity
 {
 	public enum eProximityMode
 	{
+		[PublicAPI] Unknown, // Cloud-Registred Codecs don't have proximity mode
 		[PublicAPI] Off,
 		[PublicAPI] On
 	}

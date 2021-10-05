@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
@@ -12,7 +14,6 @@ using ICD.Connect.Routing;
 using ICD.Connect.Routing.Connections;
 using ICD.Connect.Routing.EventArguments;
 using ICD.Connect.Routing.RoutingGraphs;
-using ICD.Connect.Routing.Utils;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 {
@@ -36,8 +37,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// </summary>
 		public override event EventHandler<ActiveInputStateChangeEventArgs> OnActiveInputsChanged;
 
-		private readonly SwitcherCache m_Cache;
 		private IRoutingGraph m_CachedRoutingGraph;
+
+		private readonly IcdHashSet<int> m_PresentationInputsActiveCache;
+		private readonly SafeCriticalSection m_PresentationInputsActiveCacheSection;
 
 		#region Properties
 
@@ -62,6 +65,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			get { return Parent.Components.GetComponent<PresentationComponent>(); }
 		}
 
+		/// <summary>
+		/// Gets the input address for the camera feed.
+		/// </summary>
+		public override int? CameraInput
+		{
+			get { return base.CameraInput; }
+			protected set
+			{
+				int? oldValue = base.CameraInput;
+				base.CameraInput = value;
+				UpdateCameraInputActive(value, oldValue);
+			}
+		}
+
 		#endregion
 
 		/// <summary>
@@ -72,8 +89,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		public CiscoCodecRoutingControl(CiscoCodecDevice parent, int id)
 			: base(parent, id)
 		{
-			m_Cache = new SwitcherCache();
-			Subscribe(m_Cache);
+			m_PresentationInputsActiveCache = new IcdHashSet<int>();
+			m_PresentationInputsActiveCacheSection = new SafeCriticalSection();
 
 			SubscribeComponents();
 		}
@@ -89,8 +106,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			OnActiveInputsChanged = null;
 
 			base.DisposeFinal(disposing);
-
-			Unsubscribe(m_Cache);
 		}
 
 		#region Methods
@@ -167,7 +182,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// </summary>
 		public override bool GetInputActiveState(int input, eConnectionType type)
 		{
-			return true;
+			// Shortcut so camera input always returns true
+			if (input == CameraInput)
+				return true;
+
+			// Check presentation inputs if it's not the camera input
+			return m_PresentationInputsActiveCacheSection.Execute(() => m_PresentationInputsActiveCache.Contains(input));
 		}
 
 		/// <summary>
@@ -347,6 +367,112 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			}
 		}
 
+		/// <summary>
+		/// Sets the presentation input state
+		/// Does not raise event if the input is also being used as the camera input
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="state"></param>
+		private void SetPresentationInputActiveState(int input, bool state)
+		{
+			m_PresentationInputsActiveCacheSection.Enter();
+			try
+			{
+				if (state == m_PresentationInputsActiveCache.Contains(input))
+					return;
+
+				if (state)
+					m_PresentationInputsActiveCache.Add(input);
+				else
+					m_PresentationInputsActiveCache.Remove(input);
+			}
+			finally
+			{
+				m_PresentationInputsActiveCacheSection.Leave();
+			}
+
+			// Don't raise the event if this is also the camera input
+			if (input != CameraInput)
+				OnActiveInputsChanged.Raise(this, new ActiveInputStateChangeEventArgs(input, eConnectionType.Audio | eConnectionType.Video, state));
+		}
+
+		/// <summary>
+		/// Sets the given inputs as the active presentation sources
+		/// Any inputs not passed in are set as inactive
+		/// Does not raise events if the inputs are also being used as the camera input
+		/// </summary>
+		/// <param name="activeInputs"></param>
+		private void SetPresentationInputActiveState(IEnumerable<int> activeInputs)
+		{
+			int[] newInputs = activeInputs.ToArray();
+
+			List<int> removedValues;
+			List<int> addedValues = new List<int>();
+
+			m_PresentationInputsActiveCacheSection.Enter();
+			try
+			{
+				removedValues = m_PresentationInputsActiveCache.Except(newInputs).ToList();
+
+				foreach (int input in removedValues)
+					m_PresentationInputsActiveCache.Remove(input);
+
+				addedValues.AddRange(newInputs.Where(input => m_PresentationInputsActiveCache.Add(input)));
+			}
+			finally
+			{
+				m_PresentationInputsActiveCacheSection.Leave();
+			}
+
+			foreach (int input in removedValues.Where(input => input != CameraInput))
+				OnActiveInputsChanged.Raise(this,
+				                            new ActiveInputStateChangeEventArgs(input, eConnectionType.Audio | eConnectionType.Video,
+				                                                                false));
+
+			foreach (int input in addedValues.Where(input => input != CameraInput))
+				OnActiveInputsChanged.Raise(this,
+				                            new ActiveInputStateChangeEventArgs(input, eConnectionType.Audio | eConnectionType.Video,
+				                                                                true));
+		}
+
+		/// <summary>
+		/// Raises events for udating the active camera input
+		/// Doesn't raise events if the inputs are being used for presentations
+		/// </summary>
+		/// <param name="newInput"></param>
+		/// <param name="oldInput"></param>
+		private void UpdateCameraInputActive(int? newInput, int? oldInput)
+		{
+			if (newInput == oldInput)
+				return;
+
+			// Check if the inputs are already used by presentation
+			// If they are, we won't raise events for those inputs
+			bool oldInputEvent;
+			bool newInputEvent;
+
+			m_PresentationInputsActiveCacheSection.Enter();
+			try
+			{
+				oldInputEvent = oldInput.HasValue && !m_PresentationInputsActiveCache.Contains(oldInput.Value);
+				newInputEvent = newInput.HasValue && !m_PresentationInputsActiveCache.Contains(newInput.Value);
+			}
+			finally
+			{
+				m_PresentationInputsActiveCacheSection.Leave();
+			}
+
+			if (oldInputEvent)
+				OnActiveInputsChanged.Raise(this,
+											new ActiveInputStateChangeEventArgs(oldInput.Value, eConnectionType.Audio | eConnectionType.Video,
+																				false));
+
+			if (newInputEvent)
+				OnActiveInputsChanged.Raise(this,
+											new ActiveInputStateChangeEventArgs(newInput.Value, eConnectionType.Audio | eConnectionType.Video,
+																				true));
+		}
+
 		#endregion
 
 		#region Component Callbacks
@@ -392,48 +518,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		/// <param name="eventArgs"></param>
 		private void PresentationOnPresentationsChanged(object sender, EventArgs eventArgs)
 		{
-			foreach (int output in GetPresentationOutputs())
-			{
-				int input;
-				bool found = PresentationComponent.GetPresentations()
-				                                  .Select(p => p.VideoInputConnector)
-				                                  .TryFirst(out input);
-
-				m_Cache.SetInputForOutput(output, found ? input : (int?)null, eConnectionType.Video);
-			}
-		}
-
-		#endregion
-
-		#region Cache Callbacks
-
-		private void Subscribe(SwitcherCache cache)
-		{
-			cache.OnActiveInputsChanged += CacheOnActiveInputsChanged;
-			cache.OnSourceDetectionStateChange += CacheOnSourceDetectionStateChange;
-			cache.OnActiveTransmissionStateChanged += CacheOnActiveTransmissionStateChanged;
-		}
-
-		private void Unsubscribe(SwitcherCache cache)
-		{
-			cache.OnActiveInputsChanged -= CacheOnActiveInputsChanged;
-			cache.OnSourceDetectionStateChange -= CacheOnSourceDetectionStateChange;
-			cache.OnActiveTransmissionStateChanged -= CacheOnActiveTransmissionStateChanged;
-		}
-
-		private void CacheOnActiveTransmissionStateChanged(object sender, TransmissionStateEventArgs args)
-		{
-			OnActiveTransmissionStateChanged.Raise(this, new TransmissionStateEventArgs(args));
-		}
-
-		private void CacheOnSourceDetectionStateChange(object sender, SourceDetectionStateChangeEventArgs args)
-		{
-			OnSourceDetectionStateChange.Raise(this, new SourceDetectionStateChangeEventArgs(args));
-		}
-
-		private void CacheOnActiveInputsChanged(object sender, ActiveInputStateChangeEventArgs args)
-		{
-			OnActiveInputsChanged.Raise(this, new ActiveInputStateChangeEventArgs(args));
+			SetPresentationInputActiveState(PresentationComponent.GetPresentations().Select(p => p.VideoInputConnector));
 		}
 
 		#endregion

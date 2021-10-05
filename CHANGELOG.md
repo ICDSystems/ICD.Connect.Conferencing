@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [19.2.0] - 2021-10-04
+### Changed
+ - Polycom now uses ThreadedWorkerQueue instead of RateLimitedEventQueue
+ - CiscoCodec - Occupancy Control now reports people counts when available
+ - CiscoCodec - Added unknown proximity mode for webex registred codecs
+ - CiscoCodec - DirectShare sources enable/disable based on avalibility
+ - CiscoCodec - RoutingControl - removed RouterCache and implemented InputActive
+ - CiscoCodec - limit phonebook search results to 200
+
 ## [19.1.0] - 2021-08-17
 ### Changed
  - Cisco - Added support for Spark bookings from cloud registered endpoints
