@@ -134,6 +134,7 @@
     <Compile Include="Devices\Codec\Components\Video\VideoComponent.cs" />
     <Compile Include="Devices\Codec\Components\Dialing\CallComponent.cs" />
     <Compile Include="Devices\Codec\Components\Dialing\DialingComponent.cs" />
+    <Compile Include="Devices\Codec\Utils\CiscoCallbackNode.cs" />
     <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoBooking.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoCodecCalendarControl.cs" />

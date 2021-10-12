@@ -14,6 +14,7 @@ using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Utils;
 using ICD.Connect.Conferencing.Devices;
 using ICD.Connect.Devices.Controls;
 using ICD.Connect.Protocol;
@@ -87,9 +88,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			"xFeedback Register Result"
 		};
 
-		private readonly Dictionary<string, IcdHashSet<ParserCallback>> m_ParserCallbacks;
-		private readonly SafeCriticalSection m_ParserCallbacksSection;
-
+		private readonly CiscoCallbackNode m_RootCallbackNode;
 		private readonly ISerialBuffer m_SerialBuffer;
 		private readonly SafeTimer m_FeedbackTimer;
 
@@ -159,8 +158,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
-			m_ParserCallbacks = new Dictionary<string, IcdHashSet<ParserCallback>>();
-			m_ParserCallbacksSection = new SafeCriticalSection();
+			m_RootCallbackNode = new CiscoCallbackNode();
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
@@ -298,24 +296,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		{
 			string key = XmlPathToKey(path);
 
-			m_ParserCallbacksSection.Enter();
-
-			try
-			{
-				// Callbacks
-				IcdHashSet<ParserCallback> callbacks;
-				if (!m_ParserCallbacks.TryGetValue(key, out callbacks))
-				{
-					callbacks = new IcdHashSet<ParserCallback>();
-					m_ParserCallbacks.Add(key, callbacks);
-				}
-
-				callbacks.Add(callback);
-			}
-			finally
-			{
-				m_ParserCallbacksSection.Leave();
-			}
+			m_RootCallbackNode.RegisterCallback(callback, path);
 
 			if (Initialized)
 				RegisterFeedback(key);
@@ -326,35 +307,19 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		/// <param name="callback"></param>
 		/// <param name="path"></param>
-		/// <returns></returns>
 		[PublicAPI]
-		public bool UnregisterParserCallback(ParserCallback callback, params string[] path)
+		public void UnregisterParserCallback(ParserCallback callback, params string[] path)
 		{
-			if (!m_ConnectionStateManager.IsConnected)
-				return false;
-
 			string key = XmlPathToKey(path);
 
-			m_ParserCallbacksSection.Enter();
+			m_RootCallbackNode.UnregisterCallback(callback, path);
 
-			try
-			{
-				// Callbacks
-				IcdHashSet<ParserCallback> callbacks;
-				if (!m_ParserCallbacks.TryGetValue(key, out callbacks))
-					return false;
+			ParserCallback[] callbacks = m_RootCallbackNode.GetCallbacks(path).ToArray();
+			if (callbacks.Length > 0)
+				return;
 
-				if (!callbacks.Remove(callback) || callbacks.Count > 0)
-					return false;
-			}
-			finally
-			{
-				m_ParserCallbacksSection.Leave();
-			}
-
-			DeregisterFeedback(key);
-
-			return true;
+			if (m_ConnectionStateManager.IsConnected)
+				DeregisterFeedback(key);
 		}
 
 		#endregion
@@ -380,8 +345,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			m_FeedbackTimer.Reset(FEEDBACK_MILLISECONDS, FEEDBACK_MILLISECONDS);
 
 			// Register feedback immediately
-			string[] keys = m_ParserCallbacksSection.Execute(() => m_ParserCallbacks.Keys.ToArray());
-
+			IEnumerable<string> keys = m_RootCallbackNode.GetPathsRecursive().Select(s => XmlPathToKey(s));
 			foreach (string key in keys)
 				RegisterFeedback(key);
 
@@ -485,8 +449,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			string inner = XmlUtils.ReadElementContent(xml);
 
 			IcdHashSet<string> actual = new IcdHashSet<string>(inner.Split());
-			IcdHashSet<string> expected =
-				m_ParserCallbacksSection.Execute(() => m_ParserCallbacks.Select(p => p.Key).ToIcdHashSet());
+			IcdHashSet<string> expected = m_RootCallbackNode.GetPathsRecursive().Select(s => XmlPathToKey(s)).ToIcdHashSet();
 			IcdHashSet<string> missing = expected.Subtract(actual);
 
 			foreach (string item in missing)
@@ -608,6 +571,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		/// <param name="resultId"></param>
 		/// <param name="args"></param>
+		/// <returns>True to keep walking the xml document.</returns>
 		private bool XmlCallback(string resultId, XmlRecursionEventArgs args)
 		{
 			string xml = args.Outer;
@@ -621,8 +585,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 
 				default:
 					string key = XmlPathToKey(args.Path);
-                    CallParserCallbacks(xml, resultId, key);
-					return true;
+					return CallParserCallbacks(xml, resultId, args.Path);
 			}
 		}
 
@@ -631,28 +594,19 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		/// <param name="xml"></param>
 		/// <param name="resultId"></param>
-		/// <param name="key"></param>
-		private void CallParserCallbacks(string xml, string resultId, string key)
+		/// <param name="path"></param>
+		/// <returns>True to keep walking the xml document.</returns>
+		private bool CallParserCallbacks(string xml, string resultId, string[] path)
 		{
-			ParserCallback[] callbacks;
+			CiscoCallbackNode leaf = m_RootCallbackNode.GetChild(path);
+			if (leaf == null)
+				return false;
 
-			m_ParserCallbacksSection.Enter();
-
-			try
-			{
-				IcdHashSet<ParserCallback> callbacksSet;
-				if (!m_ParserCallbacks.TryGetValue(key, out callbacksSet))
-					return;
-
-				callbacks = callbacksSet.ToArray(callbacksSet.Count);
-			}
-			finally
-			{
-				m_ParserCallbacksSection.Leave();
-			}
-
+			IEnumerable<ParserCallback> callbacks = leaf.GetCallbacks();
 			foreach (ParserCallback callback in callbacks)
 				callback(this, resultId, xml);
+
+			return leaf.GetChildren().Any();
 		}
 
 		#endregion
