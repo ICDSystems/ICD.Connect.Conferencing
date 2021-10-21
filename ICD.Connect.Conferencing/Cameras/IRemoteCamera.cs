@@ -1,5 +1,5 @@
 ﻿using ICD.Connect.API.Nodes;
-﻿using ICD.Connect.Cameras;
+using ICD.Connect.Cameras;
 
 namespace ICD.Connect.Conferencing.Cameras
 {
