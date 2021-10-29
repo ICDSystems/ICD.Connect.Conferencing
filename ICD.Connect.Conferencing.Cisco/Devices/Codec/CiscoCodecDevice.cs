@@ -146,6 +146,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// </summary>
 		public override string ConsoleHelp { get { return "The Cisco codec device"; } }
 
+		/// <summary>
+		/// If true, the system will go into halfwake mode instead of sleep mode when standby/poweroff is run
+		/// </summary>
+		/// <remarks>This is a workaround for a compatibility issue with Room Kit Plus and DMPS3 rooms</remarks>
+		public bool StandbyToHalfwake { get; private set; }
+
 		#endregion
 
 		#region Constructors
@@ -629,6 +635,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			settings.Copy(m_NetworkProperties);
 
 			settings.PresenterTrackCameraId = PresenterTrackCameraId;
+			settings.StandbyToHalfwake = StandbyToHalfwake;
 		}
 
 		/// <summary>
@@ -641,6 +648,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			PeripheralsId = null;
 			PhonebookType = ePhonebookType.Corporate;
 			PresenterTrackCameraId = null;
+			StandbyToHalfwake = false;
 
 			m_ComSpecProperties.ClearComSpecProperties();
 			m_NetworkProperties.ClearNetworkProperties();
@@ -663,6 +671,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			PeripheralsId = settings.PeripheralsId;
 			PhonebookType = settings.PhonebookType;
 			PresenterTrackCameraId = settings.PresenterTrackCameraId;
+			StandbyToHalfwake = settings.StandbyToHalfwake;
 
 			ISerialPort port = null;
 

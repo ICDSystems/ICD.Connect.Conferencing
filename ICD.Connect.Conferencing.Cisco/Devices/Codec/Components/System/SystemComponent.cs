@@ -383,8 +383,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		[PublicAPI]
 		public void Standby()
 		{
-			Codec.SendCommand("xCommand Standby Activate");
-			Codec.Logger.Log(eSeverity.Informational, "Putting VTC into Standby");
+			if (Codec.StandbyToHalfwake)
+			{
+				Codec.SendCommand("xCommand Standby Halfwake");
+				Codec.Logger.Log(eSeverity.Informational, "Putting VTC into Halfwake");
+			}
+			else
+			{
+				Codec.SendCommand("xCommand Standby Activate");
+				Codec.Logger.Log(eSeverity.Informational, "Putting VTC into Standby");
+			}
 		}
 
 		/// <summary>
@@ -400,8 +408,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		[PublicAPI]
 		public void ResetSleepTimer(int minutes)
 		{
-			Codec.SendCommand("xCommand Standby ResetTimer Delay:{0}", minutes);
-			Codec.Logger.Log(eSeverity.Informational, "Resetting standby timer to {0} minutes", minutes);
+			if (Codec.StandbyToHalfwake)
+			{
+				Codec.SendCommand("xCommand Standby ResetHalfwakeTimer Delay:{0}", minutes);
+				Codec.Logger.Log(eSeverity.Informational, "Resetting halfwake timer to {0} minutes", minutes);
+			}
+			else
+			{
+				Codec.SendCommand("xCommand Standby ResetTimer Delay:{0}", minutes);
+				Codec.Logger.Log(eSeverity.Informational, "Resetting standby timer to {0} minutes", minutes);
+			}
 		}
 
 		/// <summary>
@@ -503,8 +519,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.UnregisterParserCallback(ParseSipProxy, CiscoCodecDevice.XSTATUS_ELEMENT, "SIP", "Proxy");
 			codec.UnregisterParserCallback(ParseNameStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "UserInterface", "ContactInfo", "Name");
 			codec.UnregisterParserCallback(ParseVersionStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "Version");
-			codec.UnregisterParserCallback(ParseVersionDateStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit",
-			                               "Software", "ReleaseDate");
+			codec.UnregisterParserCallback(ParseVersionDateStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Software", "ReleaseDate");
 			codec.UnregisterParserCallback(ParseAddressStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Address");
 			codec.UnregisterParserCallback(ParseGatewayStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "Gateway");
 			codec.UnregisterParserCallback(ParseSubnetMaskStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Network", "IPv4", "SubnetMask");
