@@ -127,6 +127,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 		#region Methods
 
 		/// <summary>
+		/// Joins the Webex call with the specified number.
+		/// </summary>
+		/// <param name="number"></param>
+		public void WebexJoin(string number)
+		{
+			Codec.SendCommand("xCommand Webex Join Number: {0}", number);
+			Codec.Logger.Log(eSeverity.Informational, "Joining Webex conference: {0}", number);
+		}
+
+		/// <summary>
 		/// Sends the raise hand command.
 		/// </summary>
 		/// <param name="callId"></param>
@@ -326,6 +336,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 			foreach (IConsoleCommand command in GetBaseConsoleCommands())
 				yield return command;
 
+			yield return new GenericConsoleCommand<string>("WebexJoin", "WebexJoin {Meeting Link or Number}", s => WebexJoin(s));
 			yield return new GenericConsoleCommand<int>("RaiseHand", "RaiseHand {CallId}", i => RaiseHand(i));
 			yield return new GenericConsoleCommand<int>("LowerHand", "LowerHand {CallId}", i => LowerHand(i));
 		}

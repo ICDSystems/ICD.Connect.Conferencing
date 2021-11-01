@@ -11,6 +11,7 @@
 		Sip = 2,
 		Zoom = 3,
 		ZoomContact = 4,
-		ZoomPersonal = 5
+		ZoomPersonal = 5,
+		Spark = 6
 	}
 }

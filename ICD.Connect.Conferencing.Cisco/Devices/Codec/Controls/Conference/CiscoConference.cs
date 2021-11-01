@@ -49,8 +49,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 	public sealed class CiscoConference : AbstractConference<CiscoParticipant>, ICiscoConference
 	{
 		private readonly DialingComponent m_DialingComponent;
-		private readonly CallStatus m_CallStatus;
 
+		private CallStatus m_CallStatus;
 		private CiscoParticipant m_Participant;
 
 		#region Constructor
@@ -66,11 +66,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				throw new ArgumentNullException("dialingComponent");
 
 			m_DialingComponent = dialingComponent;
-			m_CallStatus = callStatus;
-
-			UpdateCallStatus(m_CallStatus);
-
-			Subscribe(m_CallStatus);
+			UpdateCallStatus(callStatus);
 
 			SupportedConferenceFeatures = eConferenceFeatures.EndConference;
 		}
@@ -79,16 +75,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#region Methods
 
-		private void UpdateCallStatus(CallStatus callStatus)
+		public void UpdateCallStatus(CallStatus callStatus)
 		{
 			if (callStatus == null)
 				return;
 
-			Name = callStatus.Name;
-			Number = callStatus.Number;
-			Direction = callStatus.Direction;
-			AnswerState = callStatus.AnswerState;
-			Status = callStatus.Status.ToConferenceStatus();
+			m_CallStatus = callStatus;
+
+			Name = m_CallStatus.Name;
+			Number = m_CallStatus.Number;
+			Direction = m_CallStatus.Direction;
+			AnswerState = m_CallStatus.AnswerState;
+			Status = m_CallStatus.Status.ToConferenceStatus();
 		}
 
 		public void InitializeConference()
@@ -100,7 +98,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		protected override void DisposeFinal()
 		{
-			Unsubscribe(m_CallStatus);
 			Unsubscribe(m_Participant);
 
 			base.DisposeFinal();
@@ -156,59 +153,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			throw new NotSupportedException();
 		}
 
-
-		#endregion
-
-		#region CallStatus Callback
-
-		private void Subscribe(CallStatus callStatus)
-		{
-			if (callStatus == null)
-				return;
-
-			callStatus.OnNameChanged += CallStatusOnNameChanged;
-			callStatus.OnNumberChanged += CallStatusOnNumberChanged;
-			callStatus.OnDirectionChanged += CallStatusOnDirectionChanged;
-			callStatus.OnAnswerStateChanged += CallStatusOnAnswerStateChanged;
-			callStatus.OnStatusChanged += CallStatusOnStatusChanged;
-		}
-
-		private void Unsubscribe(CallStatus callStatus)
-		{
-			if (callStatus == null)
-				return;
-
-			callStatus.OnNameChanged -= CallStatusOnNameChanged;
-			callStatus.OnNumberChanged -= CallStatusOnNumberChanged;
-			callStatus.OnDirectionChanged -= CallStatusOnDirectionChanged;
-			callStatus.OnAnswerStateChanged -= CallStatusOnAnswerStateChanged;
-			callStatus.OnStatusChanged -= CallStatusOnStatusChanged;
-		}
-
-		private void CallStatusOnNameChanged(object sender, StringEventArgs args)
-		{
-			Name = args.Data;
-		}
-
-		private void CallStatusOnNumberChanged(object sender, StringEventArgs args)
-		{
-			Number = args.Data;
-		}
-
-		private void CallStatusOnDirectionChanged(object sender, GenericEventArgs<eCallDirection> args)
-		{
-			Direction = args.Data;
-		}
-
-		private void CallStatusOnAnswerStateChanged(object sender, GenericEventArgs<eCallAnswerState> args)
-		{
-			AnswerState = args.Data;
-		}
-
-		private void CallStatusOnStatusChanged(object sender, GenericEventArgs<eParticipantStatus> args)
-		{
-			Status = args.Data.ToConferenceStatus();
-		}
 
 		#endregion
 

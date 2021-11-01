@@ -19,9 +19,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private const int PARTICIPANT_SEARCH_LIMIT = 25;
 
+		private CallStatus m_CallStatus;
+
 		private readonly ConferenceComponent m_ConferenceComponent;
 		private readonly DialingComponent m_DialingComponent;
-		private readonly CallStatus m_CallStatus;
 
 		private readonly SafeCriticalSection m_ParticipantsSection;
 		private readonly Dictionary<CiscoWebexParticipant, WebexParticipantInfo> m_ParticipantsToInfos;
@@ -46,7 +47,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			m_ConferenceComponent = conferenceComponent;
 			m_DialingComponent = dialingComponent;
-			m_CallStatus = callStatus;
+			UpdateCallStatus(callStatus);
 
 			Subscribe(m_ConferenceComponent);
 
@@ -60,6 +61,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		#endregion
 
 		#region Methods
+
+		public void UpdateCallStatus(CallStatus callStatus)
+		{
+			if (callStatus == null)
+				return;
+
+			m_CallStatus = callStatus;
+
+			Name = m_CallStatus.Name;
+			Number = m_CallStatus.Number;
+			Direction = m_CallStatus.Direction;
+			AnswerState = m_CallStatus.AnswerState;
+			Status = m_CallStatus.Status.ToConferenceStatus();
+		}
 
 		public override void LeaveConference()
 		{

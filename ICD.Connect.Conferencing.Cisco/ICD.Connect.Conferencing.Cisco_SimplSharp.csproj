@@ -114,6 +114,7 @@
     <Compile Include="Devices\Codec\Components\Directory\Tree\AbstractCiscoFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContact.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContactDialContext.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\eSearchFilter.cs" />
     <Compile Include="Devices\Codec\Components\ICiscoComponent.cs" />
     <Compile Include="Devices\Codec\Components\Peripherals\PeripheralsComponent.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\LayoutEventArgs.cs" />

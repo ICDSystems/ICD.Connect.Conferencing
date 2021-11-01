@@ -41,6 +41,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public event EventHandler<GenericEventArgs<CallStatus>> OnSourceAdded;
 
 		/// <summary>
+		/// Called when a source's state is changed.
+		/// </summary>
+		public event EventHandler<GenericEventArgs<CallStatus>> OnSourceUpdated;
+
+		/// <summary>
 		/// Called when a source is removed from the dialing component.
 		/// </summary>
 		public event EventHandler<GenericEventArgs<CallStatus>> OnSourceRemoved;
@@ -410,6 +415,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (!added)
 			{
 				output.UpdateFromXml(xml);
+
+				OnSourceUpdated.Raise(this, new GenericEventArgs<CallStatus>(output));
+
 				return output;
 			}
 

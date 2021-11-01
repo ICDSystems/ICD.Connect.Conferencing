@@ -56,6 +56,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 					instance.CallType = reader.ReadElementContentAsEnum<eCiscoCallType>(true).ToCallType();
 					break;
 
+				// TODO - parse Protocol element & set call type to video if spark
 				default:
 					base.ReadElement(reader, instance);
 					break;

@@ -80,6 +80,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			base.Dispose(disposing);
 		}
 
+		public void PhonebookSearch(ePhonebookType phonebookType, string searchString, eSearchFilter searchFilter, int limit)
+        {
+			Codec.SendCommand("xCommand Phonebook Search PhonebookType: {0} SearchString: {1} SearchFilter: {2} Limit: {3}", phonebookType, searchString, searchFilter, limit);
+        }
+
 		/// <summary>
 		/// Clears the cache.
 		/// </summary>
