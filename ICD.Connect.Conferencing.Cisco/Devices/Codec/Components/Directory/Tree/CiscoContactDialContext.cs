@@ -1,7 +1,9 @@
 ﻿using ICD.Common.Properties;
 using ICD.Common.Utils.Xml;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference;
 using ICD.Connect.Conferencing.DialContexts;
+using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 {
@@ -56,7 +58,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 					instance.CallType = reader.ReadElementContentAsEnum<eCiscoCallType>(true).ToCallType();
 					break;
 
-				// TODO - parse Protocol element & set call type to video if spark
+				case "Protocol":
+					eCiscoDialProtocol protocol = reader.ReadElementContentAsEnum<eCiscoDialProtocol>(true);
+					if (protocol == eCiscoDialProtocol.Spark)
+					{
+						instance.CallType = eCallType.Video | eCallType.Audio;
+						instance.Protocol = eDialProtocol.Spark;
+					}
+					break;
+
 				default:
 					base.ReadElement(reader, instance);
 					break;
