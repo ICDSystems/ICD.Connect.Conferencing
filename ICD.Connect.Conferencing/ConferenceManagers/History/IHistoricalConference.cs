@@ -75,5 +75,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		/// and remove references to the conference
 		/// </summary>
 		void Detach();
+
+		/// <summary>
+		/// Gets the underlying historical conference type.
+		/// </summary>
+		/// <returns></returns>
+		Type GetConferenceType();
 	}
 }

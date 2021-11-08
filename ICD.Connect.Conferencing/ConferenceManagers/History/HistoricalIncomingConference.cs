@@ -158,6 +158,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			m_Participant.Detach();
 		}
 
+		public Type GetConferenceType()
+		{
+			return typeof(IIncomingCall);
+		}
+
 		#endregion
 
 		#region IncomingCall Callbacks

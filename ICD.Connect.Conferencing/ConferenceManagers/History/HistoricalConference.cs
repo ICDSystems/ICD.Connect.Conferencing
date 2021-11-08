@@ -31,6 +31,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		private eCallDirection m_Direction;
 		private eCallAnswerState m_AnswerState;
 
+		private Type m_CachedConferenceType;
+
 		#endregion
 
 		#region Properties
@@ -180,6 +182,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 			}
 		}
 
+		public Type GetConferenceType()
+		{
+			return m_CachedConferenceType;
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -239,6 +246,8 @@ namespace ICD.Connect.Conferencing.ConferenceManagers.History
 		{
 			if (conference == null)
 				return;
+
+			m_CachedConferenceType = conference.GetType();
 
 			conference.OnNameChanged += ConferenceOnNameChanged;
 			conference.OnNumberChanged += ConferenceOnNumberChanged;
