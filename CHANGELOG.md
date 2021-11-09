@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Cisco Camera now resets halfwake timer and sleep timer when powered on
  - Vaddio AV Bridge - fix null ref in console when no port is attached
 
+## [17.2.3] - 2021-11-09
+### Added
+ - CiscoCodecDevice - added StandbyToHalfwake property to put codec into halfwake instead of standby - workaround for compatibility issues
+ 
+### Changed
+ - CiscoCodecDevice - Changed response parser to use nodes, improving performance
+
 ## [17.2.2] - 2021-04-08
 ### Added
  - Cisco - added additional video connector signal states of "Unstable" "NotFound" and "Unsupported"
