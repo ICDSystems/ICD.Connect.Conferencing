@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [19.2.1] - 2021-11-10
+### Changed
+ - Roll up of 17.2.3 changes into Krang 1.9
+
 ## [19.2.0] - 2021-10-04
 ### Changed
  - Polycom now uses ThreadedWorkerQueue instead of RateLimitedEventQueue
