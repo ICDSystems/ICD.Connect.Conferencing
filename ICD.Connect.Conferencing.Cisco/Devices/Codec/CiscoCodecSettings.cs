@@ -21,6 +21,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private const string PERIPHERALS_ID_ELEMENT = "PeripheralsID";
 		private const string PHONEBOOK_TYPE_ELEMENT = "PhonebookType";
 		private const string PRESENTER_TRACK_CAMERA_ELEMENT = "PresenterTrackCameraID";
+		private const string STANDBY_TO_HALFWAKE_ELEMENT = "StandbyToHalfwake";
 
 		private readonly SecureNetworkProperties m_NetworkProperties;
 		private readonly ComSpecProperties m_ComSpecProperties;
@@ -53,6 +54,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// Determines which phonebook to use with directory.
 		/// </summary>
 		public ePhonebookType PhonebookType { get; set; }
+
+		/// <summary>
+		/// If true, the system will go into halfwake mode instead of sleep mode when standby/poweroff is run
+		/// </summary>
+		/// <remarks>This is a workaround for a compatibility issue with Room Kit Plus and DMPS3 rooms</remarks>
+		public bool StandbyToHalfwake { get; set; }
 
 		#endregion
 
@@ -219,6 +226,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			writer.WriteElementString(PERIPHERALS_ID_ELEMENT, PeripheralsId);
 			writer.WriteElementString(PHONEBOOK_TYPE_ELEMENT, IcdXmlConvert.ToString(PhonebookType));
 			writer.WriteElementString(PRESENTER_TRACK_CAMERA_ELEMENT, IcdXmlConvert.ToString(PresenterTrackCameraId));
+			writer.WriteElementString(STANDBY_TO_HALFWAKE_ELEMENT, IcdXmlConvert.ToString(StandbyToHalfwake));
 
 			m_NetworkProperties.WriteElements(writer);
 			m_ComSpecProperties.WriteElements(writer);
@@ -237,6 +245,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			PhonebookType = XmlUtils.TryReadChildElementContentAsEnum<ePhonebookType>(xml, PHONEBOOK_TYPE_ELEMENT, true) ??
 			                ePhonebookType.Corporate;
 			PresenterTrackCameraId = XmlUtils.TryReadChildElementContentAsInt(xml, PRESENTER_TRACK_CAMERA_ELEMENT);
+			StandbyToHalfwake = XmlUtils.TryReadChildElementContentAsBoolean(xml, STANDBY_TO_HALFWAKE_ELEMENT) ?? false;
 
 			m_NetworkProperties.ParseXml(xml);
 			m_ComSpecProperties.ParseXml(xml);

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [19.2.1] - 2021-11-10
+### Changed
+ - Roll up of 17.2.3 changes into Krang 1.9
+
 ## [19.2.0] - 2021-10-04
 ### Changed
  - Polycom now uses ThreadedWorkerQueue instead of RateLimitedEventQueue
@@ -39,6 +43,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - IConferencePoint implements IPoint<T>
  - Cisco Camera now resets halfwake timer and sleep timer when powered on
  - Vaddio AV Bridge - fix null ref in console when no port is attached
+
+## [17.2.3] - 2021-11-09
+### Added
+ - CiscoCodecDevice - added StandbyToHalfwake property to put codec into halfwake instead of standby - workaround for compatibility issues
+ 
+### Changed
+ - CiscoCodecDevice - Changed response parser to use nodes, improving performance
 
 ## [17.2.2] - 2021-04-08
 ### Added
