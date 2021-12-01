@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Contacts;
@@ -15,7 +14,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 	[XmlConverter(typeof(CiscoContactXmlConverter))]
 	public sealed class CiscoContact : IContact
 	{
-		private readonly IcdSortedDictionary<int, CiscoContactDialContext> m_ContactMethods;
+		private readonly List<CiscoContactDialContext> m_ContactMethods;
 
 		#region Properties
 
@@ -58,7 +57,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// </summary>
 		public CiscoContact()
 		{
-			m_ContactMethods = new IcdSortedDictionary<int, CiscoContactDialContext>();
+			m_ContactMethods = new List<CiscoContactDialContext>();
 		}
 
 		/// <summary>
@@ -67,7 +66,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 		/// <returns></returns>
 		public IEnumerable<CiscoContactDialContext> GetContactMethods()
 		{
-			return m_ContactMethods.Values.ToArray(m_ContactMethods.Count);
+			return m_ContactMethods.ToArray(m_ContactMethods.Count);
 		}
 
 		/// <summary>
@@ -79,7 +78,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 			if (contactDialContext == null)
 				throw new ArgumentNullException("contactDialContext");
 
-			m_ContactMethods.Add(contactDialContext.ContactMethodId, contactDialContext);
+			m_ContactMethods.Add(contactDialContext);
 		}
 
 		IEnumerable<IDialContext> IContact.GetDialContexts()

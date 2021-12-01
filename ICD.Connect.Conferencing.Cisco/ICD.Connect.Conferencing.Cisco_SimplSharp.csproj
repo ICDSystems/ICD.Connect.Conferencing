@@ -100,6 +100,7 @@
     <Compile Include="Devices\Codec\Components\Conference\WebexParticipantInfo.cs" />
     <Compile Include="Devices\Codec\Components\Dialing\CallStatus.cs" />
     <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\PhonebookSearchResult.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoRootFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoFolder.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\ePhonebookType.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContact.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\CiscoContactDialContext.cs" />
     <Compile Include="Devices\Codec\Components\Directory\Tree\eSearchFilter.cs" />
+    <Compile Include="Devices\Codec\Components\Directory\Tree\ResultInfo.cs" />
     <Compile Include="Devices\Codec\Components\ICiscoComponent.cs" />
     <Compile Include="Devices\Codec\Components\Peripherals\PeripheralsComponent.cs" />
     <Compile Include="Devices\Codec\Components\Presentation\LayoutEventArgs.cs" />
