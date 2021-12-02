@@ -14,10 +14,7 @@ namespace ICD.Connect.Conferencing.Conferences
 	public abstract class AbstractConference<T> : AbstractConferenceBase<T>
 		where T: class, IParticipant
 	{
-		/// <summary>
-		/// Raised when the conference status changes.
-		/// </summary>
-		public override event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
+		#region Events
 
 		/// <summary>
 		/// Raised when a participant is added to the conference.
@@ -29,6 +26,9 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public override event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
+		#endregion
+
+		#region Members
 
 		private readonly IcdHashSet<T> m_Participants;
 		private readonly SafeCriticalSection m_ParticipantsSection;
@@ -59,9 +59,9 @@ namespace ICD.Connect.Conferencing.Conferences
 				{eParticipantStatus.Disconnected, eConferenceStatus.Disconnected},
 			};
 
-		#region Properties
-
 		#endregion
+
+		#region Constructor
 
 		/// <summary>
 		/// Constructor.
@@ -71,6 +71,8 @@ namespace ICD.Connect.Conferencing.Conferences
 			m_Participants = new IcdHashSet<T>();
 			m_ParticipantsSection = new SafeCriticalSection();
 		}
+
+		#endregion
 
 		#region Methods
 

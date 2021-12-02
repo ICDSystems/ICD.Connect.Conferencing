@@ -37,8 +37,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// Raised when the conference status changes.
 		/// </summary>
-		public virtual event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
-
+		public event EventHandler<ConferenceStatusEventArgs> OnStatusChanged;
 		public event EventHandler<StringEventArgs> OnNameChanged;
 		public event EventHandler<StringEventArgs> OnNumberChanged;
 		public event EventHandler<GenericEventArgs<eCallDirection>> OnDirectionChanged;
@@ -47,27 +46,27 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <summary>
 		/// Raised when the start time changes
 		/// </summary>
-		public virtual event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
+		public event EventHandler<DateTimeNullableEventArgs> OnStartTimeChanged;
 
 		/// <summary>
 		/// Raised when the end time changes
 		/// </summary>
-		public virtual event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
+		public event EventHandler<DateTimeNullableEventArgs> OnEndTimeChanged;
 
 		/// <summary>
 		/// Raised when the conference's call type changes.
 		/// </summary>
-		public virtual event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
+		public event EventHandler<GenericEventArgs<eCallType>> OnCallTypeChanged;
 
 		/// <summary>
 		/// Raised when the conference's recording status changes.
 		/// </summary>
-		public virtual event EventHandler<ConferenceRecordingStatusEventArgs> OnConferenceRecordingStatusChanged;
+		public event EventHandler<ConferenceRecordingStatusEventArgs> OnConferenceRecordingStatusChanged;
 
 		/// <summary>
 		/// Raised when the supported conference features changes.
 		/// </summary>
-		public virtual event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
+		public event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
 
 		#endregion
 
@@ -222,7 +221,7 @@ namespace ICD.Connect.Conferencing.Conferences
 
 				m_RecordingStatus = value;
 
-				OnConferenceRecordingStatusChanged.Raise(this, new ConferenceRecordingStatusEventArgs(m_RecordingStatus));
+				OnConferenceRecordingStatusChanged.Raise(this, new ConferenceRecordingStatusEventArgs(value));
 			}
 		}
 
@@ -239,7 +238,7 @@ namespace ICD.Connect.Conferencing.Conferences
 
 				m_SupportedConferenceFeatures = value;
 
-				OnSupportedConferenceFeaturesChanged.Raise(this, new GenericEventArgs<eConferenceFeatures>(m_SupportedConferenceFeatures));
+				OnSupportedConferenceFeaturesChanged.Raise(this, new GenericEventArgs<eConferenceFeatures>(value));
 			}
 		}
 
@@ -254,6 +253,8 @@ namespace ICD.Connect.Conferencing.Conferences
 		public virtual string ConsoleHelp { get { return string.Empty; }  }
 
 		#endregion
+
+		#region Abstract Methods
 
 		/// <summary>
 		/// Gets the participants in this conference.
@@ -311,6 +312,10 @@ namespace ICD.Connect.Conferencing.Conferences
 			return GetParticipants().Cast<IParticipant>();
 		}
 
+		#endregion
+
+		#region Methods
+
 		/// <summary>
 		/// Release resources.
 		/// </summary>
@@ -362,6 +367,10 @@ namespace ICD.Connect.Conferencing.Conferences
 				EndTime = end;
 		}
 
+		#endregion
+
+		#region Console
+
 		/// <summary>
 		/// Gets the child console nodes.
 		/// </summary>
@@ -400,5 +409,7 @@ namespace ICD.Connect.Conferencing.Conferences
 			yield return new ConsoleCommand("Resume", "Resumes the call", () => Resume());
 			yield return new GenericConsoleCommand<string>("SendDTMF", "SendDTMF x", s => SendDtmf(s));
 		}
+
+		#endregion
 	}
 }
