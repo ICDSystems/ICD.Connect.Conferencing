@@ -103,6 +103,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private bool m_Initialized;
 		private readonly CiscoCodecTelemetryComponent m_TelemetryComponent;
 
+		private readonly SafeCriticalSection m_CallbacksSection;
+		private readonly Dictionary<string, ParserCallback> m_ResultIdCallbacks;
+
 		#region Properties
 
 		/// <summary>
@@ -165,7 +168,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			m_NetworkProperties = new SecureNetworkProperties();
 			m_ComSpecProperties = new ComSpecProperties();
 
+			m_CallbacksSection = new SafeCriticalSection();
 			m_RootCallbackNode = new CiscoCallbackNode();
+			m_ResultIdCallbacks = new Dictionary<string, ParserCallback>();
 
 			m_ConnectionStateManager = new ConnectionStateManager(this) { ConfigurePort = ConfigurePort };
 			m_ConnectionStateManager.OnConnectedStateChanged += PortOnConnectionStatusChanged;
@@ -221,6 +226,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			OnInitializedChanged = null;
 			OnConnectedStateChanged = null;
 
+			m_CallbacksSection.Execute(() => m_ResultIdCallbacks.Clear());
+
 			m_FeedbackTimer.Dispose();
 
 			m_ConnectionStateManager.OnConnectedStateChanged -= PortOnConnectionStatusChanged;
@@ -258,7 +265,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// <param name="command"></param>
 		public void SendCommand(string command)
 		{
-			SendCommand(command, null);
+			SendCommand(command, (ParserCallback)null);
 		}
 
 		/// <summary>
@@ -268,8 +275,38 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		/// <param name="args"></param>
 		public void SendCommand(string command, params object[] args)
 		{
+			SendCommand(command, (ParserCallback)null, args);
+		}
+
+		/// <summary>
+		/// Send command.
+		/// </summary>
+		/// <param name="command"></param>
+		/// <param name="callback"></param>
+		public string SendCommand(string command, [CanBeNull] ParserCallback callback)
+		{
+			return SendCommand(command, callback, null);
+		}
+
+		/// <summary>
+		/// Send command.
+		/// </summary>
+		/// <param name="command"></param>
+		/// <param name="callback"></param>
+		/// <param name="args"></param>
+		public string SendCommand(string command, [CanBeNull] ParserCallback callback, params object[] args)
+		{
 			if (args != null)
 				command = string.Format(command, args);
+
+			// If a callback is specified set up a response id and handler
+			string resultId = null;
+			if (callback != null)
+			{
+				resultId = Guid.NewGuid().ToString();
+				command = string.Format("{0} | resultId=\"{1}\"", command, resultId);
+				m_ResultIdCallbacks.Add(resultId, callback);
+			}
 
 			m_ConnectionStateManager.Send(command + END_OF_LINE);
 
@@ -277,6 +314,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			// Too fast!
 			ThreadingUtils.Sleep(10);
 #endif
+			return resultId;
 		}
 
 		/// <summary>
@@ -488,6 +526,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 		private void PortOnConnectionStatusChanged(object sender, BoolEventArgs args)
 		{
 			m_SerialBuffer.Clear();
+			m_CallbacksSection.Execute(() => m_ResultIdCallbacks.Clear());
 
 			if (args.Data)
 				Initialize();
@@ -559,6 +598,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec
 			{
 				ParseFeedbackRegistration(xml);
 				return;
+			}
+
+			m_CallbacksSection.Enter();
+			try
+			{
+				ParserCallback callback;
+				if (m_ResultIdCallbacks.TryGetValue(resultId, out callback))
+				{
+					callback(this, resultId, innerXml);
+					m_ResultIdCallbacks.Remove(resultId);
+					return;
+				}
+			}
+			finally
+			{
+				m_CallbacksSection.Leave();
 			}
 
 			// Recurse through the elements
