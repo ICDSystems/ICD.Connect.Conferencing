@@ -62,7 +62,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree
 					eCiscoDialProtocol protocol = reader.ReadElementContentAsEnum<eCiscoDialProtocol>(true);
 					if (protocol == eCiscoDialProtocol.Spark)
 					{
-						instance.CallType = eCallType.Video | eCallType.Audio;
+						instance.CallType = eCallType.Video;
 						instance.Protocol = eDialProtocol.Spark;
 					}
 					break;
