@@ -92,6 +92,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		//   </Contact>
 		// </PhonebookSearchResult>
 
+		public DirectoryComponent.ContactParsedDelegate ContactCallback { get; set; }
+
 		/// <summary>
 		/// Creates a new instance of T.
 		/// </summary>
@@ -118,6 +120,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 				case "Contact":
 					CiscoContact contact = IcdXmlConvert.DeserializeObject<CiscoContact>(reader);
 					instance.AddContact(contact);
+					if (ContactCallback != null)
+						ContactCallback(contact);
 					break;
 
 				default:

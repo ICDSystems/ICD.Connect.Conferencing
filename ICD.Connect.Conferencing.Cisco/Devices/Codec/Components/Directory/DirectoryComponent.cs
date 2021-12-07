@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -17,9 +18,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 	/// </summary>
 	public sealed class DirectoryComponent : AbstractCiscoComponent
 	{
-
-		private const string SEARCH_RESULT_ID = "PhonebookSearch:";
-
 		/// <summary>
 		/// Callback for result parsing.
 		/// </summary>
@@ -27,6 +25,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		/// <param name="folders"></param>
 		/// <param name="contacts"></param>
 		public delegate void ResultParsedDelegate(string resultId, CiscoFolder[] folders, CiscoContact[] contacts);
+
+		/// <summary>
+		/// Callback for individual contact parsing.
+		/// </summary>
+		/// <param name="contact"></param>
+		public delegate void ContactParsedDelegate(CiscoContact contact);
 
 		/// <summary>
 		/// Called when the cache is cleared.
@@ -82,10 +86,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 			base.Dispose(disposing);
 		}
 
-		public void PhonebookSearch(ePhonebookType phonebookType, string searchString, eSearchFilter searchFilter, int limit, string resultId)
+		public void PhonebookSearch(ePhonebookType phonebookType, string searchString, eSearchFilter searchFilter, int limit)
 		{
-			Codec.SendCommand("xCommand Phonebook Search PhonebookType: {0} SearchString: {1} SearchFilter: {2} Limit: {3}| resultId=\"{4}{5}\"", phonebookType, searchString, searchFilter, limit, SEARCH_RESULT_ID, resultId);
+			PhonebookSearch(phonebookType, searchString, searchFilter, limit, null);
         }
+
+		public void PhonebookSearch(ePhonebookType phonebookType, string searchString, eSearchFilter searchFilter, int limit,
+		                            [CanBeNull] ContactParsedDelegate callback)
+		{
+			// Deserialize the phonebook result and call the callback for each contact
+			CiscoCodecDevice.ParserCallback wrapper = (codec, id, xml) =>
+				IcdXmlConvert.DeserializeObject<PhonebookSearchResult>(xml, new PhonebookSearchResultXmlConverter { ContactCallback = callback }); ;
+
+			Codec.SendCommand("xCommand Phonebook Search PhonebookType: {0} SearchString: {1} SearchFilter: {2} Limit: {3}", wrapper,
+			                  phonebookType, searchString, searchFilter, limit);
+		}
 
 		/// <summary>
 		/// Clears the cache.
@@ -210,7 +225,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		private void ParseSearchResult(string resultId, string xml)
 		{
 			PhonebookSearchResult result;
-			bool textSearchResult;
 
 			m_FolderSection.Enter();
 
@@ -219,25 +233,16 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 				result = IcdXmlConvert.DeserializeObject<PhonebookSearchResult>(xml);
 				Codec.Logger.Log(eSeverity.Debug, "Phone Book download complete. {0} entries downloaded.", result.Count);
 
-				textSearchResult = !string.IsNullOrEmpty(resultId) &&
-				                   string.Equals(resultId.Substring(0, SEARCH_RESULT_ID.Length), SEARCH_RESULT_ID);
-
-				if (!textSearchResult)
-				{
-					Insert(resultId, result.GetFolders(), result.GetContacts());
-					return;
-				}
+				Insert(resultId, result.GetFolders(), result.GetContacts());
 			}
 			finally
 			{
 				m_FolderSection.Leave();
 			}
 
-			string resultSubstring = resultId.Substring(SEARCH_RESULT_ID.Length);
-
 			ResultParsedDelegate handler = OnResultParsed;
 			if (handler != null)
-				handler(resultSubstring, result.GetFolders(), result.GetContacts());
+				handler(resultId, result.GetFolders(), result.GetContacts());
 		}
 
 		/// <summary>
@@ -300,7 +305,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 				yield return command;
 
 			yield return new ConsoleCommand("ClearCache", "Clears the cached folders and contacts", () => Clear());
-			yield return new GenericConsoleCommand<string, ePhonebookType, int>("Search", "Search <string> <phonebooktype> <limit>", (s,p,l) => PhonebookSearch(p, s, eSearchFilter.All, l, "Console"));
+			yield return new GenericConsoleCommand<string, ePhonebookType, int>("Search", "Search <string> <phonebooktype> <limit>", (s,p,l) => PhonebookSearch(p, s, eSearchFilter.All, l));
 		}
 
 		/// <summary>
