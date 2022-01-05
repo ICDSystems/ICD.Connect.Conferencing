@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
@@ -88,15 +87,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 
 		public void PhonebookSearch(ePhonebookType phonebookType, string searchString, eSearchFilter searchFilter, int limit)
 		{
-			PhonebookSearch(phonebookType, searchString, searchFilter, limit, null);
-        }
-
-		public void PhonebookSearch(ePhonebookType phonebookType, string searchString, eSearchFilter searchFilter, int limit,
-		                            [CanBeNull] ContactParsedDelegate callback)
-		{
 			// Deserialize the phonebook result and call the callback for each contact
 			CiscoCodecDevice.ParserCallback wrapper = (codec, id, xml) =>
-				IcdXmlConvert.DeserializeObject<PhonebookSearchResult>(xml, new PhonebookSearchResultXmlConverter { ContactCallback = callback }); ;
+				IcdXmlConvert.DeserializeObject<PhonebookSearchResult>(xml);
 
 			Codec.SendCommand("xCommand Phonebook Search PhonebookType: {0} SearchString: {1} SearchFilter: {2} Limit: {3}", wrapper,
 			                  phonebookType, searchString, searchFilter, limit);
