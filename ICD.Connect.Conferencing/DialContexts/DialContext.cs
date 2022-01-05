@@ -44,6 +44,15 @@ namespace ICD.Connect.Conferencing.DialContexts
 		private const string TOKEN_PASSWORD = "password";
 
 		/// <summary>
+		/// Creates a new instance of T.
+		/// </summary>
+		/// <returns></returns>
+		protected override DialContext Instantiate()
+		{
+			return new DialContext();
+		}
+
+		/// <summary>
 		/// Override to write properties to the writer.
 		/// </summary>
 		/// <param name="writer"></param>

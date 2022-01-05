@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Directory;
@@ -32,9 +33,16 @@ namespace ICD.Connect.Conferencing.Mock
 
 		public override void PopulateFolder(IDirectoryFolder folder)
 		{
-			folder.AddContact(new Contact("MockPerson",
-			                              new IDialContext[]
-			                              {new DialContext {Protocol = eDialProtocol.Pstn, DialString = "555-555-5555"}}));
+			Contact contact = new Contact
+			{
+				Name = "MockPerson",
+				DialContexts = new List<IDialContext>
+				{
+					new DialContext {Protocol = eDialProtocol.Pstn, DialString = "555-555-5555"}
+				}
+			};
+
+			folder.AddContact(contact);
 		}
 	}
 }

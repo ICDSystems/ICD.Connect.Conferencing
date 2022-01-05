@@ -332,12 +332,16 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Components.Addressbook
 			if (!match.Success)
 				throw new FormatException("Failed to parse contact");
 
-			IDialContext[] dialMethods =
+			Contact contact = new Contact
 			{
-				new DialContext { DialString = match.Groups["number"].Value }
+				Name = match.Groups["name"].Value,
+				DialContexts = new List<IDialContext>
+				{
+					new DialContext {DialString = match.Groups["number"].Value}
+				}
 			};
 
-			return new Contact(match.Groups["name"].Value, dialMethods);
+			return contact;
 		}
 
 		/// <summary>
