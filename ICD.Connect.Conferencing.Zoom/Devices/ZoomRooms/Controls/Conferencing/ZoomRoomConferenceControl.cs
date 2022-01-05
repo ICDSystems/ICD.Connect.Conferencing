@@ -461,7 +461,7 @@ namespace ICD.Connect.Conferencing.Zoom.Devices.ZoomRooms.Controls.Conferencing
 
 			// Form the full personal URI from the DialString
 			// Example: "https://icdpf.zoom.us/my/P3rS0naL.d1aL5tr1nG"
-			WebPortResponse response = m_PersonalIdPort.Get("https://icdpf.zoom.us/my/" + personal);
+			WebPortResponse response = m_PersonalIdPort.Get("https://icdpf.zoom.us/my/" + personal, null);
 
 			Match match = Regex.Match(response.ResponseUrl, zoomResponseRegex);
 			return s_PersonalToId[personal] = match.Groups["meeting"].Value;
