@@ -34,7 +34,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#endregion
 
-		#region Properties
+		#region Events
+
+		public override event EventHandler<ParticipantEventArgs> OnParticipantAdded;
+		public override event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
 		#endregion
 
@@ -84,9 +87,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			AnswerState = m_CallStatus.AnswerState;
 			Status = m_CallStatus.Status.ToConferenceStatus();
 		}
-
-		public override event EventHandler<ParticipantEventArgs> OnParticipantAdded;
-		public override event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
 
 		/// <summary>
 		/// Gets the participants in this conference.
