@@ -13,7 +13,7 @@ using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
-	public sealed class CiscoWebexConference : AbstractConference<CiscoWebexParticipant>, ICiscoConference
+	public sealed class CiscoWebexConference : AbstractConferenceBase<CiscoWebexParticipant>, ICiscoConference
 	{
 		#region Private Members
 
@@ -25,7 +25,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private readonly DialingComponent m_DialingComponent;
 
 		private readonly SafeCriticalSection m_ParticipantsSection;
-		private readonly Dictionary<CiscoWebexParticipant, WebexParticipantInfo> m_ParticipantsToInfos;
+		
+		/// <summary>
+		/// Participants
+		/// Key is webex participant id
+		/// </summary>
+		private readonly Dictionary<string, CiscoWebexParticipant> m_Participants;
 
 		#endregion
 
@@ -56,7 +61,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			Subscribe(m_ConferenceComponent);
 
 			m_ParticipantsSection = new SafeCriticalSection();
-			m_ParticipantsToInfos = new Dictionary<CiscoWebexParticipant, WebexParticipantInfo>();
+			m_Participants = new Dictionary<string, CiscoWebexParticipant>();
 
 			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
 			                              eConferenceFeatures.EndConference;
@@ -78,6 +83,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			Direction = m_CallStatus.Direction;
 			AnswerState = m_CallStatus.AnswerState;
 			Status = m_CallStatus.Status.ToConferenceStatus();
+		}
+
+		public override event EventHandler<ParticipantEventArgs> OnParticipantAdded;
+		public override event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
+
+		/// <summary>
+		/// Gets the participants in this conference.
+		/// </summary>
+		/// <returns></returns>
+		public override IEnumerable<CiscoWebexParticipant> GetParticipants()
+		{
+			return m_ParticipantsSection.Execute(() => m_Participants.Values.ToArray(m_Participants.Count));
 		}
 
 		public override void LeaveConference()
@@ -203,19 +220,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
 		{
+			var results = new Dictionary<string, WebexParticipantInfo>();
+			results.AddRange(args.Data, i => i.ParticipantId);
+			
 			var newInfos = new List<WebexParticipantInfo>();
 
 			// Search for any new participants
-			m_ParticipantsSection.Execute(() => newInfos.AddRange(args.Data.Where(info => m_ParticipantsToInfos.Values.All(k => k.ParticipantId != info.ParticipantId))));
+			m_ParticipantsSection.Execute(() => newInfos.AddRange(results.Values.Where(info => !m_Participants.ContainsKey(info.ParticipantId))));
 
 			foreach (WebexParticipantInfo info in newInfos)
 			{
 				var participant = new CiscoWebexParticipant(info, m_CallStatus.CallId, m_ConferenceComponent);
 				AddParticipant(participant);
-				Subscribe(participant);
-
-				m_ParticipantsSection.Execute(() => m_ParticipantsToInfos.Add(participant, info));
 			}
+
+			// Remove old participants
+			var removedParticipants = new List<CiscoWebexParticipant>();
+			m_ParticipantsSection.Execute(() =>
+			                              removedParticipants.AddRange(
+			                              m_Participants.Values.Where(participant =>!results.ContainsKey(participant.WebexParticipantId))));
+			removedParticipants.ForEach(RemoveParticipant);
 		}
 
 		private void ConferenceComponentOnCallRecordingStatusChanged(object sender, GenericEventArgs<eCallRecordingStatus> args)
@@ -268,13 +292,28 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (participant == null)
 				return;
 
-			if (args.Data != eParticipantStatus.Disconnected)
-				return;
+			if (args.Data == eParticipantStatus.Disconnected)           
+				RemoveParticipant(participant);
+		}
+
+		private void AddParticipant([NotNull] CiscoWebexParticipant participant)
+		{
+			if (participant == null)
+				throw new ArgumentNullException("participant");
+
+			Subscribe(participant);
+			m_ParticipantsSection.Execute(() => m_Participants.Add(participant.WebexParticipantId, participant));
+			OnParticipantAdded.Raise(this, participant);
+		}
+
+		private void RemoveParticipant([NotNull] CiscoWebexParticipant participant)
+		{
+			if (participant == null)
+				throw new ArgumentNullException("participant");
 
 			Unsubscribe(participant);
-			RemoveParticipant(participant);
-
-			m_ParticipantsSection.Execute(() => m_ParticipantsToInfos.Remove(participant));
+			m_ParticipantsSection.Execute(() => m_Participants.Remove(participant.WebexParticipantId));
+			OnParticipantRemoved.Raise(this, participant);
 		}
 
 		#endregion
