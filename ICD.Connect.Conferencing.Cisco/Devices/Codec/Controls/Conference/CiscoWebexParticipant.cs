@@ -5,7 +5,6 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cameras;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference;
 using ICD.Connect.Conferencing.EventArguments;
@@ -16,18 +15,49 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
 	public sealed class CiscoWebexParticipant : AbstractParticipant
 	{
-		private WebexParticipantInfo m_Info;
-
-		private readonly int m_CallId;
 		private readonly ConferenceComponent m_ConferenceComponent;
+		private readonly int m_CallId;		
+		private readonly string m_WebexParticipantId;
+
+		private bool m_IsCoHost;
+		private bool m_IsPresenter;
+
+		
 
 		public override IRemoteCamera Camera { get { return null; } }
 
-		public string WebexParticipantId { get { return m_Info.ParticipantId; } }
+		public string WebexParticipantId { get { return m_WebexParticipantId; }}
 
-		public bool IsCoHost { get { return m_Info.CoHost; } }
+		public bool IsCoHost
+		{
+			get { return m_IsCoHost; }
+			private set
+			{
+				if (m_IsCoHost == value)
+					return;
 
-		public bool IsPresenter { get { return m_Info.IsPresenter; } }
+				m_IsCoHost = value;
+
+				OnIsCoHostChanged.Raise(this, value);
+			}
+		}
+
+		public bool IsPresenter
+		{
+			get { return m_IsPresenter; }
+			private set
+			{
+				if (m_IsPresenter == value)
+					return;
+
+				m_IsPresenter = value;
+
+				OnIsPresenterChanged.Raise(this, value);
+			}
+		}
+
+		public event EventHandler<BoolEventArgs> OnIsCoHostChanged;
+		public event EventHandler<BoolEventArgs> OnIsPresenterChanged;
 
 		#region Constructor
 
@@ -42,11 +72,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (conferenceComponent == null)
 				throw new ArgumentNullException("conferenceComponent");
 
+			m_ConferenceComponent = conferenceComponent;
+			m_CallId = callId;
+			m_WebexParticipantId = info.ParticipantId;
 			IsSelf = info.IsSelf;
 			UpdateInfo(info);
-			m_CallId = callId;
 
-			m_ConferenceComponent = conferenceComponent;
+			
 			Subscribe(m_ConferenceComponent);
 
 			CallType = eCallType.Audio | eCallType.Video;
@@ -74,17 +106,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		public override void Admit()
 		{
-			m_ConferenceComponent.ParticipantAdmit(m_CallId, m_Info.ParticipantId);
+			m_ConferenceComponent.ParticipantAdmit(m_CallId, WebexParticipantId);
 		}
 
 		public override void Kick()
 		{
-			m_ConferenceComponent.ParticipantDisconnect(m_CallId, m_Info.ParticipantId);
+			m_ConferenceComponent.ParticipantDisconnect(m_CallId, WebexParticipantId);
 		}
 
 		public override void Mute(bool mute)
 		{
-			m_ConferenceComponent.ParticipantMute(mute, m_CallId, m_Info.ParticipantId);
+			m_ConferenceComponent.ParticipantMute(mute, m_CallId, WebexParticipantId);
 		}
 
 		public override void SetHandPosition(bool raised)
@@ -102,20 +134,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#region Private Methods
 
-		private void UpdateInfo(WebexParticipantInfo newInfo)
+		private void UpdateInfo(WebexParticipantInfo info)
 		{
-			m_Info = newInfo;
+			Name = info.DisplayName;
+			Status = info.Status;
+			IsMuted = info.AudioMute;
+			IsHost = info.IsHost;
+			HandRaised = info.HandRaised;
+			IsCoHost = info.CoHost;
+			IsPresenter = info.IsPresenter;
 
-			Name = m_Info.DisplayName;
-			Status = m_Info.Status;
-			IsMuted = m_Info.AudioMute;
-			IsHost = m_Info.IsHost;
-			HandRaised = m_Info.HandRaised;
-
-			if (EndTime != null && m_Info.Status == eParticipantStatus.Disconnected)
+			if (EndTime != null && info.Status == eParticipantStatus.Disconnected)
 				EndTime = IcdEnvironment.GetUtcTime();
 
-			SupportedParticipantFeatures.SetFlags(eParticipantFeatures.RaiseLowerHand, IsSelf);
+			SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.RaiseLowerHand, IsSelf);
 		}
 
 		#endregion
@@ -136,13 +168,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
 		{
-			if (args.Data.Any(info => info.ParticipantId == m_Info.ParticipantId))
-				UpdateInfo(args.Data.First(info => info.ParticipantId == m_Info.ParticipantId));
+			if (args.Data.Any(info => info.ParticipantId == WebexParticipantId))
+				UpdateInfo(args.Data.First(info => info.ParticipantId == WebexParticipantId));
 		}
 
 		private void ConferenceComponentOnWebexParticipantListUpdated(object sender, GenericEventArgs<WebexParticipantInfo> args)
 		{
-			if (args.Data.CallId != m_CallId || args.Data.ParticipantId != m_Info.ParticipantId)
+			if (args.Data.CallId != m_CallId || args.Data.ParticipantId != WebexParticipantId)
 				return;
 
 			UpdateInfo(args.Data);
