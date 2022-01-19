@@ -62,18 +62,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			                              eConferenceFeatures.EndConference;
 		}
 
-		/// <summary>
-		/// Override to handle the conference status changing
-		/// </summary>
-		/// <param name="status"></param>
-		protected override void HandleStatusChanged(eConferenceStatus status)
-		{
-			base.HandleStatusChanged(status);
-
-			if (status == eConferenceStatus.Connected)
-				m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
-		}
-
 		#endregion
 
 		#region Methods
@@ -163,6 +151,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			Unsubscribe(m_ConferenceComponent);
 
 			base.DisposeFinal();
+		}
+
+		/// <summary>
+		/// Override to handle the conference status changing
+		/// </summary>
+		/// <param name="status"></param>
+		protected override void HandleStatusChanged(eConferenceStatus status)
+		{
+			base.HandleStatusChanged(status);
+
+			if (status == eConferenceStatus.Connected)
+				m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
 		}
 
 		#endregion
