@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
@@ -85,6 +84,8 @@ namespace ICD.Connect.Conferencing.Conferences
 
 				m_Status = value;
 
+				HandleStatusChanged(value);
+				
 				OnStatusChanged.Raise(this, value);
 			}
 		}
@@ -310,6 +311,15 @@ namespace ICD.Connect.Conferencing.Conferences
 		IEnumerable<IParticipant> IConference.GetParticipants()
 		{
 			return GetParticipants().Cast<IParticipant>();
+		}
+
+		/// <summary>
+		/// Override to handle the conference status changing
+		/// </summary>
+		/// <param name="status"></param>
+		protected virtual void HandleStatusChanged(eConferenceStatus status)
+		{
+			
 		}
 
 		#endregion

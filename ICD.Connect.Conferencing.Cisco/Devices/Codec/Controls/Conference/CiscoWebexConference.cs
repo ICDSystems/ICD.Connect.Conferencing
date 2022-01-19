@@ -29,6 +29,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#endregion
 
+		#region Properties
+
+		#endregion
+
 		#region Constructor
 
 		/// <summary>
@@ -56,6 +60,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
 			                              eConferenceFeatures.EndConference;
+
+			m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
+
+			
+		}
+
+		/// <summary>
+		/// Override to handle the conference status changing
+		/// </summary>
+		/// <param name="status"></param>
+		protected override void HandleStatusChanged(eConferenceStatus status)
+		{
+			base.HandleStatusChanged(status);
+
+			if (status == eConferenceStatus.Connected)
+				m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
 		}
 
 		#endregion
