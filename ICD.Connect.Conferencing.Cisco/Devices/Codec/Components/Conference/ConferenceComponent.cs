@@ -79,7 +79,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 
 		public event EventHandler<GenericEventArgs<eCallRecordingStatus>> OnCallRecordingStatusChanged;
 		public event EventHandler<GenericEventArgs<WebexParticipantInfo>> OnWebexParticipantListUpdated;
-		public event EventHandler<GenericEventArgs<IEnumerable<WebexParticipantInfo>>> OnWebexParticipantsListSearchResult;
+		public event EventHandler<GenericEventArgs<WebexParticipantInfo[]>> OnWebexParticipantsListSearchResult;
 
 		#endregion
 
@@ -308,8 +308,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 
 		private void ParseParticipantsListSearchresult(CiscoCodecDevice codec, string resultid, string xml)
 		{
-			var participantInfos = XmlUtils.ReadListFromXml<WebexParticipantInfo>(xml, "Participant",
-			                                                                      s => WebexParticipantInfo.FromXml(s)).ToArray();
+			WebexParticipantInfo[] participantInfos = XmlUtils.ReadListFromXml<WebexParticipantInfo>(xml, "Participant",
+			                                                                      WebexParticipantInfo.FromXml).ToArray();
 
 			string selfId = XmlUtils.ReadChildElementContentAsString(xml, "ParticipantSelf");
 			foreach (WebexParticipantInfo info in participantInfos)

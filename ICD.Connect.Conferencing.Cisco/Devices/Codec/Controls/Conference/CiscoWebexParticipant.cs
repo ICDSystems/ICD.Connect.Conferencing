@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
@@ -14,10 +12,12 @@ using ICD.Connect.Conferencing.Participants.Enums;
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
 	public sealed class CiscoWebexParticipant : AbstractParticipant
-	{
-		private readonly ConferenceComponent m_ConferenceComponent;
-		private readonly int m_CallId;		
+	{		
 		private readonly string m_WebexParticipantId;
+		private readonly Action m_AdmitCallback;
+		private readonly Action m_KickCallback;
+		private readonly Action<bool> m_MuteCallback;
+		private readonly Action<bool> m_HandPositionCallback;
 
 		private bool m_IsCoHost;
 		private bool m_IsPresenter;
@@ -65,21 +65,31 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		/// Constructor.
 		/// </summary>
 		/// <param name="info"></param>
-		/// <param name="callId"></param>
-		/// <param name="conferenceComponent"></param>
-		public CiscoWebexParticipant(WebexParticipantInfo info, int callId, [NotNull] ConferenceComponent conferenceComponent)
+		/// <param name="admitCallback"></param>
+		/// <param name="kickCallback"></param>
+		/// <param name="muteCallback"></param>
+		/// <param name="handPositionCallback"></param>
+		public CiscoWebexParticipant(WebexParticipantInfo info, [NotNull] Action admitCallback, [NotNull] Action kickCallback,
+		                             [NotNull] Action<bool> muteCallback, [NotNull] Action<bool> handPositionCallback)
 		{
-			if (conferenceComponent == null)
-				throw new ArgumentNullException("conferenceComponent");
+			if (admitCallback == null)
+				throw new ArgumentNullException("admitCallback");
+			if (kickCallback == null)
+				throw new ArgumentNullException("kickCallback");
+			if (muteCallback == null)
+				throw new ArgumentNullException("muteCallback");
+			if (handPositionCallback == null)
+				throw new ArgumentNullException("handPositionCallback");
 
-			m_ConferenceComponent = conferenceComponent;
-			m_CallId = callId;
+
+			m_AdmitCallback = admitCallback;
+			m_KickCallback = kickCallback;
+			m_MuteCallback = muteCallback;
+			m_HandPositionCallback = handPositionCallback;
+
 			m_WebexParticipantId = info.ParticipantId;
 			IsSelf = info.IsSelf;
 			UpdateInfo(info);
-
-			
-			Subscribe(m_ConferenceComponent);
 
 			CallType = eCallType.Audio | eCallType.Video;
 			StartTime = IcdEnvironment.GetUtcTime();
@@ -93,30 +103,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			                               eParticipantFeatures.SetMute;
 		}
 
-		protected override void DisposeFinal()
-		{
-			Unsubscribe(m_ConferenceComponent);
-
-			base.DisposeFinal();
-		}
-
 		#endregion
 
 		#region Methods
 
 		public override void Admit()
 		{
-			m_ConferenceComponent.ParticipantAdmit(m_CallId, WebexParticipantId);
+			m_AdmitCallback();
 		}
 
 		public override void Kick()
 		{
-			m_ConferenceComponent.ParticipantDisconnect(m_CallId, WebexParticipantId);
+			m_KickCallback();
 		}
 
 		public override void Mute(bool mute)
 		{
-			m_ConferenceComponent.ParticipantMute(mute, m_CallId, WebexParticipantId);
+			m_MuteCallback(mute);
 		}
 
 		public override void SetHandPosition(bool raised)
@@ -124,17 +127,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (!IsSelf)
 				return;
 
-			if (raised)
-				m_ConferenceComponent.RaiseHand(m_CallId);
-			else
-				m_ConferenceComponent.LowerHand(m_CallId);
+			m_HandPositionCallback(raised);
 		}
 
 		#endregion
 
-		#region Private Methods
+		#region Internal Methods
 
-		private void UpdateInfo(WebexParticipantInfo info)
+		internal void CanKickAndMute(bool value)
+		{
+			SupportedParticipantFeatures =
+				SupportedParticipantFeatures.SetFlags(eParticipantFeatures.Kick & eParticipantFeatures.SetMute, value);
+		}
+
+		internal void UpdateInfo(WebexParticipantInfo info)
 		{
 			Name = info.DisplayName;
 			Status = info.Status;
@@ -148,36 +154,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				EndTime = IcdEnvironment.GetUtcTime();
 
 			SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.RaiseLowerHand, IsSelf);
-		}
-
-		#endregion
-
-		#region Conference Component Callbacks
-
-		private void Subscribe(ConferenceComponent conferenceComponent)
-		{
-			conferenceComponent.OnWebexParticipantsListSearchResult += ConferenceComponentOnWebexParticipantsListSearchResult;
-			conferenceComponent.OnWebexParticipantListUpdated += ConferenceComponentOnWebexParticipantListUpdated;
-		}
-
-		private void Unsubscribe(ConferenceComponent conferenceComponent)
-		{
-			conferenceComponent.OnWebexParticipantsListSearchResult -= ConferenceComponentOnWebexParticipantsListSearchResult;
-			conferenceComponent.OnWebexParticipantListUpdated -= ConferenceComponentOnWebexParticipantListUpdated;
-		}
-
-		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
-		{
-			if (args.Data.Any(info => info.ParticipantId == WebexParticipantId))
-				UpdateInfo(args.Data.First(info => info.ParticipantId == WebexParticipantId));
-		}
-
-		private void ConferenceComponentOnWebexParticipantListUpdated(object sender, GenericEventArgs<WebexParticipantInfo> args)
-		{
-			if (args.Data.CallId != m_CallId || args.Data.ParticipantId != WebexParticipantId)
-				return;
-
-			UpdateInfo(args.Data);
 		}
 
 		#endregion

@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Timers;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
@@ -19,12 +20,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private const int PARTICIPANT_SEARCH_LIMIT = 25;
 
+		private const long PARTICIPANT_LIST_UPDATE_INTERVAL = 60 * 1000;
+
 		private CallStatus m_CallStatus;
 
 		private readonly ConferenceComponent m_ConferenceComponent;
 		private readonly DialingComponent m_DialingComponent;
 
+		private readonly SafeTimer m_ParticipantUpdateTimer;
+
 		private readonly SafeCriticalSection m_ParticipantsSection;
+
+		private bool m_IsHostOrCoHost;
 		
 		/// <summary>
 		/// Participants
@@ -32,12 +39,65 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		/// </summary>
 		private readonly Dictionary<string, CiscoWebexParticipant> m_Participants;
 
+		private CiscoWebexParticipant m_SelfParticipant;
+
 		#endregion
 
 		#region Events
 
 		public override event EventHandler<ParticipantEventArgs> OnParticipantAdded;
 		public override event EventHandler<ParticipantEventArgs> OnParticipantRemoved;
+
+		#endregion
+
+		#region Properties
+
+		public CallStatus CallStatus{ get { return m_CallStatus; }}
+
+		public CiscoWebexParticipant SelfParticipant
+		{
+			get { return m_SelfParticipant; }
+			private set
+			{
+				if (m_SelfParticipant == value)
+					return;
+
+				UnsubscribeSelfParticipant(m_SelfParticipant);
+				m_SelfParticipant = value;
+				SubscribeSelfParticipant(m_SelfParticipant);
+
+				UpdateIsHostOrCoHost();
+			}
+		}
+
+		public bool IsHostOrCoHost
+		{
+			get { return m_IsHostOrCoHost; }
+			private set
+			{
+				if (m_IsHostOrCoHost == value)
+					return;
+
+				m_IsHostOrCoHost = value;
+
+				SetParticipantsCanKickAndMute(value);
+			}
+		}
+
+		private void SetParticipantsCanKickAndMute(bool value)
+		{
+			CiscoWebexParticipant[] participants = null;
+
+			m_ParticipantsSection.Execute(() => participants = m_Participants.Values.ToArray(m_Participants.Count));
+
+			foreach (var participant in participants)
+				participant.CanKickAndMute(value);
+		}
+
+		private void UpdateIsHostOrCoHost()
+		{
+			IsHostOrCoHost = SelfParticipant != null && (SelfParticipant.IsHost || SelfParticipant.IsCoHost);
+		}
 
 		#endregion
 
@@ -59,12 +119,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			m_ConferenceComponent = conferenceComponent;
 			m_DialingComponent = dialingComponent;
+			m_ParticipantsSection = new SafeCriticalSection();
+			m_Participants = new Dictionary<string, CiscoWebexParticipant>();
+			m_ParticipantUpdateTimer = SafeTimer.Stopped(ParticipantUpdateTimerCallback);
+
 			UpdateCallStatus(callStatus);
 
 			Subscribe(m_ConferenceComponent);
 
-			m_ParticipantsSection = new SafeCriticalSection();
-			m_Participants = new Dictionary<string, CiscoWebexParticipant>();
+			
 
 			SupportedConferenceFeatures = eConferenceFeatures.LeaveConference |
 			                              eConferenceFeatures.EndConference;
@@ -163,11 +226,27 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		#region Private Methods
 
-		protected override void DisposeFinal()
+		private void AddParticipant([NotNull] CiscoWebexParticipant participant)
 		{
-			Unsubscribe(m_ConferenceComponent);
+			if (participant == null)
+				throw new ArgumentNullException("participant");
 
-			base.DisposeFinal();
+			Subscribe(participant);
+			m_ParticipantsSection.Execute(() => m_Participants.Add(participant.WebexParticipantId, participant));
+			OnParticipantAdded.Raise(this, participant);
+
+			if (participant.IsSelf)
+				SelfParticipant = participant;
+		}
+
+		private void RemoveParticipant([NotNull] CiscoWebexParticipant participant)
+		{
+			if (participant == null)
+				throw new ArgumentNullException("participant");
+
+			Unsubscribe(participant);
+			m_ParticipantsSection.Execute(() => m_Participants.Remove(participant.WebexParticipantId));
+			OnParticipantRemoved.Raise(this, participant);
 		}
 
 		/// <summary>
@@ -179,7 +258,119 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			base.HandleStatusChanged(status);
 
 			if (status == eConferenceStatus.Connected)
-				m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
+			{
+				// Pull current participant list and start update timer
+				ParticipantListUpdate();
+				m_ParticipantUpdateTimer.Reset(PARTICIPANT_LIST_UPDATE_INTERVAL, PARTICIPANT_LIST_UPDATE_INTERVAL);
+			}
+			else
+			{
+				// Stop updating when not connected
+				m_ParticipantUpdateTimer.Stop();
+			}
+		}
+
+		private void ParticipantUpdateTimerCallback()
+		{
+			if (Status == eConferenceStatus.Connected)
+				ParticipantListUpdate();
+		}
+
+		private void ParticipantListUpdate()
+		{
+			m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
+		}
+
+		protected override void DisposeFinal()
+		{
+			Unsubscribe(m_ConferenceComponent);
+
+			base.DisposeFinal();
+		}
+
+		#endregion
+
+		#region Participant Callbacks
+
+		private void Subscribe(CiscoWebexParticipant participant)
+		{
+			if (participant == null)
+				return;
+
+			participant.OnStatusChanged += ParticipantOnStatusChanged;
+		}
+
+		private void Unsubscribe(CiscoWebexParticipant participant)
+		{
+			if (participant == null)
+				return;
+
+			participant.OnStatusChanged -= ParticipantOnStatusChanged;
+		}
+
+		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
+		{
+			var participant = sender as CiscoWebexParticipant;
+			if (participant == null)
+				return;
+
+			if (args.Data == eParticipantStatus.Disconnected)           
+				RemoveParticipant(participant);
+		}
+
+		private void ParticipantAdmit(string participantId)
+		{
+			m_ConferenceComponent.ParticipantAdmit(m_CallStatus.CallId, participantId);
+		}
+
+		private void ParticipantKick(string participantId)
+		{
+			m_ConferenceComponent.ParticipantDisconnect(m_CallStatus.CallId, participantId);
+		}
+
+		private void SetParticipantMute(string participantId, bool state)
+		{
+			m_ConferenceComponent.ParticipantMute(state, m_CallStatus.CallId, participantId);
+		}
+
+		private void SetParticipantHandPosition(bool state)
+		{
+			if (state)
+				m_ConferenceComponent.RaiseHand(m_CallStatus.CallId);
+			else
+				m_ConferenceComponent.LowerHand(m_CallStatus.CallId);
+		}
+
+		#endregion
+
+		#region Self Participant Callbacks
+
+		private void SubscribeSelfParticipant(CiscoWebexParticipant participant)
+		{
+			if (participant == null)
+				return;
+
+			participant.OnIsHostChanged += SelfParticipantOnIsHostChanged;
+			participant.OnIsCoHostChanged += SelfParticipantOnIsCoHostChanged;
+		}
+
+		private void UnsubscribeSelfParticipant(CiscoWebexParticipant participant)
+		{
+			if (participant == null)
+				return;
+
+			participant.OnIsHostChanged -= SelfParticipantOnIsHostChanged;
+			participant.OnIsCoHostChanged -= SelfParticipantOnIsCoHostChanged;
+		}
+
+		private void SelfParticipantOnIsCoHostChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateIsHostOrCoHost();
+		}
+
+		private void SelfParticipantOnIsHostChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateIsHostOrCoHost();
 		}
 
 		#endregion
@@ -214,14 +405,40 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		{
 			if (args.Data.CallId != m_CallStatus.CallId)
 				return;
+			
+			CiscoWebexParticipant participant;
 
-			m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
+			m_ParticipantsSection.Enter();
+			try
+			{
+				
+				//Check if particpant exists
+				if (!m_Participants.TryGetValue(args.Data.ParticipantId, out participant))
+				{
+					// Don't do anything if we're at the search limit
+					if (m_Participants.Count >= PARTICIPANT_SEARCH_LIMIT)
+						return;
+
+					// Add new participant
+					participant = new CiscoWebexParticipant(args.Data, () => ParticipantAdmit(args.Data.ParticipantId), () => ParticipantKick(args.Data.ParticipantId), state => SetParticipantMute(args.Data.ParticipantId, state), SetParticipantHandPosition);
+					AddParticipant(participant);
+					return;
+				}
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+
+			// Update existing participant
+			participant.UpdateInfo(args.Data);
 		}
 
-		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<IEnumerable<WebexParticipantInfo>> args)
+		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<WebexParticipantInfo[]> args)
 		{
+			// We don't update existing participants here, since they should get update by the OnWebexParticipantListUpdated event - this may end up being a poor choice
 			var results = new Dictionary<string, WebexParticipantInfo>();
-			results.AddRange(args.Data, i => i.ParticipantId);
+			results.AddRange(args.Data.Where(i => i.CallId == m_CallStatus.CallId), i => i.ParticipantId);
 			
 			var newInfos = new List<WebexParticipantInfo>();
 
@@ -230,7 +447,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			foreach (WebexParticipantInfo info in newInfos)
 			{
-				var participant = new CiscoWebexParticipant(info, m_CallStatus.CallId, m_ConferenceComponent);
+				string participantId = info.ParticipantId;
+				CiscoWebexParticipant participant = new CiscoWebexParticipant(info, () => ParticipantAdmit(participantId), () => ParticipantKick(participantId), state => SetParticipantMute(participantId, state), SetParticipantHandPosition);
 				AddParticipant(participant);
 			}
 
@@ -268,52 +486,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				                                     eConferenceFeatures.StopRecording |
 				                                     eConferenceFeatures.PauseRecording,
 				                                     XmlUtils.GetInnerXml(xml) == "Available");
-		}
-
-		private void Subscribe(CiscoWebexParticipant participant)
-		{
-			if (participant == null)
-				return;
-
-			participant.OnStatusChanged += ParticipantOnStatusChanged;
-		}
-
-		private void Unsubscribe(CiscoWebexParticipant participant)
-		{
-			if (participant == null)
-				return;
-
-			participant.OnStatusChanged -= ParticipantOnStatusChanged;
-		}
-
-		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
-		{
-			var participant = sender as CiscoWebexParticipant;
-			if (participant == null)
-				return;
-
-			if (args.Data == eParticipantStatus.Disconnected)           
-				RemoveParticipant(participant);
-		}
-
-		private void AddParticipant([NotNull] CiscoWebexParticipant participant)
-		{
-			if (participant == null)
-				throw new ArgumentNullException("participant");
-
-			Subscribe(participant);
-			m_ParticipantsSection.Execute(() => m_Participants.Add(participant.WebexParticipantId, participant));
-			OnParticipantAdded.Raise(this, participant);
-		}
-
-		private void RemoveParticipant([NotNull] CiscoWebexParticipant participant)
-		{
-			if (participant == null)
-				throw new ArgumentNullException("participant");
-
-			Unsubscribe(participant);
-			m_ParticipantsSection.Execute(() => m_Participants.Remove(participant.WebexParticipantId));
-			OnParticipantRemoved.Raise(this, participant);
 		}
 
 		#endregion
