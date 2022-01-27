@@ -12,7 +12,11 @@ using ICD.Connect.Conferencing.Participants.Enums;
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
 	public sealed class CiscoWebexParticipant : AbstractParticipant
-	{		
+	{
+
+		private const eParticipantFeatures HOST_PARTICIPANT_FEATURES =
+			eParticipantFeatures.Admit | eParticipantFeatures.Kick | eParticipantFeatures.SetMute;
+
 		private readonly string m_WebexParticipantId;
 		private readonly Action m_AdmitCallback;
 		private readonly Action m_KickCallback;
@@ -69,8 +73,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		/// <param name="kickCallback"></param>
 		/// <param name="muteCallback"></param>
 		/// <param name="handPositionCallback"></param>
+		/// <param name="assignHostPermissions"></param>
 		public CiscoWebexParticipant(WebexParticipantInfo info, [NotNull] Action admitCallback, [NotNull] Action kickCallback,
-		                             [NotNull] Action<bool> muteCallback, [NotNull] Action<bool> handPositionCallback)
+		                             [NotNull] Action<bool> muteCallback, [NotNull] Action<bool> handPositionCallback, bool assignHostPermissions)
 		{
 			if (admitCallback == null)
 				throw new ArgumentNullException("admitCallback");
@@ -98,9 +103,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			SupportedParticipantFeatures = eParticipantFeatures.GetIsMuted |
 			                               eParticipantFeatures.GetIsSelf |
-			                               eParticipantFeatures.GetIsHost |
-			                               eParticipantFeatures.Kick |
-			                               eParticipantFeatures.SetMute;
+			                               eParticipantFeatures.GetIsHost;
+			SupportsHostParticipantPermissions(assignHostPermissions);
 		}
 
 		#endregion
@@ -130,14 +134,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_HandPositionCallback(raised);
 		}
 
+		/// <summary>
+		/// Called to handle IsSelf changing
+		/// </summary>
+		/// <param name="value"></param>
+		protected override void HandleIsSelfChanged(bool value)
+		{
+			base.HandleIsSelfChanged(value);
+
+			SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.RaiseLowerHand, value);
+		}
+
 		#endregion
 
 		#region Internal Methods
 
-		internal void CanKickAndMute(bool value)
+		internal void SupportsHostParticipantPermissions(bool value)
 		{
 			SupportedParticipantFeatures =
-				SupportedParticipantFeatures.SetFlags(eParticipantFeatures.Kick & eParticipantFeatures.SetMute, value);
+				SupportedParticipantFeatures.SetFlags(HOST_PARTICIPANT_FEATURES, value);
 		}
 
 		internal void UpdateInfo(WebexParticipantInfo info)
@@ -145,6 +160,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			Name = info.DisplayName;
 			Status = info.Status;
 			IsMuted = info.AudioMute;
+			IsSelf = IsSelf | info.IsSelf; // IsSelf doesn't always come back as set because of how Cisco operates, so don't un-set it ever.
 			IsHost = info.IsHost;
 			HandRaised = info.HandRaised;
 			IsCoHost = info.CoHost;
@@ -152,8 +168,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			if (EndTime != null && info.Status == eParticipantStatus.Disconnected)
 				EndTime = IcdEnvironment.GetUtcTime();
-
-			SupportedParticipantFeatures = SupportedParticipantFeatures.SetFlags(eParticipantFeatures.RaiseLowerHand, IsSelf);
 		}
 
 		#endregion

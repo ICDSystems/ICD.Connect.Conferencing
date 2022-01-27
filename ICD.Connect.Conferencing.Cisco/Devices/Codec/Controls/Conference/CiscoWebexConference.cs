@@ -91,7 +91,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ParticipantsSection.Execute(() => participants = m_Participants.Values.ToArray(m_Participants.Count));
 
 			foreach (var participant in participants)
-				participant.CanKickAndMute(value);
+				participant.SupportsHostParticipantPermissions(value);
 		}
 
 		private void UpdateIsHostOrCoHost()
@@ -420,7 +420,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 						return;
 
 					// Add new participant
-					participant = new CiscoWebexParticipant(args.Data, () => ParticipantAdmit(args.Data.ParticipantId), () => ParticipantKick(args.Data.ParticipantId), state => SetParticipantMute(args.Data.ParticipantId, state), SetParticipantHandPosition);
+					participant = new CiscoWebexParticipant(args.Data, () => ParticipantAdmit(args.Data.ParticipantId), () => ParticipantKick(args.Data.ParticipantId), state => SetParticipantMute(args.Data.ParticipantId, state), SetParticipantHandPosition, IsHostOrCoHost);
 					AddParticipant(participant);
 					return;
 				}
@@ -436,27 +436,40 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<WebexParticipantInfo[]> args)
 		{
-			// We don't update existing participants here, since they should get update by the OnWebexParticipantListUpdated event - this may end up being a poor choice
+			// We don't update existing participants here, since they should get update by the OnWebexParticipantListUpdated event - this may end up being a poor choice (it was)
+
 			var results = new Dictionary<string, WebexParticipantInfo>();
-			results.AddRange(args.Data.Where(i => i.CallId == m_CallStatus.CallId), i => i.ParticipantId);
-			
-			var newInfos = new List<WebexParticipantInfo>();
+			// CallId isn't participant search results - this will be problematic if we ever have multiple webex calls possible
+			results.AddRange(args.Data, i => i.ParticipantId);
 
-			// Search for any new participants
-			m_ParticipantsSection.Execute(() => newInfos.AddRange(results.Values.Where(info => !m_Participants.ContainsKey(info.ParticipantId))));
+			// Caculate old participants to remove
+			var removedParticipants = new List<CiscoWebexParticipant>();
+			m_ParticipantsSection.Execute(() =>
+										  removedParticipants.AddRange(
+										  m_Participants.Values.Where(participant => !results.ContainsKey(participant.WebexParticipantId))));
 
-			foreach (WebexParticipantInfo info in newInfos)
+			// Loop over received participants and update them or add new
+			foreach (WebexParticipantInfo info in results.Values)
 			{
+				CiscoWebexParticipant participant = null;
 				string participantId = info.ParticipantId;
-				CiscoWebexParticipant participant = new CiscoWebexParticipant(info, () => ParticipantAdmit(participantId), () => ParticipantKick(participantId), state => SetParticipantMute(participantId, state), SetParticipantHandPosition);
-				AddParticipant(participant);
+				if (m_ParticipantsSection.Execute(() => m_Participants.TryGetValue(participantId, out participant)))
+				{
+					// Participant Exists, update it
+					participant.UpdateInfo(info);
+				}
+				else
+				{
+					// Create a new participant and add it
+					participant = new CiscoWebexParticipant(info, () => ParticipantAdmit(participantId),
+					                                        () => ParticipantKick(participantId),
+					                                        state => SetParticipantMute(participantId, state),
+					                                        SetParticipantHandPosition, IsHostOrCoHost);
+					AddParticipant(participant);
+				}
 			}
 
 			// Remove old participants
-			var removedParticipants = new List<CiscoWebexParticipant>();
-			m_ParticipantsSection.Execute(() =>
-			                              removedParticipants.AddRange(
-			                              m_Participants.Values.Where(participant =>!results.ContainsKey(participant.WebexParticipantId))));
 			removedParticipants.ForEach(RemoveParticipant);
 		}
 
