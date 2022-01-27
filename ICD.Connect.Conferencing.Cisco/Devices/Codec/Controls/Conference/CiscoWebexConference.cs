@@ -299,6 +299,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				return;
 
 			participant.OnStatusChanged += ParticipantOnStatusChanged;
+			participant.OnIsSelfChanged += ParticipantOnIsSelfChanged;
 		}
 
 		private void Unsubscribe(CiscoWebexParticipant participant)
@@ -307,6 +308,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				return;
 
 			participant.OnStatusChanged -= ParticipantOnStatusChanged;
+			participant.OnIsSelfChanged -= ParticipantOnIsSelfChanged;
 		}
 
 		private void ParticipantOnStatusChanged(object sender, ParticipantStatusEventArgs args)
@@ -317,6 +319,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			if (args.Data == eParticipantStatus.Disconnected)           
 				RemoveParticipant(participant);
+		}
+
+		private void ParticipantOnIsSelfChanged(object sender, BoolEventArgs args)
+		{
+			if (!args.Data)
+				return;
+
+			CiscoWebexParticipant participant = sender as CiscoWebexParticipant;
+			SelfParticipant = participant;
 		}
 
 		private void ParticipantAdmit(string participantId)
