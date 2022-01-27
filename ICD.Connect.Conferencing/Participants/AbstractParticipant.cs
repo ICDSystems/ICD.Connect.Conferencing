@@ -58,6 +58,11 @@ namespace ICD.Connect.Conferencing.Participants
 		public event EventHandler<BoolEventArgs> OnIsMutedChanged;
 
 		/// <summary>
+		/// Raised when the participant's is self changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnIsSelfChanged;
+
+		/// <summary>
 		/// Raised when the participant's host state changes.
 		/// </summary>
 		public event EventHandler<BoolEventArgs> OnIsHostChanged;
@@ -324,7 +329,10 @@ namespace ICD.Connect.Conferencing.Participants
 
 				m_IsSelf = value;
 
+				HandleIsSelfChanged(value);
+
 				Log(eSeverity.Informational, "IsSelf set to {0}", m_IsSelf);
+				OnIsSelfChanged.Raise(this, m_IsSelf);
 			}
 		}
 
@@ -406,6 +414,14 @@ namespace ICD.Connect.Conferencing.Participants
 		public abstract void Kick();
 		public abstract void Mute(bool mute);
 		public abstract void SetHandPosition(bool raised);
+
+		/// <summary>
+		/// Called to handle IsSelf changing
+		/// </summary>
+		/// <param name="value"></param>
+		protected virtual void HandleIsSelfChanged(bool value)
+		{
+		}
 
 		#endregion
 

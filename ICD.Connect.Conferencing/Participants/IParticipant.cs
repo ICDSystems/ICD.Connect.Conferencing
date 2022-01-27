@@ -81,6 +81,11 @@ namespace ICD.Connect.Conferencing.Participants
 		event EventHandler<BoolEventArgs> OnIsMutedChanged;
 
 		/// <summary>
+		/// Raised when the participant's is self changes.
+		/// </summary>
+		event EventHandler<BoolEventArgs> OnIsSelfChanged;
+
+		/// <summary>
 		/// Raised when the participant's host status changes.
 		/// </summary>
 		event EventHandler<BoolEventArgs> OnIsHostChanged;
