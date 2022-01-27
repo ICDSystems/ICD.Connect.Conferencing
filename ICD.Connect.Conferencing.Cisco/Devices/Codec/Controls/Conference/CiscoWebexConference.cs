@@ -149,6 +149,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			Direction = m_CallStatus.Direction;
 			AnswerState = m_CallStatus.AnswerState;
 			Status = m_CallStatus.Status.ToConferenceStatus();
+			CallType = m_CallStatus.CiscoCallType.ToCallType();
 		}
 
 		/// <summary>
