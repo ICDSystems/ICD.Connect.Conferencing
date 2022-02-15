@@ -19,6 +19,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 	/// </summary>
 	public sealed class SystemComponent : AbstractCiscoComponent
 	{
+
+		private const string WEBEX_REGISTRED_STRING = "Registered";
+
 		/// <summary>
 		/// Raised when the awake status changes.
 		/// </summary>
@@ -97,6 +100,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		[PublicAPI]
 		public event EventHandler<StringEventArgs> OnSerialNumberChanged;
 
+		/// <summary>
+		/// Raised when the webex registeration status changes.
+		/// </summary>
+		public event EventHandler<BoolEventArgs> OnWebexRegistrationStatusChanged;
+
 		private readonly IcdSortedDictionary<int, SipRegistration> m_SipRegistrations;
 		private readonly SafeCriticalSection m_SipRegistrationsSection;
 
@@ -112,6 +120,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		private string m_Gateway;
 		private string m_SubnetMask;
 		private string m_SerialNumber;
+		private bool m_WebexRegistrationStatus;
 
 		#region Properties
 
@@ -387,6 +396,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			}
 		}
 
+		public bool WebexRegistraionStatus
+		{
+			get { return m_WebexRegistrationStatus; }
+			private set
+			{
+				if (m_WebexRegistrationStatus == value)
+					return;
+
+				m_WebexRegistrationStatus = value;
+
+				OnWebexRegistrationStatusChanged.Raise(this, value);
+			}
+		}
+
 		#endregion
 
 		#region Constructors
@@ -541,6 +564,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.RegisterParserCallback(ParseH323GatekeeperAddress, CiscoCodecDevice.XSTATUS_ELEMENT, "H323", "Gatekeeper", "Address");
 			codec.RegisterParserCallback(ParsePlatformStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
 			codec.RegisterParserCallback(ParseSerialNumber, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "Hardware", "Module", "SerialNumber");
+			codec.RegisterParserCallback(ParseWebexRegistrationStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Webex", "Status");
 		}
 
 		/// <summary>
@@ -569,6 +593,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 			codec.UnregisterParserCallback(ParsePlatformStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit", "ProductPlatform");
 			codec.UnregisterParserCallback(ParseSerialNumber, CiscoCodecDevice.XSTATUS_ELEMENT, "SystemUnit",
 			                               "Hardware", "Module", "SerialNumber");
+			codec.UnregisterParserCallback(ParseWebexRegistrationStatus, CiscoCodecDevice.XSTATUS_ELEMENT, "Webex", "Status");
 		}
 
 		private void ParsePlatformStatus(CiscoCodecDevice codec, string resultid, string xml)
@@ -649,6 +674,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System
 		private void ParseSerialNumber(CiscoCodecDevice codec, string resultid, string xml)
 		{
 			SerialNumber = XmlUtils.GetInnerXml(xml);
+		}
+
+		private void ParseWebexRegistrationStatus(CiscoCodecDevice codec, string resultid, string xml)
+		{
+			string status = XmlUtils.GetInnerXml(xml);
+			WebexRegistraionStatus = String.Equals(status, WEBEX_REGISTRED_STRING, StringComparison.OrdinalIgnoreCase);
 		}
 
 		#endregion
