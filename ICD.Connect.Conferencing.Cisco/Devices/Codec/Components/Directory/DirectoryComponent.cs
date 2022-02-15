@@ -26,12 +26,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory
 		public delegate void ResultParsedDelegate(string resultId, CiscoFolder[] folders, CiscoContact[] contacts);
 
 		/// <summary>
-		/// Callback for individual contact parsing.
-		/// </summary>
-		/// <param name="contact"></param>
-		public delegate void ContactParsedDelegate(CiscoContact contact);
-
-		/// <summary>
 		/// Called when the cache is cleared.
 		/// </summary>
 		public event EventHandler OnCleared;
