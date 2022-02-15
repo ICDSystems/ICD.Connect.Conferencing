@@ -20,7 +20,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private const int PARTICIPANT_SEARCH_LIMIT = 25;
 
-		private const long PARTICIPANT_LIST_UPDATE_INTERVAL = 60 * 1000;
+		private const long PARTICIPANT_LIST_UPDATE_INTERVAL = 30 * 1000;
 
 		private CallStatus m_CallStatus;
 
@@ -122,6 +122,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ParticipantsSection = new SafeCriticalSection();
 			m_Participants = new Dictionary<string, CiscoWebexParticipant>();
 			m_ParticipantUpdateTimer = SafeTimer.Stopped(ParticipantUpdateTimerCallback);
+			
+			// Set initial start time - gets updated later by the duration time
+			StartTime = IcdEnvironment.GetUtcTime();
 
 			UpdateCallStatus(callStatus);
 
@@ -150,6 +153,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			AnswerState = m_CallStatus.AnswerState;
 			Status = m_CallStatus.Status.ToConferenceStatus();
 			CallType = m_CallStatus.CiscoCallType.ToCallType();
+			if (m_CallStatus.Duration != 0 && m_CallStatus.Status == eParticipantStatus.Connected)
+				StartTime = IcdEnvironment.GetUtcTime().AddSeconds(m_CallStatus.Duration * -1);
 		}
 
 		/// <summary>
@@ -260,12 +265,19 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			if (status == eConferenceStatus.Connected)
 			{
+				// Set start time
+				StartTime = IcdEnvironment.GetUtcTime();
+
 				// Pull current participant list and start update timer
 				ParticipantListUpdate();
 				m_ParticipantUpdateTimer.Reset(PARTICIPANT_LIST_UPDATE_INTERVAL, PARTICIPANT_LIST_UPDATE_INTERVAL);
 			}
 			else
 			{
+				//If Disconnected, set end time
+				if (status == eConferenceStatus.Disconnected)
+					EndTime = IcdEnvironment.GetUtcTime();
+
 				// Stop updating when not connected
 				m_ParticipantUpdateTimer.Stop();
 			}
