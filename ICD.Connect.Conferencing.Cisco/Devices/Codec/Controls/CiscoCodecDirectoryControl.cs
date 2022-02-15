@@ -1,7 +1,9 @@
 ﻿using System;
+using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Directory.Tree;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.System;
 using ICD.Connect.Conferencing.Controls.Directory;
 using ICD.Connect.Conferencing.Directory.Tree;
 
@@ -16,6 +18,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 
 		private readonly DirectoryComponent m_Component;
 
+		private readonly SystemComponent m_SystemComponent;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -26,6 +30,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		{
 			m_Component = parent.Components.GetComponent<DirectoryComponent>();
 			Subscribe(m_Component);
+
+			m_SystemComponent = parent.Components.GetComponent<SystemComponent>();
+			Subscribe(m_SystemComponent);
 		}
 
 		/// <summary>
@@ -39,6 +46,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 			base.DisposeFinal(disposing);
 
 			Unsubscribe(m_Component);
+			Unsubscribe(m_SystemComponent);
 		}
 
 		#region Methods
@@ -80,6 +88,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 				m_Component.Codec.SendCommand(ciscoFolder.GetSearchCommand());
 		}
 
+		protected override bool GetControlAvailable()
+		{
+			// If we're webex registered, the control isn't avaliable since the directory browsing is useless
+			return base.GetControlAvailable() && !m_SystemComponent.WebexRegistraionStatus;
+		}
+
 		#endregion
 
 		#region Component Callbacks
@@ -110,6 +124,31 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls
 		private void ComponentOnCleared(object sender, EventArgs eventArgs)
 		{
 			OnCleared.Raise(this);
+		}
+
+		#endregion
+
+		#region System Component Callbacks
+
+		private void Subscribe(SystemComponent systemComponent)
+		{
+			if (systemComponent == null)
+				return;
+
+			systemComponent.OnWebexRegistrationStatusChanged += SystemComponentOnWebexRegistrationStatusChanged;
+		}
+
+		private void Unsubscribe(SystemComponent systemComponent)
+		{
+			if (systemComponent == null)
+				return;
+
+			systemComponent.OnWebexRegistrationStatusChanged -= SystemComponentOnWebexRegistrationStatusChanged;
+		}
+
+		private void SystemComponentOnWebexRegistrationStatusChanged(object sender, BoolEventArgs boolEventArgs)
+		{
+			UpdateCachedControlAvailable();
 		}
 
 		#endregion
