@@ -185,9 +185,7 @@ namespace ICD.Connect.Conferencing.DirectoryMiddlewareClient
 				{"Content-Type", new List<string> {"application/json"}}
 			};
 
-			WebPortResponse webResponse =
-				IcdStopwatch.Profile(() =>
-					m_Port.Get(relativeOrAbsoluteUri, headers, Encoding.UTF8.GetBytes(json)), "GET");
+			WebPortResponse webResponse = m_Port.Get(relativeOrAbsoluteUri, headers, Encoding.UTF8.GetBytes(json));
 			if (!webResponse.GotResponse)
 				throw new InvalidOperationException("Request failed");
 
@@ -195,8 +193,6 @@ namespace ICD.Connect.Conferencing.DirectoryMiddlewareClient
 				throw new InvalidOperationException(string.Format("Request failed - {0}", webResponse.StatusCode));
 
 			T response = Deserialize<T>(webResponse);
-
-			IcdConsole.PrintLine(eConsoleColor.Magenta, webResponse.DataAsString);
 
 			onResult(response);
 		}
