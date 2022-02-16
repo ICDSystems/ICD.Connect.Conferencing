@@ -282,8 +282,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (call == null)
 				throw new ArgumentNullException("call");
 
-			Codec.SendCommand("xCommand Call Accept CallId: {0}", call.CallId);
-			Codec.Logger.Log(eSeverity.Debug, "Answering Incoming Call {0}", call.CallId);
+			Answer(call.CallId);
+		}
+
+		/// <summary>
+		/// Answers the incoming call.
+		/// </summary>
+		/// <param name="callId"></param>
+		public void Answer(int callId)
+		{
+			Codec.SendCommand("xCommand Call Accept CallId: {0}", callId);
+			Codec.Logger.Log(eSeverity.Debug, "Answering Incoming Call {0}", callId);
 		}
 
 		/// <summary>
@@ -295,8 +304,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (call == null)
 				throw new ArgumentNullException("call");
 
-			Codec.SendCommand("xCommand Call Reject CallId: {0}", call.CallId);
-			Codec.Logger.Log(eSeverity.Debug, "Rejecting Incoming Call {0}", call.CallId);
+			Reject(call.CallId);
+		}
+
+		/// <summary>
+		/// Rejects the incoming call.
+		/// </summary>
+		/// <param name="callId"></param>
+		public void Reject(int callId)
+		{
+			Codec.SendCommand("xCommand Call Reject CallId: {0}", callId);
+			Codec.Logger.Log(eSeverity.Debug, "Rejecting Incoming Call {0}", callId);
 		}
 
 		/// <summary>
@@ -311,9 +329,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (call.Status == eParticipantStatus.OnHold)
 				return;
 
-			Codec.SendCommand("xCommand Call Hold CallId: {0}", call.CallId);
-			Codec.Logger.Log(eSeverity.Debug, "Placing Call {0} on hold", call.CallId);
+			Hold(call.CallId);
 		}
+
+		/// <summary>
+		/// Hods the given call.
+		/// </summary>
+		/// <param name="callId"></param>
+		public void Hold(int callId)
+		{
+			Codec.SendCommand("xCommand Call Hold CallId: {0}", callId);
+			Codec.Logger.Log(eSeverity.Debug, "Placing Call {0} on hold", callId);
+		}       
 
 		/// <summary>
 		/// Resumes the call.
@@ -327,8 +354,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (call.Status != eParticipantStatus.OnHold)
 				return;
 
-			Codec.SendCommand("xCommand Call Resume CallId: {0}", call.CallId);
-			Codec.Logger.Log(eSeverity.Debug, "Resuming Call {0}", call.CallId);
+			Resume(call.CallId);
+		}
+
+		public void Resume(int callId)
+		{
+			Codec.SendCommand("xCommand Call Resume CallId: {0}", callId);
+			Codec.Logger.Log(eSeverity.Debug, "Resuming Call {0}", callId);
 		}
 
 		/// <summary>
