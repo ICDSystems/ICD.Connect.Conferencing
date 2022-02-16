@@ -362,9 +362,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 						if (m_SipConferencesByCallId.ContainsKey(source.CallId))
 							return;
 
-						CiscoConference traditionalConference = new CiscoConference(m_DialingComponent, source);
-						conference = traditionalConference;
-						m_SipConferencesByCallId.Add(source.CallId, traditionalConference);
+						CiscoConference sipConference = new CiscoConference(m_DialingComponent, source);
+						conference = sipConference;
+						m_SipConferencesByCallId.Add(source.CallId, sipConference);
 						added = true;
 						break;
 				}
@@ -379,7 +379,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			OnConferenceAdded.Raise(this, conference);
 
-			// Initialize traditional conference participants after event raise.
+			// Initialize sip conference participants after event raise.
 			CiscoConference conf = conference as CiscoConference;
 			if (conf != null)
 				conf.InitializeConference();
@@ -411,11 +411,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 					case eCiscoDialProtocol.H320:
 					case eCiscoDialProtocol.H323:
 					case eCiscoDialProtocol.Sip:
-						CiscoConference traditionalConference;
-						if (m_SipConferencesByCallId.Remove(source.CallId, out traditionalConference))
+						CiscoConference sipConference;
+						if (m_SipConferencesByCallId.Remove(source.CallId, out sipConference))
 						{
 							removed = true;
-							conference = traditionalConference;
+							conference = sipConference;
 						}
 						break;
 				}
