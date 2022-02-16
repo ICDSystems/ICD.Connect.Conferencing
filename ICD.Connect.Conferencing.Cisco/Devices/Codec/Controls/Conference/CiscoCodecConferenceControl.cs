@@ -36,9 +36,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private readonly SystemComponent m_SystemComponent;
 		private readonly VideoComponent m_VideoComponent;
 
-		private readonly BiDictionary<TraditionalIncomingCall, CallStatus> m_IncomingCalls;
-		private readonly Dictionary<CiscoConference, CallStatus> m_ConferencesToStatuses;
-		private readonly Dictionary<CiscoWebexConference, CallStatus> m_WebexToStatuses;
+		private readonly BiDictionary<int, TraditionalIncomingCall> m_IncomingCallsByCallId;
+		private readonly Dictionary<int, CiscoConference> m_SipConferencesByCallId;
+		private readonly Dictionary<int, CiscoWebexConference> m_WebexConferencesByCallId;
 
 		private readonly SafeCriticalSection m_CriticalSection;
 
@@ -68,9 +68,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_SystemComponent = Parent.Components.GetComponent<SystemComponent>();
 			m_VideoComponent = Parent.Components.GetComponent<VideoComponent>();
 
-			m_IncomingCalls = new BiDictionary<TraditionalIncomingCall, CallStatus>();
-			m_ConferencesToStatuses = new Dictionary<CiscoConference, CallStatus>();
-			m_WebexToStatuses = new Dictionary<CiscoWebexConference, CallStatus>();
+			m_IncomingCallsByCallId = new BiDictionary<int, TraditionalIncomingCall>();
+			m_SipConferencesByCallId = new Dictionary<int, CiscoConference>();
+			m_WebexConferencesByCallId = new Dictionary<int, CiscoWebexConference>();
 			m_CriticalSection = new SafeCriticalSection();
 
 			SupportedConferenceControlFeatures =
@@ -115,20 +115,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		public override IEnumerable<ICiscoConference> GetConferences()
 		{
+			List<ICiscoConference> conferences = new List<ICiscoConference>();
+
 			m_CriticalSection.Enter();
 
 			try
 			{
-				foreach (CiscoConference c in m_ConferencesToStatuses.Keys)
-					yield return c;
-
-				foreach (CiscoWebexConference c in m_WebexToStatuses.Keys)
-					yield return c;
+				conferences.AddRange(m_SipConferencesByCallId.Values.Cast<ICiscoConference>());
+				conferences.AddRange(m_WebexConferencesByCallId.Values.Cast<ICiscoConference>());
 			}
 			finally
 			{
 				m_CriticalSection.Leave();
 			}
+
+			return conferences;
 		}
 
 		/// <summary>
@@ -287,34 +288,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			try
 			{
-				CiscoConference conference = null;
-				foreach (KeyValuePair<CiscoConference, CallStatus> kvp in m_ConferencesToStatuses)
+				CiscoConference conference;
+				CiscoWebexConference webex;
+				
+				if (m_SipConferencesByCallId.TryGetValue(source.CallId, out conference))
 				{
-					if (kvp.Value.CallId != source.CallId)
-						continue;
-
-					kvp.Key.UpdateCallStatus(source);
-					conference = kvp.Key;
+					conference.UpdateCallStatus(source);
 				}
-
-				if (conference != null)
+				else if (m_WebexConferencesByCallId.TryGetValue(source.CallId, out webex))
 				{
-					m_ConferencesToStatuses[conference] = source;
-					return;
+					webex.UpdateCallStatus(source);
 				}
-
-				CiscoWebexConference webex = null;
-				foreach (KeyValuePair<CiscoWebexConference, CallStatus> kvp in m_WebexToStatuses)
-				{
-					if (kvp.Value.CallId != source.CallId)
-						continue;
-
-					kvp.Key.UpdateCallStatus(source);
-					webex = kvp.Key;
-				}
-
-				if (webex != null)
-					m_WebexToStatuses[webex] = source;
 			}
 			finally
 			{
@@ -363,24 +347,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 						break;
 
 					case eCiscoDialProtocol.Spark:
-						if (m_WebexToStatuses.ContainsValue(source))
+						if (m_WebexConferencesByCallId.ContainsKey(source.CallId))
 							return;
 
 						CiscoWebexConference webexConference = new CiscoWebexConference(m_ConferenceComponent, m_DialingComponent, source);
 						conference = webexConference;
-						m_WebexToStatuses.Add(webexConference, source);
+						m_WebexConferencesByCallId.Add(source.CallId, webexConference);
 						added = true;
 						break;
 
 					case eCiscoDialProtocol.H320:
 					case eCiscoDialProtocol.H323:
 					case eCiscoDialProtocol.Sip:
-						if (m_ConferencesToStatuses.ContainsValue(source))
+						if (m_SipConferencesByCallId.ContainsKey(source.CallId))
 							return;
 
 						CiscoConference traditionalConference = new CiscoConference(m_DialingComponent, source);
 						conference = traditionalConference;
-						m_ConferencesToStatuses.Add(traditionalConference, source);
+						m_SipConferencesByCallId.Add(source.CallId, traditionalConference);
 						added = true;
 						break;
 				}
@@ -416,25 +400,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 						break;
 
 					case eCiscoDialProtocol.Spark:
-						if (!m_WebexToStatuses.ContainsValue(source))
-							return;
-
-						conference = m_WebexToStatuses.GetKey(source);
-						removed = m_WebexToStatuses.RemoveValue(source);
+						CiscoWebexConference webexConference;
+						if (m_WebexConferencesByCallId.Remove(source.CallId, out webexConference))
+						{
+							removed = true;
+							conference = webexConference;
+						}
 						break;
 
 					case eCiscoDialProtocol.H320:
 					case eCiscoDialProtocol.H323:
 					case eCiscoDialProtocol.Sip:
-						if (!m_ConferencesToStatuses.ContainsValue(source))
-							return;
-
-						conference = m_ConferencesToStatuses.GetKey(source);
-						removed = m_ConferencesToStatuses.RemoveValue(source);
+						CiscoConference traditionalConference;
+						if (m_SipConferencesByCallId.Remove(source.CallId, out traditionalConference))
+						{
+							removed = true;
+							conference = traditionalConference;
+						}
 						break;
 				}
-
-
 			}
 			finally
 			{
@@ -457,7 +441,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			try
 			{
-				if (m_IncomingCalls.ContainsValue(source))
+				if (m_IncomingCallsByCallId.ContainsKey(source.CallId))
 					return;
 
 				incoming = new TraditionalIncomingCall(source.CiscoCallType.ToCallType())
@@ -465,7 +449,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 					Name = source.Name, 
 					Number = source.Number ?? source.RemoteNumber
 				};
-				m_IncomingCalls.Add(incoming, source);
+				m_IncomingCallsByCallId.Add(source.CallId, incoming);
 
 				Subscribe(source);
 				Subscribe(incoming);
@@ -486,13 +470,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 			try
 			{
-				if (!m_IncomingCalls.TryGetKey(source, out incoming))
+				if (!m_IncomingCallsByCallId.Remove(source.CallId, out incoming))
 					return;
 
 				Unsubscribe(source);
 				Unsubscribe(incoming);
-
-				m_IncomingCalls.RemoveKey(incoming);
 			}
 			finally
 			{
@@ -522,8 +504,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (castCall == null)
 				return;
 
-			CallStatus source = m_CriticalSection.Execute(() => m_IncomingCalls.GetValue(castCall));
-			m_DialingComponent.Reject(source);
+			int callId = m_CriticalSection.Execute(() => m_IncomingCallsByCallId.GetKey(castCall));
+			m_DialingComponent.Reject(callId);
 		}
 
 		private void AnswerCallback(IIncomingCall sender)
@@ -532,8 +514,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			if (castCall == null)
 				return;
 
-			CallStatus source = m_CriticalSection.Execute(() => m_IncomingCalls.GetValue(castCall));
-			m_DialingComponent.Answer(source);
+			int callId = m_CriticalSection.Execute(() => m_IncomingCallsByCallId.GetKey(castCall));
+			m_DialingComponent.Answer(callId);
 		}
 
 		#endregion
@@ -571,7 +553,19 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void UpdateIncomingCall(CallStatus source)
 		{
-			TraditionalIncomingCall incomingCall = m_CriticalSection.Execute(() => m_IncomingCalls.GetKey(source));
+			TraditionalIncomingCall incomingCall;
+
+			m_CriticalSection.Enter();
+			try
+			{
+				if (!m_IncomingCallsByCallId.TryGetValue(source.CallId, out incomingCall))
+					return;
+			}
+			finally
+			{
+				m_CriticalSection.Leave();
+			}
+
 
 			incomingCall.Name = source.Name;
 			incomingCall.Number = source.Number;
@@ -582,7 +576,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				case eCallAnswerState.Ignored:
 				case eCallAnswerState.AutoAnswered:
 				case eCallAnswerState.Answered:
-					AddConference(m_IncomingCalls.GetValue(incomingCall));
+					AddConference(source);
 					RemoveIncomingCall(source);
 					break;
 			}
