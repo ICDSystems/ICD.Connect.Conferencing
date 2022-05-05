@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  
 ### Changed
  - Expose IHistoricalConference underlying conference type
+ - Fixed potential NullReferenceException in Cisco Booking Parsing
 
 ## [19.2.1] - 2021-11-10
 ### Changed

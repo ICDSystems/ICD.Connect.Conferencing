@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Calendaring.Bookings;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Bookings;
@@ -64,6 +65,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 	    {
 		    foreach (BookingCall call in m_Booking.GetCalls())
 		    {
+				// We had an exception that leads me to think protocol was null
+				// Adding this to protect against that case
+			    if (string.IsNullOrEmpty(call.Protocol))
+			    {
+				    IcdConsole.PrintLine(eConsoleColor.Red, "Cisco Booking call with no protocol");
+					continue;
+			    }
+
 				switch (call.Protocol.ToUpper())
 				{
 					case "SIP":
