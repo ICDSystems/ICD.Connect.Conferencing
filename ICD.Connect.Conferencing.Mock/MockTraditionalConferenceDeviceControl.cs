@@ -52,7 +52,6 @@ namespace ICD.Connect.Conferencing.Mock
 				eConferenceControlFeatures.DoNotDisturb |
 				eConferenceControlFeatures.PrivacyMute |
 				eConferenceControlFeatures.CameraMute |
-				eConferenceControlFeatures.Hold |
 				eConferenceControlFeatures.Dtmf |
 				eConferenceControlFeatures.CanDial |
 				eConferenceControlFeatures.CanEnd;

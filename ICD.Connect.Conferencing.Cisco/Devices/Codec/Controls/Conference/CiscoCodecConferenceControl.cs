@@ -79,7 +79,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				eConferenceControlFeatures.PrivacyMute |
 				eConferenceControlFeatures.CanDial |
 				eConferenceControlFeatures.Dtmf |
-				eConferenceControlFeatures.Hold |
 				eConferenceControlFeatures.CameraMute |
 				eConferenceControlFeatures.CanEnd;
 

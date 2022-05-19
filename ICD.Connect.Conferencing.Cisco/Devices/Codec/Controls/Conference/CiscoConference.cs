@@ -68,7 +68,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_DialingComponent = dialingComponent;
 			UpdateCallStatus(callStatus);
 
-			SupportedConferenceFeatures = eConferenceFeatures.EndConference;
+			SupportedConferenceFeatures = eConferenceFeatures.EndConference | eConferenceFeatures.Hold | eConferenceFeatures.SendDtmf;
 		}
 
 		#endregion

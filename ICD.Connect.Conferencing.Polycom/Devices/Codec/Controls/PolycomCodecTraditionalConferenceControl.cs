@@ -70,7 +70,6 @@ namespace ICD.Connect.Conferencing.Polycom.Devices.Codec.Controls
 				eConferenceControlFeatures.DoNotDisturb |
 				eConferenceControlFeatures.PrivacyMute |
 				eConferenceControlFeatures.CameraMute |
-				eConferenceControlFeatures.Hold |
 				eConferenceControlFeatures.Dtmf |
 				eConferenceControlFeatures.CanDial |
 				eConferenceControlFeatures.CanEnd;

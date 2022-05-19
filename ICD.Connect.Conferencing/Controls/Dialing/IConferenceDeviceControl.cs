@@ -44,6 +44,7 @@ namespace ICD.Connect.Conferencing.Controls.Dialing
 		/// <summary>
 		/// Supports holding and resuming active conferences.
 		/// </summary>
+		[Obsolete("Use hold on conference", true)]
 		Hold = 16,
 
 		/// <summary>
