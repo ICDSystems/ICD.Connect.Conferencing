@@ -4,6 +4,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.Conferencing.ConferenceManagers.History;
+using ICD.Connect.Conferencing.Conferences;
 using ICD.Connect.Conferencing.Contacts;
 using ICD.Connect.Conferencing.Controls.Dialing;
 using ICD.Connect.Conferencing.DialContexts;
@@ -223,7 +224,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static eConferenceControlFeatures ActiveConferenceFeaturesExclusive([NotNull] this IConferenceManager extends)
+		public static eConferenceControlFeatures ActiveConferenceControlsFeaturesExclusive([NotNull] this IConferenceManager extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -239,7 +240,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		public static eConferenceControlFeatures ActiveConferenceFeaturesInclusive([NotNull] this IConferenceManager extends)
+		public static eConferenceControlFeatures ActiveConferenceControlsFeaturesInclusive([NotNull] this IConferenceManager extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -248,6 +249,32 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			              .GetActiveDialers()
 			              .Select(c => c.SupportedConferenceControlFeatures)
 			              .AggregateOrDefault((current, next) => current | next);
+		}
+
+		public static eConferenceFeatures ActiveConferencesFeaturesExclusive(
+	[NotNull] this IConferenceManager extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException();
+
+			return
+				extends.Dialers.GetActiveDialers()
+					   .SelectMany(d => d.GetActiveConferences())
+					   .Select(c => c.SupportedConferenceFeatures)
+					   .AggregateOrDefault((current, next) => current & next);
+		}
+
+		public static eConferenceFeatures ActiveConferencesFeaturesInclusive(
+	[NotNull] this IConferenceManager extends)
+		{
+			if (extends == null)
+				throw new ArgumentNullException();
+
+			return
+				extends.Dialers.GetActiveDialers()
+					   .SelectMany(d => d.GetActiveConferences())
+					   .Select(c => c.SupportedConferenceFeatures)
+					   .AggregateOrDefault((current, next) => current | next);
 		}
 	}
 }

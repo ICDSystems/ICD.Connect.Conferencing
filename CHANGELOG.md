@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - Expose IHistoricalConference underlying conference type
  - Fixed potential NullReferenceException in Cisco Booking Parsing
+ - Marked IConferenceControl feature Hold as obsolete, feature on IConference should be used instead
+ - Added IConferenceManager extensions for getting IConference supported feature combinations
 
 ## [19.2.1] - 2021-11-10
 ### Changed
