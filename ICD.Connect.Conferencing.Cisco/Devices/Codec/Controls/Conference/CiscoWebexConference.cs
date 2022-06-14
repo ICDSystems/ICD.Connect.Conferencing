@@ -298,6 +298,30 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		{
 			Unsubscribe(m_ConferenceComponent);
 
+			m_ParticipantUpdateTimer.Stop();
+			m_ParticipantUpdateTimer.Dispose();
+
+			CiscoWebexParticipant[] participants;
+
+			m_ParticipantsSection.Enter();
+			try
+			{
+				participants = m_Participants.Values.ToArray(m_Participants.Count);
+				m_Participants.Clear();
+			}
+			finally
+			{
+				m_ParticipantsSection.Leave();
+			}
+
+			//todo: Fire OnParticipantRemoved event??
+
+			foreach (CiscoWebexParticipant participant in participants)
+			{
+				Unsubscribe(participant);
+				participant.Dispose();
+			}
+
 			base.DisposeFinal();
 		}
 

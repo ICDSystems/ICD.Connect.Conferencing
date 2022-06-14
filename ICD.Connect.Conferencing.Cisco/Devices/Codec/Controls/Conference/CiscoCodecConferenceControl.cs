@@ -424,6 +424,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				m_CriticalSection.Leave();
 			}
 
+			if (conference != null)
+				conference.Dispose();
+
 			if (removed)
 				OnConferenceRemoved.Raise(this, conference);
 		}

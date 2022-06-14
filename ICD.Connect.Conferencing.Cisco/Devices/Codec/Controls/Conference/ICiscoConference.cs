@@ -1,8 +1,9 @@
-﻿using ICD.Connect.Conferencing.Conferences;
+﻿using System;
+using ICD.Connect.Conferencing.Conferences;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 {
-	public interface ICiscoConference : IConference
+	public interface ICiscoConference : IConference, IDisposable
 	{
 	}
 }
