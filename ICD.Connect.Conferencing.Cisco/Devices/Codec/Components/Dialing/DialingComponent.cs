@@ -364,16 +364,25 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		}
 
 		/// <summary>
-		/// Disconnects all calls.
+		/// Disconnects call.
 		/// </summary>
 		/// <param name="call"></param>
 		public void Hangup([NotNull] CallStatus call)
 		{
 			if (call == null)
 				throw new ArgumentNullException("call");
+			
+			Hangup(call.CallId);
+		}
 
-			Codec.SendCommand("xCommand Call Disconnect CallId: {0}", call.CallId);
-			Codec.Logger.Log(eSeverity.Debug, "Disconnecting Call {0}", call.CallId);
+		/// <summary>
+		/// Disconnects call
+		/// </summary>
+		/// <param name="callId"></param>
+		public void Hangup(int callId)
+		{
+			Codec.SendCommand("xCommand Call Disconnect CallId: {0}", callId);
+			Codec.Logger.Log(eSeverity.Debug, "Disconnecting Call {0}", callId);
 		}
 
 		/// <summary>
@@ -394,7 +403,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		}
 
 		/// <summary>
-		/// Allows sending data to dial-tone menus.
+		/// Allows sending DTMF codes
 		/// </summary>
 		/// <param name="call"></param>
 		/// <param name="data"></param>
@@ -403,8 +412,18 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (call == null)
 				throw new ArgumentNullException("call");
 
-			Codec.SendCommand("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", call.CallId, data);
-			Codec.Logger.Log(eSeverity.Debug, "Sending DTMF tone {0} to call {1}", data, call.CallId);
+			SendDtmf(call.CallId, data);
+		}
+
+		/// <summary>
+		/// Allows sending DTMF codes
+		/// </summary>
+		/// <param name="callId"></param>
+		/// <param name="data"></param>
+		public void SendDtmf(int callId, string data)
+		{
+			Codec.SendCommand("xCommand Call DTMFSend CallId: {0} DTMFString: \"{1}\"", callId, data);
+			Codec.Logger.Log(eSeverity.Debug, "Sending DTMF tone {0} to call {1}", data, callId);
 		}
 
 		#endregion
@@ -420,6 +439,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			return m_CallsSection.Execute(() => m_Calls.OrderValuesByKey().ToArray());
 		}
 
+		/// <summary>
+		/// Lazy Loads a call from XML, creates a new one if does not exist
+		/// If the call already exists, updates the existing call
+		/// If the call doesn't exist and is disconnected, it won't be added and null will be returned
+		/// </summary>
+		/// <param name="callId"></param>
+		/// <param name="xml"></param>
+		/// <returns></returns>
+		[CanBeNull]
 		private CallStatus LazyLoadCall(int callId, string xml)
 		{
 			CallStatus output;
@@ -429,11 +457,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 			try
 			{
-				if (m_Calls.ContainsKey(callId))
-					output = m_Calls[callId];
-				else
+				if (!m_Calls.TryGetValue(callId, out output))
 				{
 					output = CallStatus.FromXml(xml);
+
+					if (output.Status == eParticipantStatus.Disconnected)
+						return null;
+
 					Subscribe(output);
 					m_Calls[callId] = output;
 					added = true;
@@ -475,11 +505,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 			try
 			{
-				if (!m_Calls.ContainsKey(id))
+				CallStatus call;
+				if (!m_Calls.Remove(id, out call))
 					return false;
-
-				CallStatus call = m_Calls[id];
-				m_Calls.Remove(id);
 
 				Unsubscribe(call);
 			}
@@ -525,8 +553,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (args.Data != eParticipantStatus.Disconnected)
 				return;
 
-			bool removed = RemoveCall(call.CallId);
-			if (removed)
+			if (RemoveCall(call.CallId))
 				OnSourceRemoved.Raise(this, new GenericEventArgs<CallStatus>(call));
 		}
 
@@ -633,12 +660,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private void ParseCallStatus(CiscoCodecDevice sender, string resultId, string xml)
 		{
 			int id = XmlUtils.GetAttributeAsInt(xml, "item");
-			bool exists = m_CallsSection.Execute(() => m_Calls.ContainsKey(id));
-
-			CallStatus call = LazyLoadCall(id, xml);
-
-			if (!exists && call.Direction == eCallDirection.Incoming)
-				Codec.Logger.Log(eSeverity.Informational, "Incoming VTC Call");
+			LazyLoadCall(id, xml);
 		}
 
 		#endregion
@@ -661,12 +683,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			                                () => SetDoNotDisturb(!DoNotDisturb));
 			yield return new ConsoleCommand("TogglePrivacyMute", "Toggles the privacy mute state",
 			                                () => SetPrivacyMute(!PrivacyMuted));
-			yield return new GenericConsoleCommand<int>("Hold", "Holds the specified call ID", id => HoldHelper(id));
-			yield return new GenericConsoleCommand<int>("Resume", "Resumes the call", id => ResumeHelper(id));
-			yield return new GenericConsoleCommand<int>("Hangup", "Ends the call", id => HangupHelper(id));
-			yield return new GenericConsoleCommand<int>("Answer", "Answers the incoming call", id => AnswerHelper(id));
-			yield return new GenericConsoleCommand<int>("Reject", "Rejects the incoming call", id => RejectHelper(id));
-			yield return new GenericConsoleCommand<int, string>("SendDTMF", "SendDTMF x", (id, data) => SendDtmfHelper(id, data));
+			yield return new GenericConsoleCommand<int>("Hold", "Holds the specified call ID", id => Hold(id));
+			yield return new GenericConsoleCommand<int>("Resume", "Resumes the call", id => Resume(id));
+			yield return new GenericConsoleCommand<int>("Hangup", "Ends the call", id => Hangup(id));
+			yield return new GenericConsoleCommand<int>("Answer", "Answers the incoming call", id => Answer(id));
+			yield return new GenericConsoleCommand<int>("Reject", "Rejects the incoming call", id => Reject(id));
+			yield return new GenericConsoleCommand<int, string>("SendDTMF", "SendDTMF x", (id, data) => SendDtmf(id, data));
 		}
 
 		/// <summary>
@@ -687,7 +709,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			foreach (IConsoleNodeBase node in GetBaseConsoleNodes())
 				yield return node;
 
-			CallStatus[] calls = m_CallsSection.Execute(() => m_Calls.Values.ToArray());
+			CallStatus[] calls = m_CallsSection.Execute(() => m_Calls.Values.ToArray(m_Calls.Count));
 			yield return ConsoleNodeGroup.KeyNodeMap("Calls", "The current registered calls", calls, c => (uint)c.CallId);
 		}
 
@@ -713,124 +735,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			addRow("Auto-Answer", AutoAnswer);
 			addRow("Privacy Muted", PrivacyMuted);
 		}
-
-		#region Helpers
-
-		private void HoldHelper(int id)
-		{
-			m_CallsSection.Enter();
-			try
-			{
-				if (!m_Calls.ContainsKey(id))
-				{
-					Codec.Logger.Log(eSeverity.Warning, "No call with specified ID {0} - cannot hold.", id);
-					return;
-				}
-
-				Hold(m_Calls[id]);
-			}
-			finally
-			{
-				m_CallsSection.Leave();
-			}
-		}
-
-		private void ResumeHelper(int id)
-		{
-			m_CallsSection.Enter();
-			try
-			{
-				if (!m_Calls.ContainsKey(id))
-				{
-					Codec.Logger.Log(eSeverity.Warning, "No call with specified ID {0} - cannot resume.", id);
-					return;
-				}
-
-				Resume(m_Calls[id]);
-			}
-			finally
-			{
-				m_CallsSection.Leave();
-			}
-		}
-
-		private void HangupHelper(int id)
-		{
-			m_CallsSection.Enter();
-			try
-			{
-				if (!m_Calls.ContainsKey(id))
-				{
-					Codec.Logger.Log(eSeverity.Warning, "No call with specified ID {0} - cannot hangup.", id);
-					return;
-				}
-
-				Hangup(m_Calls[id]);
-			}
-			finally
-			{
-				m_CallsSection.Leave();
-			}
-		}
-
-		private void AnswerHelper(int id)
-		{
-			m_CallsSection.Enter();
-			try
-			{
-				if (!m_Calls.ContainsKey(id))
-				{
-					Codec.Logger.Log(eSeverity.Warning, "No call with specified ID {0} - cannot answer.", id);
-					return;
-				}
-
-				Answer(m_Calls[id]);
-			}
-			finally
-			{
-				m_CallsSection.Leave();
-			}
-		}
-
-		private void RejectHelper(int id)
-		{
-			m_CallsSection.Enter();
-			try
-			{
-				if (!m_Calls.ContainsKey(id))
-				{
-					Codec.Logger.Log(eSeverity.Warning, "No call with specified ID {0} - cannot reject.", id);
-					return;
-				}
-
-				Reject(m_Calls[id]);
-			}
-			finally
-			{
-				m_CallsSection.Leave();
-			}
-		}
-
-		private void SendDtmfHelper(int id, string data)
-		{
-			m_CallsSection.Enter();
-			try
-			{
-				if (!m_Calls.ContainsKey(id))
-				{
-					Codec.Logger.Log(eSeverity.Warning, "No call with specified ID {0} - cannot send DTMF.", id);
-					return;
-				}
-
-				SendDtmf(m_Calls[id], data);
-			}
-			finally
-			{
-				m_CallsSection.Leave();
-			}
-		}
-
-		#endregion
 
 		#endregion
 	}
