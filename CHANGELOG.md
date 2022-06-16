@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - Cisco Conferences are now disposed when they're removed
  - Properly dispose webex conference members
+ - Better handling of adding Cisco conferences
 
 ## [20.0.0] - 2022-05-23
 ### Added
