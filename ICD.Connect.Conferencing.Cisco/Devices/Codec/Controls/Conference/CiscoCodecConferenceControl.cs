@@ -340,10 +340,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 						break;
 
 					case eCiscoDialProtocol.Spark:
-						if (m_WebexConferencesByCallId.ContainsKey(source.CallId))
+						CiscoWebexConference webexConference;
+						if (m_WebexConferencesByCallId.TryGetValue(source.CallId, out webexConference))
+						{
+							webexConference.UpdateCallStatus(source);
 							return;
+						}
 
-						CiscoWebexConference webexConference = new CiscoWebexConference(m_ConferenceComponent, m_DialingComponent, source);
+						webexConference = new CiscoWebexConference(m_ConferenceComponent, m_DialingComponent, source);
 						conference = webexConference;
 						m_WebexConferencesByCallId.Add(source.CallId, webexConference);
 						added = true;
@@ -352,10 +356,14 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 					case eCiscoDialProtocol.H320:
 					case eCiscoDialProtocol.H323:
 					case eCiscoDialProtocol.Sip:
-						if (m_SipConferencesByCallId.ContainsKey(source.CallId))
+						CiscoConference sipConference;
+						if (m_SipConferencesByCallId.TryGetValue(source.CallId, out sipConference))
+						{
+							sipConference.UpdateCallStatus(source);
 							return;
+						}
 
-						CiscoConference sipConference = new CiscoConference(m_DialingComponent, source);
+						sipConference = new CiscoConference(m_DialingComponent, source);
 						conference = sipConference;
 						m_SipConferencesByCallId.Add(source.CallId, sipConference);
 						added = true;
