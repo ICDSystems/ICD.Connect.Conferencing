@@ -262,21 +262,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		{
 			CallStatus source = args.Data;
 
-			switch (source.Direction)
+			// If a call is incoming and unanswered, add it as an incoming call
+			if (source.Direction == eCallDirection.Incoming && source.AnswerState == eCallAnswerState.Unanswered)
 			{
-				case eCallDirection.Undefined:
-					break;
-
-				case eCallDirection.Incoming:
-					if (source.AnswerState == eCallAnswerState.Unanswered)
-						AddIncomingCall(source);
-					break;
-				case eCallDirection.Outgoing:
-					AddConference(source);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
+				AddIncomingCall(source);
+				return;
 			}
+
+			// Add anything else as a regular conference
+			AddConference(source);
 		}
 
 		private void ComponentOnSourceUpdated(object sender, GenericEventArgs<CallStatus> args)
