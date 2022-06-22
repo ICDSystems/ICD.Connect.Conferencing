@@ -134,6 +134,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		}
 
 		/// <summary>
+		/// Called to deinitialize the component.
+		/// </summary>
+		protected virtual void Deinitialize()
+		{
+		}
+
+		/// <summary>
 		/// Called when the component connects/disconnects to the codec.
 		/// </summary>
 		protected virtual void ConnectionStatusChanged(bool state)
@@ -153,6 +160,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components
 		{
 			if (args.Data)
 				Initialize();
+			else
+				Deinitialize();
 		}
 
 		/// <summary>
