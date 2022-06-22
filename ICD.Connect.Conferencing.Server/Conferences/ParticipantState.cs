@@ -22,44 +22,44 @@ namespace ICD.Connect.Conferencing.Server.Conferences
 													eParticipantFeatures.SetMute;
 
 		[PublicAPI, JsonProperty]
-		public string Name { get; private set; }
+		public string Name { get; set; }
 		[PublicAPI, JsonProperty]
-		public string Number { get; private set; }
+		public string Number { get; set; }
 		[PublicAPI, JsonProperty]
-		public eCallType CallType { get; private set; }
+		public eCallType CallType { get; set; }
 		[PublicAPI, JsonProperty]
-		public eParticipantStatus Status { get; private set; }
+		public eParticipantStatus Status { get; set; }
 		[PublicAPI, JsonProperty]
-		public eCallDirection Direction { get; private set; }
+		public eCallDirection Direction { get; set; }
 		[PublicAPI, JsonProperty]
-		public DateTime? StartTime { get; private set; }
+		public DateTime? StartTime { get; set; }
 		[PublicAPI, JsonProperty]
-		public DateTime? EndTime { get; private set; }
+		public DateTime? EndTime { get; set; }
 		[PublicAPI, JsonProperty]
-		public DateTime DialTime { get; private set; }
+		public DateTime DialTime { get; set; }
 		[PublicAPI, JsonProperty]
-		public DateTime StartOrDialTime { get; private set; }
+		public DateTime StartOrDialTime { get; set; }
 
 		/// <summary>
 		/// Whether or not the participant is muted.
 		/// </summary>
 		[PublicAPI, JsonProperty]
-		public bool IsMuted { get; private set; }
+		public bool IsMuted { get; set; }
 
 		/// <summary>
 		/// Whether or not the participant is the room itself.
 		/// </summary>
 		[PublicAPI, JsonProperty]
-		public bool IsSelf { get; private set; }
+		public bool IsSelf { get; set; }
 
 		/// <summary>
 		/// Whether or not the participant is the meeting host.
 		/// </summary>
 		[PublicAPI, JsonProperty]
-		public bool IsHost { get; private set; }
+		public bool IsHost { get; set; }
 
 		[PublicAPI, JsonProperty]
-		public eParticipantFeatures SupportedParticipantFeatures { get; private set; }
+		public eParticipantFeatures SupportedParticipantFeatures { get; set; }
 		
 
 		[JsonConstructor]
