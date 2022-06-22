@@ -1230,10 +1230,10 @@ namespace ICD.Connect.Conferencing.Server.Devices.Server
 
 		private string ListRooms()
 		{
-			var table = new TableBuilder("Room Id", "Room Name", "Prefix");
+			var table = new TableBuilder("Room Id", "Room Name");
 
 			foreach (var kvp in m_RoomToRoomInfo)
-				table.AddRow(kvp.Key.ToString(), kvp.Value[0], kvp.Value[1]);
+				table.AddRow(kvp.Key.ToString(), kvp.Value);
 
 			return (table.ToString());
 		}
