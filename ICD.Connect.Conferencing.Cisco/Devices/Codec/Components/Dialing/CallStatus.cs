@@ -410,6 +410,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 		#region Methods
 
+        public void SetOrphaned()
+        {
+            Status = eCiscoCallStatus.Orphaned;
+        }
+
 		/// <summary>
 		/// Updates the values based on new xml.
 		/// </summary>

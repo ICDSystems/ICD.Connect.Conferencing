@@ -4,9 +4,11 @@ using System.Linq;
 using ICD.Common.Logging.LoggingContexts;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.EventArguments;
 using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Common.Utils.Timers;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
@@ -33,6 +35,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 	{
 		private const int DONOTDISTURB_TIMEOUT_MIN = 1;
 		private const int DONOTDISTURB_TIMEOUT_MAX = 1440;
+		private const int ORPHANED_CALL_CHECK_RATE = 60 * 1000; //Every 60 seconds
 
 		/// <summary>
 		/// Called when a source is added to the dialing component.
@@ -66,6 +69,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 		private readonly Dictionary<int, CallStatus> m_Calls;
 		private readonly SafeCriticalSection m_CallsSection;
+
+		/// <summary>
+		/// Timer to check all calls for orphaned calls
+		/// ie calls that are no longer on the codec
+		/// </summary>
+		private readonly SafeTimer m_OrphanedCallTimer;
 
 		private bool m_DoNotDisturb;
 		private bool m_AutoAnswer;
@@ -163,6 +172,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		{
 			m_Calls = new Dictionary<int, CallStatus>();
 			m_CallsSection = new SafeCriticalSection();
+			m_OrphanedCallTimer = SafeTimer.Stopped(OrphanedTimerCallback);
 
 			Subscribe(Codec);
 
@@ -430,6 +440,26 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		#region Private Methods
 
 		/// <summary>
+		/// Called to initialize the component.
+		/// </summary>
+		protected override void Initialize()
+		{
+			base.Initialize();
+            
+			m_OrphanedCallTimer.Reset(ORPHANED_CALL_CHECK_RATE, ORPHANED_CALL_CHECK_RATE);
+		}
+
+		/// <summary>
+		/// Called to deinitialize the component.
+		/// </summary>
+		protected override void Deinitialize()
+		{
+			base.Deinitialize();
+
+			m_OrphanedCallTimer.Stop();
+		}
+
+		/// <summary>
 		/// Gets the child CallComponents in order of call id.
 		/// </summary>
 		/// <returns></returns>
@@ -527,6 +557,39 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		{
 			return MathUtils.Clamp(timeoutMinutes, DONOTDISTURB_TIMEOUT_MIN, DONOTDISTURB_TIMEOUT_MAX);
 		}
+
+		private void OrphanedTimerCallback()
+		{
+			Codec.SendCommand("xStatus Call", OrphanedCallStatusCallback);
+		}
+
+		private void OrphanedCallStatusCallback(CiscoCodecDevice codec, string resultId, string xml)
+        {
+            IcdHashSet<int> callIds = new IcdHashSet<int>();
+
+            if (!StringUtils.IsNullOrWhitespace(xml))
+            {
+                foreach (string callXml in XmlUtils.ReadListFromXml(xml,  "Call", c => c))
+                {
+                    int id = XmlUtils.GetAttributeAsInt(callXml, "item");
+                    callIds.Add(id);
+                    LazyLoadCall(id, callXml);
+                }
+            }
+
+            CallStatus[] orphanedCalls;
+            m_CallsSection.Enter();
+            try
+            {
+                orphanedCalls = m_Calls.Values.Where(c => !callIds.Contains(c.CallId)).ToArray();
+            }
+            finally
+            {
+				m_CallsSection.Leave();
+            }
+            
+			orphanedCalls.ForEach(c => c.SetOrphaned());
+        }
 
 		#endregion
 
