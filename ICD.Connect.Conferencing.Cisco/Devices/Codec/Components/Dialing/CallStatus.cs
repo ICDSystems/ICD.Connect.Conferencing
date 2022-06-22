@@ -7,7 +7,6 @@ using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 using ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference;
-using ICD.Connect.Conferencing.EventArguments;
 using ICD.Connect.Conferencing.Participants.Enums;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
@@ -43,7 +42,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public event EventHandler<GenericEventArgs<eCiscoDialProtocol>> OnProtocolChanged;
 		public event EventHandler<IntEventArgs> OnReceiveRateChanged;
 		public event EventHandler<StringEventArgs> OnRemoteNumberChanged;
-		public event EventHandler<GenericEventArgs<eParticipantStatus>> OnStatusChanged;
+		public event EventHandler<GenericEventArgs<eCiscoCallStatus>> OnStatusChanged;
 		public event EventHandler<IntEventArgs> OnTransmitRateChanged;
 		public event EventHandler<GenericEventArgs<eCiscoCallType>> OnCiscoCallTypeChanged;
 
@@ -60,7 +59,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private eCiscoDialProtocol m_Protocol;
 		private int m_ReceiveRate;
 		private string m_RemoteNumber;
-		private eParticipantStatus m_Status;
+		private eCiscoCallStatus m_Status;
 		private int m_TransmitRate;
 		private eCiscoCallType m_CiscoCallType;
 
@@ -236,7 +235,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <summary>
 		/// Call Status
 		/// </summary>
-		public eParticipantStatus Status
+		public eCiscoCallStatus Status
 		{
 			get { return m_Status; }
 			private set
@@ -313,7 +312,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="transmitRate"></param>
 		/// <param name="ciscoCallType"></param>
 		private CallStatus(eCallAnswerState answerState, string number, string name, eCallDirection direction, int duration, int callId,
-		                  eCiscoDialProtocol protocol, int receiveRate, string remoteNumber, eParticipantStatus status, int transmitRate,
+		                  eCiscoDialProtocol protocol, int receiveRate, string remoteNumber, eCiscoCallStatus status, int transmitRate,
 		                  eCiscoCallType ciscoCallType)
 		{
 			m_AnswerState = answerState;
@@ -351,7 +350,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				eCiscoDialProtocol protocol = eCiscoDialProtocol.Unknown;
 				int receiveRate = 0;
 				string remoteNumber = null;
-				eParticipantStatus status = eParticipantStatus.Undefined;
+				eCiscoCallStatus status = eCiscoCallStatus.Undefined;
 				int transmitRate = 0;
 				eCiscoCallType ciscoCallType = eCiscoCallType.Unknown;
 				int duration = 0;
@@ -382,7 +381,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 							remoteNumber = child.ReadElementContentAsString();
 							break;
 						case ELEMENT_STATUS:
-							status = EnumUtils.Parse<eParticipantStatus>(ParseStatusElement(child.ReadElementContentAsString()), true);
+							status = EnumUtils.Parse<eCiscoCallStatus>(ParseStatusElement(child.ReadElementContentAsString()), true);
 							break;
 						case ELEMENT_TRANSMIT_CALL_RATE:
 							transmitRate = child.ReadElementContentAsInt();
@@ -399,7 +398,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				}
 
 				// Static calculations
-				status = ghost ? eParticipantStatus.Disconnected : status;
+				status = ghost ? eCiscoCallStatus.Disconnected : status;
 
 				return new CallStatus(answerState, number, name, direction, duration, callId, protocol,
 				                      receiveRate, remoteNumber, status, transmitRate,
@@ -429,7 +428,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			Protocol = updated.Protocol != eCiscoDialProtocol.Unknown ? updated.Protocol : Protocol;
 			ReceiveRate = updated.ReceiveRate != 0 ? updated.ReceiveRate : ReceiveRate;
 			RemoteNumber = updated.RemoteNumber ?? RemoteNumber;
-			Status = updated.Status != eParticipantStatus.Undefined ? updated.Status : Status;
+			Status = updated.Status != eCiscoCallStatus.Undefined ? updated.Status : Status;
 			TransmitRate = updated.TransmitRate != 0 ? updated.TransmitRate : TransmitRate;
 			CiscoCallType = updated.CiscoCallType != eCiscoCallType.Unknown ? updated.CiscoCallType : CiscoCallType;
 		}

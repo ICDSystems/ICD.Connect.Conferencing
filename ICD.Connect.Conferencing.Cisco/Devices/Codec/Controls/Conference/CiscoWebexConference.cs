@@ -153,7 +153,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			AnswerState = m_CallStatus.AnswerState;
 			Status = m_CallStatus.Status.ToConferenceStatus();
 			CallType = m_CallStatus.CiscoCallType.ToCallType();
-			if (m_CallStatus.Duration != 0 && m_CallStatus.Status == eParticipantStatus.Connected)
+			if (m_CallStatus.Duration != 0 && m_CallStatus.Status == eCiscoCallStatus.Connected)
 				StartTime = IcdEnvironment.GetUtcTime().AddSeconds(m_CallStatus.Duration * -1);
 		}
 

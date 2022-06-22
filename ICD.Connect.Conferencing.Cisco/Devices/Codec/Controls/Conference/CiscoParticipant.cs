@@ -56,7 +56,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			Number = m_CallStatus.Number;
 			Name = m_CallStatus.Name;
 			Direction = m_CallStatus.Direction;
-			Status = m_CallStatus.Status;
+			Status = m_CallStatus.Status.ToParticipantStatus();
 			DialTime = IcdEnvironment.GetUtcTime();
 			StartTime = IcdEnvironment.GetUtcTime();
 			EndTime = null;
@@ -160,9 +160,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			StartTime = end - TimeSpan.FromSeconds(args.Data);
 		}
 
-		private void CallStatusOnStatusChanged(object sender, GenericEventArgs<eParticipantStatus> args)
+		private void CallStatusOnStatusChanged(object sender, GenericEventArgs<eCiscoCallStatus> args)
 		{
-			Status = args.Data;
+			Status = args.Data.ToParticipantStatus();
 			if (!args.Data.GetIsOnline())
 				EndTime = IcdEnvironment.GetUtcTime();
 		}

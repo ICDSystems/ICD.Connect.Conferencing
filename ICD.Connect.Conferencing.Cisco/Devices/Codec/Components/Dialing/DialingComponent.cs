@@ -325,7 +325,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (call == null)
 				throw new ArgumentNullException("call");
 
-			if (call.Status == eParticipantStatus.OnHold)
+			if (call.Status == eCiscoCallStatus.OnHold)
 				return;
 
 			Hold(call.CallId);
@@ -350,7 +350,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			if (call == null)
 				throw new ArgumentNullException("call");
 
-			if (call.Status != eParticipantStatus.OnHold)
+			if (call.Status != eCiscoCallStatus.OnHold)
 				return;
 
 			Resume(call.CallId);
@@ -460,7 +460,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				{
 					output = CallStatus.FromXml(xml);
 
-					if (output.Status == eParticipantStatus.Disconnected)
+					if (output.Status == eCiscoCallStatus.Disconnected || output.Status == eCiscoCallStatus.Orphaned)
 						return null;
 
 					Subscribe(output);
@@ -483,7 +483,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			}
 
 			// Join the new call to an existing, held call
-			CallStatus other = GetCalls().FirstOrDefault(c => c.Status == eParticipantStatus.OnHold);
+			CallStatus other = GetCalls().FirstOrDefault(c => c.Status == eCiscoCallStatus.OnHold);
 
 			if (other != null)
 				Join(output, other);
@@ -543,14 +543,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			callStatus.OnStatusChanged -= CallStatusOnStatusChanged;
 		}
 
-		private void CallStatusOnStatusChanged(object sender, GenericEventArgs<eParticipantStatus> args)
+		private void CallStatusOnStatusChanged(object sender, GenericEventArgs<eCiscoCallStatus> args)
 		{
 			CallStatus call = sender as CallStatus;
 			if (call == null)
 				return;
 
-			if (args.Data != eParticipantStatus.Disconnected)
+			if (args.Data != eCiscoCallStatus.Disconnected && args.Data != eCiscoCallStatus.Orphaned)
 				return;
+
+			if (args.Data == eCiscoCallStatus.Orphaned)
+				Codec.Logger.Log(eSeverity.Warning, "Removing orphaned callId:{0}", call.CallId);
 
 			if (RemoveCall(call.CallId))
 				OnSourceRemoved.Raise(this, new GenericEventArgs<CallStatus>(call));
