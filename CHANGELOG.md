@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [20.1.0] - 2022-06-23
+### Changed
+ - Cisco Codecs check for orphaned calls and remove them every 60 seconds
+ - Cisco components now have deinitialize method
+ - Cisco CallStatus uses it's own enum instead of eParticipantStatus
+ - Interpreter Server fixed desealization issues
+ - Interpreter Server fixed list rooms console command
+
 ## [20.0.1] - 2022-05-23
 ### Added
  - Extension method to get eCallType for eDialProtocol
