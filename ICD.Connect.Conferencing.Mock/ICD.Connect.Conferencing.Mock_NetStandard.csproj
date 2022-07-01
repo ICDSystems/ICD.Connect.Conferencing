@@ -35,10 +35,10 @@
     <None Remove="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Condition="'$(TargetFramework)' == 'net472'" Include="Crestron.SimplSharp.SDK.Library" Version="2.17.69" />
+    <ProjectReference Include="..\ICD.Connect.Conferencing\ICD.Connect.Conferencing_NetStandard.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ICD.Connect.Conferencing\ICD.Connect.Conferencing_NetStandard.csproj" />
+    <PackageReference Condition="'$(TargetFramework)' == 'net472'" Include="Crestron.SimplSharp.SDK.Library" Version="2.18.96" />
   </ItemGroup>
 
   <Target Name="ArchivePlugin" AfterTargets="AfterBuild" Condition="'$(Configuration)|$(OS)|$(TargetFramework)' == 'Release|Windows_NT|netstandard2.0'">
