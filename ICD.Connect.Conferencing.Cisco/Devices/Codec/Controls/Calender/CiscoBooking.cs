@@ -69,8 +69,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 				// Adding this to protect against that case
 			    if (string.IsNullOrEmpty(call.Protocol))
 			    {
-				    IcdConsole.PrintLine(eConsoleColor.Red, "Cisco Booking call with no protocol");
-					continue;
+				    if (string.IsNullOrEmpty(call.Number))
+					    continue;
+				    
+				    // Since teams calls show up with no protocol, add them as sip
+				    yield return new DialContext
+				    {
+					    Protocol = eDialProtocol.Sip,
+					    DialString = call.Number,
+					    CallType = call.CiscoCallType.ToCallType()
+				    };
+				    continue;
 			    }
 
 				switch (call.Protocol.ToUpper())
@@ -91,6 +100,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Calender
 							//Spark calls are all video, even though they don't tell us that
 							CallType = eCallType.Video
 						};
+						continue;
+					default:
+						IcdConsole.PrintLine(eConsoleColor.Red, "Cisco Booking call with unknown protocol:{0}", call.Protocol);
 						continue;
 			    }
 			}
