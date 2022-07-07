@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Changed
  - Cisco bookings now handle bookings without a protocol as sip calls
+ - Cisco webex call start time only updates from call duration one time to resolve start time drift issues
 
 ## [20.1.1] - 2022-07-01
 ### Changed

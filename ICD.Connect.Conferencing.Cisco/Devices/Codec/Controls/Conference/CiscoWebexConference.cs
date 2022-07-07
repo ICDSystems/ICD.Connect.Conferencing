@@ -41,6 +41,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private CiscoWebexParticipant m_SelfParticipant;
 
+		/// <summary>
+		/// This is set to true when the start time is updated from the call duration
+		/// Once it's updated once, don't update from the duration any more
+		/// Because start time tends to drift.
+		/// </summary>
+		private bool m_StartTimeSetFromDuration;
+
 		#endregion
 
 		#region Events
@@ -153,8 +160,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			AnswerState = m_CallStatus.AnswerState;
 			Status = m_CallStatus.Status.ToConferenceStatus();
 			CallType = m_CallStatus.CiscoCallType.ToCallType();
-			if (m_CallStatus.Duration != 0 && m_CallStatus.Status == eCiscoCallStatus.Connected)
+			// Only update the start time if it hasn't already been updated from duration - drifts
+			if (!m_StartTimeSetFromDuration && m_CallStatus.Duration != 0 &&
+			    m_CallStatus.Status == eCiscoCallStatus.Connected)
+			{
 				StartTime = IcdEnvironment.GetUtcTime().AddSeconds(m_CallStatus.Duration * -1);
+				m_StartTimeSetFromDuration = true;
+			}
 		}
 
 		/// <summary>
