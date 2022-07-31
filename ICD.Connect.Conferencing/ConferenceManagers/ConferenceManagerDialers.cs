@@ -733,9 +733,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			m_PointsSection.Execute(() => m_Points.TryGetKey(control, out point));
 
 			// The conference point drives the room privacy mute state
+            // If Get flag is set, or if feedback is high and GetMutedOnly flag is set
 			if (m_ConferenceManager.IsActive &&
 			    point != null &&
-			    point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Get))
+			    (point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Get) ||
+                (boolEventArgs.Data && point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.GetMutedOnly))))
 				m_ConferenceManager.PrivacyMuted = boolEventArgs.Data;
 
 			UpdateProvider(control);

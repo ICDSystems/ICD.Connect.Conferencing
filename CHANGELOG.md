@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - Cisco bookings now handle bookings without a protocol as sip calls
  - Cisco webex call start time only updates from call duration one time to resolve start time drift issues
+ - Handle new GetMutedOnly option for PrivacyMuteMask on VolumePoints and ConferencePoints
 
 ## [20.1.1] - 2022-07-01
 ### Changed

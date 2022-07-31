@@ -259,9 +259,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				throw new InvalidOperationException("Unexpected sender");
 
 			// The volume point drives the room privacy mute state
+            // If Get flag is set, or if feedback is high and GetMutedOnly flag is set
 			IVolumePoint point = m_PointsSection.Execute(() => m_Points.GetKey(helper));
 			if (m_ConferenceManager.IsActive &&
-				point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Get))
+				(point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.Get) ||
+                (boolEventArgs.Data && point.PrivacyMuteMask.HasFlag(ePrivacyMuteFeedback.GetMutedOnly))))
 				m_ConferenceManager.PrivacyMuted = boolEventArgs.Data;
 
 			UpdateVolumePoint(point);
