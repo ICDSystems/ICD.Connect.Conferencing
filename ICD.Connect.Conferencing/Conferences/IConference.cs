@@ -94,6 +94,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
 
+		/// <summary>
+		/// Raised when the authentication options change
+		/// </summary>
+		event EventHandler<ConferenceAuthenticationOptionsEventArgs> OnAuthenticationOptionsChanged;
+
 		#region Properties
 
 		/// <summary>
@@ -145,6 +150,14 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// Gets the supported conference features.
 		/// </summary>
 		eConferenceFeatures SupportedConferenceFeatures { get; }
+
+		/// <summary>
+		/// Authentication options
+		/// For the conference
+		/// </summary>
+		/// <returns></returns>
+		[CanBeNull]
+		ConferenceAuthenticationOptions AuthenticationOptions { get; }
 
 		#endregion
 

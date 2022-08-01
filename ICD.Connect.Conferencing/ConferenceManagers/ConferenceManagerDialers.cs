@@ -73,6 +73,11 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		/// Raised when an active participant's virtual hand raised state changes.
 		/// </summary>
 		public event EventHandler OnParticipantHandRaiseStateChanged;
+		
+		/// <summary>
+		/// Raised when the authentication options change
+		/// </summary>
+		public event EventHandler<ConferenceAuthenticationOptionsEventArgs> OnAuthenticationOptionsChanged;
 
 		private readonly IConferenceManager m_ConferenceManager;
 
@@ -85,6 +90,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 		private readonly SafeCriticalSection m_FeedbackProviderSection;
 
 		private eInCall m_IsInCall;
+		private ConferenceAuthenticationOptions m_AuthenticationOptions;
 
 		#region Properties
 
@@ -109,6 +115,27 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				OnInCallChanged.Raise(this, new InCallEventArgs(m_IsInCall));
 			}
 		}
+		
+		/// <summary>
+		/// Authentication options
+		/// Null if authentication state is None
+		/// </summary>
+		/// <returns></returns>
+		public ConferenceAuthenticationOptions AuthenticationOptions
+		{
+			get { return m_AuthenticationOptions; }
+			private set
+			{
+				if (m_AuthenticationOptions == value)
+					return;
+
+				m_AuthenticationOptions = value;
+				
+				OnAuthenticationOptionsChanged.Raise(this, m_AuthenticationOptions);
+			}
+		}
+		
+		public IConference AuthenticationConference { get; private set; }
 
 		#endregion
 
@@ -409,6 +436,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			UpdateIsInCall();
+			UpdateAuthentication();
 
 			OnConferenceAdded.Raise(this, new ConferenceEventArgs(conference));
 		}
@@ -453,6 +481,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			}
 
 			UpdateIsInCall();
+			UpdateAuthentication();
 
 			OnConferenceRemoved.Raise(this, new ConferenceEventArgs(conference));
 		}
@@ -568,6 +597,16 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+
+		private void UpdateAuthentication()
+		{
+			IConference conference = ActiveConferences.Where(c => c.AuthenticationOptions != null &&
+			                                                      c.AuthenticationOptions.State != eConferenceAuthenticationState.None)
+			                                          .OrderByDescending(c => c.AuthenticationOptions.State).FirstOrDefault();
+
+			AuthenticationConference = conference;
+			AuthenticationOptions = conference == null ? null : conference.AuthenticationOptions;
 		}
 
 		#endregion
@@ -855,6 +894,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantRemoved += ConferenceOnParticipantRemoved;
 			conference.OnCallTypeChanged += ConferenceOnCallTypeChanged;
 			conference.OnConferenceRecordingStatusChanged += ConferenceOnConferenceRecordingStatusChanged;
+			conference.OnAuthenticationOptionsChanged += ConferenceOnOnAuthenticationOptionsChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Subscribe(participant);
@@ -874,6 +914,7 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 			conference.OnParticipantRemoved -= ConferenceOnParticipantRemoved;
 			conference.OnCallTypeChanged -= ConferenceOnCallTypeChanged;
 			conference.OnConferenceRecordingStatusChanged -= ConferenceOnConferenceRecordingStatusChanged;
+			conference.OnAuthenticationOptionsChanged -= ConferenceOnOnAuthenticationOptionsChanged;
 
 			foreach (IParticipant participant in conference.GetParticipants())
 				Unsubscribe(participant);
@@ -925,6 +966,12 @@ namespace ICD.Connect.Conferencing.ConferenceManagers
 				return;
 
 			OnConferenceRecordStateChanged.Raise(this, conference);
+		}
+		
+		private void ConferenceOnOnAuthenticationOptionsChanged(object sender, ConferenceAuthenticationOptionsEventArgs args)
+		{
+			// todo: Make this cleaner one day
+			UpdateAuthentication();
 		}
 
 		#endregion

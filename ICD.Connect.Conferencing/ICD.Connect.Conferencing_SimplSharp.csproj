@@ -101,6 +101,7 @@
     <Compile Include="ConferencePoints\IConferencePointSettings.cs" />
     <Compile Include="Conferences\AbstractConference.cs" />
     <Compile Include="Conferences\AbstractConferenceBase.cs" />
+    <Compile Include="Conferences\ConferenceAuthenticationOptions.cs" />
     <Compile Include="Conferences\ThinConference.cs" />
     <Compile Include="Controls\Dialing\AbstractConferenceDeviceControl.cs" />
     <Compile Include="Controls\Dialing\AbstractThinConferenceDeviceControl.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="DialContexts\IDialContext.cs" />
     <Compile Include="EventArguments\CallAnswerStateEventArgs.cs" />
     <Compile Include="EventArguments\CallTypeEventArgs.cs" />
+    <Compile Include="EventArguments\ConferenceAuthenticationOptionsEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceControlIncomingCallEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceControlSupportedConferenceFeaturesChangedApiEventArgs.cs" />
     <Compile Include="EventArguments\ConferenceParticipantAddedOrRemovedEventArgs.cs" />

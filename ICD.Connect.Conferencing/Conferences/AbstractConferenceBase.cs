@@ -25,6 +25,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		private string m_Number;
 		private eCallDirection m_Direction;
 		private eCallAnswerState m_AnswerState;
+		private ConferenceAuthenticationOptions m_AuthenticationOptions;
 
 		#endregion
 
@@ -67,6 +68,11 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// </summary>
 		public event EventHandler<GenericEventArgs<eConferenceFeatures>> OnSupportedConferenceFeaturesChanged;
 
+		/// <summary>
+		/// Raised when the authentication options change
+		/// </summary>
+		public event EventHandler<ConferenceAuthenticationOptionsEventArgs> OnAuthenticationOptionsChanged;
+
 		#endregion
 
 		#region Properties
@@ -108,7 +114,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		/// <summary>
-		/// Number of the conferenc for redial, etc
+		/// Number of the conference for redial, etc
 		/// </summary>
 		public string Number
 		{
@@ -244,6 +250,25 @@ namespace ICD.Connect.Conferencing.Conferences
 		}
 
 		/// <summary>
+		/// Authentication options
+		/// Null if authentication state is None
+		/// </summary>
+		/// <returns></returns>
+		public ConferenceAuthenticationOptions AuthenticationOptions
+		{
+			get { return m_AuthenticationOptions; }
+			protected set
+			{
+				if (m_AuthenticationOptions == value)
+					return;
+
+				m_AuthenticationOptions = value;
+				
+				OnAuthenticationOptionsChanged.Raise(this, m_AuthenticationOptions);
+			}
+		}
+
+		/// <summary>
 		/// Gets the name of the node.
 		/// </summary>
 		public virtual string ConsoleName { get { return GetType().Name; } }
@@ -310,6 +335,7 @@ namespace ICD.Connect.Conferencing.Conferences
 		/// <returns></returns>
 		IEnumerable<IParticipant> IConference.GetParticipants()
 		{
+			// ReSharper disable once RedundantEnumerableCastCall
 			return GetParticipants().Cast<IParticipant>();
 		}
 
