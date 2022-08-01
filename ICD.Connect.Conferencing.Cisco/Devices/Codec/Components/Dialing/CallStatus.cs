@@ -28,6 +28,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private const string ELEMENT_STATUS = "Status";
 		private const string ELEMENT_TRANSMIT_CALL_RATE = "TransmitCallRate";
 		private const string ELEMENT_CALL_TYPE = "CallType";
+		private const string ELEMENT_AUTHENTICATION_REQUEST = "AuthenticationRequest";
 
 		#endregion
 
@@ -45,6 +46,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public event EventHandler<GenericEventArgs<eCiscoCallStatus>> OnStatusChanged;
 		public event EventHandler<IntEventArgs> OnTransmitRateChanged;
 		public event EventHandler<GenericEventArgs<eCiscoCallType>> OnCiscoCallTypeChanged;
+		public event EventHandler<GenericEventArgs<eAuthenticationRequest>> OnAuthenticationRequestChanged; 
 
 		#endregion
 
@@ -62,6 +64,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private eCiscoCallStatus m_Status;
 		private int m_TransmitRate;
 		private eCiscoCallType m_CiscoCallType;
+		private eAuthenticationRequest m_AuthenticationRequest;
 
 		private static readonly Dictionary<string, string> s_CachedNumberToName;
 		private static readonly SafeCriticalSection s_CachedNumberToNameSection;
@@ -283,6 +286,23 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			}
 		}
 
+		/// <summary>
+		/// Authentication request for the call
+		/// </summary>
+		public eAuthenticationRequest AuthenticationRequest
+		{
+			get { return m_AuthenticationRequest; }
+			private set
+			{
+				if (m_AuthenticationRequest == value)
+					return;
+
+				m_AuthenticationRequest = value;
+				
+				OnAuthenticationRequestChanged.Raise(this, m_AuthenticationRequest);
+			}
+		}
+
 		#endregion
 
 		#region Constructors
@@ -311,9 +331,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="status"></param>
 		/// <param name="transmitRate"></param>
 		/// <param name="ciscoCallType"></param>
+		/// <param name="authenticationRequest"></param>
 		private CallStatus(eCallAnswerState answerState, string number, string name, eCallDirection direction, int duration, int callId,
-		                  eCiscoDialProtocol protocol, int receiveRate, string remoteNumber, eCiscoCallStatus status, int transmitRate,
-		                  eCiscoCallType ciscoCallType)
+		                   eCiscoDialProtocol protocol, int receiveRate, string remoteNumber, eCiscoCallStatus status, int transmitRate,
+		                   eCiscoCallType ciscoCallType, eAuthenticationRequest authenticationRequest)
 		{
 			m_AnswerState = answerState;
 			m_Number = number;
@@ -327,6 +348,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			m_Status = status;
 			m_TransmitRate = transmitRate;
 			m_CiscoCallType = ciscoCallType;
+			m_AuthenticationRequest = authenticationRequest;
 		}
 
 		/// <summary>
@@ -354,6 +376,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				int transmitRate = 0;
 				eCiscoCallType ciscoCallType = eCiscoCallType.Unknown;
 				int duration = 0;
+				eAuthenticationRequest authenticationRequest = eAuthenticationRequest.Unknown;
 
 				foreach (IcdXmlReader child in reader.GetChildElements())
 				{
@@ -392,6 +415,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 						case ELEMENT_DURATION:
 							duration = child.ReadElementContentAsInt();
 							break;
+						case ELEMENT_AUTHENTICATION_REQUEST:
+							authenticationRequest = EnumUtils.Parse<eAuthenticationRequest>(child.ReadElementContentAsString(), true);
+							break;
 					}
 
 					child.Dispose();
@@ -402,7 +428,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				return new CallStatus(answerState, number, name, direction, duration, callId, protocol,
 				                      receiveRate, remoteNumber, status, transmitRate,
-				                      ciscoCallType);
+				                      ciscoCallType, authenticationRequest);
 			}
 		}
 
@@ -436,6 +462,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			Status = updated.Status != eCiscoCallStatus.Undefined ? updated.Status : Status;
 			TransmitRate = updated.TransmitRate != 0 ? updated.TransmitRate : TransmitRate;
 			CiscoCallType = updated.CiscoCallType != eCiscoCallType.Unknown ? updated.CiscoCallType : CiscoCallType;
+			AuthenticationRequest = updated.AuthenticationRequest != eAuthenticationRequest.Unknown
+				? updated.AuthenticationRequest
+				: AuthenticationRequest;
 		}
 
 		#endregion

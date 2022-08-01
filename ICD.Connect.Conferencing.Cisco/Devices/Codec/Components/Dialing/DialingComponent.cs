@@ -435,6 +435,74 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			Codec.Logger.Log(eSeverity.Debug, "Sending DTMF tone {0} to call {1}", data, callId);
 		}
 
+		public void AuthenticateHostPin(CallStatus call, string pin)
+		{
+			AuthenticateHostPin(call.CallId, pin);
+		}
+		
+		public void AuthenticateHostPin(int callId, string pin)
+		{
+			AuthenticatePin(callId, "Host", pin);
+		}
+
+		public void AuthenticatePanelistPin(CallStatus call, string pin)
+		{
+			AuthenticatePanelistPin(call.CallId, pin);
+		}
+
+		public void AuthenticatePanelistPin(int callId, string pin)
+		{
+			AuthenticatePin(callId, "Panelist", pin);
+		}
+
+		public void AuthenticateGuestPin(CallStatus call, string pin)
+		{
+			AuthenticateGuestPin(call.CallId, pin);
+		}
+		
+		public void AuthenticateGuestPin(int callId, string pin)
+		{
+			AuthenticatePin(callId, "Guest", pin);
+		}
+
+		public void AuthenticateGuest(CallStatus call)
+		{
+			AuthenticateGuest(call.CallId);
+		}
+
+		public void AuthenticateGuest(int callId)
+		{
+			Codec.SendCommand("xCommand Conference Call AuthenticationResponse CallId: {0}, ParticipantRole: Guest",
+				callId);
+		}
+
+		public void AuthenticateCoHostPin(CallStatus call, string pin)
+		{
+			AuthenticateCoHostPin(call.CallId, pin);
+		}
+
+		public void AuthenticateCoHostPin(int callId, string pin)
+		{
+			// ReSharper disable once StringLiteralTypo
+			AuthenticatePin(callId, "Cohost", pin);
+		}
+
+		public void AuthenticatePresenterPin(CallStatus call, string pin)
+		{
+			AuthenticatePresenterPin(call.CallId, pin);
+		}
+
+		public void AuthenticatePresenterPin(int callId, string pin)
+		{
+			AuthenticatePin(callId, "Presenter", pin);
+		}
+
+		private void AuthenticatePin(int callId, string participantRole, string pin)
+		{
+			Codec.SendCommand(
+				"xCommand Conference Call AuthenticationResponse CallId: {0}, ParticipantRole: {1}, Pin: {2}", callId, participantRole, pin);
+		}
+
 		#endregion
 
 		#region Private Methods

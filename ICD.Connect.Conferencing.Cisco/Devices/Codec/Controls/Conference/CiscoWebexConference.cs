@@ -22,6 +22,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private const long PARTICIPANT_LIST_UPDATE_INTERVAL = 30 * 1000;
 
+		private const long AUTHENTICATION_FAILED_TIMEOUT = 2 * 1000;
+
 		private CallStatus m_CallStatus;
 
 		private readonly ConferenceComponent m_ConferenceComponent;
@@ -31,7 +33,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private readonly SafeCriticalSection m_ParticipantsSection;
 
+		private readonly SafeTimer m_AuthenticationFailedTimer;
+
 		private bool m_IsHostOrCoHost;
+
+		private eAuthenticationRequest m_AuthenticationRequest;
 		
 		/// <summary>
 		/// Participants
@@ -129,6 +135,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_ParticipantsSection = new SafeCriticalSection();
 			m_Participants = new Dictionary<string, CiscoWebexParticipant>();
 			m_ParticipantUpdateTimer = SafeTimer.Stopped(ParticipantUpdateTimerCallback);
+			m_AuthenticationFailedTimer = SafeTimer.Stopped(AuthenticationFailedCallback);
 			
 			// Set initial start time - gets updated later by the duration time
 			StartTime = IcdEnvironment.GetUtcTime();
@@ -167,6 +174,13 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				StartTime = IcdEnvironment.GetUtcTime().AddSeconds(m_CallStatus.Duration * -1);
 				m_StartTimeSetFromDuration = true;
 			}
+
+			if (m_AuthenticationRequest != m_CallStatus.AuthenticationRequest)
+			{
+				m_AuthenticationRequest = m_CallStatus.AuthenticationRequest;
+				UpdateAuthenticationOptions(m_AuthenticationRequest);
+			}
+			
 		}
 
 		/// <summary>
@@ -335,6 +349,120 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			}
 
 			base.DisposeFinal();
+		}
+
+		private void UpdateAuthenticationOptions(eAuthenticationRequest authenticationRequest)
+		{
+			m_AuthenticationFailedTimer.Stop();
+			switch (authenticationRequest)
+			{
+				case eAuthenticationRequest.Unknown:
+				case eAuthenticationRequest.None:
+					AuthenticationOptions = null;
+					break;
+				case eAuthenticationRequest.GuestPin:
+					AuthenticationOptions = new ConferenceAuthenticationOptions(eConferenceAuthenticationState.Required,
+						false, GetGuestPinAuthenticationMethods());
+					break;
+				case eAuthenticationRequest.PanelistPin:
+					AuthenticationOptions = new ConferenceAuthenticationOptions(eConferenceAuthenticationState.Required,
+						false, GetPanelistPinAuthenticationMethods());
+					break;
+				case eAuthenticationRequest.HostPinOrGuest:
+					AuthenticationOptions = new ConferenceAuthenticationOptions(eConferenceAuthenticationState.Required,
+						false, AuthenticateGuest, "Guest", GetHostPinAuthenticationMethods());
+					break;
+				case eAuthenticationRequest.HostPinOrGuestPin:
+					AuthenticationOptions = new ConferenceAuthenticationOptions(eConferenceAuthenticationState.Required,
+						false, GetHostPinOrGuestPinAuthenticationMethods());
+					break;
+				case eAuthenticationRequest.AnyHostPinOrGuestPin:
+					AuthenticationOptions = new ConferenceAuthenticationOptions(eConferenceAuthenticationState.Required,
+						false, GetAnyHostPinOrGuestPinAuthenticationMethods());
+					break;
+				
+				default:
+					throw new ArgumentOutOfRangeException("authenticationRequest");
+
+			}
+		}
+
+		private IEnumerable<ConferenceAuthenticationMethod> GetGuestPinAuthenticationMethods()
+		{
+			yield return GetGuestPinAuthenticationMethod();
+		}
+
+		private IEnumerable<ConferenceAuthenticationMethod> GetPanelistPinAuthenticationMethods()
+		{
+			yield return new ConferenceAuthenticationMethod("Panelist", "Enter Panelist Pin", AuthenticatePanelistPin);
+		}
+
+		private IEnumerable<ConferenceAuthenticationMethod> GetHostPinAuthenticationMethods()
+		{
+			yield return GetHostPinAuthenticationMethod();
+		}
+
+		private IEnumerable<ConferenceAuthenticationMethod> GetHostPinOrGuestPinAuthenticationMethods()
+		{
+			yield return GetHostPinAuthenticationMethod();
+			yield return GetGuestPinAuthenticationMethod();
+		}
+
+		private IEnumerable<ConferenceAuthenticationMethod> GetAnyHostPinOrGuestPinAuthenticationMethods()
+		{
+			yield return GetHostPinAuthenticationMethod();
+			yield return new ConferenceAuthenticationMethod("CoHost", "Enter CoHost Pin", AuthenticateCoHostPin);
+			yield return GetGuestPinAuthenticationMethod();
+		}
+
+		private ConferenceAuthenticationMethod GetHostPinAuthenticationMethod()
+		{
+			return new ConferenceAuthenticationMethod("Host", "Enter Host Pin", AuthenticateHostPin);
+		}
+
+		private ConferenceAuthenticationMethod GetGuestPinAuthenticationMethod()
+		{
+			return new ConferenceAuthenticationMethod("Guest", "Enter Guest Pin", AuthenticateGuestPin);
+		}
+		
+		/// <summary>
+		/// Calls when the timer expires to inform the user that the password did not work
+		/// Since we get no notification from the endpoint
+		/// </summary>
+		private void AuthenticationFailedCallback()
+		{
+			if (AuthenticationOptions != null)
+				AuthenticationOptions.RaisePasswordRejected();
+		}
+
+
+		private void AuthenticateGuestPin(string pin)
+		{
+			m_AuthenticationFailedTimer.Reset(AUTHENTICATION_FAILED_TIMEOUT);
+			m_DialingComponent.AuthenticateGuestPin(m_CallStatus, pin);
+		}
+
+		private void AuthenticatePanelistPin(string pin)
+		{
+			m_AuthenticationFailedTimer.Reset(AUTHENTICATION_FAILED_TIMEOUT);
+			m_DialingComponent.AuthenticatePanelistPin(m_CallStatus, pin);	
+		}
+
+		private void AuthenticateHostPin(string pin)
+		{
+			m_AuthenticationFailedTimer.Reset(AUTHENTICATION_FAILED_TIMEOUT);
+			m_DialingComponent.AuthenticateHostPin(m_CallStatus, pin);
+		}
+
+		private void AuthenticateCoHostPin(string pin)
+		{
+			m_AuthenticationFailedTimer.Reset(AUTHENTICATION_FAILED_TIMEOUT);
+			m_DialingComponent.AuthenticateCoHostPin(m_CallStatus, pin);
+		}
+
+		private void AuthenticateGuest()
+		{
+			m_DialingComponent.AuthenticateGuest(m_CallStatus);
 		}
 
 		#endregion

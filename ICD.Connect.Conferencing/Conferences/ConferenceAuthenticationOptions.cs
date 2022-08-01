@@ -15,6 +15,7 @@ namespace ICD.Connect.Conferencing.Conferences
         private readonly bool m_IsCodeAlphanumeric;
         private readonly Action m_AnonymousAuthenticationCallback;
         private readonly ConferenceAuthenticationMethod[] m_AuthenticationMethods;
+        private string m_AnonymousAuthenticationName;
 
         /// <summary>
         /// Authentication State for the conference
@@ -50,6 +51,14 @@ namespace ICD.Connect.Conferencing.Conferences
         {
             get { return m_AnonymousAuthenticationCallback; }
         }
+
+        /// <summary>
+        /// Name of the anonymous authentication method
+        /// </summary>
+        public string AnonymousAuthenticationName
+        {
+            get { return m_AnonymousAuthenticationName; }
+        }
         
         /// <summary>
         /// Collection of authentication methods for the conference
@@ -67,9 +76,9 @@ namespace ICD.Connect.Conferencing.Conferences
         /// <param name="isCodeAlphanumeric"></param>
         /// <param name="authenticationMethods"></param>
         public ConferenceAuthenticationOptions(eConferenceAuthenticationState state, bool isCodeAlphanumeric,
-                                               IEnumerable<ConferenceAuthenticationMethod> authenticationMethods) : this(state, isCodeAlphanumeric, null, authenticationMethods)
-        {
-        }
+                                               IEnumerable<ConferenceAuthenticationMethod> authenticationMethods) :
+            this(state, isCodeAlphanumeric, null, null, authenticationMethods)
+        { }
 
         /// <summary>
         /// Constructor
@@ -77,13 +86,17 @@ namespace ICD.Connect.Conferencing.Conferences
         /// <param name="state"></param>
         /// <param name="isCodeAlphanumeric"></param>
         /// <param name="anonymousAuthenticationCallback"></param>
+        /// <param name="anonymousAuthenticationName"></param>
         /// <param name="authenticationMethods"></param>
-        public ConferenceAuthenticationOptions(eConferenceAuthenticationState state, bool isCodeAlphanumeric, Action anonymousAuthenticationCallback,
+        public ConferenceAuthenticationOptions(eConferenceAuthenticationState state, bool isCodeAlphanumeric,
+                                               Action anonymousAuthenticationCallback,
+                                               string anonymousAuthenticationName,
                                                IEnumerable<ConferenceAuthenticationMethod> authenticationMethods)
         {
             m_State = state;
             m_IsCodeAlphanumeric = isCodeAlphanumeric;
             m_AnonymousAuthenticationCallback = anonymousAuthenticationCallback;
+            m_AnonymousAuthenticationName = anonymousAuthenticationName;
             m_AuthenticationMethods = authenticationMethods.ToArray();
         }
 
@@ -110,6 +123,7 @@ namespace ICD.Connect.Conferencing.Conferences
     public sealed class ConferenceAuthenticationMethod
     {
         private readonly string m_Name;
+        private readonly string m_Prompt;
         private readonly Action<string> m_AuthenticationCallback;
         
         /// <summary>
@@ -119,6 +133,15 @@ namespace ICD.Connect.Conferencing.Conferences
         public string Name
         {
             get { return m_Name; }
+        }
+
+        /// <summary>
+        /// Prompt to use for the authentication request
+        /// </summary>
+        [CanBeNull]
+        public string Prompt
+        {
+            get { return m_Prompt; }
         }
         
         /// <summary>
@@ -134,8 +157,9 @@ namespace ICD.Connect.Conferencing.Conferences
         /// Constructor
         /// </summary>
         /// <param name="name"></param>
+        /// <param name="prompt"></param>
         /// <param name="authenticationCallback"></param>
-        public ConferenceAuthenticationMethod([NotNull] string name, [NotNull] Action<string> authenticationCallback)
+        public ConferenceAuthenticationMethod([NotNull] string name, [CanBeNull] string prompt, [NotNull] Action<string> authenticationCallback)
         {
             if (name == null) 
                 throw new ArgumentNullException("name");
@@ -143,6 +167,7 @@ namespace ICD.Connect.Conferencing.Conferences
                 throw new ArgumentNullException("authenticationCallback");
             
             m_Name = name;
+            m_Prompt = prompt;
             m_AuthenticationCallback = authenticationCallback;
         }
     }
