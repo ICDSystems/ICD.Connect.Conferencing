@@ -396,23 +396,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		}
 
 		/// <summary>
-		/// Combines this call and the call with the given id.
-		/// </summary>
-		/// <param name="call"></param>
-		/// <param name="other"></param>
-		public void Join([NotNull] CallStatus call, [NotNull] CallStatus other)
-		{
-			if (call == null)
-				throw new ArgumentNullException("call");
-
-			if (other == null)
-				throw new ArgumentNullException("other");
-
-			Codec.SendCommand("xCommand Call Join CallId: {0} CallId: {1}", call.CallId, other.CallId);
-			Codec.Logger.Log(eSeverity.Debug, "Joining Call {0} with {1}", call.CallId, other.CallId);
-		}
-
-		/// <summary>
 		/// Allows sending DTMF codes
 		/// </summary>
 		/// <param name="call"></param>
