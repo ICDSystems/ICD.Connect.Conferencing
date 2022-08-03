@@ -7,6 +7,12 @@ using ICD.Connect.Conferencing.EventArguments;
 
 namespace ICD.Connect.Conferencing.Conferences
 {
+    public enum eCodeRequirement
+    {
+        NotSupported, // Code is not supported and should not be sent
+        Optional, // Code is optional
+        Required // Code is required
+    } 
     public sealed class ConferenceAuthenticationOptions
     {
         /// <summary>
@@ -83,8 +89,7 @@ namespace ICD.Connect.Conferencing.Conferences
     {
         private readonly string m_Name;
         private readonly string m_Prompt;
-        private readonly bool m_IsCodeRequired;
-        private readonly bool m_IsCodeAllowed;
+        private readonly eCodeRequirement m_CodeRequirement;
         private readonly Action<string> m_AuthenticationCallback;
         
         /// <summary>
@@ -106,24 +111,13 @@ namespace ICD.Connect.Conferencing.Conferences
         }
 
         /// <summary>
-        /// If true, the action must be called with a code
-        /// If false, the action can be called without a code (null code)
+        /// Code requirements for this method
         /// </summary>
-        public bool IsCodeRequired
+        public eCodeRequirement CodeRequirement
         {
-            get { return m_IsCodeRequired; }
+            get { return m_CodeRequirement; }
         }
 
-        /// <summary>
-        /// If true, codes can be used for this authentication method
-        /// If false, codes can not be used for this authentication method
-        /// If false, IsCodeRequired can not be true
-        /// </summary>
-        public bool IsCodeAllowed
-        {
-            get { return m_IsCodeAllowed; }
-        }
-        
         /// <summary>
         /// Callback for the authentication method, parameter is the code
         /// </summary>
@@ -134,26 +128,13 @@ namespace ICD.Connect.Conferencing.Conferences
         }
 
         /// <summary>
-        /// Constructor, code required
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="prompt"></param>
-        /// <param name="authenticationCallback"></param>
-        public ConferenceAuthenticationMethod([NotNull] string name, [CanBeNull] string prompt,
-                                              [NotNull] Action<string> authenticationCallback) : this( name, prompt, true, true, authenticationCallback)
-        {
-            
-        }
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="name"></param>
         /// <param name="prompt"></param>
-        /// <param name="isCodeRequired"></param>
-        /// <param name="isCodeAllowed"></param>
+        /// <param name="codeRequirement"></param>
         /// <param name="authenticationCallback"></param>
-        public ConferenceAuthenticationMethod([NotNull] string name, [CanBeNull] string prompt, bool isCodeRequired, bool isCodeAllowed, [NotNull] Action<string> authenticationCallback)
+        public ConferenceAuthenticationMethod([NotNull] string name, [CanBeNull] string prompt, eCodeRequirement codeRequirement, [NotNull] Action<string> authenticationCallback)
         {
             if (name == null) 
                 throw new ArgumentNullException("name");
@@ -162,8 +143,7 @@ namespace ICD.Connect.Conferencing.Conferences
             
             m_Name = name;
             m_Prompt = prompt;
-            m_IsCodeRequired = isCodeRequired;
-            m_IsCodeAllowed = isCodeAllowed;
+            m_CodeRequirement = codeRequirement;
             m_AuthenticationCallback = authenticationCallback;
         }
     }

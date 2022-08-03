@@ -393,7 +393,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private IEnumerable<ConferenceAuthenticationMethod> GetPanelistPinAuthenticationMethods()
 		{
-			yield return new ConferenceAuthenticationMethod("Panelist", "Enter Panelist Password", AuthenticatePanelistPin);
+			yield return new ConferenceAuthenticationMethod("Panelist", "Enter Panelist Password", eCodeRequirement.Required, AuthenticatePanelistPin);
 		}
 
 		private IEnumerable<ConferenceAuthenticationMethod> GetHostPinOrGuestPinAuthenticationMethods()
@@ -406,22 +406,22 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		{
 			yield return GetGuestPinAuthenticationMethod();
 			yield return GetHostPinAuthenticationMethod();
-			yield return new ConferenceAuthenticationMethod("CoHost", "Enter CoHost Password", AuthenticateCoHostPin);
+			yield return new ConferenceAuthenticationMethod("CoHost", "Enter CoHost Password", eCodeRequirement.Required, AuthenticateCoHostPin);
 		}
 
 		private ConferenceAuthenticationMethod GetHostPinAuthenticationMethod()
 		{
-			return new ConferenceAuthenticationMethod("Host", "Enter Host Password", AuthenticateHostPin);
+			return new ConferenceAuthenticationMethod("Host", "Enter Host Password", eCodeRequirement.Required, AuthenticateHostPin);
 		}
 
 		private ConferenceAuthenticationMethod GetGuestPinAuthenticationMethod()
 		{
-			return new ConferenceAuthenticationMethod("Guest", "Enter Guest Password", AuthenticateGuestPin);
+			return new ConferenceAuthenticationMethod("Guest", "Enter Guest Password", eCodeRequirement.Required, AuthenticateGuestPin);
 		}
 		
 		private ConferenceAuthenticationMethod GetGuestAuthenticationMethod()
 		{
-			return new ConferenceAuthenticationMethod("Guest", "Password not required for guest", false, false, AuthenticateGuest);
+			return new ConferenceAuthenticationMethod("Guest", "Password not required for guest", eCodeRequirement.NotSupported, AuthenticateGuest);
 		}
 		
 		/// <summary>
