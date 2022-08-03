@@ -5,10 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - Added AuthenticaitonOptions for conferences that need authenticaiton
+ - Implemented AuthenticationOptions for Cisco Codecs
+
 ### Changed
  - Cisco bookings now handle bookings without a protocol as sip calls
  - Cisco webex call start time only updates from call duration one time to resolve start time drift issues
  - Handle new GetMutedOnly option for PrivacyMuteMask on VolumePoints and ConferencePoints
+
+### Removed
+ - Cisco Codecs removed call join ability and automatic call joining
 
 ## [20.1.1] - 2022-07-01
 ### Changed
