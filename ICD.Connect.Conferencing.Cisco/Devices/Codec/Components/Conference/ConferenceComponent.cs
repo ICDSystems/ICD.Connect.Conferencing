@@ -8,6 +8,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Common.Utils.Xml;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
+using ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing;
 
 namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 {
@@ -79,12 +80,15 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 		public event EventHandler<GenericEventArgs<eCallRecordingStatus>> OnCallRecordingStatusChanged;
 		public event EventHandler<GenericEventArgs<WebexParticipantInfo>> OnWebexParticipantListUpdated;
 		public event EventHandler<GenericEventArgs<WebexParticipantInfo[]>> OnWebexParticipantsListSearchResult;
+		public event EventHandler<GenericEventArgs<eAuthenticationRequest>> OnAuthenticationRequestChanged; 
 
 		#endregion
 
 		#region Fields
 
 		private eCallRecordingStatus m_CallRecordingStatus;
+
+		private eAuthenticationRequest m_AuthenticationRequest;
 
 		#endregion
 
@@ -104,6 +108,19 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Conference
 				m_CallRecordingStatus = value;
 				Codec.Logger.Log(eSeverity.Informational, "Call recording status set to: {0}", m_CallRecordingStatus);
 				OnCallRecordingStatusChanged.Raise(this, m_CallRecordingStatus);
+			}
+		}
+
+		public eAuthenticationRequest AuthenticationRequest
+		{
+			get { return m_AuthenticationRequest; }
+			private set
+			{
+				if (m_AuthenticationRequest == value)
+					return;
+
+				m_AuthenticationRequest = value;
+				OnAuthenticationRequestChanged.Raise(this, m_AuthenticationRequest);
 			}
 		}
 

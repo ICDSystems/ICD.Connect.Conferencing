@@ -28,9 +28,20 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private const string ELEMENT_STATUS = "Status";
 		private const string ELEMENT_TRANSMIT_CALL_RATE = "TransmitCallRate";
 		private const string ELEMENT_CALL_TYPE = "CallType";
-		private const string ELEMENT_AUTHENTICATION_REQUEST = "AuthenticationRequest";
 
 		#endregion
+		
+		private const eCallAnswerState DEFAULT_ANSWER_STATE = eCallAnswerState.Unknown;
+		private const string DEFAULT_NUMBER = null;
+		private const string DEFAULT_NAME = null;
+		private const eCallDirection DEFAULT_DIRECTION = eCallDirection.Undefined;
+		private const eCiscoDialProtocol DEFAULT_PROTOCOL = eCiscoDialProtocol.Unknown;
+		private const int DEFAULT_RECEIVE_RATE = 0;
+		private const string DEFAULT_REMOTE_NUMBER = null;
+		private const eCiscoCallStatus DEFAULT_STATUS = eCiscoCallStatus.Undefined;
+		private const int DEFAULT_TRANSMIT_RATE = 0;
+		private const eCiscoCallType DEFAULT_CISCO_CALL_TYPE = eCiscoCallType.Unknown;
+		private const int DEFAULT_DURATION = 0;
 
 		#region Events
 
@@ -46,7 +57,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public event EventHandler<GenericEventArgs<eCiscoCallStatus>> OnStatusChanged;
 		public event EventHandler<IntEventArgs> OnTransmitRateChanged;
 		public event EventHandler<GenericEventArgs<eCiscoCallType>> OnCiscoCallTypeChanged;
-		public event EventHandler<GenericEventArgs<eAuthenticationRequest>> OnAuthenticationRequestChanged; 
 
 		#endregion
 
@@ -64,7 +74,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		private eCiscoCallStatus m_Status;
 		private int m_TransmitRate;
 		private eCiscoCallType m_CiscoCallType;
-		private eAuthenticationRequest m_AuthenticationRequest;
 
 		private static readonly Dictionary<string, string> s_CachedNumberToName;
 		private static readonly SafeCriticalSection s_CachedNumberToNameSection;
@@ -286,23 +295,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			}
 		}
 
-		/// <summary>
-		/// Authentication request for the call
-		/// </summary>
-		public eAuthenticationRequest AuthenticationRequest
-		{
-			get { return m_AuthenticationRequest; }
-			private set
-			{
-				if (m_AuthenticationRequest == value)
-					return;
-
-				m_AuthenticationRequest = value;
-				
-				OnAuthenticationRequestChanged.Raise(this, m_AuthenticationRequest);
-			}
-		}
-
 		#endregion
 
 		#region Constructors
@@ -331,10 +323,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		/// <param name="status"></param>
 		/// <param name="transmitRate"></param>
 		/// <param name="ciscoCallType"></param>
-		/// <param name="authenticationRequest"></param>
 		private CallStatus(eCallAnswerState answerState, string number, string name, eCallDirection direction, int duration, int callId,
 		                   eCiscoDialProtocol protocol, int receiveRate, string remoteNumber, eCiscoCallStatus status, int transmitRate,
-		                   eCiscoCallType ciscoCallType, eAuthenticationRequest authenticationRequest)
+		                   eCiscoCallType ciscoCallType)
 		{
 			m_AnswerState = answerState;
 			m_Number = number;
@@ -348,7 +339,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 			m_Status = status;
 			m_TransmitRate = transmitRate;
 			m_CiscoCallType = ciscoCallType;
-			m_AuthenticationRequest = authenticationRequest;
 		}
 
 		/// <summary>
@@ -365,18 +355,17 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 				int callId = reader.GetAttributeAsInt(ATTRIBUTE_CALL_ID);
 				bool ghost = reader.GetAttribute(ATTRIBUTE_GHOST) == "True";
 
-				eCallAnswerState answerState = eCallAnswerState.Unknown;
-				string number = null;
-				string name = null;
-				eCallDirection direction = eCallDirection.Undefined;
-				eCiscoDialProtocol protocol = eCiscoDialProtocol.Unknown;
-				int receiveRate = 0;
-				string remoteNumber = null;
-				eCiscoCallStatus status = eCiscoCallStatus.Undefined;
-				int transmitRate = 0;
-				eCiscoCallType ciscoCallType = eCiscoCallType.Unknown;
-				int duration = 0;
-				eAuthenticationRequest authenticationRequest = eAuthenticationRequest.Unknown;
+				eCallAnswerState answerState = DEFAULT_ANSWER_STATE;
+				string number = DEFAULT_NUMBER;
+				string name = DEFAULT_NAME;
+				eCallDirection direction = DEFAULT_DIRECTION;
+				eCiscoDialProtocol protocol = DEFAULT_PROTOCOL;
+				int receiveRate = DEFAULT_RECEIVE_RATE;
+				string remoteNumber = DEFAULT_REMOTE_NUMBER;
+				eCiscoCallStatus status = DEFAULT_STATUS;
+				int transmitRate = DEFAULT_TRANSMIT_RATE;
+				eCiscoCallType ciscoCallType = DEFAULT_CISCO_CALL_TYPE;
+				int duration = DEFAULT_DURATION;
 
 				foreach (IcdXmlReader child in reader.GetChildElements())
 				{
@@ -415,9 +404,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 						case ELEMENT_DURATION:
 							duration = child.ReadElementContentAsInt();
 							break;
-						case ELEMENT_AUTHENTICATION_REQUEST:
-							authenticationRequest = EnumUtils.Parse<eAuthenticationRequest>(child.ReadElementContentAsString(), true);
-							break;
 					}
 
 					child.Dispose();
@@ -428,7 +414,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 				return new CallStatus(answerState, number, name, direction, duration, callId, protocol,
 				                      receiveRate, remoteNumber, status, transmitRate,
-				                      ciscoCallType, authenticationRequest);
+				                      ciscoCallType);
 			}
 		}
 
@@ -441,6 +427,24 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
             Status = eCiscoCallStatus.Orphaned;
         }
 
+        private void UpdateFromCallStatus(CallStatus updated)
+        {
+	        if (updated.CallId != CallId)
+		        return;
+
+	        AnswerState = updated.AnswerState != DEFAULT_ANSWER_STATE ? updated.AnswerState : AnswerState;
+	        Number = updated.Number ?? Number;
+	        Name = updated.Name ?? Name;
+	        Direction = updated.Direction != DEFAULT_DIRECTION ? updated.Direction : Direction;
+	        Duration = updated.Duration != DEFAULT_DURATION ? updated.Duration : Duration;
+	        Protocol = updated.Protocol != DEFAULT_PROTOCOL ? updated.Protocol : Protocol;
+	        ReceiveRate = updated.ReceiveRate != DEFAULT_RECEIVE_RATE ? updated.ReceiveRate : ReceiveRate;
+	        RemoteNumber = updated.RemoteNumber ?? RemoteNumber;
+	        Status = updated.Status != DEFAULT_STATUS ? updated.Status : Status;
+	        TransmitRate = updated.TransmitRate != DEFAULT_TRANSMIT_RATE ? updated.TransmitRate : TransmitRate;
+	        CiscoCallType = updated.CiscoCallType != DEFAULT_CISCO_CALL_TYPE ? updated.CiscoCallType : CiscoCallType;
+        }
+
 		/// <summary>
 		/// Updates the values based on new xml.
 		/// </summary>
@@ -448,23 +452,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 		public void UpdateFromXml(string xml)
 		{
 			var updated = FromXml(xml);
-			if (updated.CallId != CallId)
-				return;
-
-			AnswerState = updated.AnswerState != eCallAnswerState.Unknown ? updated.AnswerState : AnswerState;
-			Number = updated.Number ?? Number;
-			Name = updated.Name ?? Name;
-			Direction = updated.Direction != eCallDirection.Undefined ? updated.Direction : Direction;
-			Duration = updated.Duration != 0 ? updated.Duration : Duration;
-			Protocol = updated.Protocol != eCiscoDialProtocol.Unknown ? updated.Protocol : Protocol;
-			ReceiveRate = updated.ReceiveRate != 0 ? updated.ReceiveRate : ReceiveRate;
-			RemoteNumber = updated.RemoteNumber ?? RemoteNumber;
-			Status = updated.Status != eCiscoCallStatus.Undefined ? updated.Status : Status;
-			TransmitRate = updated.TransmitRate != 0 ? updated.TransmitRate : TransmitRate;
-			CiscoCallType = updated.CiscoCallType != eCiscoCallType.Unknown ? updated.CiscoCallType : CiscoCallType;
-			AuthenticationRequest = updated.AuthenticationRequest != eAuthenticationRequest.Unknown
-				? updated.AuthenticationRequest
-				: AuthenticationRequest;
+			UpdateFromCallStatus(updated);
 		}
 
 		#endregion

@@ -22,7 +22,9 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private const long PARTICIPANT_LIST_UPDATE_INTERVAL = 30 * 1000;
 
-		private const long AUTHENTICATION_FAILED_TIMEOUT = 2 * 1000;
+		private const long AUTHENTICATION_FAILED_TIMEOUT = 8 * 1000;
+
+		private const string AUTHENTICATION_FAILED_MESSAGE = "Could Not Join, Please Try Again";
 
 		private CallStatus m_CallStatus;
 
@@ -37,8 +39,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private bool m_IsHostOrCoHost;
 
-		private eAuthenticationRequest m_AuthenticationRequest;
-		
 		/// <summary>
 		/// Participants
 		/// Key is webex participant id
@@ -95,21 +95,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 				SetParticipantsCanKickAndMute(value);
 			}
-		}
-
-		private void SetParticipantsCanKickAndMute(bool value)
-		{
-			CiscoWebexParticipant[] participants = null;
-
-			m_ParticipantsSection.Execute(() => participants = m_Participants.Values.ToArray(m_Participants.Count));
-
-			foreach (var participant in participants)
-				participant.SupportsHostParticipantPermissions(value);
-		}
-
-		private void UpdateIsHostOrCoHost()
-		{
-			IsHostOrCoHost = SelfParticipant != null && (SelfParticipant.IsHost || SelfParticipant.IsCoHost);
 		}
 
 		#endregion
@@ -174,13 +159,6 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				StartTime = IcdEnvironment.GetUtcTime().AddSeconds(m_CallStatus.Duration * -1);
 				m_StartTimeSetFromDuration = true;
 			}
-
-			if (m_AuthenticationRequest != m_CallStatus.AuthenticationRequest)
-			{
-				m_AuthenticationRequest = m_CallStatus.AuthenticationRequest;
-				UpdateAuthenticationOptions(m_AuthenticationRequest);
-			}
-			
 		}
 
 		/// <summary>
@@ -319,6 +297,21 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		{
 			m_ConferenceComponent.ParticipantListSearch(m_CallStatus.CallId, PARTICIPANT_SEARCH_LIMIT, null, null);
 		}
+		
+		private void SetParticipantsCanKickAndMute(bool value)
+		{
+			CiscoWebexParticipant[] participants = null;
+
+			m_ParticipantsSection.Execute(() => participants = m_Participants.Values.ToArray(m_Participants.Count));
+
+			foreach (var participant in participants)
+				participant.SupportsHostParticipantPermissions(value);
+		}
+
+		private void UpdateIsHostOrCoHost()
+		{
+			IsHostOrCoHost = SelfParticipant != null && (SelfParticipant.IsHost || SelfParticipant.IsCoHost);
+		}
 
 		protected override void DisposeFinal()
 		{
@@ -370,7 +363,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 					break;
 				case eAuthenticationRequest.HostPinOrGuest:
 					AuthenticationOptions = new ConferenceAuthenticationOptions(eConferenceAuthenticationState.Required,
-						false, AuthenticateGuest, "Guest", GetHostPinAuthenticationMethods());
+						false,  GetHostPinOrGuestAuthenticationMethods());
 					break;
 				case eAuthenticationRequest.HostPinOrGuestPin:
 					AuthenticationOptions = new ConferenceAuthenticationOptions(eConferenceAuthenticationState.Required,
@@ -387,6 +380,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			}
 		}
 
+		private IEnumerable<ConferenceAuthenticationMethod> GetHostPinOrGuestAuthenticationMethods()
+		{
+			yield return GetGuestAuthenticationMethod();
+			yield return GetHostPinAuthenticationMethod();
+		}
+
 		private IEnumerable<ConferenceAuthenticationMethod> GetGuestPinAuthenticationMethods()
 		{
 			yield return GetGuestPinAuthenticationMethod();
@@ -394,35 +393,35 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private IEnumerable<ConferenceAuthenticationMethod> GetPanelistPinAuthenticationMethods()
 		{
-			yield return new ConferenceAuthenticationMethod("Panelist", "Enter Panelist Pin", AuthenticatePanelistPin);
-		}
-
-		private IEnumerable<ConferenceAuthenticationMethod> GetHostPinAuthenticationMethods()
-		{
-			yield return GetHostPinAuthenticationMethod();
+			yield return new ConferenceAuthenticationMethod("Panelist", "Enter Panelist Password", AuthenticatePanelistPin);
 		}
 
 		private IEnumerable<ConferenceAuthenticationMethod> GetHostPinOrGuestPinAuthenticationMethods()
 		{
-			yield return GetHostPinAuthenticationMethod();
 			yield return GetGuestPinAuthenticationMethod();
+			yield return GetHostPinAuthenticationMethod();
 		}
 
 		private IEnumerable<ConferenceAuthenticationMethod> GetAnyHostPinOrGuestPinAuthenticationMethods()
 		{
-			yield return GetHostPinAuthenticationMethod();
-			yield return new ConferenceAuthenticationMethod("CoHost", "Enter CoHost Pin", AuthenticateCoHostPin);
 			yield return GetGuestPinAuthenticationMethod();
+			yield return GetHostPinAuthenticationMethod();
+			yield return new ConferenceAuthenticationMethod("CoHost", "Enter CoHost Password", AuthenticateCoHostPin);
 		}
 
 		private ConferenceAuthenticationMethod GetHostPinAuthenticationMethod()
 		{
-			return new ConferenceAuthenticationMethod("Host", "Enter Host Pin", AuthenticateHostPin);
+			return new ConferenceAuthenticationMethod("Host", "Enter Host Password", AuthenticateHostPin);
 		}
 
 		private ConferenceAuthenticationMethod GetGuestPinAuthenticationMethod()
 		{
-			return new ConferenceAuthenticationMethod("Guest", "Enter Guest Pin", AuthenticateGuestPin);
+			return new ConferenceAuthenticationMethod("Guest", "Enter Guest Password", AuthenticateGuestPin);
+		}
+		
+		private ConferenceAuthenticationMethod GetGuestAuthenticationMethod()
+		{
+			return new ConferenceAuthenticationMethod("Guest", "Password not required for guest", false, false, AuthenticateGuest);
 		}
 		
 		/// <summary>
@@ -432,7 +431,7 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private void AuthenticationFailedCallback()
 		{
 			if (AuthenticationOptions != null)
-				AuthenticationOptions.RaisePasswordRejected();
+				AuthenticationOptions.RaisePasswordRejected(AUTHENTICATION_FAILED_MESSAGE);
 		}
 
 
@@ -460,8 +459,10 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 			m_DialingComponent.AuthenticateCoHostPin(m_CallStatus, pin);
 		}
 
-		private void AuthenticateGuest()
+		
+		private void AuthenticateGuest(string pin)
 		{
+			// pin not used for this authentication method
 			m_DialingComponent.AuthenticateGuest(m_CallStatus);
 		}
 
@@ -568,25 +569,31 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 		private void Subscribe(ConferenceComponent conferenceComponent)
 		{
 			conferenceComponent.OnWebexParticipantListUpdated += ConferenceComponentOnWebexParticipantListUpdated;
-			conferenceComponent.OnWebexParticipantsListSearchResult += ConferenceComponentOnWebexParticipantsListSearchResult;
+			conferenceComponent.OnWebexParticipantsListSearchResult +=
+				ConferenceComponentOnWebexParticipantsListSearchResult;
 			conferenceComponent.OnCallRecordingStatusChanged += ConferenceComponentOnCallRecordingStatusChanged;
 
 			conferenceComponent.Codec.RegisterParserCallback(ConferenceCallCapabilitiesRecordStart,
-			                                                 CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call",
-			                                                 m_CallStatus.CallId.ToString(), "Capabilities",
-			                                                 "Recording", "Start");
+				CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call", "Capabilities",
+				"Recording", "Start");
+			conferenceComponent.Codec.RegisterParserCallback(ConferenceCallAuthenticationRequest,
+				CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call", "AuthenticationRequest");
 		}
 
 		private void Unsubscribe(ConferenceComponent conferenceComponent)
 		{
 			conferenceComponent.OnWebexParticipantListUpdated -= ConferenceComponentOnWebexParticipantListUpdated;
-			conferenceComponent.OnWebexParticipantsListSearchResult -= ConferenceComponentOnWebexParticipantsListSearchResult;
+			conferenceComponent.OnWebexParticipantsListSearchResult -=
+				ConferenceComponentOnWebexParticipantsListSearchResult;
 			conferenceComponent.OnCallRecordingStatusChanged -= ConferenceComponentOnCallRecordingStatusChanged;
 
 			conferenceComponent.Codec.UnregisterParserCallback(ConferenceCallCapabilitiesRecordStart,
-			                                                   CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call",
-			                                                   m_CallStatus.CallId.ToString(), "Capabilities",
-			                                                   "Recording", "Start");
+				CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "Call",
+				m_CallStatus.CallId.ToString(), "Capabilities",
+				"Recording", "Start");
+			conferenceComponent.Codec.UnregisterParserCallback(ConferenceCallAuthenticationRequest,
+				CiscoCodecDevice.XSTATUS_ELEMENT, "Conference", "call", m_CallStatus.CallId.ToString(),
+				"AuthenticationRequest");
 		}
 
 		private void ConferenceComponentOnWebexParticipantListUpdated(object sender, GenericEventArgs<WebexParticipantInfo> args)
@@ -687,6 +694,11 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 				                                     eConferenceFeatures.StopRecording |
 				                                     eConferenceFeatures.PauseRecording,
 				                                     XmlUtils.GetInnerXml(xml) == "Available");
+		}
+
+		private void ConferenceCallAuthenticationRequest(CiscoCodecDevice codec, string resultId, string xml)
+		{
+			UpdateAuthenticationOptions(EnumUtils.Parse<eAuthenticationRequest>(XmlUtils.GetInnerXml(xml), false));
 		}
 
 		#endregion
