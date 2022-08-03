@@ -99,6 +99,7 @@
     <Compile Include="Devices\Codec\Components\Conference\ConferenceComponent.cs" />
     <Compile Include="Devices\Codec\Components\Conference\WebexParticipantInfo.cs" />
     <Compile Include="Devices\Codec\Components\Dialing\CallStatus.cs" />
+    <Compile Include="Devices\Codec\Components\Dialing\eAuthenticationRequest.cs" />
     <Compile Include="Devices\Codec\Components\Dialing\eCiscoCallStatus.cs" />
     <Compile Include="Devices\Codec\Components\Directory\DirectoryComponent.cs" />
     <Compile Include="Devices\Codec\Components\Directory\PhonebookSearchResult.cs" />
