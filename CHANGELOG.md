@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [20.2.0] - 2022-08-04
 ### Added
  - Added AuthenticaitonOptions for conferences that need authenticaiton
+ - ConferenceManager handles aggregation of AuthenticationOptions from conferences
  - Implemented AuthenticationOptions for Cisco Codecs
 
 ### Changed
@@ -15,7 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - Handle new GetMutedOnly option for PrivacyMuteMask on VolumePoints and ConferencePoints
 
 ### Removed
- - Cisco Codecs removed call join ability and automatic call joining
+ - Cisco Codecs removed call join ability and automatic call joining of on hold call
 
 ## [20.1.1] - 2022-07-01
 ### Changed
