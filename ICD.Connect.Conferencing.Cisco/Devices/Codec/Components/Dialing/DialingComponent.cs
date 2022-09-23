@@ -483,8 +483,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Components.Dialing
 
 		private void AuthenticatePin(int callId, string participantRole, string pin)
 		{
-			Codec.SendCommand(
-				"xCommand Conference Call AuthenticationResponse CallId: {0} ParticipantRole: {1} Pin: {2}#", callId,
+            //Verify the code ends in #, if not add #
+		    if (pin[pin.Length - 1] != '#')
+		        pin += '#';
+
+		    Codec.SendCommand(
+				"xCommand Conference Call AuthenticationResponse CallId: {0} ParticipantRole: {1} Pin: {2}", callId,
 				participantRole, pin);
 		}
 
