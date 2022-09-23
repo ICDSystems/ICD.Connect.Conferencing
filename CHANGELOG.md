@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+ - Changed Cisco confereence authentication to only append "#" if the code doesn't end in "#" already.
 
 ## [20.2.0] - 2022-08-04
 ### Added
