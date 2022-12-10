@@ -20,7 +20,12 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private const int PARTICIPANT_SEARCH_LIMIT = 25;
 
-		private const long PARTICIPANT_LIST_UPDATE_INTERVAL = 30 * 1000;
+		private const long PARTICIPANT_LIST_UPDATE_INTERVAL = 35 * 1000;
+
+		/// <summary>
+		/// This interval is used to retrigger, in case we never get a response back from the initial search
+		/// </summary>
+		private const long PARTICIPANT_LIST_UPDATE_LONG_INTERVAL = 4 * 60 * 1000;
 
 		private const long AUTHENTICATION_FAILED_TIMEOUT = 8 * 1000;
 
@@ -274,7 +279,8 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 				// Pull current participant list and start update timer
 				ParticipantListUpdate();
-				m_ParticipantUpdateTimer.Reset(PARTICIPANT_LIST_UPDATE_INTERVAL, PARTICIPANT_LIST_UPDATE_INTERVAL);
+				// Update at long interval, in case we never get a response from this command
+				m_ParticipantUpdateTimer.Reset(PARTICIPANT_LIST_UPDATE_LONG_INTERVAL, PARTICIPANT_LIST_UPDATE_LONG_INTERVAL);
 			}
 			else
 			{
@@ -631,41 +637,54 @@ namespace ICD.Connect.Conferencing.Cisco.Devices.Codec.Controls.Conference
 
 		private void ConferenceComponentOnWebexParticipantsListSearchResult(object sender, GenericEventArgs<WebexParticipantInfo[]> args)
 		{
-			// We don't update existing participants here, since they should get update by the OnWebexParticipantListUpdated event - this may end up being a poor choice (it was)
+			// Stop the timer so we don't update a second time while this is processing
+			m_ParticipantUpdateTimer.Stop();
 
-			var results = new Dictionary<string, WebexParticipantInfo>();
-			// CallId isn't participant search results - this will be problematic if we ever have multiple webex calls possible
-			results.AddRange(args.Data, i => i.ParticipantId);
-
-			// Caculate old participants to remove
-			var removedParticipants = new List<CiscoWebexParticipant>();
-			m_ParticipantsSection.Execute(() =>
-										  removedParticipants.AddRange(
-										  m_Participants.Values.Where(participant => !results.ContainsKey(participant.WebexParticipantId))));
-
-			// Loop over received participants and update them or add new
-			foreach (WebexParticipantInfo info in results.Values)
+			try
 			{
-				CiscoWebexParticipant participant = null;
-				string participantId = info.ParticipantId;
-				if (m_ParticipantsSection.Execute(() => m_Participants.TryGetValue(participantId, out participant)))
-				{
-					// Participant Exists, update it
-					participant.UpdateInfo(info);
-				}
-				else
-				{
-					// Create a new participant and add it
-					participant = new CiscoWebexParticipant(info, () => ParticipantAdmit(participantId),
-					                                        () => ParticipantKick(participantId),
-					                                        state => SetParticipantMute(participantId, state),
-					                                        SetParticipantHandPosition, IsHostOrCoHost);
-					AddParticipant(participant);
-				}
-			}
+				var results = new Dictionary<string, WebexParticipantInfo>();
+				// CallId isn't participant search results - this will be problematic if we ever have multiple webex calls possible
+				results.AddRange(args.Data, i => i.ParticipantId);
 
-			// Remove old participants
-			removedParticipants.ForEach(RemoveParticipant);
+				// Calculate old participants to remove
+				var removedParticipants = new List<CiscoWebexParticipant>();
+				m_ParticipantsSection.Execute(() =>
+					removedParticipants.AddRange(
+						m_Participants.Values.Where(participant =>
+							!results.ContainsKey(participant.WebexParticipantId))));
+
+				// Loop over received participants and update them or add new
+				var newParticipants = new List<CiscoWebexParticipant>();
+				foreach (WebexParticipantInfo info in results.Values)
+				{
+					CiscoWebexParticipant participant = null;
+					string participantId = info.ParticipantId;
+					if (m_ParticipantsSection.Execute(() => m_Participants.TryGetValue(participantId, out participant)))
+					{
+						// Participant Exists, update it
+						participant.UpdateInfo(info);
+					}
+					else
+					{
+						// Create a new participant
+						participant = new CiscoWebexParticipant(info, () => ParticipantAdmit(participantId),
+							() => ParticipantKick(participantId),
+							state => SetParticipantMute(participantId, state),
+							SetParticipantHandPosition, IsHostOrCoHost);
+						newParticipants.Add(participant);
+					}
+				}
+
+				// Remove old participants and add new ones
+				removedParticipants.ForEach(RemoveParticipant);
+				newParticipants.ForEach(AddParticipant);
+			}
+			finally
+			{
+				// Now that we've updated the participants, reset the timer
+				if (Status == eConferenceStatus.Connected)
+					m_ParticipantUpdateTimer.Reset(PARTICIPANT_LIST_UPDATE_INTERVAL, PARTICIPANT_LIST_UPDATE_LONG_INTERVAL);
+			}
 		}
 
 		private void ConferenceComponentOnCallRecordingStatusChanged(object sender, GenericEventArgs<eCallRecordingStatus> args)
