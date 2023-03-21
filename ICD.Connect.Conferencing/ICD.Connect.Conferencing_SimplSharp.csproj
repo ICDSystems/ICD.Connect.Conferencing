@@ -199,7 +199,6 @@
     <Compile Include="Favorites\Favorite.cs" />
     <Compile Include="EventArguments\ConferenceEventArgs.cs" />
     <Compile Include="Controls\Dialing\IConferenceDeviceControl.cs" />
-    <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Participants\ThinParticipant.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Proxies\Controls\Dialing\AbstractProxyConferenceDeviceControl.cs" />

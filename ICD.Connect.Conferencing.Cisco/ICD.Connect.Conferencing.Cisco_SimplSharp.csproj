@@ -151,7 +151,6 @@
     <Compile Include="Devices\Codec\Controls\Conference\CiscoWebexParticipant.cs" />
     <Compile Include="Devices\Codec\Controls\Conference\ICiscoConference.cs" />
     <Compile Include="Devices\Codec\Utils\CiscoCallbackNode.cs" />
-    <Compile Include="ObfuscationSettings.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoBooking.cs" />
     <Compile Include="Devices\Codec\Controls\Calender\CiscoCodecCalendarControl.cs" />
     <Compile Include="Devices\Codec\Controls\CiscoCodecDirectoryControl.cs" />
